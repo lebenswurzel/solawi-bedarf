@@ -1,0 +1,208 @@
+<!--
+This file is part of the SoLawi Bedarf app
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<script setup lang="ts">
+import { computed, ref } from "vue";
+import { EditShipmentItem } from "../../../shared/src/types";
+import { useConfigStore } from "../store/configStore";
+import { useBIStore } from "../store/biStore";
+import { storeToRefs } from "pinia";
+import { valueToDelivered } from "../lib/convert";
+import { getLangUnit } from "../lang/template";
+import { unitDict, multiplicatorOptions } from "../lib/options";
+
+const props = defineProps<{
+  shipmentItem: EditShipmentItem;
+  usedDepotIdsByProductId: { [key: number]: number[] };
+}>();
+
+const biStore = useBIStore();
+const configStore = useConfigStore();
+const { productsById, deliveredByProductIdDepotId, soldByProductId } =
+  storeToRefs(biStore);
+const { depots } = storeToRefs(configStore);
+
+const open = ref<boolean>(false);
+
+const productOptions = computed(() => {
+  const keys = Object.keys(soldByProductId.value)
+    .map((k) => parseInt(k))
+    .filter((k) => soldByProductId.value[k].soldForShipment > 0);
+  return Object.values(productsById.value)
+    .filter((p) => keys.includes(p.id))
+    .map((p) => ({
+      title: p.name,
+      value: p.id,
+    }));
+});
+
+const neededQuantity = computed(() => {
+  if (props.shipmentItem.productId) {
+    const deliveredByDepotId =
+      deliveredByProductIdDepotId.value[props.shipmentItem.productId];
+    if (deliveredByDepotId) {
+      const valueForShipment = props.shipmentItem.depotIds.reduce(
+        (acc, cur) => acc + deliveredByDepotId[cur].valueForShipment,
+        0,
+      );
+      const { multiplicator, conversionFrom, conversionTo } =
+        props.shipmentItem;
+      return valueToDelivered({
+        value: valueForShipment,
+        multiplicator,
+        conversionFrom,
+        conversionTo,
+      });
+    }
+  }
+  return 0;
+});
+
+const unitOptions = computed(() => {
+  if (props.shipmentItem.productId) {
+    return unitDict[productsById.value[props.shipmentItem.productId].unit];
+  }
+});
+
+const depotOptions = computed(() => {
+  if (props.shipmentItem.productId) {
+    const deliveredByDepotId =
+      deliveredByProductIdDepotId.value[props.shipmentItem.productId];
+    const usedDepotIds =
+      props.usedDepotIdsByProductId[props.shipmentItem.productId];
+    if (deliveredByDepotId) {
+      const depotIds = Object.keys(deliveredByDepotId).map((key) =>
+        parseInt(key),
+      );
+      return depots.value
+        .filter((d) => depotIds.includes(d.id))
+        .filter(
+          (d) =>
+            !usedDepotIds.includes(d.id) ||
+            props.shipmentItem.depotIds.includes(d.id),
+        )
+        .map((d) => ({
+          title: `${d.name} (${deliveredByDepotId[d.id].delivered / 100}/${
+            deliveredByDepotId[d.id].frequency
+          })`,
+          value: d.id,
+        }));
+    }
+  }
+});
+
+const onProductIdChange = (val: number) => {
+  props.shipmentItem.productId = val;
+  props.shipmentItem.unit =
+    productsById.value[props.shipmentItem.productId].unit;
+  props.shipmentItem.depotIds = [];
+  props.shipmentItem.conversionFrom = 1;
+  props.shipmentItem.conversionTo = 1;
+  props.shipmentItem.multiplicator = 100;
+  props.shipmentItem.totalShipedQuantity = 0;
+  props.shipmentItem.isBio = false;
+  props.shipmentItem.description = null;
+};
+</script>
+
+<template>
+  <v-container class="pa-0 ma-0">
+    <v-row no-gutters align="center" justify="center" class="pa-0 ma-0">
+      <v-col cols="2">
+        <v-autocomplete
+          label="Produkt"
+          :items="productOptions"
+          :model-value="shipmentItem.productId"
+          @update:model-value="onProductIdChange"
+        ></v-autocomplete>
+      </v-col>
+      <v-col cols="4">
+        <v-select
+          label="Depots"
+          :items="depotOptions"
+          v-model="shipmentItem.depotIds"
+          multiple
+        ></v-select>
+      </v-col>
+      <v-col cols="1">
+        <v-text-field
+          :label="`Benötigt [${getLangUnit(shipmentItem.unit)}]`"
+          @update:model-value="() => {}"
+          :model-value="neededQuantity"
+        ></v-text-field>
+      </v-col>
+      <v-col cols="2">
+        <v-text-field
+          :label="`Geliefert [${getLangUnit(shipmentItem.unit)}]`"
+          v-model="shipmentItem.totalShipedQuantity"
+          type="number"
+        />
+      </v-col>
+      <v-col cols="2">
+        <v-checkbox label="isBio" v-model="shipmentItem.isBio"></v-checkbox>
+      </v-col>
+      <v-col cols="1">
+        <v-btn variant="outlined" @click="() => (open = !open)">
+          <v-icon v-if="!open"> mdi-arrow-expand-down</v-icon>
+          <v-icon v-if="open"> mdi-arrow-collapse-up</v-icon>
+        </v-btn>
+      </v-col>
+    </v-row>
+    <v-row
+      no-gutters
+      align="center"
+      justify="center"
+      v-if="open"
+      class="pa-0 ma-0"
+    >
+      <v-col cols="4">
+        <v-text-field
+          label="Beschreibung"
+          v-model="shipmentItem.description"
+          clearable
+        ></v-text-field>
+      </v-col>
+      <v-col cols="2">
+        <v-select
+          label="Multiplikator"
+          :items="multiplicatorOptions"
+          v-model="shipmentItem.multiplicator"
+        ></v-select>
+      </v-col>
+      <v-col cols="2">
+        <v-text-field
+          label="von"
+          v-model="shipmentItem.conversionFrom"
+          type="number"
+        />
+      </v-col>
+      <v-col cols="2">
+        <v-select
+          label="Einheit"
+          :items="unitOptions"
+          v-model="shipmentItem.unit"
+        ></v-select>
+      </v-col>
+      <v-col cols="2">
+        <v-text-field
+          label="nach"
+          v-model="shipmentItem.conversionTo"
+          type="number"
+        />
+      </v-col>
+    </v-row>
+  </v-container>
+</template>

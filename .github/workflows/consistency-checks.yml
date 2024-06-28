@@ -1,0 +1,11 @@
+name: Check file consistency
+on: [pull_request, push]
+
+jobs:
+  file-checks:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check AGPLv3 license headers
+        run: ./apply_license_headers.bash --check

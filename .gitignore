@@ -1,0 +1,12 @@
+/database/pgdata
+/.idea/
+/.vscode/
+node_modules
+dist
+deployment.md
+*prod.env
+deploy*.sh
+lizenz_*
+*_wf.ts
+**/coverage-final.json
+**/coverage-summary.json

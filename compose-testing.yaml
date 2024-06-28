@@ -1,0 +1,9 @@
+version: "3.8"
+services:
+  db-testing:
+    image: postgres:16-alpine
+    restart: always
+    env_file:
+      - ./env-db-dev.env
+    ports:
+      - "5533:5432"
