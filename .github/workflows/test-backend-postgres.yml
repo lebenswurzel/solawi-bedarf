@@ -1,0 +1,43 @@
+name: Backend unit test with Postgres database
+on: [pull_request, push]
+
+defaults:
+  run:
+    working-directory: backend
+
+jobs:
+  test-postgres:
+    runs-on: ubuntu-latest
+    container: node:18
+
+    services:
+      db:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: solawi
+        ports:
+          - "5530:5432"
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: npm ci
+      - name: Check TypeScript consistency
+        run: npm run tsc
+      - name: Check formatting
+        run: npm run format-check
+      - name: Run tests
+        run: npm run test
+        env:
+          POSTGRES_URL: db
+          POSTGRES_TESTING_PORT: 5432
+          TEST_WITH_POSTGRES: true
+
+    # Requires a GITHUB_TOKEN with pull-request: write
+    # - name: Report coverage
+    #   if: always()
+    #   uses: davelosert/vitest-coverage-report-action@v2
+    #   with:
+    #     working-directory: backend

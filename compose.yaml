@@ -1,0 +1,36 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:16-alpine
+    restart: always
+    env_file:
+      - ./env-db-dev.env
+    ports:
+      - '5532:5432'
+    volumes:
+      - ./database/pgdata:/var/lib/postgresql/data/pgdata
+  be:
+    build:
+      context: ./
+      dockerfile: ./backend/Dockerfile
+    restart: always
+    env_file:
+      - ./env-be-dev.env
+    depends_on:
+      - db
+    ports:
+      - '3100:3000'
+  php:
+    build: ./migration/.
+    restart: always
+    ports:
+      - "8180:80"
+  fe:
+    build:
+      context: ./
+      dockerfile: ./frontend/Dockerfile
+    restart: always
+    depends_on:
+      - be
+    ports:
+      - '8184:8080'

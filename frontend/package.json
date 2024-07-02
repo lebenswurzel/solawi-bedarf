@@ -1,0 +1,38 @@
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc && vite build",
+    "preview": "vite preview",
+    "lint": "eslint --ext .js,.vue --ignore-path .gitignore --fix src",
+    "format": "prettier .  --write"
+  },
+  "author": "",
+  "license": "AGPL-3.0-only",
+  "dependencies": {
+    "@mdi/font": "^7.2.96",
+    "@types/dompurify": "^3.0.5",
+    "@types/pdfmake": "^0.2.9",
+    "@vitejs/plugin-vue": "^5.0.4",
+    "date-fns": "^3.3.1",
+    "dompurify": "^3.0.8",
+    "eslint": "^9.3.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-vue": "^9.17.0",
+    "jszip": "^3.10.1",
+    "marked": "^12.0.0",
+    "pdfmake": "^0.2.10",
+    "pinia": "^2.1.6",
+    "prettier": "^3.0.3",
+    "typescript": "^5.2.2",
+    "vite": "^5.2.0",
+    "vite-plugin-vuetify": "^2.0.3",
+    "vue": "^3.4.21",
+    "vue-router": "^4.2.4",
+    "vue-tsc": "^2.0.6",
+    "vuetify": "^3.5.11"
+  }
+}
