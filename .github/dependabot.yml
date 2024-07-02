@@ -5,11 +5,65 @@
 
 version: 2
 updates:
-  - package-ecosystem: "npm" # See documentation for possible values
-    directory: "/frontend" # Location of package manifests
+  - package-ecosystem: "npm"
+    directory: "/frontend"
     schedule:
       interval: "weekly"
-  - package-ecosystem: "npm" # See documentation for possible values
-    directory: "/backend" # Location of package manifests
+    groups:
+      vue-and-vite-deps:
+        dependency-type: production
+        patterns:
+          - "vue*"
+          - "vite*"
+          - "pinia"
+      coding-and-language:
+        dependency-type: production
+        patterns:
+          - "typescript"
+          - "prettier"
+          - "eslint*"
+      tools:
+        dependency-type: production
+        patterns:
+          - "*pdfmake*"
+          - "date-fns"
+          - "jszip"
+          - "marked"
+      everything-else:
+        dependency-type: production
+        patterns:
+          - "*" # captures everything that wasn't included in any of the above groups
+
+  - package-ecosystem: "npm"
+    directory: "/backend"
     schedule:
       interval: "weekly"
+    groups:
+      coding-and-language:
+        dependency-type: production
+        patterns:
+          - "typescript"
+          - "prettier"
+          - "eslint*"
+          - "ts-node"
+          - "reflect-metadata"
+      database:
+        dependency-type: production
+        patterns:
+          - "typeorm"
+          - "pg"
+      koa:
+        dependency-type: production
+        patterns:
+          - "*koa*"
+      tools:
+        dependency-type: production
+        patterns:
+          - "basic-auth"
+          - "jsonwebtoken"
+          - "*ldapjs"
+          - "*nodemailer"
+          - "*node*"
+      everything-else:
+        patterns:
+          - "*" # captures everything that wasn't included in any of the above groups
