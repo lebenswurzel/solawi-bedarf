@@ -129,7 +129,8 @@ watchEffect(async () => {
           type="datetime-local"
           :model-value="orderValidFrom ? dateToString(orderValidFrom) : null"
           @update:model-value="
-            (val) => (orderValidFrom = stringToDate(val) || orderValidFrom)
+            (val: string) =>
+              (orderValidFrom = stringToDate(val) || orderValidFrom)
           "
         ></v-text-field>
       </v-card-text>

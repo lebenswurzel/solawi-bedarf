@@ -444,7 +444,7 @@ const onShipmentOverviewPdfClick = async () => {
               type="datetime-local"
               :model-value="dateToString(editShipment.validFrom)"
               @update:model-value="
-                (val) =>
+                (val: string) =>
                   (editShipment.validFrom =
                     stringToDate(val) || editShipment.validFrom)
               "
