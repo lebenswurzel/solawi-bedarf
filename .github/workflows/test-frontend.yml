@@ -1,0 +1,20 @@
+name: Frontend code style checks and tests
+on: [pull_request, push]
+
+defaults:
+  run:
+    working-directory: frontend
+
+jobs:
+  test-postgres:
+    runs-on: ubuntu-latest
+    container: node:18
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: npm ci
+      - name: Check TypeScript consistency
+        run: npm run vue-tsc
+      - name: Check formatting
+        run: npm run format-check

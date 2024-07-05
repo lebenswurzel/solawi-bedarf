@@ -5,10 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev-exposed": "vite --host",
     "build": "vue-tsc && vite build",
     "preview": "vite preview",
     "lint": "eslint --ext .js,.vue --ignore-path .gitignore --fix src",
-    "format": "prettier .  --write"
+    "format": "prettier .  --write",
+    "format-check": "prettier .  --check",
+    "vue-tsc": "vue-tsc"
   },
   "author": "",
   "license": "AGPL-3.0-only",
