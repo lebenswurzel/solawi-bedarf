@@ -77,21 +77,23 @@ const onSave = () => {
         type="datetime-local"
         :model-value="dateToString(validFrom)"
         @update:model-value="
-          (val) => (validFrom = stringToDate(val) || validFrom)
+          (val: string) => (validFrom = stringToDate(val) || validFrom)
         "
       ></v-text-field>
       <v-text-field
         :label="t.validTo"
         type="datetime-local"
         :model-value="dateToString(validTo)"
-        @update:model-value="(val) => (validTo = stringToDate(val) || validTo)"
+        @update:model-value="
+          (val: string) => (validTo = stringToDate(val) || validTo)
+        "
       ></v-text-field>
       <v-text-field
         :label="t.startOrder"
         type="datetime-local"
         :model-value="dateToString(startOrder)"
         @update:model-value="
-          (val) => (startOrder = stringToDate(val) || startOrder)
+          (val: string) => (startOrder = stringToDate(val) || startOrder)
         "
       ></v-text-field>
       <v-text-field
@@ -99,7 +101,8 @@ const onSave = () => {
         type="datetime-local"
         :model-value="dateToString(startBiddingRound)"
         @update:model-value="
-          (val) => (startBiddingRound = stringToDate(val) || startBiddingRound)
+          (val: string) =>
+            (startBiddingRound = stringToDate(val) || startBiddingRound)
         "
       ></v-text-field>
       <v-text-field
@@ -107,7 +110,8 @@ const onSave = () => {
         type="datetime-local"
         :model-value="dateToString(endBiddingRound)"
         @update:model-value="
-          (val) => (endBiddingRound = stringToDate(val) || endBiddingRound)
+          (val: string) =>
+            (endBiddingRound = stringToDate(val) || endBiddingRound)
         "
       ></v-text-field>
       <v-text-field
@@ -130,3 +134,4 @@ const onSave = () => {
     {{ error }}
   </v-snackbar>
 </template>
+: string: string: string: string: string: string: string: string
