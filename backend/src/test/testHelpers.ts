@@ -19,30 +19,53 @@ import {
   RequisitionConfigName,
 } from "../database/RequisitionConfig";
 import { AppDataSource } from "../database/database";
-import { createBasicTestCtx } from "../../testSetup";
-import { saveDepot } from "../services/config/saveDepot";
 import { Depot } from "../database/Depot";
 import { Order } from "../database/Order";
+import { Product } from "../database/Product";
+import { Unit } from "../../../shared/src/enum";
+import { ProductCategory } from "../database/ProductCategory";
+import { OrderItem } from "../database/OrderItem";
 
-export const fillDatabaseWithTestData = async (adminToken: string) => {
+export const fillDatabaseWithTestData = async () => {
   const products = ["p1", "p2", "p3", "p4"];
   const depots = ["d1", "d2", "d3"];
 
-  await depots.forEach(async (name) => await createTestDepot(name, adminToken));
+  for (const depot of depots) {
+    await createTestDepot(depot);
+  }
+  for (const product of products) {
+    await createTestProduct(product);
+  }
 };
 
-const createTestDepot = async (name: string, adminToken: string) => {
-  const ctx = createBasicTestCtx(
-    {
-      name,
-      address: `${name} address`,
-      openingHours: "9-5",
-      capacity: 12,
-      active: true,
-    },
-    adminToken,
-  );
-  await saveDepot(ctx);
+const createTestDepot = async (name: string) => {
+  AppDataSource.getRepository(Depot).save({
+    name,
+    address: `${name} address`,
+    openingHours: "9-5",
+    capacity: 12,
+    active: true,
+  });
+};
+
+const createTestProduct = async (name: string) => {
+  const pcEntity = await AppDataSource.getRepository(ProductCategory).save({
+    name: `${name} category`,
+    active: true,
+  });
+  await AppDataSource.getRepository(Product).save({
+    name,
+    description: `description of product ${name}`,
+    active: true,
+    msrp: 10,
+    quantity: 10,
+    quantityMin: 1,
+    quantityMax: 5,
+    quantityStep: 1,
+    unit: Unit.PIECE,
+    orderItems: [],
+    productCategoryId: pcEntity.id,
+  });
 };
 
 export const updateRequisition = async (
@@ -80,7 +103,18 @@ export const getDepotByName = async (name: string): Promise<Depot> => {
 };
 
 export const findOrdersByUser = async (userId: number) => {
-  return await AppDataSource.getRepository(Order).findBy({
+  const orders = await AppDataSource.getRepository(Order).findBy({
     userId,
   });
+  for (const order of orders) {
+    const orderItems = await AppDataSource.getRepository(OrderItem).findBy({
+      orderId: order.id,
+    });
+    order.orderItems = orderItems;
+  }
+  return orders;
+};
+
+export const getProductByName = async (name: string): Promise<Product> => {
+  return await AppDataSource.getRepository(Product).findOneByOrFail({ name });
 };
