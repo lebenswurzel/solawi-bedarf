@@ -75,6 +75,7 @@ export const createBasicTestCtx = (
   body?: any,
   token?: string,
   headers?: any,
+  query?: object,
 ): any => {
   const ctx = {
     cookies: new Map(),
@@ -84,6 +85,7 @@ export const createBasicTestCtx = (
     },
     request: {
       body,
+      query,
     },
     status: -1,
     throw: (status: number) => {
@@ -109,23 +111,35 @@ export const loginUser = async (
   return ctx.cookies.get("token");
 };
 
+////////////////////////////////////////////////////
+// test fixtures
+////////////////////////////////////////////////////
+export interface TestUserData {
+  userData: {
+    token: string;
+    userId: number;
+  };
+}
+
 /**
  * test fixture for tests that require a logged in admin
  */
-export const testAsAdmin = test.extend({
-  token: async ({}, use) => {
+export const testAsAdmin = test.extend<TestUserData>({
+  userData: async ({}, use) => {
     const token = await loginUser("admin", "admin");
-    await use(token);
+    const userId = await getUserId("admin");
+    await use({ token, userId });
   },
 });
 
 /**
  * test fixture for tests that require a logged in user
  */
-export const testAsUser1 = test.extend({
-  token: async ({}, use) => {
+export const testAsUser1 = test.extend<TestUserData>({
+  userData: async ({}, use) => {
     const token = await loginUser("user1", "123456");
-    await use(token);
+    const userId = await getUserId("user1");
+    await use({ token, userId });
   },
 });
 
