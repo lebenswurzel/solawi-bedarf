@@ -19,8 +19,8 @@ import { saveDepot } from "./saveDepot";
 import { http } from "../../consts/http";
 import { getDepot } from "./getDepot";
 import {
+  TestUserData,
   createBasicTestCtx,
-  getUserId,
   testAsAdmin,
   testAsUser1,
 } from "../../../testSetup";
@@ -38,14 +38,15 @@ test("prevent unauthorized access", async () => {
 
 testAsUser1(
   "prevent unprivileged access",
-  async ({ token }: { token: string }) => {
-    const ctx = createBasicTestCtx(undefined, token);
+  async ({ userData }: TestUserData) => {
+    const ctx = createBasicTestCtx(undefined, userData.token);
     await expect(() => saveDepot(ctx)).rejects.toThrowError("Error 403");
     await expect(() => getDepot(ctx)).rejects.toThrowError("Error 403");
   },
 );
 
-testAsAdmin("create new depots", async ({ token }: { token: string }) => {
+testAsAdmin("create new depots", async ({ userData }: TestUserData) => {
+  const token = userData.token;
   const ctx = createBasicTestCtx(
     {
       name: "Depot 1",
@@ -103,7 +104,8 @@ testAsAdmin("create new depots", async ({ token }: { token: string }) => {
   });
 });
 
-testAsAdmin("update depot info", async ({ token }: { token: string }) => {
+testAsAdmin("update depot info", async ({ userData }: TestUserData) => {
+  const token = userData.token;
   const infoDepot1 = {
     name: "Depot 1",
     address: "123 Fake St",
@@ -168,7 +170,7 @@ testAsAdmin("update depot info", async ({ token }: { token: string }) => {
   order.offer = 3;
   order.category = UserCategory.CAT100;
   order.productConfiguration = "{}";
-  order.userId = await getUserId("user1");
+  order.userId = userData.userId;
   await AppDataSource.getRepository(Order).save(order);
 
   // Set Depot 1 inactive --> fails
