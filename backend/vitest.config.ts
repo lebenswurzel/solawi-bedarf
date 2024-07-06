@@ -25,6 +25,7 @@ export default defineConfig({
       reportOnFailure: true,
       include: ["**/config/*Depot.ts"],
     },
+    fileParallelism: false, // tests cannot run in parallel because they use the same DB
   },
 
   // the following is necessary for typorm decorators to work with vitest
