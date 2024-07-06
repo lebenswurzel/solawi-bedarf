@@ -24,14 +24,38 @@ import { saveUser } from "./src/services/user/saveUser";
 import { UserRole } from "../shared/src/enum";
 import { Order } from "./src/database/Order";
 import { User } from "./src/database/User";
+import { fillDatabaseWithTestData } from "./src/test/testHelpers";
+import { Product } from "./src/database/Product";
+import { ProductCategory } from "./src/database/ProductCategory";
+import { Depot } from "./src/database/Depot";
+import { Token } from "./src/database/Token";
+import { OrderItem } from "./src/database/OrderItem";
+import { Applicant } from "./src/database/Applicant";
+import { UserAddress } from "./src/database/UserAddress";
+import { TextContent } from "./src/database/TextContent";
+import { AdditionalShipmentItem } from "./src/database/AdditionalShipmentItem";
+import { Shipment } from "./src/database/Shipment";
+import { ShipmentItem } from "./src/database/ShipmentItem";
 
 const clearAllTables = async () => {
   const entities = AppDataSource.entityMetadatas;
   console.log("deleting all tables");
 
-  // must delete first to prevent foreign key violations
+  // must delete in specific order to prevent foreign key violations
+  await AppDataSource.getRepository(OrderItem).delete({});
+  await AppDataSource.getRepository(Product).delete({});
+  await AppDataSource.getRepository(ProductCategory).delete({});
   await AppDataSource.getRepository(Order).delete({});
+  await AppDataSource.getRepository(AdditionalShipmentItem).delete({});
+  await AppDataSource.getRepository(ShipmentItem).delete({});
+  await AppDataSource.getRepository(Shipment).delete({});
+  await AppDataSource.getRepository(Depot).delete({});
+  await AppDataSource.getRepository(Token).delete({});
+  await AppDataSource.getRepository(UserAddress).delete({});
+  await AppDataSource.getRepository(Applicant).delete({});
+  await AppDataSource.getRepository(User).delete({});
 
+  // delete everything that remains
   for (const entity of entities) {
     await AppDataSource.getRepository(entity.name).delete({});
   }
@@ -55,6 +79,9 @@ const reinitializeDatabase = async () => {
       token,
     ),
   );
+  console.log("fill database");
+  await fillDatabaseWithTestData();
+  console.log("database filled");
 };
 
 beforeAll(async () => {

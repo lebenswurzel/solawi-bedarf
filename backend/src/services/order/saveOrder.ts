@@ -75,7 +75,8 @@ export const saveOrder = async (
     ctx.throw(http.bad_request, "no category reason");
   }
   const depot = await AppDataSource.getRepository(Depot).findOne({
-    where: { id: body.depotId },
+    // '.. || 0' to make sure a value of undefined does not return the first table row
+    where: { id: body.depotId || 0 },
   });
   if (!depot || !depot.active) {
     ctx.throw(http.bad_request, "no valid depot");
