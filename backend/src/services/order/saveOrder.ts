@@ -123,27 +123,20 @@ export const saveOrder = async (
   const productCategories = await AppDataSource.getRepository(
     ProductCategory,
   ).find({ relations: { products: true } });
-  if (order) {
-    order.offer = body.offer;
-    order.depotId = body.depotId;
-    order.alternateDepotId = body.alternateDepotId;
-    order.productConfiguration = JSON.stringify(productCategories);
-    order.offerReason = body.offerReason || "";
-    order.category = body.category;
-    order.categoryReason = body.categoryReason || "";
-    await AppDataSource.getRepository(Order).save(order);
-  } else {
+
+  if (!order) {
     order = new Order();
     order.userId = requestUserId;
-    order.offer = body.offer;
-    order.offerReason = body.offerReason || "";
-    order.categoryReason = body.categoryReason || "";
-    order.alternateDepotId = body.alternateDepotId;
-    order.depotId = body.depotId;
-    order.category = body.category;
-    order.productConfiguration = JSON.stringify(productCategories);
-    await AppDataSource.getRepository(Order).save(order);
   }
+  order.offer = body.offer;
+  order.depotId = body.depotId;
+  order.alternateDepotId = body.alternateDepotId;
+  order.productConfiguration = JSON.stringify(productCategories);
+  order.offerReason = body.offerReason || "";
+  order.category = body.category;
+  order.categoryReason = body.categoryReason || "";
+  await AppDataSource.getRepository(Order).save(order);
+
   for (const requestOrderItem of body.orderItems) {
     let item =
       order.orderItems &&
