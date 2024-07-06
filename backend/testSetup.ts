@@ -24,6 +24,7 @@ import { saveUser } from "./src/services/user/saveUser";
 import { UserRole } from "../shared/src/enum";
 import { Order } from "./src/database/Order";
 import { User } from "./src/database/User";
+import { fillDatabaseWithTestData } from "./src/test/testHelpers";
 
 const clearAllTables = async () => {
   const entities = AppDataSource.entityMetadatas;
@@ -55,6 +56,7 @@ const reinitializeDatabase = async () => {
       token,
     ),
   );
+  await fillDatabaseWithTestData(token);
 };
 
 beforeAll(async () => {
