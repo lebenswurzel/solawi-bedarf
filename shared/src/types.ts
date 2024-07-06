@@ -77,6 +77,10 @@ export interface Order {
   validFrom: Date | null;
 }
 
+export interface ConfirmedOrder extends Order {
+  confirmGTC: boolean;
+}
+
 export interface Address {
   firstname: string;
   lastname: string;

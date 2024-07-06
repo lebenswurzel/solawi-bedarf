@@ -27,7 +27,7 @@ import {
   RequisitionConfig,
   RequisitionConfigName,
 } from "../../database/RequisitionConfig";
-import { Order as OrderType } from "../../../../shared/src/types";
+import { ConfirmedOrder } from "../../../../shared/src/types";
 import { appConfig } from "../../../../shared/src/config";
 import { getMsrp } from "../../../../shared/src/msrp";
 import {
@@ -52,7 +52,7 @@ export const saveOrder = async (
   const now = new Date();
   const { role, active, id } = await getUserFromContext(ctx);
   const requestUserId = await getRequestUserId(ctx);
-  const body = ctx.request.body as OrderType & { confirmGTC: boolean };
+  const body = ctx.request.body as ConfirmedOrder;
   const requisitionConfig = await AppDataSource.getRepository(
     RequisitionConfig,
   ).findOne({
