@@ -14,4 +14,4 @@ Some files that are included in this project contain work that is licensed under
 
 ## Development
 
-See [dev/DEVELOPMENT.md](./dev/DEV.md) for more information.
+See [dev/DEVELOPMENT](./dev/DEVELOPMENT.md) for more information.
