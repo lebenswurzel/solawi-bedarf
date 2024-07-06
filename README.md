@@ -10,7 +10,6 @@ Some files that are included in this project contain work that is licensed under
 - [vfs_fonts.ts](http://pdfmake.org/#/) in `frontend/src/assets/vfs_fonts.ts`
 - [aubergine.svg](https://github.com/mozilla/fxemoji/blob/gh-pages/svgs/objects/u1F346-aubergine.svg) by Mozilla in `frontend/public/aubergine.svg` is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 
-
 # Development
 
 When adding new files, don't forget to add the AGPLv3 header to it. This can be done
@@ -21,6 +20,19 @@ by executing `./apply_license_headers.bash` in the project root (requires python
 ```
 npm run typeorm -- migration:generate -d ./src/database/database.ts ./src/migrations/<migrationname>
 ```
+
+## Pre commit hook
+
+[pre-commit](https://pre-commit.com/) may be used to ensure code quality already when commiting. One-time setup:
+
+```
+pip3 install pre-commit
+pre-commit install
+
+# if not done already, make sure that npm dependencies are installed in /frontend and /backend
+```
+
+Hooks are defined in [pre-commit-config.yaml](./pre-commit-config.yaml).
 
 ## Testing
 
@@ -52,7 +64,6 @@ To start the live test server run
 cd backend
 npm run test
 ```
-
 
 ## Glossary
 

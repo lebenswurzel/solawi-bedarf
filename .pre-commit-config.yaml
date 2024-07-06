@@ -1,0 +1,21 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.2.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+
+  - repo: local
+    hooks:
+      - id: check-typescript-frontend
+        name: Checks TypeScript consistency on the frontend
+        language: system
+        entry: ./dev/run-npm.bash frontend vue-tsc
+      - id: check-typescript-backend
+        name: Checks TypeScript consistency on the backend
+        language: system
+        entry: ./dev/run-npm.bash backend tsc
