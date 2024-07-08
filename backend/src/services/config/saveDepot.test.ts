@@ -15,26 +15,23 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { expect, test } from "vitest";
-import { saveDepot } from "./saveDepot";
-import { http } from "../../consts/http";
-import { getDepot } from "./getDepot";
+import { UserCategory } from "../../../../shared/src/enum";
 import {
   TestUserData,
   createBasicTestCtx,
   testAsAdmin,
   testAsUser1,
 } from "../../../testSetup";
-import { Depot } from "../../database/Depot";
+import { http } from "../../consts/http";
 import { Order } from "../../database/Order";
 import { AppDataSource } from "../../database/database";
-import { UserCategory } from "../../../../shared/src/enum";
-import { DepotInfo } from "./depotTypes";
 import { getDepotByName, getDepots } from "../../test/testHelpers";
+import { DepotInfo } from "./depotTypes";
+import { saveDepot } from "./saveDepot";
 
 test("prevent unauthorized access", async () => {
   const ctx = createBasicTestCtx();
   await expect(() => saveDepot(ctx)).rejects.toThrowError("Error 401");
-  await expect(() => getDepot(ctx)).rejects.toThrowError("Error 401");
 });
 
 testAsUser1(
@@ -42,35 +39,8 @@ testAsUser1(
   async ({ userData }: TestUserData) => {
     const ctx = createBasicTestCtx(undefined, userData.token);
     await expect(() => saveDepot(ctx)).rejects.toThrowError("Error 403");
-    await expect(() => getDepot(ctx)).rejects.toThrowError("Error 403");
   },
 );
-
-testAsAdmin("get depots", async ({ userData }: TestUserData) => {
-  const ctx = createBasicTestCtx(undefined, userData.token);
-
-  // direct access to depots in the database
-  const depotsInDatabase = await AppDataSource.getRepository(Depot).find();
-  expect(depotsInDatabase.length).toBeGreaterThan(1);
-
-  // access depots via API
-  await getDepot(ctx);
-  let depots = ctx.body.depots as Depot[];
-  expect(depots).toHaveLength(depotsInDatabase.length);
-
-  // disable a depot
-  depotsInDatabase[0].active = false;
-  await AppDataSource.getRepository(Depot).save(depotsInDatabase[0]);
-
-  // verify still all depots are returned
-  await getDepot(ctx);
-  depots = ctx.body.depots as Depot[];
-  expect(depots).toHaveLength(depotsInDatabase.length);
-  const inactiveDepot = depots.filter(
-    (d) => d.id === depotsInDatabase[0].id,
-  )[0];
-  expect(inactiveDepot.active).toBeFalsy();
-});
 
 testAsAdmin("create new depots", async ({ userData }: TestUserData) => {
   const token = userData.token;
