@@ -115,8 +115,8 @@ export const createBasicTestCtx = (
       query,
     },
     status: -1,
-    throw: (status: number) => {
-      throw Error("Error " + status);
+    throw: (status: number, message?: string) => {
+      throw Error("Error " + status + (message ? ": " + message : ""));
     },
   };
 
