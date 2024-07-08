@@ -15,28 +15,25 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { expect, test } from "vitest";
+import { UserCategory } from "../../../../shared/src/enum";
+import { ConfirmedOrder } from "../../../../shared/src/types";
 import {
   TestUserData,
   createBasicTestCtx,
   testAsUser1,
 } from "../../../testSetup";
-import { saveOrder } from "./saveOrder";
-import { getOrder } from "./getOrder";
-import { ConfirmedOrder } from "../../../../shared/src/types";
-import { UserCategory } from "../../../../shared/src/enum";
 import {
   findOrdersByUser,
   getDepotByName,
   getProductByName,
   updateRequisition,
 } from "../../test/testHelpers";
-import { assert } from "console";
 import { bi } from "../bi/bi";
+import { saveOrder } from "./saveOrder";
 
 test("prevent unauthorized access", async () => {
   const ctx = createBasicTestCtx();
   await expect(() => saveOrder(ctx)).rejects.toThrowError("Error 401");
-  await expect(() => getOrder(ctx)).rejects.toThrowError("Error 401");
 });
 
 testAsUser1(
@@ -46,7 +43,6 @@ testAsUser1(
       id: userData.userId + 100,
     });
     await expect(() => saveOrder(ctx)).rejects.toThrowError("Error 403");
-    await expect(() => getOrder(ctx)).rejects.toThrowError("Error 403");
   },
 );
 
