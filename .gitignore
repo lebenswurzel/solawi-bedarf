@@ -8,5 +8,4 @@ deployment.md
 deploy*.sh
 lizenz_*
 *_wf.ts
-**/coverage-final.json
-**/coverage-summary.json
+coverage/

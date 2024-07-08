@@ -70,8 +70,6 @@ def modify_file(path: str, check_only=False) -> bool:
   return False
 
 
-
-
 if __name__ == '__main__':
   check_only = '--check' in sys.argv
   result = modify_file(sys.argv[1], check_only)

@@ -46,6 +46,32 @@ testAsUser1(
   },
 );
 
+testAsAdmin("get depots", async ({ userData }: TestUserData) => {
+  const ctx = createBasicTestCtx(undefined, userData.token);
+
+  // direct access to depots in the database
+  const depotsInDatabase = await AppDataSource.getRepository(Depot).find();
+  expect(depotsInDatabase.length).toBeGreaterThan(1);
+
+  // access depots via API
+  await getDepot(ctx);
+  let depots = ctx.body.depots as Depot[];
+  expect(depots).toHaveLength(depotsInDatabase.length);
+
+  // disable a depot
+  depotsInDatabase[0].active = false;
+  await AppDataSource.getRepository(Depot).save(depotsInDatabase[0]);
+
+  // verify still all depots are returned
+  await getDepot(ctx);
+  depots = ctx.body.depots as Depot[];
+  expect(depots).toHaveLength(depotsInDatabase.length);
+  const inactiveDepot = depots.filter(
+    (d) => d.id === depotsInDatabase[0].id,
+  )[0];
+  expect(inactiveDepot.active).toBeFalsy();
+});
+
 testAsAdmin("create new depots", async ({ userData }: TestUserData) => {
   const token = userData.token;
   const ctx = createBasicTestCtx(
