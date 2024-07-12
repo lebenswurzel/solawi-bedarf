@@ -33,7 +33,7 @@ export class MultiSeason1720783312140 implements MigrationInterface {
     );
     if (requisitionConfigId.length > 0) {
       await queryRunner.query(
-        `UPDATE "product_category" SET "requisitionConfigId"='$1'`,
+        `UPDATE "product_category" SET "requisitionConfigId"=$1`,
         [requisitionConfigId[0].id],
       );
     }
