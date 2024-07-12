@@ -14,8 +14,9 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { Entity, Column, PrimaryGeneratedColumn } from "typeorm";
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from "typeorm";
 import { BaseEntity } from "./BaseEntity";
+import { ProductCategory } from "./ProductCategory";
 
 export const RequisitionConfigName = "Saison 24/25";
 
@@ -50,4 +51,10 @@ export class RequisitionConfig extends BaseEntity {
     nullable: false,
   })
   validTo: Date;
+
+  @OneToMany(
+    () => ProductCategory,
+    (productCategory) => productCategory.requisitionConfig,
+  )
+  productCategories: ProductCategory[];
 }

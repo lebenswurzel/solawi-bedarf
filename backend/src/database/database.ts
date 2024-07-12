@@ -37,6 +37,7 @@ import { Shipment1711181370934 } from "../migrations/1711181370934-shipment";
 import { OrderValidFrom1711780969019 } from "../migrations/1711780969019-order-valid-from";
 import { PostgresConnectionOptions } from "typeorm/driver/postgres/PostgresConnectionOptions";
 import { DepotRank1726862542988 } from "../migrations/1726862542988-depot-rank";
+import { MultiSeason1727640942892 } from "../migrations/1727640942892-multi-season";
 
 const entities = [
   User,
@@ -65,6 +66,7 @@ const migrations = [
   Shipment1711181370934,
   OrderValidFrom1711780969019,
   DepotRank1726862542988,
+  MultiSeason1727640942892,
 ];
 
 const configuredPort = config.testing.isTesting

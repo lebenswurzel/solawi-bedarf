@@ -14,9 +14,16 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from "typeorm";
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  OneToMany,
+  ManyToOne,
+} from "typeorm";
 import { Product } from "./Product";
 import { BaseEntity } from "./BaseEntity";
+import { RequisitionConfig } from "./RequisitionConfig";
 
 @Entity()
 export class ProductCategory extends BaseEntity {
@@ -31,4 +38,14 @@ export class ProductCategory extends BaseEntity {
 
   @OneToMany(() => Product, (product) => product.productCategory)
   products: Product[];
+
+  @Column()
+  requisitionConfigId: number;
+
+  @ManyToOne(
+    () => RequisitionConfig,
+    (requisitionConfig) => requisitionConfig.productCategories,
+    { nullable: false },
+  )
+  requisitionConfig: RequisitionConfig;
 }
