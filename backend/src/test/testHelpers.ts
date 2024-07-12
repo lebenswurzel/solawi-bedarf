@@ -51,9 +51,13 @@ const createTestDepot = async (name: string, rank: number) => {
 };
 
 const createTestProduct = async (name: string) => {
+  const requisitionConfig = await AppDataSource.getRepository(
+    RequisitionConfig,
+  ).findOneOrFail({ where: { name: RequisitionConfigName } });
   const pcEntity = await AppDataSource.getRepository(ProductCategory).save({
     name: `${name} category`,
     active: true,
+    requisitionConfig,
   });
   await AppDataSource.getRepository(Product).save({
     name,
