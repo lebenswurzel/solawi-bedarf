@@ -14,13 +14,13 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { Depot, RequisitionConfig } from "../../../shared/src/types.ts";
+import {
+  ConfigResponse,
+  RequisitionConfig,
+} from "../../../shared/src/types.ts";
 import { getUrl, verifyResponse } from "./requests.ts";
 
-export const getConfig = async (): Promise<{
-  depots: Depot[];
-  config: RequisitionConfig;
-}> => {
+export const getConfig = async (): Promise<ConfigResponse> => {
   const response = await fetch(getUrl("/config"));
 
   await verifyResponse(response);

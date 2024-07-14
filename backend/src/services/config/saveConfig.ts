@@ -21,10 +21,7 @@ import Router from "koa-router";
 import { http } from "../../consts/http";
 import { UserRole } from "../../../../shared/src/enum";
 import { RequisitionConfig as RequisitionConfigType } from "../../../../shared/src/types";
-import {
-  RequisitionConfig,
-  RequisitionConfigName,
-} from "../../database/RequisitionConfig";
+import { RequisitionConfig } from "../../database/RequisitionConfig";
 
 export const saveConfig = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -34,12 +31,20 @@ export const saveConfig = async (
     ctx.throw(http.forbidden);
   }
   const requestConfig = ctx.request.body as RequisitionConfigType;
-  const config = await AppDataSource.getRepository(RequisitionConfig).findOneBy(
-    {
-      name: RequisitionConfigName,
-    },
-  );
+  let config = await AppDataSource.getRepository(RequisitionConfig).findOneBy({
+    id: requestConfig.id, // if requestConfig.id is undefined, the first config is returned
+  });
+  if (!config) {
+    config = new RequisitionConfig();
+    ctx.status = http.created;
+  } else {
+    ctx.status = http.no_content;
+  }
+
   if (config) {
+    if (requestConfig.name) {
+      config.name = requestConfig.name;
+    }
     config.startBiddingRound = requestConfig.startBiddingRound;
     config.endBiddingRound = requestConfig.endBiddingRound;
     config.startOrder = requestConfig.startOrder;
@@ -50,5 +55,4 @@ export const saveConfig = async (
   } else {
     ctx.throw(http.bad_request);
   }
-  ctx.status = http.no_content;
 };
