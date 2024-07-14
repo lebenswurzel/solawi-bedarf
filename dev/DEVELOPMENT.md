@@ -20,7 +20,7 @@ pre-commit install
 # if not done already, make sure that npm dependencies are installed in /frontend and /backend
 ```
 
-Hooks are defined in [pre-commit-config.yaml](./pre-commit-config.yaml).
+Hooks are defined in [pre-commit-config.yaml](../.pre-commit-config.yaml).
 
 ## Testing
 
@@ -59,6 +59,6 @@ stock: g/ml/Stk
 
 ## Database Schemas
 
-### After 'order-valid-from.ts' migration
+### V4: After 'order-valid-from.ts' migration
 
 ![Schema V4](./res/database-schema-v4.png)

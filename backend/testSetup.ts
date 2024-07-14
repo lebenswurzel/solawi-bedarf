@@ -112,7 +112,7 @@ export const createBasicTestCtx = (
     },
     request: {
       body,
-      query,
+      query: query || {},
     },
     status: -1,
     throw: (status: number, message?: string) => {

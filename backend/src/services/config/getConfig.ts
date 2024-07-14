@@ -14,15 +14,13 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { AppDataSource } from "../../database/database";
-import { getUserFromContext } from "../getUserFromContext";
 import Koa from "koa";
 import Router from "koa-router";
+import { http } from "../../consts/http";
 import { Depot } from "../../database/Depot";
-import {
-  RequisitionConfig,
-  RequisitionConfigName,
-} from "../../database/RequisitionConfig";
+import { RequisitionConfig } from "../../database/RequisitionConfig";
+import { AppDataSource } from "../../database/database";
+import { getUserFromContext } from "../getUserFromContext";
 
 export const getConfig = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -31,9 +29,26 @@ export const getConfig = async (
   const depots = await AppDataSource.getRepository(Depot).find({
     where: { active: true },
   });
-  const requisitionConfig = await AppDataSource.getRepository(
-    RequisitionConfig,
-  ).findOneBy({ name: RequisitionConfigName });
+
+  let requisitionConfig: RequisitionConfig | null;
+  const requestId = ctx.request.query["id"];
+  if (!requestId || Array.isArray(requestId)) {
+    // find any existing config to retain previous behavior
+    // ... maybe specify some condition?
+    requisitionConfig = await AppDataSource.getRepository(
+      RequisitionConfig,
+    ).findOneBy({});
+  } else {
+    const id = parseInt(requestId);
+    requisitionConfig = await AppDataSource.getRepository(
+      RequisitionConfig,
+    ).findOneBy({ id });
+  }
+
+  if (!requisitionConfig) {
+    ctx.throw(http.not_found);
+  }
+
   ctx.body = {
     depots,
     config: requisitionConfig,

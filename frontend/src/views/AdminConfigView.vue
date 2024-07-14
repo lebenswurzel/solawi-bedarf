@@ -54,7 +54,7 @@ const onSave = () => {
     budget: budget.value,
     validFrom: validFrom.value,
     validTo: validTo.value,
-    name: "not used",
+    name: configStore.config?.name || "",
   })
     .then(async () => {
       await configStore.update();
