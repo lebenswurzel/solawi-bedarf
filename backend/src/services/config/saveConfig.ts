@@ -32,7 +32,7 @@ export const saveConfig = async (
   }
   const requestConfig = ctx.request.body as RequisitionConfigType;
   let config = await AppDataSource.getRepository(RequisitionConfig).findOneBy({
-    id: requestConfig.id, // if requestConfig.id is undefined, the first config is returned
+    id: requestConfig.id || 0, // prevent an undefined id as this would return the first config from the db
   });
   if (!config) {
     config = new RequisitionConfig();

@@ -32,6 +32,7 @@ import {
 import { AppDataSource } from "../../database/database";
 import { getConfig } from "./getConfig";
 import { saveConfig } from "./saveConfig";
+import { http } from "../../consts/http";
 
 test("prevent unauthorized access", async () => {
   const ctx = createBasicTestCtx();
@@ -75,6 +76,7 @@ testAsAdmin("get and change config", async ({ userData }: TestUserData) => {
 
   const ctxUpdate1 = createBasicTestCtx(updatedConfig, userData.token);
   await saveConfig(ctxUpdate1);
+  expect(ctxUpdate1.status).toBe(http.no_content);
 
   await getConfig(ctxGetConfig);
   const response2 = ctxGetConfig.body as ConfigResponse;
@@ -84,10 +86,78 @@ testAsAdmin("get and change config", async ({ userData }: TestUserData) => {
   expect(response2.config).toMatchObject(configFromDb);
 });
 
+testAsAdmin("add more configs", async ({ userData }: TestUserData) => {
+  const newConfig: RequisitionConfigType = {
+    name: "config no.1",
+    budget: 12345,
+    startOrder: new Date("2000-11-01"),
+    startBiddingRound: new Date("2000-12-01"),
+    endBiddingRound: new Date("2001-01-01"),
+    validFrom: new Date("2001-04-01"),
+    validTo: new Date("2002-04-01"),
+  };
+
+  const ctxNewConfig = createBasicTestCtx(newConfig, userData.token);
+  await saveConfig(ctxNewConfig);
+  expect(ctxNewConfig.status).toBe(http.created);
+
+  const newConfigFromDb = await getConfigByName("config no.1");
+  expect(newConfigFromDb).toMatchObject(newConfig);
+
+  const originalConfig = await getConfigByName(RequisitionConfigName);
+  expect(newConfigFromDb.id).not.toEqual(originalConfig.id);
+
+  const newConfig2: RequisitionConfigType = {
+    name: "config no.2",
+    budget: 999,
+    startOrder: new Date("2001-11-01"),
+    startBiddingRound: new Date("2000-12-01"),
+    endBiddingRound: new Date("2002-01-01"),
+    validFrom: new Date("2002-04-01"),
+    validTo: new Date("2003-04-01"),
+  };
+
+  const ctxNewConfig2 = createBasicTestCtx(newConfig2, userData.token);
+  await saveConfig(ctxNewConfig2);
+  expect(ctxNewConfig2.status).toBe(http.created);
+  expect(await AppDataSource.getRepository(RequisitionConfig).count()).toBe(3);
+  const newConfig2FromDb = await getConfigByName("config no.2");
+  expect(newConfig2FromDb).toMatchObject(newConfig2);
+
+  // disallow configs with same name
+  const newConfigBad: RequisitionConfigType = {
+    name: "config no.2",
+    budget: 100,
+    startOrder: new Date("2001-11-01"),
+    startBiddingRound: new Date("2000-12-01"),
+    endBiddingRound: new Date("2002-01-01"),
+    validFrom: new Date("2002-04-01"),
+    validTo: new Date("2003-04-01"),
+  };
+  const ctxNewConfigBad = createBasicTestCtx(newConfigBad, userData.token);
+  await expect(() => saveConfig(ctxNewConfigBad)).rejects.toThrowError(
+    "duplicate key value violates unique constraint",
+  );
+  const stillConfig2 = await getConfigByName("config no.2");
+  expect(stillConfig2).toMatchObject(newConfig2);
+
+  // disallow renaming to existing name
+  const newConfig2_renamed: RequisitionConfigType = {
+    ...newConfig2,
+    id: newConfig2FromDb.id,
+    name: "config no.1",
+  };
+  const ctxNewConfig2_renamed = createBasicTestCtx(
+    newConfig2_renamed,
+    userData.token,
+  );
+  await expect(() => saveConfig(ctxNewConfig2_renamed)).rejects.toThrowError(
+    "duplicate key value violates unique constraint",
+  );
+});
+
 const getConfigByName = async (name: string): Promise<RequisitionConfig> => {
   return await AppDataSource.getRepository(RequisitionConfig).findOneByOrFail({
     name,
   });
 };
-
-testAsAdmin("TODO add more configs", async ({ userData }: TestUserData) => {});
