@@ -134,7 +134,7 @@ export function isIdType(entity: any): entity is Id {
 }
 
 export interface RequisitionConfig {
-  id?: number
+  id?: number;
   name: string;
   startOrder: Date;
   startBiddingRound: Date;
@@ -144,9 +144,15 @@ export interface RequisitionConfig {
   validTo: Date;
 }
 
+export interface AvailableConfig {
+  id: number;
+  name: string;
+}
+
 export interface ConfigResponse {
-  depots: Depot[]
-  config: RequisitionConfig
+  depots: Depot[];
+  config: RequisitionConfig & Id;
+  availableConfigs: AvailableConfig[];
 }
 
 export type SoldByProductId = {
