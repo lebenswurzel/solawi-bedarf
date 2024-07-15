@@ -21,6 +21,7 @@ import { Depot } from "../../database/Depot";
 import { RequisitionConfig } from "../../database/RequisitionConfig";
 import { AppDataSource } from "../../database/database";
 import { getUserFromContext } from "../getUserFromContext";
+import { AvailableConfig } from "../../../../shared/src/types";
 
 export const getConfig = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -49,8 +50,20 @@ export const getConfig = async (
     ctx.throw(http.not_found);
   }
 
+  const availableConfigs: AvailableConfig[] = (
+    await AppDataSource.getRepository(RequisitionConfig).find({
+      select: ["id", "name"],
+    })
+  ).map((row) => {
+    return {
+      id: row.id,
+      name: row.name,
+    };
+  });
+
   ctx.body = {
     depots,
     config: requisitionConfig,
+    availableConfigs,
   };
 };

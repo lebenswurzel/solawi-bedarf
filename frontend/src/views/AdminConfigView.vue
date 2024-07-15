@@ -21,12 +21,15 @@ import { useConfigStore } from "../store/configStore.ts";
 import { ref } from "vue";
 import { saveConfig } from "../requests/config.ts";
 import { stringToDate, dateToString } from "../lib/convert.ts";
+import SeasonSelector from "../components/SeasonSelector.vue";
+import { RequisitionConfig } from "../../../shared/src/types.ts";
 import { useUiFeedback } from "../store/uiFeedbackStore.ts";
 const t = language.pages.config;
 
 const loading = ref(false);
 const configStore = useConfigStore();
 
+const seasonName = ref<string>("");
 const startOrder = ref<Date>(new Date());
 const endBiddingRound = ref<Date>(new Date());
 const startBiddingRound = ref<Date>(new Date());
@@ -34,29 +37,39 @@ const validFrom = ref<Date>(new Date());
 const validTo = ref<Date>(new Date());
 const budget = ref<number>(0);
 const { setError, setSuccess } = useUiFeedback();
+const configId = ref<number>(0);
 
 onMounted(async () => {
   await configStore.update();
   const orderConfig = configStore.config;
+
+  seasonName.value = orderConfig?.name || "Saison-Bezeichner";
   startOrder.value = orderConfig?.startOrder || new Date();
   endBiddingRound.value = orderConfig?.endBiddingRound || new Date();
   startBiddingRound.value = orderConfig?.startBiddingRound || new Date();
   budget.value = orderConfig?.budget || 0;
   validFrom.value = orderConfig?.validFrom || new Date();
   validTo.value = orderConfig?.validTo || new Date();
+  configId.value = orderConfig?.id || 0;
 });
 
-const onSave = () => {
+// TODO react to changes of the config store
+
+const onSave = (asNew?: boolean) => {
   loading.value = true;
-  saveConfig({
+  const updatedConfig: RequisitionConfig = {
     startOrder: startOrder.value,
     endBiddingRound: endBiddingRound.value,
     startBiddingRound: startBiddingRound.value,
     budget: budget.value,
     validFrom: validFrom.value,
     validTo: validTo.value,
-    name: configStore.config?.name || "",
-  })
+    name: seasonName.value,
+  };
+  if (asNew !== true) {
+    updatedConfig.id = configId.value;
+  }
+  saveConfig(updatedConfig)
     .then(async () => {
       configStore
         .update()
@@ -77,10 +90,16 @@ const onSave = () => {
 </script>
 
 <template>
+  <SeasonSelector />
   <v-card class="ma-4">
     <v-card-title> {{ t.title }} </v-card-title>
     <v-card-subtitle>{{ t.subtitle }}</v-card-subtitle>
     <v-card-text>
+      <v-text-field
+        label="Bezeichner"
+        type="text"
+        v-model="seasonName"
+      ></v-text-field>
       <v-text-field
         :label="t.validFrom"
         type="datetime-local"
@@ -128,10 +147,19 @@ const onSave = () => {
         type="number"
         v-model="budget"
       ></v-text-field>
+      <v-text-field
+        label="ID"
+        type="number"
+        v-model="configId"
+        disabled
+      ></v-text-field>
     </v-card-text>
     <v-card-actions>
       <v-btn @click="onSave" :loading="loading">{{
         language.app.actions.save
+      }}</v-btn>
+      <v-btn @click="() => onSave(true)" :loading="loading">{{
+        language.app.actions.createNew
       }}</v-btn>
     </v-card-actions>
   </v-card>

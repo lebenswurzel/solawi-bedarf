@@ -154,6 +154,25 @@ testAsAdmin("add more configs", async ({ userData }: TestUserData) => {
   await expect(() => saveConfig(ctxNewConfig2_renamed)).rejects.toThrowError(
     "duplicate key value violates unique constraint",
   );
+
+  // get all existing configs
+  const ctxGetConfig = createBasicTestCtx(undefined, userData.token);
+  await getConfig(ctxGetConfig);
+  const response = ctxGetConfig.body as ConfigResponse;
+  expect(response.availableConfigs).toMatchObject([
+    {
+      id: originalConfig.id,
+      name: "Saison 24/25",
+    },
+    {
+      id: newConfigFromDb.id,
+      name: "config no.1",
+    },
+    {
+      id: newConfig2FromDb.id,
+      name: "config no.2",
+    },
+  ]);
 });
 
 const getConfigByName = async (name: string): Promise<RequisitionConfig> => {
