@@ -29,6 +29,7 @@ export const getConfig = async (): Promise<ConfigResponse> => {
   return {
     depots: raw.depots,
     config: {
+      id: raw.config.id,
       name: raw.config.name,
       startOrder: new Date(raw.config.startOrder),
       startBiddingRound: new Date(raw.config.startBiddingRound),
@@ -37,6 +38,7 @@ export const getConfig = async (): Promise<ConfigResponse> => {
       validTo: new Date(raw.config.validTo),
       budget: parseInt(raw.config.budget),
     },
+    availableConfigs: raw.availableConfigs,
   };
 };
 
