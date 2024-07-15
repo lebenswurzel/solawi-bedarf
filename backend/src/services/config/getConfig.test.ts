@@ -15,14 +15,10 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { expect, test } from "vitest";
-import {
-  ConfigResponse,
-  RequisitionConfig as RequisitionConfigType,
-} from "../../../../shared/src/types";
+import { ConfigResponse } from "../../../../shared/src/types";
 import {
   TestUserData,
   createBasicTestCtx,
-  testAsAdmin,
   testAsUser1,
 } from "../../../testSetup";
 import {
@@ -31,7 +27,6 @@ import {
 } from "../../database/RequisitionConfig";
 import { AppDataSource } from "../../database/database";
 import { getConfig } from "./getConfig";
-import { saveConfig } from "./saveConfig";
 
 test("prevent unauthorized access", async () => {
   const ctx = createBasicTestCtx();

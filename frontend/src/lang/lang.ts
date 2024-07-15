@@ -44,6 +44,7 @@ export const language = {
       cancel: "Abbrechen",
       save: "Speichern",
       close: "Schließen",
+      createNew: "Neu erstellen",
     },
     options: {
       active: {
@@ -326,6 +327,11 @@ export const language = {
           description: "Angemeldeter Bedarf für die Solawi-Saison 2024/2025",
         },
       },
+    },
+  },
+  components: {
+    seasonSelector: {
+      label: "Saison-Auswahl",
     },
   },
 };
