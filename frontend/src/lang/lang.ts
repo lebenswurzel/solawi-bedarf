@@ -44,7 +44,9 @@ export const language = {
       cancel: "Abbrechen",
       save: "Speichern",
       close: "Schließen",
+      more: "Mehr",
       createNew: "Neu erstellen",
+      delete: "Löschen",
     },
     uiFeedback: {
       saving: {

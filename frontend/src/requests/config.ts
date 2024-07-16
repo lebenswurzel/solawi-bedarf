@@ -53,3 +53,10 @@ export const saveConfig = async (config: RequisitionConfig) => {
 
   await verifyResponse(response);
 };
+
+export const deleteConfig = async (requisitionConfigId: number) => {
+  const response = await fetch(getUrl(`/config?id=${requisitionConfigId}`), {
+    method: "DELETE",
+  });
+  await verifyResponse(response);
+};

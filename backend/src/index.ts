@@ -44,6 +44,7 @@ import { getShipment } from "./services/shipment/getShipment";
 import { getShipments } from "./services/shipment/getShipments";
 import { saveShipment } from "./services/shipment/saveShipment";
 import { biHandler } from "./services/bi/bi";
+import { deleteConfig } from "./services/config/deleteConfig";
 import { updateDepot } from "./services/config/updateDepot";
 
 const port = config.server.serverPort;
@@ -80,6 +81,7 @@ connectToDatabase().then(() => {});
 
 router.get("/config", getConfig);
 router.post("/config", saveConfig);
+router.delete("/config", deleteConfig);
 router.get("/depot", getDepot);
 router.post("/depot", saveDepot);
 router.post("/depot/update", updateDepot);
