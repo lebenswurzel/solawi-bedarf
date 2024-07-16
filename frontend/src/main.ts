@@ -16,58 +16,19 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { createApp } from "vue";
 import { createPinia } from "pinia";
-import { createRouter, createWebHashHistory } from "vue-router";
 import App from "./App.vue";
 
 import "@mdi/font/css/materialdesignicons.css";
 import "vuetify/styles";
 import { createVuetify } from "vuetify";
 import { md3 } from "vuetify/blueprints";
-
-import ShopView from "./views/ShopView.vue";
-import HomeView from "./views/HomeView.vue";
-import LoginView from "./views/LoginView.vue";
-import AdminUserView from "./views/AdminUserView.vue";
-import AdminProductsView from "./views/AdminProductsView.vue";
-import AdminConfigView from "./views/AdminConfigView.vue";
-import RegisterView from "./views/RegisterView.vue";
-import AdminApplicantView from "./views/AdminApplicantView.vue";
-import AdminDepotView from "./views/AdminDepotView.vue";
-import FAQView from "./views/FAQView.vue";
-import AdminTextView from "./views/AdminTextView.vue";
+import { router } from "./routes";
 
 const vuetify = createVuetify({
   blueprint: md3,
   theme: {
     defaultTheme: "light",
   },
-});
-
-const routes = [
-  { path: "/register", component: RegisterView },
-  { path: "/shop", component: ShopView },
-  { path: "/faq", component: FAQView },
-  {
-    path: "/employeeshipment",
-    component: () => import("./views/EmployeeShipmentView.vue"),
-  },
-  { path: "/adminusers", component: AdminUserView },
-  { path: "/adminproducts", component: AdminProductsView },
-  { path: "/adminregister", component: AdminApplicantView },
-  { path: "/admindepot", component: AdminDepotView },
-  { path: "/adminconfig", component: AdminConfigView },
-  { path: "/admintext", component: AdminTextView },
-  {
-    path: "/adminoverview",
-    component: () => import("./views/AdminOverview.vue"),
-  },
-  { path: "/login", component: LoginView },
-  { path: "/", component: HomeView },
-];
-
-export const router = createRouter({
-  history: createWebHashHistory(),
-  routes,
 });
 
 const pinia = createPinia();
