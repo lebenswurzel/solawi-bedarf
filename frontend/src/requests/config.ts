@@ -20,8 +20,14 @@ import {
 } from "../../../shared/src/types.ts";
 import { getUrl, verifyResponse } from "./requests.ts";
 
-export const getConfig = async (): Promise<ConfigResponse> => {
-  const response = await fetch(getUrl("/config"));
+export const getConfig = async (
+  requisitionConfigId?: number,
+): Promise<ConfigResponse> => {
+  let query = "";
+  if (requisitionConfigId !== undefined) {
+    query = `?id=${requisitionConfigId}`;
+  }
+  const response = await fetch(getUrl(`/config${query}`));
 
   await verifyResponse(response);
 

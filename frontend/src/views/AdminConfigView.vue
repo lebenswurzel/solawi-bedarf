@@ -41,8 +41,10 @@ const configId = ref<number>(0);
 
 onMounted(async () => {
   await configStore.update();
-  const orderConfig = configStore.config;
+});
 
+const onConfigUpdated = () => {
+  const orderConfig = configStore.config;
   seasonName.value = orderConfig?.name || "Saison-Bezeichner";
   startOrder.value = orderConfig?.startOrder || new Date();
   endBiddingRound.value = orderConfig?.endBiddingRound || new Date();
@@ -51,9 +53,11 @@ onMounted(async () => {
   validFrom.value = orderConfig?.validFrom || new Date();
   validTo.value = orderConfig?.validTo || new Date();
   configId.value = orderConfig?.id || 0;
-});
+};
 
-// TODO react to changes of the config store
+configStore.$subscribe(() => {
+  onConfigUpdated();
+});
 
 const onSave = (asNew?: boolean) => {
   loading.value = true;
@@ -172,7 +176,7 @@ const onDelete = () => {
       <v-btn @click="onSave" :loading="loading">{{
         language.app.actions.save
       }}</v-btn>
-      <v-btn :loading="loading">
+      <v-btn color="secondary" :loading="loading">
         {{ language.app.actions.more }}
         <v-menu activator="parent">
           <v-list>
