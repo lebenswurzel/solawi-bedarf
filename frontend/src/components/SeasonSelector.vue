@@ -15,32 +15,35 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { onMounted } from "vue";
+import { storeToRefs } from "pinia";
+import { computed } from "vue";
 import { language } from "../lang/lang.ts";
 import { useConfigStore } from "../store/configStore.ts";
-import { ref } from "vue";
 
 const t = language.components.seasonSelector;
 const configStore = useConfigStore();
 
-const configNames = ref<string[]>();
-const configName = ref<string>();
+const { availableConfigs, config } = storeToRefs(configStore);
 
-onMounted(async () => {
-  configNames.value = configStore.availableConfigs.map((v) => v.name);
-  configName.value = configStore.config?.name || "Unknown";
+const configOptions = computed(() => {
+  return availableConfigs.value.map((config) => ({
+    title: config.name,
+    value: config.id,
+  }));
 });
 
-configStore.$subscribe((_mutation, state) => {
-  configNames.value = state.availableConfigs?.map((v) => v.name) || [];
-  configName.value = configNames.value[0];
-});
-
-// TODO update config store on selection change
+const onConfigChanged = async (id: number) => {
+  await configStore.update(id);
+};
 </script>
 
 <template>
   <v-card-text>
-    <v-select :label="t.label" :items="configNames" v-model="configName" />
+    <v-select
+      :label="t.label"
+      :items="configOptions"
+      :model-value="config?.id"
+      @update:model-value="onConfigChanged"
+    />
   </v-card-text>
 </template>
