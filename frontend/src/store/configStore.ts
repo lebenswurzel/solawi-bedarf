@@ -38,12 +38,16 @@ export const useConfigStore = defineStore("config", () => {
     availableConfigs.value = [];
   };
 
-  const update = async () => {
+  const update = async (requisitionConfigId?: number) => {
+    if (requisitionConfigId === undefined) {
+      // keep the currently selected config unless specified otherwise
+      requisitionConfigId = config.value?.id;
+    }
     const {
       depots: requestDepots,
       config: requestConfig,
       availableConfigs: requestAvailableConfigs,
-    } = await getConfig();
+    } = await getConfig(requisitionConfigId);
     depots.value = requestDepots;
     config.value = requestConfig;
     loaded.value = true;

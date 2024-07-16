@@ -299,7 +299,8 @@ export const language = {
     },
     config: {
       title: "Konfiguration",
-      subtitle: "Bedarfsmeldung 24/25",
+      subtitle:
+        "Hier können Einstellungen für die jeweils ausgewählte Saison vorgenommen werden.",
       navigation: {
         subtitle: "Admin",
       },
