@@ -19,7 +19,7 @@ import { onMounted } from "vue";
 import { language } from "../lang/lang.ts";
 import { useConfigStore } from "../store/configStore.ts";
 import { ref } from "vue";
-import { saveConfig } from "../requests/config.ts";
+import { deleteConfig, saveConfig } from "../requests/config.ts";
 import { stringToDate, dateToString } from "../lib/convert.ts";
 import SeasonSelector from "../components/SeasonSelector.vue";
 import { RequisitionConfig } from "../../../shared/src/types.ts";
@@ -84,6 +84,19 @@ const onSave = (asNew?: boolean) => {
       setError(language.app.uiFeedback.saving.failed + ": " + e.message);
     })
     .finally(() => {
+      loading.value = false;
+    });
+};
+
+const onDelete = () => {
+  loading.value = true;
+  deleteConfig(configId.value)
+    .then(async () => {
+      await configStore.update();
+      loading.value = false;
+    })
+    .catch((e: Error) => {
+      error.value = e.message;
       loading.value = false;
     });
 };
@@ -154,14 +167,36 @@ const onSave = (asNew?: boolean) => {
         disabled
       ></v-text-field>
     </v-card-text>
+
     <v-card-actions>
       <v-btn @click="onSave" :loading="loading">{{
         language.app.actions.save
       }}</v-btn>
-      <v-btn @click="() => onSave(true)" :loading="loading">{{
-        language.app.actions.createNew
-      }}</v-btn>
+      <v-btn :loading="loading">
+        {{ language.app.actions.more }}
+        <v-menu activator="parent">
+          <v-list>
+            <v-list-item>
+              <v-list-item-title>
+                <v-btn @click="() => onSave(true)" :loading="loading">
+                  {{ language.app.actions.createNew }}
+                </v-btn>
+              </v-list-item-title>
+            </v-list-item>
+            <v-list-item>
+              <v-list-item-title>
+                <v-btn
+                  color="error"
+                  @click="() => onDelete()"
+                  :loading="loading"
+                >
+                  {{ language.app.actions.delete }}
+                </v-btn>
+              </v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+      </v-btn>
     </v-card-actions>
   </v-card>
 </template>
-: string: string: string: string: string: string: string: string

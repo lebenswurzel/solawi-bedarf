@@ -9,6 +9,7 @@ deploy*.sh
 lizenz_*
 *_wf.ts
 coverage/
+solawi-bedarf.iml
 /buildInfo.ts
 database/backups/*.sql*
 .env
