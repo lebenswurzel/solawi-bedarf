@@ -14,17 +14,17 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { Unit } from "../../../shared/src/enum";
-import { Depot } from "../database/Depot";
-import { Order } from "../database/Order";
-import { OrderItem } from "../database/OrderItem";
-import { Product } from "../database/Product";
-import { ProductCategory } from "../database/ProductCategory";
+import { Unit } from "../../shared/src/enum";
+import { Depot } from "../src/database/Depot";
+import { Order } from "../src/database/Order";
+import { OrderItem } from "../src/database/OrderItem";
+import { Product } from "../src/database/Product";
+import { ProductCategory } from "../src/database/ProductCategory";
 import {
   RequisitionConfig,
   RequisitionConfigName,
-} from "../database/RequisitionConfig";
-import { AppDataSource } from "../database/database";
+} from "../src/database/RequisitionConfig";
+import { AppDataSource } from "../src/database/database";
 
 export const fillDatabaseWithTestData = async () => {
   const products = ["p1", "p2", "p3", "p4"];
