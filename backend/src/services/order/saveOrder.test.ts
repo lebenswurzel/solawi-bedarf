@@ -31,7 +31,7 @@ import {
   getDepotByName,
   getProductByName,
   updateRequisition,
-} from "../../test/testHelpers";
+} from "../../../test/testHelpers";
 import { bi } from "../bi/bi";
 import { saveOrder } from "./saveOrder";
 
