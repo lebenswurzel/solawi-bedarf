@@ -19,43 +19,73 @@ import { onMounted } from "vue";
 import { language } from "../lang/lang.ts";
 import { useConfigStore } from "../store/configStore.ts";
 import { ref } from "vue";
-import { saveConfig } from "../requests/config.ts";
+import { deleteConfig, saveConfig } from "../requests/config.ts";
 import { stringToDate, dateToString } from "../lib/convert.ts";
+import SeasonSelector from "../components/SeasonSelector.vue";
+import { RequisitionConfig } from "../../../shared/src/types.ts";
 const t = language.pages.config;
 
 const loading = ref(false);
 const error = ref<string>();
 const configStore = useConfigStore();
 
+const seasonName = ref<string>("");
 const startOrder = ref<Date>(new Date());
 const endBiddingRound = ref<Date>(new Date());
 const startBiddingRound = ref<Date>(new Date());
 const validFrom = ref<Date>(new Date());
 const validTo = ref<Date>(new Date());
 const budget = ref<number>(0);
+const configId = ref<number>(0);
 
 onMounted(async () => {
   await configStore.update();
+});
+
+const onConfigUpdated = () => {
   const orderConfig = configStore.config;
+  seasonName.value = orderConfig?.name || "Saison-Bezeichner";
   startOrder.value = orderConfig?.startOrder || new Date();
   endBiddingRound.value = orderConfig?.endBiddingRound || new Date();
   startBiddingRound.value = orderConfig?.startBiddingRound || new Date();
   budget.value = orderConfig?.budget || 0;
   validFrom.value = orderConfig?.validFrom || new Date();
   validTo.value = orderConfig?.validTo || new Date();
+  configId.value = orderConfig?.id || 0;
+};
+
+configStore.$subscribe(() => {
+  onConfigUpdated();
 });
 
-const onSave = () => {
+const onSave = (asNew?: boolean) => {
   loading.value = true;
-  saveConfig({
+  const updatedConfig: RequisitionConfig = {
     startOrder: startOrder.value,
     endBiddingRound: endBiddingRound.value,
     startBiddingRound: startBiddingRound.value,
     budget: budget.value,
     validFrom: validFrom.value,
     validTo: validTo.value,
-    name: "not used",
-  })
+    name: seasonName.value,
+  };
+  if (asNew !== true) {
+    updatedConfig.id = configId.value;
+  }
+  saveConfig(updatedConfig)
+    .then(async () => {
+      await configStore.update();
+      loading.value = false;
+    })
+    .catch((e: Error) => {
+      error.value = e.message;
+      loading.value = false;
+    });
+};
+
+const onDelete = () => {
+  loading.value = true;
+  deleteConfig(configId.value)
     .then(async () => {
       await configStore.update();
       loading.value = false;
@@ -68,10 +98,16 @@ const onSave = () => {
 </script>
 
 <template>
+  <SeasonSelector />
   <v-card class="ma-4">
     <v-card-title> {{ t.title }} </v-card-title>
     <v-card-subtitle>{{ t.subtitle }}</v-card-subtitle>
     <v-card-text>
+      <v-text-field
+        label="Bezeichner"
+        type="text"
+        v-model="seasonName"
+      ></v-text-field>
       <v-text-field
         :label="t.validFrom"
         type="datetime-local"
@@ -119,11 +155,43 @@ const onSave = () => {
         type="number"
         v-model="budget"
       ></v-text-field>
+      <v-text-field
+        label="ID"
+        type="number"
+        v-model="configId"
+        disabled
+      ></v-text-field>
     </v-card-text>
+
     <v-card-actions>
       <v-btn @click="onSave" :loading="loading">{{
         language.app.actions.save
       }}</v-btn>
+      <v-btn color="secondary" :loading="loading">
+        {{ language.app.actions.more }}
+        <v-menu activator="parent">
+          <v-list>
+            <v-list-item>
+              <v-list-item-title>
+                <v-btn @click="() => onSave(true)" :loading="loading">
+                  {{ language.app.actions.createNew }}
+                </v-btn>
+              </v-list-item-title>
+            </v-list-item>
+            <v-list-item>
+              <v-list-item-title>
+                <v-btn
+                  color="error"
+                  @click="() => onDelete()"
+                  :loading="loading"
+                >
+                  {{ language.app.actions.delete }}
+                </v-btn>
+              </v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+      </v-btn>
     </v-card-actions>
   </v-card>
   <v-snackbar
@@ -134,4 +202,3 @@ const onSave = () => {
     {{ error }}
   </v-snackbar>
 </template>
-: string: string: string: string: string: string: string: string

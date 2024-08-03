@@ -27,7 +27,7 @@ import {
   RequisitionConfig,
   RequisitionConfigName,
 } from "../../database/RequisitionConfig";
-import { Order as OrderType } from "../../../../shared/src/types";
+import { ConfirmedOrder } from "../../../../shared/src/types";
 import { appConfig } from "../../../../shared/src/config";
 import { getMsrp } from "../../../../shared/src/msrp";
 import {
@@ -52,7 +52,7 @@ export const saveOrder = async (
   const now = new Date();
   const { role, active, id } = await getUserFromContext(ctx);
   const requestUserId = await getRequestUserId(ctx);
-  const body = ctx.request.body as OrderType & { confirmGTC: boolean };
+  const body = ctx.request.body as ConfirmedOrder;
   const requisitionConfig = await AppDataSource.getRepository(
     RequisitionConfig,
   ).findOne({
@@ -75,7 +75,8 @@ export const saveOrder = async (
     ctx.throw(http.bad_request, "no category reason");
   }
   const depot = await AppDataSource.getRepository(Depot).findOne({
-    where: { id: body.depotId },
+    // '.. || 0' to make sure a value of undefined does not return the first table row
+    where: { id: body.depotId || 0 },
   });
   if (!depot || !depot.active) {
     ctx.throw(http.bad_request, "no valid depot");
@@ -122,27 +123,20 @@ export const saveOrder = async (
   const productCategories = await AppDataSource.getRepository(
     ProductCategory,
   ).find({ relations: { products: true } });
-  if (order) {
-    order.offer = body.offer;
-    order.depotId = body.depotId;
-    order.alternateDepotId = body.alternateDepotId;
-    order.productConfiguration = JSON.stringify(productCategories);
-    order.offerReason = body.offerReason || "";
-    order.category = body.category;
-    order.categoryReason = body.categoryReason || "";
-    await AppDataSource.getRepository(Order).save(order);
-  } else {
+
+  if (!order) {
     order = new Order();
     order.userId = requestUserId;
-    order.offer = body.offer;
-    order.offerReason = body.offerReason || "";
-    order.categoryReason = body.categoryReason || "";
-    order.alternateDepotId = body.alternateDepotId;
-    order.depotId = body.depotId;
-    order.category = body.category;
-    order.productConfiguration = JSON.stringify(productCategories);
-    await AppDataSource.getRepository(Order).save(order);
   }
+  order.offer = body.offer;
+  order.depotId = body.depotId;
+  order.alternateDepotId = body.alternateDepotId;
+  order.productConfiguration = JSON.stringify(productCategories);
+  order.offerReason = body.offerReason || "";
+  order.category = body.category;
+  order.categoryReason = body.categoryReason || "";
+  await AppDataSource.getRepository(Order).save(order);
+
   for (const requestOrderItem of body.orderItems) {
     let item =
       order.orderItems &&

@@ -16,54 +16,36 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import Koa from "koa";
 import Router from "koa-router";
+import { UserRole } from "../../../../shared/src/enum";
 import { http } from "../../consts/http";
-import { Depot } from "../../database/Depot";
 import { RequisitionConfig } from "../../database/RequisitionConfig";
 import { AppDataSource } from "../../database/database";
 import { getUserFromContext } from "../getUserFromContext";
-import { AvailableConfig } from "../../../../shared/src/types";
 
-export const getConfig = async (
+export const deleteConfig = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
 ) => {
-  await getUserFromContext(ctx);
-  const depots = await AppDataSource.getRepository(Depot).find({
-    where: { active: true },
-  });
+  const { role } = await getUserFromContext(ctx);
+  if (role != UserRole.ADMIN) {
+    ctx.throw(http.forbidden);
+  }
 
-  let requisitionConfig: RequisitionConfig | null;
   const requestId = ctx.request.query["id"];
   if (!requestId || Array.isArray(requestId)) {
-    // find any existing config to retain previous behavior
-    // ... maybe specify some condition?
-    requisitionConfig = await AppDataSource.getRepository(
-      RequisitionConfig,
-    ).findOneBy({});
-  } else {
-    const id = parseInt(requestId);
-    requisitionConfig = await AppDataSource.getRepository(
-      RequisitionConfig,
-    ).findOneBy({ id });
+    ctx.throw(http.bad_request, "invalid or no id specified");
   }
-
-  if (!requisitionConfig) {
-    ctx.throw(http.not_found);
-  }
-
-  const availableConfigs: AvailableConfig[] = (
-    await AppDataSource.getRepository(RequisitionConfig).find({
-      select: ["id", "name"],
-    })
-  ).map((row) => {
-    return {
-      id: row.id,
-      name: row.name,
-    };
+  const id = parseInt(requestId);
+  let config = await AppDataSource.getRepository(RequisitionConfig).findOneBy({
+    id: id || 0, // prevent an undefined id as this would return the first config from the db
   });
+  if (!config) {
+    ctx.throw(http.bad_request, `config with id=${id} does not exist`);
+  }
 
-  ctx.body = {
-    depots,
-    config: requisitionConfig,
-    availableConfigs,
-  };
+  try {
+    await AppDataSource.getRepository(RequisitionConfig).delete({ id });
+    ctx.status = http.no_content;
+  } catch {
+    ctx.throw(http.method_not_allowed, "cannot delete if still in use");
+  }
 };

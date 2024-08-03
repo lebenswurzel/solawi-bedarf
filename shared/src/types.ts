@@ -77,6 +77,10 @@ export interface Order {
   validFrom: Date | null;
 }
 
+export interface ConfirmedOrder extends Order {
+  confirmGTC: boolean;
+}
+
 export interface Address {
   firstname: string;
   lastname: string;
@@ -121,6 +125,7 @@ export function isIdType(entity: any): entity is Id {
 }
 
 export interface RequisitionConfig {
+  id?: number;
   name: string;
   startOrder: Date;
   startBiddingRound: Date;
@@ -128,6 +133,17 @@ export interface RequisitionConfig {
   budget: number;
   validFrom: Date;
   validTo: Date;
+}
+
+export interface AvailableConfig {
+  id: number;
+  name: string;
+}
+
+export interface ConfigResponse {
+  depots: Depot[];
+  config: RequisitionConfig & Id;
+  availableConfigs: AvailableConfig[];
 }
 
 export type SoldByProductId = {

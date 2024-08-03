@@ -17,12 +17,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import { getConfig } from "../requests/config.ts";
-import { Depot, RequisitionConfig } from "../../../shared/src/types.ts";
+import {
+  AvailableConfig,
+  Depot,
+  RequisitionConfig,
+} from "../../../shared/src/types.ts";
 import { appConfig } from "../../../shared/src/config.ts";
 
 export const useConfigStore = defineStore("config", () => {
   const depots = ref<Depot[]>([]);
   const config = ref<RequisitionConfig>();
+  const availableConfigs = ref<AvailableConfig[]>([]);
   const loaded = ref<boolean>(false);
   const externalAuthProvider = ref<boolean>(appConfig.externalAuthProvider);
 
@@ -30,19 +35,30 @@ export const useConfigStore = defineStore("config", () => {
     depots.value = [];
     config.value = undefined;
     loaded.value = false;
+    availableConfigs.value = [];
   };
 
-  const update = async () => {
-    const { depots: requestDepots, config: requestConfig } = await getConfig();
+  const update = async (requisitionConfigId?: number) => {
+    if (requisitionConfigId === undefined) {
+      // keep the currently selected config unless specified otherwise
+      requisitionConfigId = config.value?.id;
+    }
+    const {
+      depots: requestDepots,
+      config: requestConfig,
+      availableConfigs: requestAvailableConfigs,
+    } = await getConfig(requisitionConfigId);
     depots.value = requestDepots;
     config.value = requestConfig;
     loaded.value = true;
+    availableConfigs.value = requestAvailableConfigs;
   };
 
   return {
     externalAuthProvider,
     depots,
     config,
+    availableConfigs,
     loaded,
     update,
     clear,

@@ -21,10 +21,11 @@ export default defineConfig({
   test: {
     setupFiles: ["./testSetup.ts"],
     coverage: {
-      reporter: ["text", "json-summary", "json"],
+      reporter: ["text", "json-summary", "json", "html"],
       reportOnFailure: true,
-      include: ["**/config/*Depot.ts"],
+      include: ["**/config", "**/bi", "**/order"],
     },
+    fileParallelism: false, // tests cannot run in parallel because they use the same DB
   },
 
   // the following is necessary for typorm decorators to work with vitest

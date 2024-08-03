@@ -14,14 +14,20 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { Depot, RequisitionConfig } from "../../../shared/src/types.ts";
+import {
+  ConfigResponse,
+  RequisitionConfig,
+} from "../../../shared/src/types.ts";
 import { getUrl, verifyResponse } from "./requests.ts";
 
-export const getConfig = async (): Promise<{
-  depots: Depot[];
-  config: RequisitionConfig;
-}> => {
-  const response = await fetch(getUrl("/config"));
+export const getConfig = async (
+  requisitionConfigId?: number,
+): Promise<ConfigResponse> => {
+  let query = "";
+  if (requisitionConfigId !== undefined) {
+    query = `?id=${requisitionConfigId}`;
+  }
+  const response = await fetch(getUrl(`/config${query}`));
 
   await verifyResponse(response);
 
@@ -29,6 +35,7 @@ export const getConfig = async (): Promise<{
   return {
     depots: raw.depots,
     config: {
+      id: raw.config.id,
       name: raw.config.name,
       startOrder: new Date(raw.config.startOrder),
       startBiddingRound: new Date(raw.config.startBiddingRound),
@@ -37,6 +44,7 @@ export const getConfig = async (): Promise<{
       validTo: new Date(raw.config.validTo),
       budget: parseInt(raw.config.budget),
     },
+    availableConfigs: raw.availableConfigs,
   };
 };
 
@@ -49,5 +57,12 @@ export const saveConfig = async (config: RequisitionConfig) => {
     },
   });
 
+  await verifyResponse(response);
+};
+
+export const deleteConfig = async (requisitionConfigId: number) => {
+  const response = await fetch(getUrl(`/config?id=${requisitionConfigId}`), {
+    method: "DELETE",
+  });
   await verifyResponse(response);
 };

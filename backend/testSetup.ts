@@ -24,14 +24,37 @@ import { saveUser } from "./src/services/user/saveUser";
 import { UserRole } from "../shared/src/enum";
 import { Order } from "./src/database/Order";
 import { User } from "./src/database/User";
+import { fillDatabaseWithTestData } from "./test/testHelpers";
+import { Product } from "./src/database/Product";
+import { ProductCategory } from "./src/database/ProductCategory";
+import { Depot } from "./src/database/Depot";
+import { Token } from "./src/database/Token";
+import { OrderItem } from "./src/database/OrderItem";
+import { Applicant } from "./src/database/Applicant";
+import { UserAddress } from "./src/database/UserAddress";
+import { AdditionalShipmentItem } from "./src/database/AdditionalShipmentItem";
+import { Shipment } from "./src/database/Shipment";
+import { ShipmentItem } from "./src/database/ShipmentItem";
 
 const clearAllTables = async () => {
   const entities = AppDataSource.entityMetadatas;
   console.log("deleting all tables");
 
-  // must delete first to prevent foreign key violations
+  // must delete in specific order to prevent foreign key violations
+  await AppDataSource.getRepository(OrderItem).delete({});
+  await AppDataSource.getRepository(Product).delete({});
+  await AppDataSource.getRepository(ProductCategory).delete({});
   await AppDataSource.getRepository(Order).delete({});
+  await AppDataSource.getRepository(AdditionalShipmentItem).delete({});
+  await AppDataSource.getRepository(ShipmentItem).delete({});
+  await AppDataSource.getRepository(Shipment).delete({});
+  await AppDataSource.getRepository(Depot).delete({});
+  await AppDataSource.getRepository(Token).delete({});
+  await AppDataSource.getRepository(UserAddress).delete({});
+  await AppDataSource.getRepository(Applicant).delete({});
+  await AppDataSource.getRepository(User).delete({});
 
+  // delete everything that remains
   for (const entity of entities) {
     await AppDataSource.getRepository(entity.name).delete({});
   }
@@ -55,6 +78,9 @@ const reinitializeDatabase = async () => {
       token,
     ),
   );
+  console.log("fill database");
+  await fillDatabaseWithTestData();
+  console.log("database filled");
 };
 
 beforeAll(async () => {
@@ -75,6 +101,7 @@ export const createBasicTestCtx = (
   body?: any,
   token?: string,
   headers?: any,
+  query?: object,
 ): any => {
   const ctx = {
     cookies: new Map(),
@@ -84,10 +111,11 @@ export const createBasicTestCtx = (
     },
     request: {
       body,
+      query: query || {},
     },
     status: -1,
-    throw: (status: number) => {
-      throw Error("Error " + status);
+    throw: (status: number, message?: string) => {
+      throw Error("Error " + status + (message ? ": " + message : ""));
     },
   };
 
@@ -109,23 +137,35 @@ export const loginUser = async (
   return ctx.cookies.get("token");
 };
 
+////////////////////////////////////////////////////
+// test fixtures
+////////////////////////////////////////////////////
+export interface TestUserData {
+  userData: {
+    token: string;
+    userId: number;
+  };
+}
+
 /**
  * test fixture for tests that require a logged in admin
  */
-export const testAsAdmin = test.extend({
-  token: async ({}, use) => {
+export const testAsAdmin = test.extend<TestUserData>({
+  userData: async ({}, use) => {
     const token = await loginUser("admin", "admin");
-    await use(token);
+    const userId = await getUserId("admin");
+    await use({ token, userId });
   },
 });
 
 /**
  * test fixture for tests that require a logged in user
  */
-export const testAsUser1 = test.extend({
-  token: async ({}, use) => {
+export const testAsUser1 = test.extend<TestUserData>({
+  userData: async ({}, use) => {
     const token = await loginUser("user1", "123456");
-    await use(token);
+    const userId = await getUserId("user1");
+    await use({ token, userId });
   },
 });
 

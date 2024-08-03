@@ -14,24 +14,24 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { Order } from "../../../shared/src/types.ts";
+import { ConfirmedOrder, Order } from "../../../shared/src/types.ts";
 import { getUrl, verifyResponse } from "./requests.ts";
 
-export const saveOrder = async (
-  order: Order & { userId: number; confirmGTC: boolean },
-) => {
+export const saveOrder = async (order: ConfirmedOrder & { userId: number }) => {
+  const payload: ConfirmedOrder = {
+    orderItems: order.orderItems,
+    offer: order.offer,
+    offerReason: order.offerReason,
+    depotId: order.depotId,
+    alternateDepotId: order.alternateDepotId,
+    category: order.category,
+    categoryReason: order.categoryReason,
+    confirmGTC: order.confirmGTC,
+    validFrom: order.validFrom,
+  };
   const response = await fetch(getUrl(`/shop/order?id=${order.userId}`), {
     method: "POST",
-    body: JSON.stringify({
-      orderItems: order.orderItems,
-      offer: order.offer,
-      offerReason: order.offerReason,
-      depotId: order.depotId,
-      alternateDepotId: order.alternateDepotId,
-      category: order.category,
-      categoryReason: order.categoryReason,
-      confirmGTC: order.confirmGTC,
-    }),
+    body: JSON.stringify(payload),
     headers: {
       "Content-Type": "application/json",
     },
