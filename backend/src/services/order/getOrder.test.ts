@@ -23,7 +23,7 @@ import {
   testAsUser1,
 } from "../../../testSetup";
 import { Order } from "../../database/Order";
-import { getDepotByName, updateRequisition } from "../../test/testHelpers";
+import { getDepotByName, updateRequisition } from "../../../test/testHelpers";
 import { getOrder } from "./getOrder";
 import { saveOrder } from "./saveOrder";
 

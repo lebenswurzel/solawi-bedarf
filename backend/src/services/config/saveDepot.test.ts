@@ -25,7 +25,7 @@ import {
 import { http } from "../../consts/http";
 import { Order } from "../../database/Order";
 import { AppDataSource } from "../../database/database";
-import { getDepotByName, getDepots } from "../../test/testHelpers";
+import { getDepotByName, getDepots } from "../../../test/testHelpers";
 import { DepotInfo } from "./depotTypes";
 import { saveDepot } from "./saveDepot";
 
