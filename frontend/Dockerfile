@@ -13,6 +13,7 @@ RUN cd frontend && npm ci && cd ..
 COPY frontend/public ./frontend/public
 COPY frontend/src ./frontend/src
 COPY shared/src ./shared/src
+COPY buildInfo.ts ./shared/src/buildInfo.ts
 COPY frontend/index.html ./frontend/
 
 RUN cd frontend && npm run build && cd ..
@@ -26,4 +27,3 @@ COPY --from=builder /build_frontend/frontend/dist /usr/share/nginx/html/
 COPY frontend/nginx.conf /etc/nginx/nginx.conf
 
 EXPOSE 8080
-
