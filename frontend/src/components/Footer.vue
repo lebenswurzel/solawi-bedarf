@@ -20,6 +20,7 @@ import ImprintDialog from "./ImprintDialog.vue";
 import PrivacyNoticeDialog from "./PrivacyNoticeDialog.vue";
 import { appConfig } from "../../../shared/src/config";
 import { language } from "../lang/lang";
+import { buildInfo } from "../../../shared/src/buildInfo";
 
 const imprint = ref(false);
 const privacyNotice = ref(false);
@@ -27,20 +28,31 @@ const privacyNotice = ref(false);
 
 <template>
   <v-footer app absolute elevation="2" class="text-center d-flex flex-column">
-    <v-row justify="center" no-gutters>
-      <v-btn size="small" variant="text" @click="imprint = true">
-        {{ language.app.footer.imprint }}
-      </v-btn>
-      <v-btn size="small" variant="text" @click="privacyNotice = true">
-        {{ language.app.footer.privacyNotice }}
-      </v-btn>
-      <v-col class="text-center mt-4 smaller" cols="12">
-        {{ language.app.footer.licensedUnder }} &mdash;
-        <a :href="appConfig.meta.sourceCodeUrl" target="_blank">{{
-          language.app.footer.sourceCode
-        }}</a>
-      </v-col>
-    </v-row>
+    <v-container>
+      <v-row justify="center" no-gutters>
+        <v-col class="text-center" cols="12">
+          <v-btn size="small" variant="text" @click="imprint = true">
+            {{ language.app.footer.imprint }}
+          </v-btn>
+          <v-btn size="small" variant="text" @click="privacyNotice = true">
+            {{ language.app.footer.privacyNotice }}
+          </v-btn>
+        </v-col>
+      </v-row>
+      <v-row justify="center" dense>
+        <v-col class="text-center smaller" sm="6" cols="12">
+          Version: {{ buildInfo.git.tag || buildInfo.git.branch }},
+          {{ buildInfo.git.hashShort }},
+          {{ buildInfo.buildDate }}
+        </v-col>
+        <v-col class="text-center smaller" sm="6" cols="12">
+          {{ language.app.footer.licensedUnder }} &mdash;
+          <a :href="appConfig.meta.sourceCodeUrl" target="_blank">{{
+            language.app.footer.sourceCode
+          }}</a>
+        </v-col>
+      </v-row>
+    </v-container>
   </v-footer>
   <ImprintDialog :open="imprint" @close="imprint = false" />
   <PrivacyNoticeDialog :open="privacyNotice" @close="privacyNotice = false" />
@@ -48,7 +60,7 @@ const privacyNotice = ref(false);
 
 <style scoped>
 .smaller {
-  font-size: 0.875rem;
+  font-size: 0.7rem;
 }
 footer a {
   color: #6750a4;

@@ -53,6 +53,12 @@ cd backend
 npm run test
 ```
 
+## Deployment
+
+Run `./dev/build/build-and-deploy.bash` from the project root to built up-to-date containers locally.
+
+Run `docker compose up -d` to start.
+
 ## Glossary
 
 stock: g/ml/Stk
