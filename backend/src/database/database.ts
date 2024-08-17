@@ -69,6 +69,8 @@ const port =
     ? configuredPort
     : parseInt(configuredPort);
 
+console.log("Connecting to database " + config.db.url + ":" + port);
+
 const dataSourceOptions: PostgresConnectionOptions = {
   type: "postgres",
   host: config.db.url,

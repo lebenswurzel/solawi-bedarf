@@ -10,3 +10,4 @@ lizenz_*
 *_wf.ts
 coverage/
 /buildInfo.ts
+database/backups/*.sql
