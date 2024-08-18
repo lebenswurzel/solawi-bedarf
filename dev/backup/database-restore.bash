@@ -6,7 +6,7 @@ BACKUP_PATH=/backups/$1
 
 if [ -z "$1" ]; then
   echo "Error: No backup file specified. The file must exist in the /backups folder in the container"
-  echo "Usage: $0 <backup_filename_without_extension>"
+  echo "Usage: $0 <backup_filename>"
   exit 1
 fi
 
@@ -47,7 +47,7 @@ fi
 
 # Restoring the backup
 echo "Restoring the database from the backup file..."
-docker exec --user postgres -t $CONTAINER bash -c "psql $DATABASE --single-transaction -f $BACKUP_PATH"
+docker exec --user postgres -t $CONTAINER bash -c "gunzip -c $BACKUP_PATH | psql $DATABASE --single-transaction"
 if [ $? -ne 0 ]; then
   echo "Error: Failed to restore the database from the backup."
   exit 1
