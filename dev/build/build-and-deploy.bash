@@ -33,4 +33,5 @@ if [ $? -ne 0 ]; then
   echo "Error: building failed!"
   exit 1
 fi
+
 echo "Build successful! Run 'docker compose up -d' to start the new build"
