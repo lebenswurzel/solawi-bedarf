@@ -53,19 +53,6 @@ cd backend
 npm run test
 ```
 
-## Deployment
-
-This should be done during a time with low expected user activity.
-
-On the production server:
-
-1. Check out the desired branch or tag
-2. Run `./dev/build/build-and-deploy.bash` from the project root to build up-to-date containers locally
-   - This will also trigger a database backup to the /backups folder in the container. Make sure a host
-     folder with permissions 0777 is mounted from the host so that user 'postgres' in the container
-     can write to it!
-3. Run `docker compose up -d` to start
-
 ## Glossary
 
 stock: g/ml/Stk
