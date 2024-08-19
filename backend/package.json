@@ -22,7 +22,7 @@
     "@types/koa-bodyparser": "^4.3.10",
     "@types/koa-router": "^7.4.5",
     "@types/ldapjs": "^3.0.6",
-    "@types/node": "^20.6.2",
+    "@types/node": "^22.4.1",
     "@types/nodemailer": "^6.4.14",
     "basic-auth": "^2.0.1",
     "bcrypt": "^5.1.1",
@@ -39,8 +39,8 @@
     "typeorm": "^0.3.17"
   },
   "devDependencies": {
-    "@vitest/coverage-v8": "^1.6.0",
+    "@vitest/coverage-v8": "^2.0.5",
     "unplugin-swc": "^1.4.5",
-    "vitest": "^1.6.0"
+    "vitest": "^2.0.5"
   }
 }
