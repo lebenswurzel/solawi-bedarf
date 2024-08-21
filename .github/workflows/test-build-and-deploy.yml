@@ -1,5 +1,5 @@
-name: Backend unit test with Postgres database
-on: [pull_request, push]
+name: Runs deployment scripts to set up the stack
+on: [push]
 
 jobs:
   build-and-deploy:
@@ -10,3 +10,16 @@ jobs:
 
       - name: Run Build and deploy script
         run: ./dev/build/build-and-deploy.bash init
+
+      - name: docker compose up
+        run: docker compose up -d
+
+      - uses: GuillaumeFalourd/wait-sleep-action@v1
+        with:
+          time: "10"
+
+      - name: Database backup
+        run: ./dev/backup/database-backup.bash
+
+      - name: Check if a backup was created
+        run: '[ -n "$(ls ./database/backups/*.sql.gz)" ]'
