@@ -1,0 +1,12 @@
+name: Backend unit test with Postgres database
+on: [pull_request, push]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Build and deploy script
+        run: ./dev/build/build-and-deploy.bash init
