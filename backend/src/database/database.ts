@@ -54,8 +54,12 @@ const entities = [
   AdditionalShipmentItem,
 ];
 
+// Run the following SQL once if the InitialSetup migration is not in the migrations table
+// but the database schema is already up to date.
+// INSERT INTO public.migrations ("timestamp",name) VALUES (1708028123640,'InitialSetup1708028123640');
+
 const migrations = [
-  // InitialSetup1708028123640, //done via sync on initial start
+  InitialSetup1708028123640, //done via sync on initial start
   AddTextContentDepotCapacityOrderAlternateDepot1708028123641,
   Shipment1711181370934,
   OrderValidFrom1711780969019,
