@@ -49,12 +49,33 @@ const port = config.server.serverPort;
 const app = new Koa();
 const router = new Router();
 
-AppDataSource.initialize()
-  .then(async () => {
-    console.log("db is up.");
-    await initDb();
-  })
-  .catch((error) => console.log(error));
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const connectToDatabase = async (tries: number = 10) => {
+  while (true) {
+    let connected = false;
+    try {
+      await AppDataSource.initialize();
+      console.log("db is up.");
+      await initDb();
+      connected = true;
+    } catch (error) {
+      tries--;
+      console.log(error);
+      console.log(`Retrying after 2 s (${tries} more to go) ...`);
+      await sleep(2000); // Sleep for 2000 milliseconds (2 seconds)
+    }
+    if (tries <= 0) {
+      console.error(`Unable to connect to the database!`);
+      break;
+    }
+    if (connected) {
+      break;
+    }
+  }
+};
+
+connectToDatabase().then(() => {});
 
 router.get("/config", getConfig);
 router.post("/config", saveConfig);
