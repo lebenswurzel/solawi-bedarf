@@ -55,7 +55,7 @@ const entities = [
 ];
 
 const migrations = [
-  InitialSetup1708028123640, //done via sync on initial start
+  // InitialSetup1708028123640, //done via sync on initial start
   AddTextContentDepotCapacityOrderAlternateDepot1708028123641,
   Shipment1711181370934,
   OrderValidFrom1711780969019,
@@ -69,16 +69,10 @@ const port =
     ? configuredPort
     : parseInt(configuredPort);
 
-const initializeDatabase = config.testing.isTesting;
+const syncronize = config.testing.isTesting;
 
 console.log(
-  "Connecting to database " +
-    config.db.url +
-    ":" +
-    port +
-    " (intializeDatabase=" +
-    initializeDatabase +
-    ")",
+  `Connecting to database ${config.db.url}:${port} (syncronize=${syncronize})`,
 );
 
 const dataSourceOptions: PostgresConnectionOptions = {
@@ -88,12 +82,12 @@ const dataSourceOptions: PostgresConnectionOptions = {
   username: config.db.username,
   password: config.db.password,
   database: config.db.name,
-  synchronize: initializeDatabase,
+  synchronize: syncronize,
   logging: false,
   entities,
   subscribers: [],
   migrations,
-  migrationsRun: !initializeDatabase,
+  migrationsRun: !syncronize,
 };
 
 export const AppDataSource = new DataSource(dataSourceOptions);
