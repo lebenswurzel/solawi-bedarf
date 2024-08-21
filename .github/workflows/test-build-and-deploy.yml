@@ -23,3 +23,6 @@ jobs:
 
       - name: Check if a backup was created
         run: '[ -n "$(ls ./database/backups/*.sql.gz)" ]'
+
+      - name: Smoke test backend connection
+        run: ./dev/ci/backend-smoke-test.bash
