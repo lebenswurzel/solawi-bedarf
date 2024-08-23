@@ -1,7 +1,8 @@
 #!/bin/bash
 
 DATABASE=solawi
-CONTAINER=solawi-bedarf-db-1
+BASE_NAME=$(basename $(builtin cd $(dirname $(readlink -f "$0"))/../..; pwd))
+CONTAINER=$BASE_NAME-db-1
 BACKUP_PATH=/backups/$1
 
 if [ -z "$1" ]; then
@@ -10,7 +11,7 @@ if [ -z "$1" ]; then
   exit 1
 fi
 
-echo "Restoring database $DATABASE from file $BACKUP_PATH (in the container)"
+echo "Restoring database $DATABASE from file $BACKUP_PATH in the container $CONTAINER"
 
 # Check if the backup file exists
 docker exec --user postgres -t $CONTAINER bash -c "[ -f $BACKUP_PATH ]"
