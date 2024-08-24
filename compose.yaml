@@ -4,9 +4,9 @@ services:
     image: postgres:16-alpine
     restart: always
     env_file:
-      - ./env-db-dev.env
+      - ./env-db-prod.env
     ports:
-      - "5532:5432"
+      - "${DATABASE_EXTERNAL_PORT:-5532}:5432"
     volumes:
       - ./database/pgdata:/var/lib/postgresql/data/pgdata
       - ./database/backups:/backups
@@ -16,16 +16,16 @@ services:
       dockerfile: ./backend/Dockerfile
     restart: always
     env_file:
-      - ./env-be-dev.env
+      - ./env-be-prod.env
     depends_on:
       - db
     ports:
-      - "3100:3000"
+      - "${BACKEND_EXTERNAL_PORT:-3100}:3000"
   php:
     build: ./migration/.
     restart: always
     ports:
-      - "8180:80"
+      - "${PHP_EXTERNAL_PORT:-8180}:80"
   fe:
     build:
       context: ./
@@ -34,4 +34,4 @@ services:
     depends_on:
       - be
     ports:
-      - "8184:8080"
+      - "${FRONTEND_PORT:-8184}:8080"
