@@ -11,3 +11,5 @@ lizenz_*
 coverage/
 /buildInfo.ts
 database/backups/*.sql*
+.env
+env-*-prod.env

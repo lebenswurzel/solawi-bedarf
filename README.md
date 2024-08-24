@@ -20,17 +20,19 @@ The app is deployed via Docker Compose based on `compose.yaml`. The following ma
 for the first time setup:
 
 1. Check out the desired branch or tag
-2. Create copies of the files `env-be-dev.env` and `env-db-dev.env` and adjust the values based on your environment.
+2. Create copies of the files env files:
+   - `env-be-dev.env` -> `env-be-prod.env`
+   - `env-db-dev.env` -> `env-db-prod.env`
+3. Adjust the values based on your environment.
    IMPORTANT: The following values should definitely be changed
    - POSTGRES_PASSWORD
    - POSTGRES_SECRET
    - INITIAL_PASSWORD
    - JWT_SECRET
    - EMAIL\_\*
-3. Change the `env_file` properties in `compose.yaml` to match your own .env files
-   - TODO: needs improvement to prevent conflicts when compose.yaml changes in git
-4. Run `./dev/build/build-and-deploy.bash init` from the project root to build containers locally
-5. If everything looks fine, run `docker compose up d` to start
+4. (optional) Copy of `.env-sample` to `.env` and adjust the external ports for the different containers
+5. Run `./dev/build/build-and-deploy.bash init` from the project root to build containers locally
+6. If everything looks fine, run `docker compose up d` to start
 
 ### Backups
 
