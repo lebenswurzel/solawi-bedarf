@@ -34,4 +34,4 @@ services:
     depends_on:
       - be
     ports:
-      - "${FRONTEND_PORT:-8184}:8080"
+      - "${FRONTEND_EXTERNAL_PORT:-8184}:8080"
