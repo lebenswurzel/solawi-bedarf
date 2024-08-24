@@ -11,6 +11,9 @@ jobs:
       - name: Run Build and deploy script
         run: ./dev/build/build-and-deploy.bash init
 
+      - name: Prepare smoke test environemnt
+        run: ./dev/ci/prepare-smoke-test.bash
+
       - name: docker compose up
         run: docker compose up -d
 
@@ -18,11 +21,11 @@ jobs:
         with:
           time: "10"
 
+      - name: Smoke test backend connection
+        run: ./dev/ci/backend-smoke-test.bash
+
       - name: Database backup
         run: ./dev/backup/database-backup.bash
 
       - name: Check if a backup was created
         run: '[ -n "$(ls ./database/backups/*.sql.gz)" ]'
-
-      - name: Smoke test backend connection
-        run: ./dev/ci/backend-smoke-test.bash
