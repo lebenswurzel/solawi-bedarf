@@ -26,6 +26,7 @@ import {
 import { generatePdf } from "../lib/pdf";
 import JSZip from "jszip";
 import { language } from "../lang/lang";
+import { sanitizeFileName } from "../../../shared/src/util/fileHelper";
 
 const t = language.pages.overview;
 
@@ -67,7 +68,7 @@ const onDepotPdfClick = async () => {
     const blob: Blob = await new Promise((resolve, _) => {
       pdf.getBlob((blob) => resolve(blob));
     });
-    zip.file(`${depotKey}.pdf`, blob, { binary: true });
+    zip.file(`${sanitizeFileName(depotKey)}.pdf`, blob, { binary: true });
   }
   zip.generateAsync({ type: "blob" }).then((content) => {
     const blob = new Blob([content], { type: "zip" });
@@ -102,7 +103,7 @@ const onUserPdfClick = async () => {
     const blob: Blob = await new Promise((resolve, _) => {
       pdf.getBlob((blob) => resolve(blob));
     });
-    zip.file(`${userKey.replace("\n", "-")}.pdf`, blob, { binary: true });
+    zip.file(`${sanitizeFileName(userKey)}.pdf`, blob, { binary: true });
   }
   zip.generateAsync({ type: "blob" }).then((content) => {
     const blob = new Blob([content], { type: "zip" });

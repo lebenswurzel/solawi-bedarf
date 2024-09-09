@@ -45,6 +45,7 @@ import { useConfigStore } from "../store/configStore";
 import { useProductStore } from "../store/productStore";
 import { getLangUnit } from "../lang/template";
 import { multiplicatorOptions } from "../lib/options";
+import { sanitizeFileName } from "../../../shared/src/util/fileHelper.ts";
 
 const t = language.pages.shipment.dialog;
 
@@ -310,7 +311,7 @@ const onShipmentPdfClick = async () => {
     const blob: Blob = await new Promise((resolve, _) => {
       pdf.getBlob((blob) => resolve(blob));
     });
-    zip.file(`${depotKey}.pdf`, blob, { binary: true });
+    zip.file(`${sanitizeFileName(depotKey)}.pdf`, blob, { binary: true });
   }
   zip.generateAsync({ type: "blob" }).then((content) => {
     const blob = new Blob([content], { type: "zip" });
@@ -413,7 +414,9 @@ const onShipmentOverviewPdfClick = async () => {
     const blob: Blob = await new Promise((resolve, _) => {
       pdf.getBlob((blob) => resolve(blob));
     });
-    zip.file(`${productCategoryKey}.pdf`, blob, { binary: true });
+    zip.file(`${sanitizeFileName(productCategoryKey)}.pdf`, blob, {
+      binary: true,
+    });
   }
   zip.generateAsync({ type: "blob" }).then((content) => {
     const blob = new Blob([content], { type: "zip" });
