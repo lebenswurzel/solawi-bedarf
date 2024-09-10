@@ -23,7 +23,7 @@ import {
   generateOverviewCsv,
   generateUserData,
 } from "../lib/overview";
-import { generatePdf } from "../lib/pdf";
+import { generatePdf } from "../lib/pdf/pdf";
 import JSZip from "jszip";
 import { language } from "../lang/lang";
 import { sanitizeFileName } from "../../../shared/src/util/fileHelper";

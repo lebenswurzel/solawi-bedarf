@@ -15,37 +15,26 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
+import { getISOWeek } from "date-fns";
+import { storeToRefs } from "pinia";
 import { Ref, computed, inject, ref } from "vue";
-import { language } from "../lang/lang.ts";
-import { format } from "date-fns/format";
-import { appConfig } from "../../../shared/src/config";
-import ShipmentItem from "./ShipmentItem.vue";
-import AdditionalShipmentItem from "./AdditionalShipmentItem.vue";
 import {
   EditShipment,
-  Shipment,
-  ShipmentItem as ShipmentItemType,
-  AdditionalShipmentItem as AdditionalShipmentItemType,
-  OptionalId,
   Id,
+  OptionalId,
+  Shipment,
 } from "../../../shared/src/types.ts";
-import {
-  stringToDate,
-  dateToString,
-  valueToDelivered,
-  splitTotal,
-} from "../lib/convert.ts";
-import { getISOWeek } from "date-fns";
+import { language } from "../lang/lang.ts";
+import { dateToString, stringToDate } from "../lib/convert.ts";
+import { createShipmentOverviewPdf } from "../lib/shipment/shipmentOverviewPdf.ts";
+import { createShipmentPackagingPdfs } from "../lib/shipment/shipmentPackagingPdf.ts";
+import { prepareShipment } from "../lib/shipment/prepareShipment.ts";
 import { saveShipment } from "../requests/shipment.ts";
-import { generateOverviewPdf, generatePdf } from "../lib/pdf";
-import JSZip from "jszip";
-import { storeToRefs } from "pinia";
 import { useBIStore } from "../store/biStore";
 import { useConfigStore } from "../store/configStore";
 import { useProductStore } from "../store/productStore";
-import { getLangUnit } from "../lang/template";
-import { multiplicatorOptions } from "../lib/options";
-import { sanitizeFileName } from "../../../shared/src/util/fileHelper.ts";
+import AdditionalShipmentItem from "./AdditionalShipmentItem.vue";
+import ShipmentItem from "./ShipmentItem.vue";
 
 const t = language.pages.shipment.dialog;
 
@@ -154,75 +143,13 @@ const onClose = () => {
 
 const onSave = () => {
   loading.value = true;
-
-  // split total quantity
-  const shipmentItems: ShipmentItemType[] = [];
-  editShipment.value.shipmentItems.forEach((s) => {
-    const deliveredByDepotId = deliveredByProductIdDepotId.value[s.productId!];
-    const neededValue = s.depotIds.map((depotId) => ({
-      id: depotId,
-      value: valueToDelivered({
-        value: deliveredByDepotId[depotId].valueForShipment,
-        multiplicator: s.multiplicator,
-        conversionFrom: s.conversionFrom,
-        conversionTo: s.conversionTo,
-      }),
-    }));
-    const conversion = appConfig.shipment.totalQuantityRound[s.unit!];
-    const reducedTotal = Math.round(s.totalShipedQuantity / conversion);
-    const totalByDepot = splitTotal(neededValue, reducedTotal);
-
-    s.depotIds.forEach((d) => {
-      shipmentItems.push({
-        productId: s.productId!,
-        description: s.description,
-        unit: s.unit!,
-        depotId: d,
-        totalShipedQuantity:
-          totalByDepot.find((v) => v.id == d)!.value * conversion,
-        conversionFrom: s.conversionFrom,
-        conversionTo: s.conversionTo,
-        isBio: s.isBio,
-        multiplicator: s.multiplicator,
-      });
-    });
-  });
-
-  // split total quantity
-  const additionalShipmentItems: AdditionalShipmentItemType[] = [];
-  editShipment.value.additionalShipmentItems.forEach((s) => {
-    const neededValue = s.depotIds.map((depotId) => ({
-      id: depotId,
-      value: capacityByDepotId.value[depotId].reserved * s.quantity,
-    }));
-    const conversion = appConfig.shipment.totalQuantityRound[s.unit!];
-    const reducedTotal = Math.round(s.totalShipedQuantity / conversion);
-    const totalByDepot = splitTotal(neededValue, reducedTotal);
-
-    s.depotIds.forEach((d) => {
-      additionalShipmentItems.push({
-        product: s.product!,
-        description: s.description,
-        unit: s.unit!,
-        depotId: d,
-        totalShipedQuantity:
-          totalByDepot.find((v) => v.id == d)!.value * conversion,
-        isBio: s.isBio,
-        quantity: s.quantity,
-      });
-    });
-  });
-
-  const shipment: Shipment & OptionalId = {
-    description: editShipment.value.description,
-    validFrom: editShipment.value.validFrom,
-    shipmentItems,
-    additionalShipmentItems,
-    active: editShipment.value.active,
-    id: editShipment.value.id,
-    updatedAt: editShipment.value.updatedAt,
-  };
-  saveShipment(shipment)
+  saveShipment(
+    prepareShipment(
+      editShipment.value,
+      deliveredByProductIdDepotId.value,
+      capacityByDepotId.value,
+    ),
+  )
     .then(() => {
       loading.value = false;
       emit("close");
@@ -239,90 +166,12 @@ const onShipmentPdfClick = async () => {
     return;
   }
   loading.value = true;
-  const dataByDepotAndProductCategory: {
-    [key: string]: {
-      [key: string]: {
-        Bezeichnung: string;
-        Einheit: string;
-        Menge: number;
-        Bemerkung: string;
-      }[];
-    };
-  } = {};
-  for (let item of savedShipment.value.shipmentItems) {
-    const depot =
-      depots.value.find((d) => d.id == item.depotId)?.name ||
-      "Unbekanntes Depot";
-    const product = productsById.value[item.productId];
-    const productCategory =
-      productCategories.value.find((pc) => pc.id == product.productCategoryId)
-        ?.name || "Unbekannte Kategorie";
-    if (!dataByDepotAndProductCategory[depot]) {
-      dataByDepotAndProductCategory[depot] = {};
-    }
-    if (!dataByDepotAndProductCategory[depot][productCategory]) {
-      dataByDepotAndProductCategory[depot][productCategory] = [];
-    }
-    const multiplicator =
-      item.multiplicator != 100
-        ? multiplicatorOptions.find((mo) => mo.value == item.multiplicator)
-            ?.title
-        : "";
-    const conversion =
-      item.unit != product.unit || item.conversionFrom != item.conversionTo
-        ? `(${item.conversionFrom} ${getLangUnit(product.unit)} -> ${item.conversionTo} ${getLangUnit(item.unit)})`
-        : "";
-    const description = item.description ? item.description : "";
-    dataByDepotAndProductCategory[depot][productCategory].push({
-      Bezeichnung: `${product.name}${item.isBio ? " [BIO]" : ""}`,
-      Einheit: getLangUnit(item.unit),
-      Menge: item.totalShipedQuantity,
-      Bemerkung: `${multiplicator} ${conversion} ${description}`,
-    });
-  }
-  for (let item of savedShipment.value.additionalShipmentItems) {
-    const productCategory = "Zusätzliches Angebot";
-    const depot =
-      depots.value.find((d) => d.id == item.depotId)?.name ||
-      "Unbekanntes Depot";
-    if (!dataByDepotAndProductCategory[depot]) {
-      dataByDepotAndProductCategory[depot] = {};
-    }
-    if (!dataByDepotAndProductCategory[depot][productCategory]) {
-      dataByDepotAndProductCategory[depot][productCategory] = [];
-    }
-    const description = item.description ? item.description : "";
-    dataByDepotAndProductCategory[depot][productCategory].push({
-      Bezeichnung: `${item.product}${item.isBio ? " [BIO]" : ""}`,
-      Einheit: getLangUnit(item.unit),
-      Menge: item.totalShipedQuantity,
-      Bemerkung: `${description}`,
-    });
-  }
-  const zip = new JSZip();
-  const depotKeys = Object.keys(dataByDepotAndProductCategory);
-  for (let depotKey of depotKeys) {
-    const dataByProductCategory = dataByDepotAndProductCategory[depotKey];
-    let description = `Lieferschein für ${format(savedShipment.value.validFrom, "dd.MM.yyyy")}`;
-    if (savedShipment.value.description) {
-      description += `\n\n${savedShipment.value.description}`;
-    }
-    const pdf = generatePdf(dataByProductCategory, depotKey, description);
-    const blob: Blob = await new Promise((resolve, _) => {
-      pdf.getBlob((blob) => resolve(blob));
-    });
-    zip.file(`${sanitizeFileName(depotKey)}.pdf`, blob, { binary: true });
-  }
-  zip.generateAsync({ type: "blob" }).then((content) => {
-    const blob = new Blob([content], { type: "zip" });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `shipments-${format(savedShipment.value.validFrom, "yyyy-MM-dd")}.zip`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
+  createShipmentPackagingPdfs(
+    savedShipment.value,
+    depots.value,
+    productsById.value,
+    productCategories.value,
+  ).then(() => {
     loading.value = false;
   });
 };
@@ -332,102 +181,12 @@ const onShipmentOverviewPdfClick = async () => {
     return;
   }
   loading.value = true;
-  const dataByDepotAndProductCategory: {
-    [key: string]: {
-      [key: string]: {
-        Bezeichnung: string;
-        Menge: number;
-      }[];
-    };
-  } = {};
-  for (let item of savedShipment.value.shipmentItems) {
-    const depot =
-      depots.value.find((d) => d.id == item.depotId)?.name ||
-      "Unbekanntes Depot";
-    const product = productsById.value[item.productId];
-    const productCategory =
-      productCategories.value.find((pc) => pc.id == product.productCategoryId)
-        ?.name || "Unbekannte Kategorie";
-    if (!dataByDepotAndProductCategory[depot]) {
-      dataByDepotAndProductCategory[depot] = {};
-    }
-    if (!dataByDepotAndProductCategory[depot][productCategory]) {
-      dataByDepotAndProductCategory[depot][productCategory] = [];
-    }
-    dataByDepotAndProductCategory[depot][productCategory].push({
-      Bezeichnung: `${product.name}${item.isBio ? " [BIO]" : ""} [${getLangUnit(item.unit)}]`,
-      Menge: item.totalShipedQuantity,
-    });
-  }
-  for (let item of savedShipment.value.additionalShipmentItems) {
-    const productCategory = "Zusätzliches Angebot";
-    const depot =
-      depots.value.find((d) => d.id == item.depotId)?.name ||
-      "Unbekanntes Depot";
-    if (!dataByDepotAndProductCategory[depot]) {
-      dataByDepotAndProductCategory[depot] = {};
-    }
-    if (!dataByDepotAndProductCategory[depot][productCategory]) {
-      dataByDepotAndProductCategory[depot][productCategory] = [];
-    }
-    dataByDepotAndProductCategory[depot][productCategory].push({
-      Bezeichnung: `${item.product}${item.isBio ? " [BIO]" : ""} [${getLangUnit(item.unit)}]`,
-      Menge: item.totalShipedQuantity,
-    });
-  }
-  const dataByProductCategoryAndProduct: {
-    [key: string]: { [key: string]: { [key: string]: number } };
-  } = {};
-  const depotKeys = Object.keys(dataByDepotAndProductCategory);
-  for (let depotKey of depotKeys) {
-    const productCategoryKeys = Object.keys(
-      dataByDepotAndProductCategory[depotKey],
-    );
-    for (let productCategoryKey of productCategoryKeys) {
-      const data = dataByDepotAndProductCategory[depotKey][productCategoryKey];
-      if (!dataByProductCategoryAndProduct[productCategoryKey]) {
-        dataByProductCategoryAndProduct[productCategoryKey] = {};
-      }
-      for (let item of data) {
-        if (
-          !dataByProductCategoryAndProduct[productCategoryKey][item.Bezeichnung]
-        ) {
-          dataByProductCategoryAndProduct[productCategoryKey][
-            item.Bezeichnung
-          ] = { Summe: 0 };
-        }
-        dataByProductCategoryAndProduct[productCategoryKey][item.Bezeichnung][
-          depotKey
-        ] = item.Menge;
-        dataByProductCategoryAndProduct[productCategoryKey][
-          item.Bezeichnung
-        ].Summe += item.Menge;
-      }
-    }
-  }
-  const zip = new JSZip();
-  const productCategoryKeys = Object.keys(dataByProductCategoryAndProduct);
-  for (let productCategoryKey of productCategoryKeys) {
-    const dataByProduct = dataByProductCategoryAndProduct[productCategoryKey];
-    let description = `Übersicht für ${productCategoryKey} vom ${format(savedShipment.value.validFrom, "dd.MM.yyyy")}`;
-    const pdf = generateOverviewPdf(dataByProduct, description);
-    const blob: Blob = await new Promise((resolve, _) => {
-      pdf.getBlob((blob) => resolve(blob));
-    });
-    zip.file(`${sanitizeFileName(productCategoryKey)}.pdf`, blob, {
-      binary: true,
-    });
-  }
-  zip.generateAsync({ type: "blob" }).then((content) => {
-    const blob = new Blob([content], { type: "zip" });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `overview-${format(savedShipment.value.validFrom, "yyyy-MM-dd")}.zip`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
+  createShipmentOverviewPdf(
+    savedShipment.value,
+    depots.value,
+    productsById.value,
+    productCategories.value,
+  ).then(() => {
     loading.value = false;
   });
 };

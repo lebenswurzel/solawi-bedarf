@@ -15,10 +15,10 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import pdfMake from "pdfmake/build/pdfmake";
-import { pdfFonts } from "./../assets/vfs_fonts";
+import { pdfFonts } from "../../assets/vfs_fonts";
 import { Content, TDocumentDefinitions } from "pdfmake/interfaces";
-import { appConfig } from "../../../shared/src/config";
-import { logo } from "../../../shared/src/logo";
+import { appConfig } from "../../../../shared/src/config";
+import { logo } from "../../../../shared/src/logo";
 
 (<any>pdfMake).vfs = pdfFonts.vfs;
 
