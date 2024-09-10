@@ -104,7 +104,7 @@ export const createShipmentPackagingPdfs = async (
       dataByProductCategory,
       depotKey,
       description,
-      depotKey,
+      `Depot ${depotKey}`,
       `Lieferschein ${prettyDate}`,
     );
     const blob: Blob = await new Promise((resolve, _) => {

@@ -27,6 +27,7 @@ import { generatePdf } from "../lib/pdf/pdf";
 import JSZip from "jszip";
 import { language } from "../lang/lang";
 import { sanitizeFileName } from "../../../shared/src/util/fileHelper";
+import { format } from "date-fns";
 
 const t = language.pages.overview;
 
@@ -58,12 +59,15 @@ const onDepotPdfClick = async () => {
   );
   const zip = new JSZip();
   const depotKeys = Object.keys(dataByDepotAndProductCategory);
+  const prettyDate = format(new Date(), "dd.MM.yyyy");
   for (let depotKey of depotKeys) {
     const dataByProductCategory = dataByDepotAndProductCategory[depotKey];
     const pdf = generatePdf(
       dataByProductCategory,
       depotKey,
       t.documents.depot.description,
+      `Anmeldung Depot ${depotKey}`,
+      `Stand ${prettyDate}`,
     );
     const blob: Blob = await new Promise((resolve, _) => {
       pdf.getBlob((blob) => resolve(blob));
@@ -93,12 +97,15 @@ const onUserPdfClick = async () => {
   );
   const zip = new JSZip();
   const userKeys = Object.keys(dataByUserAndProductCategory);
+  const prettyDate = format(new Date(), "dd.MM.yyyy");
   for (let userKey of userKeys) {
     const dataByProductCategory = dataByUserAndProductCategory[userKey];
     const pdf = generatePdf(
       dataByProductCategory,
       userKey,
       t.documents.user.description,
+      `Bedarf Ernteteiler ${userKey}`,
+      `Stand ${prettyDate}`,
     );
     const blob: Blob = await new Promise((resolve, _) => {
       pdf.getBlob((blob) => resolve(blob));
