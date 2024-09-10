@@ -113,14 +113,18 @@ const createPdf = (
       columns: [
         {
           text: footerTextLeft || "",
+          width: "*",
         },
         {
           text: footerTextCenter || "",
           alignment: "center",
+          width: "auto",
+          margin: [10, 0],
         },
         {
           text: `Seite ${currentPage} / ${pageCount}`,
           alignment: "right",
+          width: "auto",
         },
       ],
       margin: [20, 0, 20, -30],
