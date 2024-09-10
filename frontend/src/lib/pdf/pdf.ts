@@ -16,7 +16,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import pdfMake from "pdfmake/build/pdfmake";
 import { pdfFonts } from "../../assets/vfs_fonts";
-import { Content, TDocumentDefinitions } from "pdfmake/interfaces";
+import {
+  Content,
+  DynamicContent,
+  TDocumentDefinitions,
+} from "pdfmake/interfaces";
 import { appConfig } from "../../../../shared/src/config";
 import { logo } from "../../../../shared/src/logo";
 
@@ -50,6 +54,8 @@ const createPdf = (
   data: { [key: string]: { [key: string]: string | number }[] },
   receiver: string,
   description: string,
+  footerTextLeft?: string,
+  footerTextCenter?: string,
 ): TDocumentDefinitions => {
   const tableNames = Object.keys(data).sort();
 
@@ -101,6 +107,26 @@ const createPdf = (
       layout: "light-horizontal-lines",
     });
   });
+
+  const footer: DynamicContent = (currentPage, pageCount): Content => {
+    return {
+      columns: [
+        {
+          text: footerTextLeft || "",
+        },
+        {
+          text: footerTextCenter || "",
+          alignment: "center",
+        },
+        {
+          text: `Seite ${currentPage} / ${pageCount}`,
+          alignment: "right",
+        },
+      ],
+      margin: [20, 0, 20, -30],
+    };
+  };
+
   return {
     content: content,
     styles: {
@@ -109,6 +135,8 @@ const createPdf = (
         fontSize: 11,
       },
     },
+    footer,
+    pageMargins: [20, 60, 20, 40],
   };
 };
 
@@ -148,8 +176,16 @@ export const generatePdf = (
   data: { [key: string]: { [key: string]: string | number }[] },
   receiver: string,
   description: string,
+  footerTextLeft?: string,
+  footerTextCenter?: string,
 ) => {
-  const pdfDefinition = createPdf(data, receiver, description);
+  const pdfDefinition = createPdf(
+    data,
+    receiver,
+    description,
+    footerTextLeft,
+    footerTextCenter,
+  );
   return pdfMake.createPdf(pdfDefinition);
 };
 

@@ -93,13 +93,20 @@ export const createShipmentPackagingPdfs = async (
   }
   const zip = new JSZip();
   const depotKeys = Object.keys(dataByDepotAndProductCategory);
+  const prettyDate = format(shipment.validFrom, "dd.MM.yyyy");
   for (let depotKey of depotKeys) {
     const dataByProductCategory = dataByDepotAndProductCategory[depotKey];
-    let description = `Lieferschein für ${format(shipment.validFrom, "dd.MM.yyyy")}`;
+    let description = `Lieferschein für ${prettyDate}`;
     if (shipment.description) {
       description += `\n\n${shipment.description}`;
     }
-    const pdf = generatePdf(dataByProductCategory, depotKey, description);
+    const pdf = generatePdf(
+      dataByProductCategory,
+      depotKey,
+      description,
+      depotKey,
+      `Lieferschein ${prettyDate}`,
+    );
     const blob: Blob = await new Promise((resolve, _) => {
       pdf.getBlob((blob) => resolve(blob));
     });
