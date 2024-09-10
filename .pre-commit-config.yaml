@@ -22,4 +22,4 @@ repos:
       - id: check-file-headers
         name: Checks that all files have the correct headers
         language: system
-        entry: ./apply_license_headers.bash --check
+        entry: ./apply_license_headers.bash
