@@ -24,6 +24,7 @@ import { useProductStore } from "../store/productStore.ts";
 import { useOrderStore } from "../store/orderStore.ts";
 const password = ref<string>();
 const username = ref<string>();
+const untilMidnight = ref<boolean>();
 
 const router = useRouter();
 const route = useRoute();
@@ -35,7 +36,7 @@ const orderStore = useOrderStore();
 const error = ref<string>();
 
 const click = async () => {
-  login(username.value!, password.value!)
+  login(username.value!, password.value!, untilMidnight.value!)
     .then(async () => {
       await userStore.update();
       let redirect = (route.query.redirect as string) || "/";
@@ -72,6 +73,7 @@ onMounted(() => {
         placeholder="LW23042"
       ></v-text-field>
       <v-text-field label="Passwort" type="password" v-model="password" />
+      <v-checkbox label="Heute angemeldet bleiben" v-model="untilMidnight" />
     </v-card-text>
     <v-card-actions class="justify-center">
       <v-btn class="text-white" @click="click" variant="elevated">
