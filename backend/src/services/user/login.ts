@@ -35,9 +35,10 @@ export const login = async (
 ) => {
   const basicAuthUser = auth(ctx.req);
   if (basicAuthUser) {
+    const untilMidnight = ctx.request.query?.untilMidnight === "true";
     const token = config.ldap.enabled
-      ? await getTokenWithLDAP(basicAuthUser)
-      : await getToken(basicAuthUser);
+      ? await getTokenWithLDAP(basicAuthUser, untilMidnight)
+      : await getToken(basicAuthUser, untilMidnight);
     if (token) {
       ctx.cookies.set("token", createJwt(token), {
         expires: token.exp,
@@ -65,6 +66,7 @@ export const logout = async (
 
 const getTokenWithLDAP = async (
   basicAuthUser: BasicAuthResult,
+  untilMidnight?: boolean,
 ): Promise<Token | null> => {
   const userRole = await verifyLDAP(basicAuthUser.name, basicAuthUser.pass);
 
@@ -81,7 +83,7 @@ const getTokenWithLDAP = async (
     }
     user.role = userRole;
     await AppDataSource.getRepository(User).save(user);
-    return generateToken(user);
+    return generateToken(user, untilMidnight);
   }
 
   return null;
@@ -89,6 +91,7 @@ const getTokenWithLDAP = async (
 
 const getToken = async (
   basicAuthUser: BasicAuthResult,
+  untilMidnight?: boolean,
 ): Promise<Token | null> => {
   const user = await AppDataSource.getRepository(User).findOneBy({
     name: basicAuthUser.name,
@@ -103,22 +106,38 @@ const getToken = async (
   }
 
   if (user && (await comparePassword(basicAuthUser.pass, user.hash))) {
-    return await generateToken(user);
+    return await generateToken(user, untilMidnight);
   }
   return null;
 };
 
-const generateToken = async (user: User) => {
+export const calculateExpirationTimeStamp = (
+  issuedAtTime: Date,
+  expirationTimeInMs: number,
+  untilMidnight?: boolean,
+): number => {
+  untilMidnight = untilMidnight === true;
+
+  if (untilMidnight) {
+    const nextMidnight = new Date(issuedAtTime);
+    nextMidnight.setHours(23, 59, 59, 0);
+    return nextMidnight.getTime();
+  }
+  return issuedAtTime.getTime() + expirationTimeInMs;
+};
+
+const generateToken = async (user: User, untilMidnight?: boolean) => {
   await AppDataSource.getRepository(Token).delete({
     user: { id: user.id },
   });
   const token = new Token();
   token.jti = randomUUID();
   token.iat = new Date();
-  let expirationTime = token.iat.getTime() + config.jwt.expirationTimeInMs;
-  if (user.role == UserRole.USER) {
-    expirationTime += 3 * config.jwt.expirationTimeInMs;
-  }
+  const expirationTime = calculateExpirationTimeStamp(
+    token.iat,
+    config.jwt.expirationTimeInMs * (user.role == UserRole.USER ? 3 : 1),
+    untilMidnight,
+  );
   token.exp = new Date(expirationTime);
   token.user = user;
   token.active = true;

@@ -14,26 +14,17 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { getUrl } from "./requests.ts";
+import { expect, test } from "vitest";
+import { calculateExpirationTimeStamp } from "./login";
 
-export const login = async (
-  username: string,
-  password: string,
-  untilMidnight?: boolean,
-) => {
-  let query = "";
-  if (untilMidnight === true) {
-    query = "?untilMidnight=true";
-  }
-  await fetch(getUrl("/user/token" + query), {
-    headers: new Headers({
-      Authorization: `Basic ${btoa(`${username}:${password}`)}`,
-    }),
-  });
-};
+test("expiration time stamp", () => {
+  const issuedAt = new Date("2024-09-11 12:34:56");
 
-export const logout = async () => {
-  await fetch(getUrl("/user/token"), {
-    method: "DELETE",
-  });
-};
+  // one hour
+  let expirationTime = calculateExpirationTimeStamp(issuedAt, 60 * 60 * 1000);
+  expect(expirationTime).toEqual(new Date("2024-09-11 13:34:56").getTime());
+
+  // until midnight
+  expirationTime = calculateExpirationTimeStamp(issuedAt, 60 * 60 * 1000, true);
+  expect(expirationTime).toEqual(new Date("2024-09-11 23:59:59").getTime());
+});
