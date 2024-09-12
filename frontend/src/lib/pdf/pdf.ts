@@ -14,13 +14,9 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import pdfMake from "pdfmake/build/pdfmake";
+import pdfMake, { TCreatedPdf } from "pdfmake/build/pdfmake";
 import { pdfFonts } from "../../assets/vfs_fonts";
-import {
-  Content,
-  DynamicContent,
-  TDocumentDefinitions,
-} from "pdfmake/interfaces";
+import { Content, DynamicContent, TDocumentDefinitions } from "pdfmake/interfaces";
 import { appConfig } from "../../../../shared/src/config";
 import { logo } from "../../../../shared/src/logo";
 
@@ -50,119 +46,149 @@ const jsonToTableData = (data: { [key: string]: string | number }[]) => {
   return [[...headers], ...tableData];
 };
 
+export interface PdfTable {
+  name: string,
+  data: { [key: string]: string | number }[]
+}
+
+export class PdfCreator {
+  private readonly content: Content[];
+  private textLeft: string = "";
+  private textCenter: string = "";
+
+  public constructor(receiver: string, description: string) {
+    this.content = [];
+    if (logo != null) {
+      this.content.push({
+        image: `${logo}`,
+        fit: [200, 60],
+        alignment: "center"
+      });
+    }
+
+    this.content.push({
+      table: {
+        widths: ["*", "*"],
+        body: [
+          [
+            {
+              text: receiver,
+              bold: true
+            },
+            {
+              text: `${appConfig.address.name}\n${appConfig.address.street}\n${appConfig.address.postalcode} ${appConfig.address.city}`,
+              bold: true
+            }
+          ]
+        ]
+      },
+      layout: "noBorders",
+      margin: [0, logo ? 10 : 60, 0, 20]
+    });
+    this.content.push({
+      text: description
+    });
+  }
+
+  public setFooter(textLeft: string, textCenter: string): PdfCreator {
+    this.textLeft = textLeft;
+    this.textCenter = textCenter;
+    return this;
+  }
+
+  public addTable(table: PdfTable): PdfCreator {
+    const tableData = jsonToTableData(table.data);
+    this.content.push({
+      text: table.name,
+      margin: [0, 20]
+    });
+    this.content.push({
+      table: {
+        widths: new Array(tableData[0].length).fill("*"),
+        body: tableData
+      },
+      layout: "light-horizontal-lines"
+    });
+
+    return this;
+  }
+
+  public createDefinition(): TDocumentDefinitions {
+    const footer: DynamicContent = (currentPage, pageCount): Content => {
+      return {
+        columns: [
+          {
+            text: this.footerTextLeft || "",
+            width: "*"
+          },
+          {
+            text: this.footerTextCenter || "",
+            alignment: "center",
+            width: "auto",
+            margin: [10, 0]
+          },
+          {
+            text: `Seite ${currentPage} / ${pageCount}`,
+            alignment: "right",
+            width: "auto"
+          }
+        ],
+        margin: [20, 0, 20, -30]
+      };
+    };
+
+    return {
+      content: this.content,
+      styles: {
+        tableHeader: {
+          bold: true,
+          fontSize: 11
+        }
+      },
+      footer,
+      pageMargins: [20, 60, 20, 40]
+    };
+  }
+
+  public create(): TCreatedPdf {
+    pdfMake.createPdf(this.createDefinition());
+  }
+}
+
 const createPdf = (
   data: { [key: string]: { [key: string]: string | number }[] },
   receiver: string,
   description: string,
   footerTextLeft?: string,
-  footerTextCenter?: string,
+  footerTextCenter?: string
 ): TDocumentDefinitions => {
-  const tableNames = Object.keys(data).sort();
-
-  const content: Content =
-    logo == null
-      ? []
-      : [
-          {
-            image: `${logo}`,
-            fit: [200, 60],
-            alignment: "center",
-          },
-        ];
-
-  content.push({
-    table: {
-      widths: ["*", "*"],
-      body: [
-        [
-          {
-            text: receiver,
-            bold: true,
-          },
-          {
-            text: `${appConfig.address.name}\n${appConfig.address.street}\n${appConfig.address.postalcode} ${appConfig.address.city}`,
-            bold: true,
-          },
-        ],
-      ],
-    },
-    layout: "noBorders",
-    margin: [0, logo ? 10 : 60, 0, 20],
-  });
-  content.push({
-    text: description,
-  });
-
-  tableNames.forEach((tableName) => {
-    const tableData = jsonToTableData(data[tableName]);
-    content.push({
-      text: tableName,
-      margin: [0, 20],
-    });
-    content.push({
-      table: {
-        widths: new Array(tableData[0].length).fill("*"),
-        body: tableData,
-      },
-      layout: "light-horizontal-lines",
-    });
-  });
-
-  const footer: DynamicContent = (currentPage, pageCount): Content => {
-    return {
-      columns: [
-        {
-          text: footerTextLeft || "",
-          width: "*",
-        },
-        {
-          text: footerTextCenter || "",
-          alignment: "center",
-          width: "auto",
-          margin: [10, 0],
-        },
-        {
-          text: `Seite ${currentPage} / ${pageCount}`,
-          alignment: "right",
-          width: "auto",
-        },
-      ],
-      margin: [20, 0, 20, -30],
-    };
-  };
-
-  return {
-    content: content,
-    styles: {
-      tableHeader: {
-        bold: true,
-        fontSize: 11,
-      },
-    },
-    footer,
-    pageMargins: [20, 60, 20, 40],
-  };
+  const pdf = new PdfCreator(receiver, description);
+  pdf.setFooter(footerTextLeft, footerTextCenter);
+  for (const [name, tableData] of Object.entries(data)) {
+    pdf.addTable({ name, data: tableData });
+  }
+  return pdf.createDefinition();
 };
 
 const createOverviewPdf = (
   data: { [key: string]: { [key: string]: number } },
-  description: string,
+  description: string
 ): TDocumentDefinitions => {
   const content: Content = [
     {
       text: description,
-      margin: [0, 20],
-    },
+      margin: [0, 20]
+    }
   ];
   const tableData = jsonToTableData(
-    Object.entries(data).map(([k, v]) => ({ Bezeichnung: k, ...v })),
+    Object.entries(data).map(([k, v]) => ({ Bezeichnung: k, ...v }))
   );
   content.push({
     table: {
       widths: ["*", ...new Array(tableData[0].length - 1).fill(40)],
-      body: tableData,
+      body: tableData
     },
-    layout: "light-horizontal-lines",
+    layout: "light-horizontal-lines"
   });
   return {
     pageOrientation: "landscape",
@@ -170,9 +196,9 @@ const createOverviewPdf = (
     styles: {
       tableHeader: {
         bold: true,
-        fontSize: 11,
-      },
-    },
+        fontSize: 11
+      }
+    }
   };
 };
 
@@ -181,21 +207,21 @@ export const generatePdf = (
   receiver: string,
   description: string,
   footerTextLeft?: string,
-  footerTextCenter?: string,
+  footerTextCenter?: string
 ) => {
   const pdfDefinition = createPdf(
     data,
     receiver,
     description,
     footerTextLeft,
-    footerTextCenter,
+    footerTextCenter
   );
   return pdfMake.createPdf(pdfDefinition);
 };
 
 export const generateOverviewPdf = (
   data: { [key: string]: { [key: string]: number } },
-  description: string,
+  description: string
 ) => {
   const pdfDefinition = createOverviewPdf(data, description);
   return pdfMake.createPdf(pdfDefinition);
