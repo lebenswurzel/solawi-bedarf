@@ -30,8 +30,8 @@ import { Zip } from "../pdf/zip";
 import { findDepotNameById, getOrCompute } from "../utils.ts";
 
 type ProductRow = [string, string, string];
-type GroupedProducts = Record<string, ProductRow[]>;
-type DepotGroupedProducts = Record<string, GroupedProducts>;
+type GroupedProducts = Map<string, ProductRow[]>;
+type DepotGroupedProducts = Map<string, GroupedProducts>;
 
 export async function createShipmentPackagingPdfs(
   shipment: Shipment,
@@ -39,7 +39,7 @@ export async function createShipmentPackagingPdfs(
   productsById: ProductsById,
   productCategories: ProductCategoryWithProducts[],
 ) {
-  const dataByDepotAndProductCategory: DepotGroupedProducts = {};
+  const dataByDepotAndProductCategory: DepotGroupedProducts = new Map();
   for (let item of shipment.shipmentItems) {
     const depot = findDepotNameById(depots, item.depotId);
     const product = productsById[item.productId];
@@ -50,7 +50,7 @@ export async function createShipmentPackagingPdfs(
     const groupedProducts = getOrCompute<GroupedProducts>(
       dataByDepotAndProductCategory,
       depot,
-      () => ({}),
+      () => new Map<string, ProductRow[]>(),
     );
     const rows: ProductRow[] = getOrCompute<ProductRow[]>(
       groupedProducts,
@@ -80,7 +80,7 @@ export async function createShipmentPackagingPdfs(
     const groupedProducts = getOrCompute<GroupedProducts>(
       dataByDepotAndProductCategory,
       depot,
-      () => ({}),
+      () => new Map<string, ProductRow[]>(),
     );
     const rows = getOrCompute<ProductRow[]>(
       groupedProducts,
@@ -97,9 +97,10 @@ export async function createShipmentPackagingPdfs(
 
   const prettyDate = format(shipment.validFrom, "dd.MM.yyyy");
   const zip = new Zip();
-  for (const [depotKey, dataByProductCategory] of Object.entries(
-    dataByDepotAndProductCategory,
-  )) {
+  for (const [
+    depotKey,
+    dataByProductCategory,
+  ] of dataByDepotAndProductCategory.entries()) {
     let description = `Lieferschein für ${prettyDate}`;
     if (shipment.description) {
       description += `\n\n${shipment.description}`;
@@ -110,15 +111,17 @@ export async function createShipmentPackagingPdfs(
       description,
       footerTextLeft: `Depot ${depotKey}`,
       footerTextCenter: `Lieferschein ${prettyDate}`,
-      tables: Object.entries(dataByProductCategory).map(
-        ([name, tableData]) =>
-          ({
-            name,
-            headers: ["Bezeichnung", "Menge", "Bemerkung"],
-            widths: ["50%", "15%", "35%"],
-            rows: tableData,
-          }) as PdfTable,
-      ),
+      tables: [...dataByProductCategory.entries()]
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .map(
+          ([name, tableData]) =>
+            ({
+              name,
+              headers: ["Bezeichnung", "Menge", "Bemerkung"],
+              widths: ["50%", "15%", "35%"],
+              rows: tableData.sort((a, b) => a[0].localeCompare(b[0])),
+            }) as PdfTable,
+        ),
     });
     await zip.addPdf(pdf, `${sanitizeFileName(depotKey)}.pdf`);
   }

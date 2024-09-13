@@ -195,18 +195,18 @@ export function generateUserData(
   overview: OverviewItem[],
   productCategories: ProductCategoryWithProducts[],
 ): Map<string, Map<string, PdfTable>> {
-  type Value = {
+  type Item = {
     group: string;
     depot: string;
     name: string;
-    category: number;
+    category: ProductCategoryWithProducts;
     value: number;
   };
 
-  const categoryIdToName = productCategories.reduce(
+  const categories = productCategories.reduce(
     grouping(
       (item) => item.id,
-      (item) => item.name,
+      (item) => item,
     ),
     new Map(),
   );
@@ -219,15 +219,21 @@ export function generateUserData(
           group: `${overviewItem.name}\n${overviewItem.depot}`,
           depot: overviewItem.depot,
           name: item.name,
-          category: item.category,
+          category: categories.get(item.category)!,
           value: item.value,
         })),
     )
+    .sort(
+      (a, b) =>
+        a.group.localeCompare(b.group) ||
+        a.category.name.localeCompare(b.category.name) ||
+        a.name.localeCompare(b.name),
+    )
     .reduce(
-      groupingBy<string, Value, Map<string, PdfTable>>(
+      groupingBy<string, Item, Map<string, PdfTable>>(
         (item) => item.group,
         collectMap(
-          (item) => categoryIdToName.get(item.category)!,
+          (item) => item.category.name,
           collect(
             (category: string) =>
               ({
@@ -237,10 +243,7 @@ export function generateUserData(
                 rows: [],
               }) as PdfTable,
             (acc, item) => {
-              const productCategory = productCategories.find(
-                (pc) => pc.id == item.category,
-              )!;
-              const product = productCategory.products.find(
+              const product = item.category.products.find(
                 (p) => p.name == item.name,
               )!;
               return acc.rows.push([
@@ -260,7 +263,12 @@ export function generateDepotData(
   overview: OverviewItem[],
   productCategories: ProductCategoryWithProducts[],
 ): Map<string, Map<string, PdfTable>> {
-  type Key = [string, number, string];
+  type Item = {
+    depot: string;
+    name: string;
+    value: number;
+    category: ProductCategoryWithProducts;
+  };
   type Value = {
     depot: string;
     name: string;
@@ -270,68 +278,80 @@ export function generateDepotData(
     frequency: number;
   };
 
+  const categories = productCategories.reduce(
+    grouping(
+      (item) => item.id,
+      (item) => item,
+    ),
+    new Map(),
+  );
+
   const dataByDepotAndProduct = overview
     .flatMap((overviewItem) =>
-      overviewItem.items.map((item) => ({
-        depot: overviewItem.depot,
-        name: item.name,
-        category: item.category,
-        value: item.value,
-      })),
+      overviewItem.items
+        .filter((item) => item.value > 0)
+        .map(
+          (item) =>
+            ({
+              depot: overviewItem.depot,
+              name: item.name,
+              category: categories.get(item.category)!,
+              value: item.value,
+            }) as Item,
+        ),
+    )
+    .sort(
+      (a, b) =>
+        a.category.name.localeCompare(b.category.name) ||
+        a.name.localeCompare(b.name),
     )
     .reduce(
-      groupingBy(
-        (item) => [item.depot, item.category, item.name],
-        collect(
-          ([depot, category, name]: Key) => {
-            const productCategory = productCategories.find(
-              (pc) => pc.id == category,
-            )!;
-            const product = productCategory.products.find(
-              (p) => p.name == name,
-            )!;
-            return {
-              depot,
-              name,
-              unit: product.unit,
-              quantity: 0,
-              category: productCategory.name,
-              frequency: product.frequency || 1,
-            } as Value;
-          },
-          (acc, item) => {
-            acc.quantity += item.value;
-          },
-        ),
-      ),
-      new Map(),
-    );
-
-  // filter 0 values and group by product category
-  return [...dataByDepotAndProduct.values()]
-    .filter((item) => item.quantity > 0)
-    .reduce(
-      groupingBy<string, Value, Map<string, PdfTable>>(
+      groupingBy<string, Item, Map<string, Map<string, Value>>>(
         (item) => item.depot,
         collectMap(
-          (item) => item.category,
-          collect(
-            (category: string) =>
-              ({
-                name: category,
-                headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
-                widths: ["80%", "10%", "10%"],
-                rows: [],
-              }) as PdfTable,
-            (acc, item) =>
-              acc.rows.push([
-                item.name,
-                `${item.quantity} ${getLangUnit(item.unit)}`,
-                `${item.frequency} x`,
-              ]),
+          (item) => item.category.name,
+          collectMap(
+            (item) => item.name,
+            collect(
+              (name: string, first: Item) => {
+                const product = first.category.products.find(
+                  (p) => p.name == name,
+                )!;
+                return {
+                  depot: first.depot,
+                  name,
+                  unit: product.unit,
+                  quantity: 0,
+                  category: first.category.name,
+                  frequency: product.frequency || 1,
+                } as Value;
+              },
+              (acc, item) => {
+                acc.quantity += item.value;
+              },
+            ),
           ),
         ),
       ),
       new Map(),
     );
+
+  const res = new Map<string, Map<string, PdfTable>>();
+  for (let [depot, depotProducts] of dataByDepotAndProduct.entries()) {
+    const groupRes = new Map<string, PdfTable>();
+    res.set(depot, groupRes);
+    for (let [group, groupProducts] of depotProducts.entries()) {
+      groupRes.set(group, {
+        name: group,
+        headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
+        widths: ["80%", "10%", "10%"],
+        rows: Array.from(groupProducts.values(), (item) => [
+          item.name,
+          `${item.quantity} ${getLangUnit(item.unit)}`,
+          `${item.frequency} x`,
+        ]),
+      });
+    }
+  }
+  return res;
 }
