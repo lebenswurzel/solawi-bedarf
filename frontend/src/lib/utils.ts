@@ -17,13 +17,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { Depot } from "../../../shared/src/types.ts";
 
 export interface Collector<K, V, Acc> {
-  init(key: K): Acc;
+  init(key: K, first: V): Acc;
 
   add(acc: Acc, value: V): void;
 }
 
 export function collect<K, V, Acc>(
-  init: (key: K) => Acc,
+  init: (key: K, first: V) => Acc,
   add: (acc: Acc, value: V) => void,
 ): Collector<K, V, Acc> {
   return {
@@ -34,7 +34,7 @@ export function collect<K, V, Acc>(
 
 export function collectArray<K, V>(): Collector<K, V, V[]> {
   return {
-    init(_: K): V[] {
+    init(): V[] {
       return [];
     },
     add(acc: V[], value: V) {
@@ -48,7 +48,7 @@ export function collectMap<K1, K2, V, Acc>(
   agg: Collector<K2, V, Acc>,
 ): Collector<K1, V, Map<K2, Acc>> {
   return {
-    init(_: K1): Map<K2, Acc> {
+    init(): Map<K2, Acc> {
       return new Map();
     },
     add: groupingBy(keyFn, agg),
@@ -63,7 +63,7 @@ export function groupingBy<K, V, Agg>(
     const key = keyFn(val);
     const existing = acc.get(key);
     if (existing === undefined) {
-      const created = agg.init(key);
+      const created = agg.init(key, val);
       agg.add(created, val);
       acc.set(key, created);
     } else {
@@ -90,14 +90,14 @@ export function grouping<K, V, U>(
 }
 
 export function getOrCompute<V>(
-  obj: Record<string, V>,
+  obj: Map<string, V>,
   key: string,
   fn: (k: string) => V,
 ): V {
-  const value = obj[key];
+  const value = obj.get(key);
   if (value === undefined) {
     const init = fn(key);
-    obj[key] = init;
+    obj.set(key, init);
     return init;
   } else {
     return value;
