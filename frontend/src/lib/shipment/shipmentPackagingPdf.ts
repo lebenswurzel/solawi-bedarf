@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import JSZip from "jszip";
+
 import {
   Depot,
   ProductCategoryWithProducts,
@@ -24,73 +24,20 @@ import {
 import { getLangUnit } from "../../lang/template";
 import { multiplicatorOptions } from "../options";
 import { format } from "date-fns";
-import { generatePdf } from "../pdf/pdf";
+import { createDefaultPdf, PdfTable } from "../pdf/pdf";
 import { sanitizeFileName } from "../../../../shared/src/util/fileHelper";
-import { TCreatedPdf } from "pdfmake/build/pdfmake";
+import { Zip } from "../pdf/zip";
+import { findDepotNameById, getOrCompute } from "../utils.ts";
 
-function getOrCompute<V>(obj: Record<string, V>, key: string, fn: (k: string) => V): V {
-  const value = obj[key];
-  if (value === undefined) {
-    const init = fn(key);
-    obj[key] = init;
-    return init;
-  } else {
-    return value;
-  }
-}
-
-class Zip {
-  private jszip: JSZip;
-
-  constructor() {
-    this.jszip = new JSZip();
-  }
-
-  public async addPdf(pdf: TCreatedPdf, filename: string) {
-    const blob: Blob = await new Promise((resolve, _) => {
-      pdf.getBlob((blob) => resolve(blob));
-    });
-    this.jszip.file(filename, blob, { binary: true });
-  }
-
-  public download(filename: string) {
-    this.jszip.generateAsync({ type: "blob" }).then((content) => {
-      const blob = new Blob([content], { type: "zip" });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-    });
-  }
-}
-
-function findDepotById(depots: Depot[], depotId: number): Depot {
-  return depots.find((d) => d.id == depotId);
-}
-
-function findDepotNameById(depots: Depot[], depotId: number): string {
-  return findDepotById(depots, depotId)?.name || "Unbekanntes Depot";
-}
-
-interface Product {
-  Bezeichnung: string;
-  Einheit: string;
-  Menge: number;
-  Bemerkung: string;
-}
-
-type GroupedProducts = Record<string, Product[]>;
+type ProductRow = [string, string, string];
+type GroupedProducts = Record<string, ProductRow[]>;
 type DepotGroupedProducts = Record<string, GroupedProducts>;
 
 export async function createShipmentPackagingPdfs(
   shipment: Shipment,
   depots: Depot[],
   productsById: ProductsById,
-  productCategories: ProductCategoryWithProducts[]
+  productCategories: ProductCategoryWithProducts[],
 ) {
   const dataByDepotAndProductCategory: DepotGroupedProducts = {};
   for (let item of shipment.shipmentItems) {
@@ -100,10 +47,16 @@ export async function createShipmentPackagingPdfs(
       productCategories.find((pc) => pc.id == product.productCategoryId)
         ?.name || "Unbekannte Kategorie";
 
-    const groupedProducts = getOrCompute(dataByDepotAndProductCategory, depot, () => {
-      return {};
-    });
-    const products = getOrCompute(groupedProducts, productCategory, () => []);
+    const groupedProducts = getOrCompute<GroupedProducts>(
+      dataByDepotAndProductCategory,
+      depot,
+      () => ({}),
+    );
+    const rows: ProductRow[] = getOrCompute<ProductRow[]>(
+      groupedProducts,
+      productCategory,
+      () => [],
+    );
     const multiplicator =
       item.multiplicator != 100
         ? multiplicatorOptions.find((mo) => mo.value == item.multiplicator)
@@ -114,44 +67,60 @@ export async function createShipmentPackagingPdfs(
         ? `(${item.conversionFrom} ${getLangUnit(product.unit)} -> ${item.conversionTo} ${getLangUnit(item.unit)})`
         : "";
     const description = item.description ? item.description : "";
-    products.push({
-      Bezeichnung: `${product.name}${item.isBio ? " [BIO]" : ""}`,
-      Einheit: getLangUnit(item.unit),
-      Menge: item.totalShipedQuantity,
-      Bemerkung: `${multiplicator} ${conversion} ${description}`,
-    });
+    rows.push([
+      `${product.name}${item.isBio ? " [BIO]" : ""}`,
+      `${item.totalShipedQuantity} ${getLangUnit(item.unit)}`,
+      `${multiplicator} ${conversion} ${description}`,
+    ]);
   }
+
   for (let item of shipment.additionalShipmentItems) {
     const productCategory = "Zusätzliches Angebot";
     const depot = findDepotNameById(depots, item.depotId);
-    const groupedProducts = getOrCompute(dataByDepotAndProductCategory, depot, () => {
-      return {};
-    });
-    const products = getOrCompute(groupedProducts, productCategory, () => []);
-    const description = item.description ? item.description : "";
-    products.push({
-      Bezeichnung: `${item.product}${item.isBio ? " [BIO]" : ""}`,
-      Einheit: getLangUnit(item.unit),
-      Menge: item.totalShipedQuantity,
-      Bemerkung: `${description}`,
-    });
+    const groupedProducts = getOrCompute<GroupedProducts>(
+      dataByDepotAndProductCategory,
+      depot,
+      () => ({}),
+    );
+    const rows = getOrCompute<ProductRow[]>(
+      groupedProducts,
+      productCategory,
+      () => [],
+    );
+    const description = item.description || "";
+    rows.push([
+      `${item.product}${item.isBio ? " [BIO]" : ""}`,
+      `${item.totalShipedQuantity} ${getLangUnit(item.unit)}`,
+      `${description}`,
+    ]);
   }
 
   const prettyDate = format(shipment.validFrom, "dd.MM.yyyy");
   const zip = new Zip();
-  for (const [depotKey, dataByProductCategory] of Object.entries(dataByDepotAndProductCategory)) {
+  for (const [depotKey, dataByProductCategory] of Object.entries(
+    dataByDepotAndProductCategory,
+  )) {
     let description = `Lieferschein für ${prettyDate}`;
     if (shipment.description) {
       description += `\n\n${shipment.description}`;
     }
-    const pdf = generatePdf(
-      dataByProductCategory,
-      depotKey,
+
+    const pdf = createDefaultPdf({
+      receiver: depotKey,
       description,
-      `Depot ${depotKey}`,
-      `Lieferschein ${prettyDate}`,
-    );
-    zip.addPdf(pdf, `${sanitizeFileName(depotKey)}.pdf`);
+      footerTextLeft: `Depot ${depotKey}`,
+      footerTextCenter: `Lieferschein ${prettyDate}`,
+      tables: Object.entries(dataByProductCategory).map(
+        ([name, tableData]) =>
+          ({
+            name,
+            headers: ["Bezeichnung", "Menge", "Bemerkung"],
+            widths: ["50%", "15%", "35%"],
+            rows: tableData,
+          }) as PdfTable,
+      ),
+    });
+    await zip.addPdf(pdf, `${sanitizeFileName(depotKey)}.pdf`);
   }
 
   zip.download(`shipments-${format(shipment.validFrom, "yyyy-MM-dd")}.zip`);

@@ -23,11 +23,11 @@ import {
   generateOverviewCsv,
   generateUserData,
 } from "../lib/overview";
-import { generatePdf } from "../lib/pdf/pdf";
-import JSZip from "jszip";
 import { language } from "../lang/lang";
 import { sanitizeFileName } from "../../../shared/src/util/fileHelper";
 import { format } from "date-fns";
+import { Zip } from "../lib/pdf/zip.ts";
+import { createDefaultPdf } from "../lib/pdf/pdf.ts";
 
 const t = language.pages.overview;
 
@@ -49,6 +49,7 @@ const onClick = async () => {
   window.URL.revokeObjectURL(url);
   loading.value = false;
 };
+
 const onDepotPdfClick = async () => {
   loading.value = true;
   const overview = await getOverview();
@@ -57,36 +58,24 @@ const onDepotPdfClick = async () => {
     overview,
     productCategories,
   );
-  const zip = new JSZip();
-  const depotKeys = Object.keys(dataByDepotAndProductCategory);
+  const zip = new Zip();
   const prettyDate = format(new Date(), "dd.MM.yyyy");
-  for (let depotKey of depotKeys) {
-    const dataByProductCategory = dataByDepotAndProductCategory[depotKey];
-    const pdf = generatePdf(
-      dataByProductCategory,
-      depotKey,
-      t.documents.depot.description,
-      `Anmeldung Depot ${depotKey}`,
-      `Stand ${prettyDate}`,
-    );
-    const blob: Blob = await new Promise((resolve, _) => {
-      pdf.getBlob((blob) => resolve(blob));
+  for (const [
+    depotKey,
+    dataByProductCategory,
+  ] of dataByDepotAndProductCategory.entries()) {
+    const pdf = createDefaultPdf({
+      receiver: depotKey,
+      description: t.documents.depot.description,
+      footerTextLeft: `Anmeldung Depot ${depotKey}`,
+      footerTextCenter: `Stand ${prettyDate}`,
+      tables: [...dataByProductCategory.values()],
     });
-    zip.file(`${sanitizeFileName(depotKey)}.pdf`, blob, { binary: true });
+    await zip.addPdf(pdf, `${sanitizeFileName(depotKey)}.pdf`);
   }
-  zip.generateAsync({ type: "blob" }).then((content) => {
-    const blob = new Blob([content], { type: "zip" });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "depots.zip";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
-    loading.value = false;
-  });
+  zip.download("depots.zip");
 };
+
 const onUserPdfClick = async () => {
   loading.value = true;
   const overview = await getOverview();
@@ -95,41 +84,28 @@ const onUserPdfClick = async () => {
     overview,
     productCategories,
   );
-  const zip = new JSZip();
-  const userKeys = Object.keys(dataByUserAndProductCategory);
+  const zip = new Zip();
   const prettyDate = format(new Date(), "dd.MM.yyyy");
-  for (let userKey of userKeys) {
-    const dataByProductCategory = dataByUserAndProductCategory[userKey];
-    const pdf = generatePdf(
-      dataByProductCategory,
-      userKey,
-      t.documents.user.description,
-      `Bedarf Ernteteiler ${userKey}`,
-      `Stand ${prettyDate}`,
-    );
-    const blob: Blob = await new Promise((resolve, _) => {
-      pdf.getBlob((blob) => resolve(blob));
+  for (const [
+    userKey,
+    dataByProductCategory,
+  ] of dataByUserAndProductCategory.entries()) {
+    const pdf = createDefaultPdf({
+      receiver: userKey,
+      description: t.documents.user.description,
+      footerTextLeft: `Bedarf Ernteteiler ${userKey}`,
+      footerTextCenter: `Stand ${prettyDate}`,
+      tables: [...dataByProductCategory.values()],
     });
-    zip.file(`${sanitizeFileName(userKey)}.pdf`, blob, { binary: true });
+    await zip.addPdf(pdf, `${sanitizeFileName(userKey)}.pdf`);
   }
-  zip.generateAsync({ type: "blob" }).then((content) => {
-    const blob = new Blob([content], { type: "zip" });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "users.zip";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
-    loading.value = false;
-  });
+  zip.download("users.zip");
 };
 </script>
 
 <template>
   <v-card class="ma-4">
-    <v-card-title> Übersicht </v-card-title>
+    <v-card-title> Übersicht</v-card-title>
     <v-card-text>
       Bei Click auf "Übersicht herunterladen" wird eine aktuelle Übersicht der
       Bedarfsanmeldung als csv heruntergeladen und generiert. Das kann eine
@@ -141,7 +117,7 @@ const onUserPdfClick = async () => {
     </v-card-actions>
   </v-card>
   <v-card class="ma-4">
-    <v-card-title> Download Depot pdf </v-card-title>
+    <v-card-title> Download Depot pdf</v-card-title>
     <v-card-text>
       Bei Click auf "Übersicht herunterladen" wird eine aktuelle Übersicht der
       Bedarfsanmeldung je Depot als pdf heruntergeladen und generiert. Das kann
@@ -150,12 +126,12 @@ const onUserPdfClick = async () => {
     </v-card-text>
     <v-card-actions>
       <v-btn @click="onDepotPdfClick" :loading="loading"
-        >Übersicht herunterladen</v-btn
-      >
+        >Übersicht herunterladen
+      </v-btn>
     </v-card-actions>
   </v-card>
   <v-card class="ma-4">
-    <v-card-title> Download Ernteteiler pdf </v-card-title>
+    <v-card-title> Download Ernteteiler pdf</v-card-title>
     <v-card-text>
       Bei Click auf "Übersicht herunterladen" wird eine aktuelle Übersicht der
       Bedarfsanmeldung je Ernteteiler als pdf heruntergeladen und generiert. Das
@@ -164,8 +140,8 @@ const onUserPdfClick = async () => {
     </v-card-text>
     <v-card-actions>
       <v-btn @click="onUserPdfClick" :loading="loading"
-        >Übersicht herunterladen</v-btn
-      >
+        >Übersicht herunterladen
+      </v-btn>
     </v-card-actions>
   </v-card>
 </template>
