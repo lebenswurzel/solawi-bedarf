@@ -90,6 +90,7 @@ const onAddShipmentItem = () => {
 };
 
 const usedShipmentDepotIdsByProductId = computed(() => {
+  console.log("usedShipmentDepotIdsByProductId");
   const tmp: { [key: number]: number[] } = {};
   editShipment.value.shipmentItems.forEach((item) => {
     if (item.productId) {
@@ -103,6 +104,7 @@ const usedShipmentDepotIdsByProductId = computed(() => {
 });
 
 const usedAdditionalShipmentDepotIdsByProduct = computed(() => {
+  console.log("usedAdditionalShipmentDepotIdsByProduct");
   const tmp: { [key: string]: number[] } = {};
   editShipment.value.additionalShipmentItems.forEach((item) => {
     if (item.product?.trim()) {

@@ -17,6 +17,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { Unit, UserCategory } from "../../../shared/src/enum";
 import { ProductCategoryWithProducts } from "../../../shared/src/types";
 import { getLangUnit } from "../lang/template";
+import { PdfTable } from "./pdf/pdf.ts";
+import { collect, collectMap, grouping, groupingBy } from "./utils.ts";
 
 export interface OverviewItem {
   name: string;
@@ -189,135 +191,147 @@ export const generateOverviewCsv = (
   );
 };
 
-export const generateUserData = (
+export function generateUserData(
   overview: OverviewItem[],
   productCategories: ProductCategoryWithProducts[],
-) => {
-  const dataByUserAndProductCategory: {
-    [key: string]: {
-      [key: string]: {
-        Bezeichnung: string;
-        Einheit: string;
-        Menge: number;
-        "geplante Häufigkeit": string;
-      }[];
-    };
-  } = {};
+): Map<string, Map<string, PdfTable>> {
+  type Value = {
+    group: string;
+    depot: string;
+    name: string;
+    category: number;
+    value: number;
+  };
 
-  for (let overviewItem of overview) {
-    const name = `${overviewItem.name}\n${overviewItem.depot}`;
-    for (let item of overviewItem.items) {
-      if (item.value > 0) {
-        const productCategory = productCategories.find(
-          (pc) => pc.id == item.category,
-        )!;
-        const product = productCategory.products.find(
-          (p) => p.name == item.name,
-        );
-        if (!dataByUserAndProductCategory[name]) {
-          dataByUserAndProductCategory[name] = {};
-        }
-        if (!dataByUserAndProductCategory[name][productCategory.name]) {
-          dataByUserAndProductCategory[name][productCategory.name] = [];
-        }
-        dataByUserAndProductCategory[name][productCategory.name].push({
-          Bezeichnung: item.name,
-          Einheit: getLangUnit(item.unit),
-          Menge: item.value,
-          "geplante Häufigkeit": `${product?.frequency || 1} x`,
-        });
-      }
-    }
-  }
+  const categoryIdToName = productCategories.reduce(
+    grouping(
+      (item) => item.id,
+      (item) => item.name,
+    ),
+    new Map(),
+  );
 
-  return dataByUserAndProductCategory;
-};
-
-export const generateDepotData = (
-  overview: OverviewItem[],
-  productCategories: ProductCategoryWithProducts[],
-) => {
-  const dataByDepotAndProduct: {
-    [key: string]: {
-      [key: string]: {
-        name: string;
-        quantity: number;
-        unit: Unit;
-        category: string;
-        frequency: number;
-      };
-    };
-  } = {};
-  const dataByDepotAndProductCategory: {
-    [key: string]: {
-      [key: string]: {
-        Bezeichnung: string;
-        Einheit: string;
-        Menge: number;
-        "geplante Häufigkeit": string;
-      }[];
-    };
-  } = {};
-
-  // aggregate by depot and product
-  for (let overviewItem of overview) {
-    const depot = overviewItem.depot;
-    if (!dataByDepotAndProduct[depot]) {
-      dataByDepotAndProduct[depot] = {};
-    }
-    for (let item of overviewItem.items) {
-      if (!dataByDepotAndProduct[depot][item.name]) {
-        const productCategory = productCategories.find(
-          (pc) => pc.id == item.category,
-        )!;
-        const product = productCategory.products.find(
-          (p) => p.name == item.name,
-        );
-        dataByDepotAndProduct[depot][item.name] = {
+  return overview
+    .flatMap((overviewItem) =>
+      overviewItem.items
+        .filter((item) => item.value > 0)
+        .map((item) => ({
+          group: `${overviewItem.name}\n${overviewItem.depot}`,
+          depot: overviewItem.depot,
           name: item.name,
-          unit: item.unit,
-          quantity: 0,
-          category: productCategory.name,
-          frequency: product?.frequency || 1,
-        };
-      }
-      dataByDepotAndProduct[depot][item.name].quantity += item.value;
-    }
-  }
-  // filter 0 values and order by product category
-  const depotKeys = Object.keys(dataByDepotAndProduct);
-  for (let depotKey of depotKeys) {
-    const items = Object.values(dataByDepotAndProduct[depotKey]);
-    const dataByCategory: {
-      [key: string]: {
-        Bezeichnung: string;
-        Einheit: string;
-        Menge: number;
-        "geplante Häufigkeit": string;
-      }[];
-    } = {};
-    for (let item of items) {
-      if (item.quantity > 0) {
-        if (!dataByCategory[item.category]) {
-          dataByCategory[item.category] = [];
-        }
-        dataByCategory[item.category].push({
-          Bezeichnung: item.name,
-          Einheit: getLangUnit(item.unit),
-          Menge: item.quantity,
-          "geplante Häufigkeit": `${item.frequency} x`,
-        });
-      }
-    }
-    const productCategoryKeys = Object.keys(dataByCategory);
-    for (let productCategoryKey of productCategoryKeys) {
-      if (!dataByDepotAndProductCategory[depotKey]) {
-        dataByDepotAndProductCategory[depotKey] = {};
-      }
-      dataByDepotAndProductCategory[depotKey][productCategoryKey] =
-        dataByCategory[productCategoryKey];
-    }
-  }
+          category: item.category,
+          value: item.value,
+        })),
+    )
+    .reduce(
+      groupingBy<string, Value, Map<string, PdfTable>>(
+        (item) => item.group,
+        collectMap(
+          (item) => categoryIdToName.get(item.category)!,
+          collect(
+            (category: string) =>
+              ({
+                name: category,
+                headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
+                widths: ["80%", "10%", "10%"],
+                rows: [],
+              }) as PdfTable,
+            (acc, item) => {
+              const productCategory = productCategories.find(
+                (pc) => pc.id == item.category,
+              )!;
+              const product = productCategory.products.find(
+                (p) => p.name == item.name,
+              )!;
+              return acc.rows.push([
+                item.name,
+                `${item.value} ${getLangUnit(product.unit)}`,
+                `${product.frequency} x`,
+              ]);
+            },
+          ),
+        ),
+      ),
+      new Map(),
+    );
+}
 
-  return dataByDepotAndProductCategory;
-};
+export function generateDepotData(
+  overview: OverviewItem[],
+  productCategories: ProductCategoryWithProducts[],
+): Map<string, Map<string, PdfTable>> {
+  type Key = [string, number, string];
+  type Value = {
+    depot: string;
+    name: string;
+    unit: Unit;
+    quantity: number;
+    category: string;
+    frequency: number;
+  };
+
+  const dataByDepotAndProduct = overview
+    .flatMap((overviewItem) =>
+      overviewItem.items.map((item) => ({
+        depot: overviewItem.depot,
+        name: item.name,
+        category: item.category,
+        value: item.value,
+      })),
+    )
+    .reduce(
+      groupingBy(
+        (item) => [item.depot, item.category, item.name],
+        collect(
+          ([depot, category, name]: Key) => {
+            const productCategory = productCategories.find(
+              (pc) => pc.id == category,
+            )!;
+            const product = productCategory.products.find(
+              (p) => p.name == name,
+            )!;
+            return {
+              depot,
+              name,
+              unit: product.unit,
+              quantity: 0,
+              category: productCategory.name,
+              frequency: product.frequency || 1,
+            } as Value;
+          },
+          (acc, item) => {
+            acc.quantity += item.value;
+          },
+        ),
+      ),
+      new Map(),
+    );
+
+  // filter 0 values and group by product category
+  return [...dataByDepotAndProduct.values()]
+    .filter((item) => item.quantity > 0)
+    .reduce(
+      groupingBy<string, Value, Map<string, PdfTable>>(
+        (item) => item.depot,
+        collectMap(
+          (item) => item.category,
+          collect(
+            (category: string) =>
+              ({
+                name: category,
+                headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
+                widths: ["80%", "10%", "10%"],
+                rows: [],
+              }) as PdfTable,
+            (acc, item) =>
+              acc.rows.push([
+                item.name,
+                `${item.quantity} ${getLangUnit(item.unit)}`,
+                `${item.frequency} x`,
+              ]),
+          ),
+        ),
+      ),
+      new Map(),
+    );
+}
