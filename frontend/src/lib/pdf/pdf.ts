@@ -106,7 +106,13 @@ export function createDefaultPdf(pdf: PdfDefinition): TCreatedPdf {
       table: {
         widths: table.widths ?? new Array(table.headers.length).fill("*"),
         headerRows: 1,
-        body: table.rows,
+        body: [
+          table.headers.map((header) => ({
+            text: header,
+            bold: true,
+          })),
+          ...table.rows,
+        ],
       },
       layout: "light-horizontal-lines",
     });
