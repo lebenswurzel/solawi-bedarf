@@ -14,6 +14,8 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+
+/// <reference types="vitest/config" />
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import vuetify from "vite-plugin-vuetify";
@@ -29,6 +31,9 @@ export default defineConfig({
   },
   */
   //base: "2024",
+  test: {
+    setupFiles: ["./testSetup.ts"],
+  },
   server: {
     proxy: {
       "/api": {

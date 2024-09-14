@@ -239,7 +239,7 @@ export function generateUserData(
               ({
                 name: category,
                 headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
-                widths: ["80%", "10%", "10%"],
+                widths: ["70%", "10%", "20%"],
                 rows: [],
               }) as PdfTable,
             (acc, item) => {
@@ -344,7 +344,7 @@ export function generateDepotData(
       groupRes.set(group, {
         name: group,
         headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
-        widths: ["80%", "10%", "10%"],
+        widths: ["70%", "10%", "20%"],
         rows: Array.from(groupProducts.values(), (item) => [
           item.name,
           `${item.quantity} ${getLangUnit(item.unit)}`,
