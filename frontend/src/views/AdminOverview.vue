@@ -23,13 +23,9 @@ import {
   generateOverviewCsv,
   generateUserData,
 } from "../lib/overview";
-import { language } from "../lang/lang";
 import { sanitizeFileName } from "../../../shared/src/util/fileHelper";
-import { format } from "date-fns";
 import { Zip } from "../lib/pdf/zip.ts";
 import { createDefaultPdf } from "../lib/pdf/pdf.ts";
-
-const t = language.pages.overview;
 
 const loading = ref(false);
 
