@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { Unit, UserCategory } from "../../../shared/src/enum";
 import { ProductCategoryWithProducts } from "../../../shared/src/types";
 import { getLangUnit } from "../lang/template";
-import { PdfDefinition, PdfTable } from "./pdf/pdf.ts";
+import { PdfSpec, PdfTable } from "./pdf/pdf.ts";
 import {
   byKey,
   collect,
@@ -206,15 +206,7 @@ export const generateOverviewCsv = (
 export function generateUserData(
   overview: OverviewItem[],
   productCategories: ProductCategoryWithProducts[],
-): PdfDefinition[] {
-  type Item = {
-    group: string;
-    depot: string;
-    name: string;
-    category: ProductCategoryWithProducts;
-    value: number;
-  };
-
+): PdfSpec[] {
   const categories = productCategories.reduce(
     grouping(
       (item) => item.id,
@@ -223,7 +215,7 @@ export function generateUserData(
     new Map(),
   );
 
-  const grouped: Map<string, Map<string, Item[]>> = overview
+  const grouped = overview
     .flatMap((overviewItem) =>
       overviewItem.items
         .filter((item) => item.value > 0)
@@ -236,7 +228,7 @@ export function generateUserData(
         })),
     )
     .reduce(
-      groupingBy<string, Item, Map<string, Item[]>>(
+      groupingBy(
         (item) => item.group,
         collectMap((item) => item.category.name, collectArray()),
       ),
@@ -271,20 +263,14 @@ export function generateUserData(
               }).sort(byKey((row) => row[0], inLocaleOrder)),
             }) as PdfTable,
         ).sort(byKey((table) => table.name, inLocaleOrder)),
-      }) as PdfDefinition,
+      }) as PdfSpec,
   ).sort(byKey((pdf) => pdf.receiver, inLocaleOrder));
 }
 
 export function generateDepotData(
   overview: OverviewItem[],
   productCategories: ProductCategoryWithProducts[],
-): PdfDefinition[] {
-  type Item = {
-    depot: string;
-    name: string;
-    value: number;
-    category: ProductCategoryWithProducts;
-  };
+): PdfSpec[] {
   type Value = {
     depot: string;
     name: string;
@@ -306,25 +292,22 @@ export function generateDepotData(
     .flatMap((overviewItem) =>
       overviewItem.items
         .filter((item) => item.value > 0)
-        .map(
-          (item) =>
-            ({
-              depot: overviewItem.depot,
-              name: item.name,
-              category: categories.get(item.category)!,
-              value: item.value,
-            }) as Item,
-        ),
+        .map((item) => ({
+          depot: overviewItem.depot,
+          name: item.name,
+          category: categories.get(item.category)!,
+          value: item.value,
+        })),
     )
     .reduce(
-      groupingBy<string, Item, Map<string, Map<string, Value>>>(
+      groupingBy(
         (item) => item.depot,
         collectMap(
           (item) => item.category.name,
           collectMap(
             (item) => item.name,
             collect(
-              (name: string, first: Item) => {
+              (name, first) => {
                 const product = first.category.products.find(
                   (p) => p.name == name,
                 )!;
@@ -370,6 +353,6 @@ export function generateDepotData(
               ]).sort(byKey((row) => row[0], inLocaleOrder)),
             }) as PdfTable,
         ).sort(byKey((table) => table.name, inLocaleOrder)),
-      }) as PdfDefinition,
+      }) as PdfSpec,
   ).sort(byKey((pdf) => pdf.receiver, inLocaleOrder));
 }

@@ -32,7 +32,7 @@ export function collect<K, V, Acc>(
   };
 }
 
-export function collectArray<K, V>(): Collector<K, V, V[]> {
+export function collectArray<V>(): Collector<any, V, V[]> {
   return {
     init(): V[] {
       return [];
@@ -43,10 +43,10 @@ export function collectArray<K, V>(): Collector<K, V, V[]> {
   };
 }
 
-export function collectMap<K1, K2, V, Acc>(
+export function collectMap<K2, V, Acc>(
   keyFn: (value: V) => K2,
   agg: Collector<K2, V, Acc>,
-): Collector<K1, V, Map<K2, Acc>> {
+): Collector<any, V, Map<K2, Acc>> {
   return {
     init(): Map<K2, Acc> {
       return new Map();

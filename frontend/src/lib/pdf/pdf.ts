@@ -55,7 +55,7 @@ export interface PdfTable {
   widths?: string[];
 }
 
-export interface PdfDefinition {
+export interface PdfSpec {
   receiver: string;
   description: string;
   footerTextLeft?: string;
@@ -63,7 +63,7 @@ export interface PdfDefinition {
   tables: PdfTable[];
 }
 
-export function createDefaultPdf(pdf: PdfDefinition): TCreatedPdf {
+export function createDefaultPdf(pdf: PdfSpec): TCreatedPdf {
   const content: Content[] = [];
   if (logo != null) {
     content.push({

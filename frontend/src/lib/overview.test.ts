@@ -23,7 +23,6 @@ import {
 } from "./overview.ts";
 import { Product } from "../../../shared/src/types.ts";
 import { UserCategory } from "../../../shared/src/enum.ts";
-import { PdfTable } from "./pdf/pdf.ts";
 import {
   CUCUMBER,
   genProduct,
