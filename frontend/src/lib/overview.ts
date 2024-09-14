@@ -17,8 +17,20 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { Unit, UserCategory } from "../../../shared/src/enum";
 import { ProductCategoryWithProducts } from "../../../shared/src/types";
 import { getLangUnit } from "../lang/template";
-import { PdfTable } from "./pdf/pdf.ts";
-import { collect, collectMap, grouping, groupingBy } from "./utils.ts";
+import { PdfDefinition, PdfTable } from "./pdf/pdf.ts";
+import {
+  byKey,
+  collect,
+  collectArray,
+  collectMap,
+  grouping,
+  groupingBy,
+  inLocaleOrder,
+} from "./utils.ts";
+import { format } from "date-fns/format";
+import { language } from "../lang/lang.ts";
+
+const t = language.pages.overview;
 
 export interface OverviewItem {
   name: string;
@@ -194,7 +206,7 @@ export const generateOverviewCsv = (
 export function generateUserData(
   overview: OverviewItem[],
   productCategories: ProductCategoryWithProducts[],
-): Map<string, Map<string, PdfTable>> {
+): PdfDefinition[] {
   type Item = {
     group: string;
     depot: string;
@@ -211,7 +223,7 @@ export function generateUserData(
     new Map(),
   );
 
-  return overview
+  const grouped: Map<string, Map<string, Item[]>> = overview
     .flatMap((overviewItem) =>
       overviewItem.items
         .filter((item) => item.value > 0)
@@ -223,46 +235,50 @@ export function generateUserData(
           value: item.value,
         })),
     )
-    .sort(
-      (a, b) =>
-        a.group.localeCompare(b.group) ||
-        a.category.name.localeCompare(b.category.name) ||
-        a.name.localeCompare(b.name),
-    )
     .reduce(
-      groupingBy<string, Item, Map<string, PdfTable>>(
+      groupingBy<string, Item, Map<string, Item[]>>(
         (item) => item.group,
-        collectMap(
-          (item) => item.category.name,
-          collect(
-            (category: string) =>
-              ({
-                name: category,
-                headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
-                widths: ["70%", "10%", "20%"],
-                rows: [],
-              }) as PdfTable,
-            (acc, item) => {
-              const product = item.category.products.find(
-                (p) => p.name == item.name,
-              )!;
-              return acc.rows.push([
-                item.name,
-                `${item.value} ${getLangUnit(product.unit)}`,
-                `${product.frequency} x`,
-              ]);
-            },
-          ),
-        ),
+        collectMap((item) => item.category.name, collectArray()),
       ),
       new Map(),
     );
+
+  const prettyDate = format(new Date(), "dd.MM.yyyy");
+  return Array.from(
+    grouped.entries(),
+    ([user, userProducts]) =>
+      ({
+        receiver: user,
+        description: t.documents.user.description,
+        footerTextLeft: `Bedarf Ernteteiler ${user}`,
+        footerTextCenter: `Stand ${prettyDate}`,
+        tables: Array.from(
+          userProducts.entries(),
+          ([category, products]) =>
+            ({
+              name: category,
+              headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
+              widths: ["70%", "10%", "20%"],
+              rows: Array.from(products.values(), (item) => {
+                const product = item.category.products.find(
+                  (p) => p.name === item.name,
+                )!;
+                return [
+                  item.name,
+                  `${item.value} ${getLangUnit(product.unit)}`,
+                  `${product.frequency} x`,
+                ];
+              }).sort(byKey((row) => row[0], inLocaleOrder)),
+            }) as PdfTable,
+        ).sort(byKey((table) => table.name, inLocaleOrder)),
+      }) as PdfDefinition,
+  ).sort(byKey((pdf) => pdf.receiver, inLocaleOrder));
 }
 
 export function generateDepotData(
   overview: OverviewItem[],
   productCategories: ProductCategoryWithProducts[],
-): Map<string, Map<string, PdfTable>> {
+): PdfDefinition[] {
   type Item = {
     depot: string;
     name: string;
@@ -300,11 +316,6 @@ export function generateDepotData(
             }) as Item,
         ),
     )
-    .sort(
-      (a, b) =>
-        a.category.name.localeCompare(b.category.name) ||
-        a.name.localeCompare(b.name),
-    )
     .reduce(
       groupingBy<string, Item, Map<string, Map<string, Value>>>(
         (item) => item.depot,
@@ -336,22 +347,29 @@ export function generateDepotData(
       new Map(),
     );
 
-  const res = new Map<string, Map<string, PdfTable>>();
-  for (let [depot, depotProducts] of dataByDepotAndProduct.entries()) {
-    const groupRes = new Map<string, PdfTable>();
-    res.set(depot, groupRes);
-    for (let [group, groupProducts] of depotProducts.entries()) {
-      groupRes.set(group, {
-        name: group,
-        headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
-        widths: ["70%", "10%", "20%"],
-        rows: Array.from(groupProducts.values(), (item) => [
-          item.name,
-          `${item.quantity} ${getLangUnit(item.unit)}`,
-          `${item.frequency} x`,
-        ]),
-      });
-    }
-  }
-  return res;
+  const prettyDate = format(new Date(), "dd.MM.yyyy");
+  return Array.from(
+    dataByDepotAndProduct.entries(),
+    ([depot, depotProducts]) =>
+      ({
+        receiver: depot,
+        description: t.documents.depot.description,
+        footerTextLeft: `Anmeldung Depot ${depot}`,
+        footerTextCenter: `Stand ${prettyDate}`,
+        tables: Array.from(
+          depotProducts.entries(),
+          ([group, products]) =>
+            ({
+              name: group,
+              headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
+              widths: ["70%", "10%", "20%"],
+              rows: Array.from(products.values(), (item) => [
+                item.name,
+                `${item.quantity} ${getLangUnit(item.unit)}`,
+                `${item.frequency} x`,
+              ]).sort(byKey((row) => row[0], inLocaleOrder)),
+            }) as PdfTable,
+        ).sort(byKey((table) => table.name, inLocaleOrder)),
+      }) as PdfDefinition,
+  ).sort(byKey((pdf) => pdf.receiver, inLocaleOrder));
 }

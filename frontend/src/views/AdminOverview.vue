@@ -59,19 +59,11 @@ const onDepotPdfClick = async () => {
     productCategories,
   );
   const zip = new Zip();
-  const prettyDate = format(new Date(), "dd.MM.yyyy");
-  for (const [
-    depotKey,
-    dataByProductCategory,
-  ] of dataByDepotAndProductCategory.entries()) {
-    const pdf = createDefaultPdf({
-      receiver: depotKey,
-      description: t.documents.depot.description,
-      footerTextLeft: `Anmeldung Depot ${depotKey}`,
-      footerTextCenter: `Stand ${prettyDate}`,
-      tables: [...dataByProductCategory.values()],
-    });
-    await zip.addPdf(pdf, `${sanitizeFileName(depotKey)}.pdf`);
+  for (const pdfSpec of dataByDepotAndProductCategory) {
+    await zip.addPdf(
+      createDefaultPdf(pdfSpec),
+      `${sanitizeFileName(pdfSpec.receiver)}.pdf`,
+    );
   }
   zip.download("depots.zip");
 };
@@ -85,19 +77,11 @@ const onUserPdfClick = async () => {
     productCategories,
   );
   const zip = new Zip();
-  const prettyDate = format(new Date(), "dd.MM.yyyy");
-  for (const [
-    userKey,
-    dataByProductCategory,
-  ] of dataByUserAndProductCategory.entries()) {
-    const pdf = createDefaultPdf({
-      receiver: userKey,
-      description: t.documents.user.description,
-      footerTextLeft: `Bedarf Ernteteiler ${userKey}`,
-      footerTextCenter: `Stand ${prettyDate}`,
-      tables: [...dataByProductCategory.values()],
-    });
-    await zip.addPdf(pdf, `${sanitizeFileName(userKey)}.pdf`);
+  for (const pdf of dataByUserAndProductCategory) {
+    await zip.addPdf(
+      createDefaultPdf(pdf),
+      `${sanitizeFileName(pdf.receiver)}.pdf`,
+    );
   }
   zip.download("users.zip");
 };

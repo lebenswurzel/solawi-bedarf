@@ -89,6 +89,18 @@ export function grouping<K, V, U>(
   };
 }
 
+export type Comparator<T> = (a: T, b: T) => number;
+
+export function byKey<V, K>(
+  keyExtractor: (value: V) => K,
+  keyComparator: Comparator<K>,
+): Comparator<V> {
+  return (a, b) => keyComparator(keyExtractor(a), keyExtractor(b));
+}
+
+export const inLocaleOrder: Comparator<string> = (a, b) => a.localeCompare(b);
+export const inNaturalOrder: Comparator<any> = (a, b) => a - b;
+
 export function getOrCompute<V>(
   obj: Map<string, V>,
   key: string,
