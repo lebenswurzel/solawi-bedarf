@@ -93,24 +93,24 @@ describe("summarize demand by user", () => {
     let actual = generateUserData(orders, productCategories);
 
     // ASSERT
-    let pdf = actual.get("Order\nMain depot");
-    expect(pdf).not.toBeUndefined();
-    expect([...pdf!.keys()]).toEqual([VEGETABLES.name, MILK_PRODUCTS.name]);
-    expect(pdf!.get(VEGETABLES.name)).toStrictEqual({
-      name: VEGETABLES.name,
-      headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
-      widths: ["70%", "10%", "20%"],
-      rows: [
-        [CUCUMBER.name, "3 Stk.", "20 x"],
-        [TOMATO.name, "200 g", "30 x"],
-      ],
-    } as PdfTable);
-    expect(pdf!.get(MILK_PRODUCTS.name)).toStrictEqual({
-      name: MILK_PRODUCTS.name,
-      headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
-      widths: ["70%", "10%", "20%"],
-      rows: [[MILK.name, "3000 ml", "56 x"]],
-    } as PdfTable);
+    expect(actual.length).toBe(1);
+    expect(actual[0].tables).toStrictEqual([
+      {
+        name: VEGETABLES.name,
+        headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
+        widths: ["70%", "10%", "20%"],
+        rows: [
+          [CUCUMBER.name, "3 Stk.", "20 x"],
+          [TOMATO.name, "200 g", "30 x"],
+        ],
+      },
+      {
+        name: MILK_PRODUCTS.name,
+        headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
+        widths: ["70%", "10%", "20%"],
+        rows: [[MILK.name, "3000 ml", "56 x"]],
+      },
+    ]);
   });
 
   test("for multiple orders", () => {
@@ -147,37 +147,37 @@ describe("summarize demand by user", () => {
     let actual = generateUserData(orders, productCategories);
 
     // ASSERT
-    let pdf1 = actual.get("Order1\nMain depot");
-    expect(pdf1).not.toBeUndefined();
-    expect([...pdf1!.keys()]).toEqual([VEGETABLES.name, MILK_PRODUCTS.name]);
-    expect(pdf1!.get(VEGETABLES.name)).toStrictEqual({
-      name: VEGETABLES.name,
-      headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
-      widths: ["70%", "10%", "20%"],
-      rows: [[TOMATO.name, "200 g", "30 x"]],
-    } as PdfTable);
-    expect(pdf1!.get(MILK_PRODUCTS.name)).toStrictEqual({
-      name: MILK_PRODUCTS.name,
-      headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
-      widths: ["70%", "10%", "20%"],
-      rows: [[MILK.name, "3000 ml", "56 x"]],
-    } as PdfTable);
-
-    let pdf2 = actual.get("Order2\nMain depot");
-    expect(pdf2).not.toBeUndefined();
-    expect([...pdf1!.keys()]).toEqual([VEGETABLES.name, MILK_PRODUCTS.name]);
-    expect(pdf2!.get(VEGETABLES.name)).toStrictEqual({
-      name: VEGETABLES.name,
-      headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
-      widths: ["70%", "10%", "20%"],
-      rows: [[CUCUMBER.name, "3 Stk.", "20 x"]],
-    } as PdfTable);
-    expect(pdf2!.get(MILK_PRODUCTS.name)).toStrictEqual({
-      name: MILK_PRODUCTS.name,
-      headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
-      widths: ["70%", "10%", "20%"],
-      rows: [[MILK.name, "1000 ml", "56 x"]],
-    } as PdfTable);
+    expect(actual.length).toBe(2);
+    expect(actual[0].receiver).toEqual("Order1\nMain depot");
+    expect(actual[0].tables).toEqual([
+      {
+        name: VEGETABLES.name,
+        headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
+        widths: ["70%", "10%", "20%"],
+        rows: [[TOMATO.name, "200 g", "30 x"]],
+      },
+      {
+        name: MILK_PRODUCTS.name,
+        headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
+        widths: ["70%", "10%", "20%"],
+        rows: [[MILK.name, "3000 ml", "56 x"]],
+      },
+    ]);
+    expect(actual[1].receiver).toEqual("Order2\nMain depot");
+    expect(actual[1].tables).toEqual([
+      {
+        name: VEGETABLES.name,
+        headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
+        widths: ["70%", "10%", "20%"],
+        rows: [[CUCUMBER.name, "3 Stk.", "20 x"]],
+      },
+      {
+        name: MILK_PRODUCTS.name,
+        headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
+        widths: ["70%", "10%", "20%"],
+        rows: [[MILK.name, "1000 ml", "56 x"]],
+      },
+    ]);
   });
 
   test("while ignoring empty items", () => {
@@ -202,7 +202,7 @@ describe("summarize demand by user", () => {
     let actual = generateUserData(orders, productCategories);
 
     // ASSERT
-    expect(actual.size).toBe(0);
+    expect(actual.length).toBe(0);
   });
 });
 
@@ -250,24 +250,24 @@ describe("summarize demand by depot", () => {
     let actual = generateDepotData(orders, productCategories);
 
     // ASSERT
-    let pdf = actual.get("Main depot");
-    expect(pdf).not.toBeUndefined();
-    expect([...pdf!.keys()]).toEqual([VEGETABLES.name, MILK_PRODUCTS.name]);
-    expect(pdf!.get(VEGETABLES.name)).toStrictEqual({
-      name: VEGETABLES.name,
-      headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
-      widths: ["70%", "10%", "20%"],
-      rows: [
-        [CUCUMBER.name, "5 Stk.", "20 x"],
-        [TOMATO.name, "300 g", "30 x"],
-      ],
-    } as PdfTable);
-    expect(pdf!.get(MILK_PRODUCTS.name)).toStrictEqual({
-      name: MILK_PRODUCTS.name,
-      headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
-      widths: ["70%", "10%", "20%"],
-      rows: [[MILK.name, "10000 ml", "56 x"]],
-    } as PdfTable);
+    expect(actual.length).toBe(1);
+    expect(actual[0].tables).toStrictEqual([
+      {
+        name: VEGETABLES.name,
+        headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
+        widths: ["70%", "10%", "20%"],
+        rows: [
+          [CUCUMBER.name, "5 Stk.", "20 x"],
+          [TOMATO.name, "300 g", "30 x"],
+        ],
+      },
+      {
+        name: MILK_PRODUCTS.name,
+        headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
+        widths: ["70%", "10%", "20%"],
+        rows: [[MILK.name, "10000 ml", "56 x"]],
+      },
+    ]);
   });
 
   test("for multiple depots", () => {
@@ -290,12 +290,12 @@ describe("summarize demand by depot", () => {
     let orders = [
       genOrder({
         name: "1",
-        depot: "Main depot",
+        depot: "01 Main depot",
         items: [genOrderItem(tomato, 200), genOrderItem(milk, 3000)],
       }),
       genOrder({
         name: "2",
-        depot: "Alt depot",
+        depot: "02 Alt depot",
         items: [genOrderItem(cucumber, 3), genOrderItem(milk, 1000)],
       }),
     ];
@@ -304,37 +304,37 @@ describe("summarize demand by depot", () => {
     let actual = generateDepotData(orders, productCategories);
 
     // ASSERT
-    let pdf1 = actual.get("Main depot");
-    expect(pdf1).not.toBeUndefined();
-    expect([...pdf1!.keys()]).toEqual([VEGETABLES.name, MILK_PRODUCTS.name]);
-    expect(pdf1!.get(VEGETABLES.name)).toStrictEqual({
-      name: VEGETABLES.name,
-      headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
-      widths: ["70%", "10%", "20%"],
-      rows: [[TOMATO.name, "200 g", "30 x"]],
-    } as PdfTable);
-    expect(pdf1!.get(MILK_PRODUCTS.name)).toStrictEqual({
-      name: MILK_PRODUCTS.name,
-      headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
-      widths: ["70%", "10%", "20%"],
-      rows: [[MILK.name, "3000 ml", "56 x"]],
-    } as PdfTable);
-
-    let pdf2 = actual.get("Alt depot");
-    expect(pdf2).not.toBeUndefined();
-    expect([...pdf1!.keys()]).toEqual([VEGETABLES.name, MILK_PRODUCTS.name]);
-    expect(pdf2!.get(VEGETABLES.name)).toStrictEqual({
-      name: VEGETABLES.name,
-      headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
-      widths: ["70%", "10%", "20%"],
-      rows: [[CUCUMBER.name, "3 Stk.", "20 x"]],
-    } as PdfTable);
-    expect(pdf2!.get(MILK_PRODUCTS.name)).toStrictEqual({
-      name: MILK_PRODUCTS.name,
-      headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
-      widths: ["70%", "10%", "20%"],
-      rows: [[MILK.name, "1000 ml", "56 x"]],
-    } as PdfTable);
+    expect(actual.length).toBe(2);
+    expect(actual[0].receiver).toEqual("01 Main depot");
+    expect(actual[0].tables).toEqual([
+      {
+        name: VEGETABLES.name,
+        headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
+        widths: ["70%", "10%", "20%"],
+        rows: [[TOMATO.name, "200 g", "30 x"]],
+      },
+      {
+        name: MILK_PRODUCTS.name,
+        headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
+        widths: ["70%", "10%", "20%"],
+        rows: [[MILK.name, "3000 ml", "56 x"]],
+      },
+    ]);
+    expect(actual[1].receiver).toEqual("02 Alt depot");
+    expect(actual[1].tables).toEqual([
+      {
+        name: VEGETABLES.name,
+        headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
+        widths: ["70%", "10%", "20%"],
+        rows: [[CUCUMBER.name, "3 Stk.", "20 x"]],
+      },
+      {
+        name: MILK_PRODUCTS.name,
+        headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
+        widths: ["70%", "10%", "20%"],
+        rows: [[MILK.name, "1000 ml", "56 x"]],
+      },
+    ]);
   });
 
   test("while ignoring empty items", () => {
@@ -359,6 +359,6 @@ describe("summarize demand by depot", () => {
     let actual = generateDepotData(orders, productCategories);
 
     // ASSERT
-    expect(actual.size).toBe(0);
+    expect(actual.length).toBe(0);
   });
 });

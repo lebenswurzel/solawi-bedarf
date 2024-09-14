@@ -55,7 +55,7 @@ export interface PdfTable {
   widths?: string[];
 }
 
-interface PdfDefinition {
+export interface PdfDefinition {
   receiver: string;
   description: string;
   footerTextLeft?: string;
