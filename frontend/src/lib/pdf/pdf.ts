@@ -137,7 +137,7 @@ export function createDefaultPdf(pdf: PdfDefinition): TCreatedPdf {
           width: "auto",
         },
       ],
-      margin: [20, 0, 20, -30],
+      margin: [30, 0, 30, -30],
     };
   };
 
@@ -150,7 +150,7 @@ export function createDefaultPdf(pdf: PdfDefinition): TCreatedPdf {
       },
     },
     footer,
-    pageMargins: [20, 60, 20, 40],
+    pageMargins: [30, 60, 30, 40],
   });
 }
 
