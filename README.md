@@ -10,7 +10,7 @@ See [COPYING](./COPYING) for details.
 Some files that are included in this project contain work that is licensed under different licenses:
 
 - [vfs_fonts.ts](http://pdfmake.org/#/) in `frontend/src/assets/vfs_fonts.ts`
-- [aubergine.svg](https://github.com/mozilla/fxemoji/blob/gh-pages/svgs/objects/u1F346-aubergine.svg) by Mozilla in `frontend/public/aubergine.svg` is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
+- [seedling.svg](https://github.com/mozilla/fxemoji/blob/gh-pages/svgs/nature/u1F331-seedling.svg) by Mozilla in `frontend/public/assets/seedling.svg` is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 
 ## Usage
 
