@@ -129,6 +129,7 @@ onMounted(async () => {
         >
           {{ format(shipment.validFrom, "dd.MM.yyyy") }} - KW
           {{ getISOWeek(shipment.validFrom).toString() }}
+          {{ shipment.description ? `- ${shipment.description}` : "" }}
         </v-list-item>
       </v-list>
     </v-card-text>
