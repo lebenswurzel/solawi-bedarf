@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { beforeEach } from "vitest";
-import { Unit } from "../shared/src/enum";
+import { Unit } from "../../shared/src/enum";
 import {
   Depot,
   NewDepot,
@@ -24,7 +24,7 @@ import {
   ProductCategoryWithProducts,
   Shipment,
   ShipmentItem,
-} from "../shared/src/types";
+} from "../../shared/src/types";
 
 let NEXT_ID = 0;
 
