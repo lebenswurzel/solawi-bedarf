@@ -18,3 +18,5 @@ jobs:
         run: npm run vue-tsc
       - name: Check formatting
         run: npm run format-check
+      - name: Run frontend tests
+        run: npm run test
