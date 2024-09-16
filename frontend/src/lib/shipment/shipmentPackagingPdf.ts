@@ -24,21 +24,30 @@ import {
 import { getLangUnit } from "../../lang/template";
 import { multiplicatorOptions } from "../options";
 import { format } from "date-fns";
-import { createDefaultPdf, PdfTable } from "../pdf/pdf";
+import { createDefaultPdf, PdfSpec, PdfTable } from "../pdf/pdf";
 import { sanitizeFileName } from "../../../../shared/src/util/fileHelper";
 import { Zip } from "../pdf/zip";
-import { findDepotNameById, getOrCompute } from "../utils.ts";
+import {
+  byKey,
+  findDepotNameById,
+  getOrCompute,
+  inLocaleOrder,
+} from "../utils.ts";
 
 type ProductRow = [string, string, string];
 type GroupedProducts = Map<string, ProductRow[]>;
 type DepotGroupedProducts = Map<string, GroupedProducts>;
 
-export async function createShipmentPackagingPdfs(
+function joinStrings(...strings: (string | null | undefined)[]): string {
+  return strings.filter((s) => !!s).join(" ");
+}
+
+export function createShipmentPackagingPdfSpecs(
   shipment: Shipment,
   depots: Depot[],
   productsById: ProductsById,
   productCategories: ProductCategoryWithProducts[],
-) {
+): PdfSpec[] {
   const dataByDepotAndProductCategory: DepotGroupedProducts = new Map();
   for (let item of shipment.shipmentItems) {
     const depot = findDepotNameById(depots, item.depotId);
@@ -70,7 +79,7 @@ export async function createShipmentPackagingPdfs(
     rows.push([
       `${product.name}${item.isBio ? " [BIO]" : ""}`,
       `${item.totalShipedQuantity} ${getLangUnit(item.unit)}`,
-      `${multiplicator} ${conversion} ${description}`,
+      joinStrings(multiplicator, conversion, description),
     ]);
   }
 
@@ -96,34 +105,53 @@ export async function createShipmentPackagingPdfs(
   }
 
   const prettyDate = format(shipment.validFrom, "dd.MM.yyyy");
-  const zip = new Zip();
-  for (const [
-    depotKey,
-    dataByProductCategory,
-  ] of dataByDepotAndProductCategory.entries()) {
-    let description = `Lieferschein für ${prettyDate}`;
-    if (shipment.description) {
-      description += `\n\n${shipment.description}`;
-    }
+  return Array.from(
+    dataByDepotAndProductCategory.entries(),
+    ([depotKey, dataByProductCategory]) => {
+      let description = `Lieferschein für ${prettyDate}`;
+      if (shipment.description) {
+        description += `\n\n${shipment.description}`;
+      }
 
-    const pdf = createDefaultPdf({
-      receiver: depotKey,
-      description,
-      footerTextLeft: `Depot ${depotKey}`,
-      footerTextCenter: `Lieferschein ${prettyDate}`,
-      tables: [...dataByProductCategory.entries()]
-        .sort((a, b) => a[0].localeCompare(b[0]))
-        .map(
+      return {
+        receiver: depotKey,
+        description,
+        footerTextLeft: `Depot ${depotKey}`,
+        footerTextCenter: `Lieferschein ${prettyDate}`,
+        tables: Array.from(
+          dataByProductCategory.entries(),
           ([name, tableData]) =>
             ({
               name,
               headers: ["Bezeichnung", "Menge", "Bemerkung"],
               widths: ["50%", "15%", "35%"],
-              rows: tableData.sort((a, b) => a[0].localeCompare(b[0])),
+              rows: tableData.sort(byKey((row) => row[0], inLocaleOrder)),
             }) as PdfTable,
-        ),
-    });
-    await zip.addPdf(pdf, `${sanitizeFileName(depotKey)}.pdf`);
+        ).sort(byKey((table) => table.name, inLocaleOrder)),
+      };
+    },
+  ).sort(byKey((pdf) => pdf.receiver, inLocaleOrder));
+}
+
+export async function createShipmentPackagingPdfs(
+  shipment: Shipment,
+  depots: Depot[],
+  productsById: ProductsById,
+  productCategories: ProductCategoryWithProducts[],
+) {
+  const pdfs = createShipmentPackagingPdfSpecs(
+    shipment,
+    depots,
+    productsById,
+    productCategories,
+  );
+
+  const zip = new Zip();
+  for (const pdf of pdfs) {
+    await zip.addPdf(
+      createDefaultPdf(pdf),
+      `${sanitizeFileName(pdf.receiver)}.pdf`,
+    );
   }
 
   zip.download(`shipments-${format(shipment.validFrom, "yyyy-MM-dd")}.zip`);
