@@ -26,7 +26,7 @@ import {
   MILK_PRODUCTS,
   TOMATO,
   VEGETABLES,
-} from "../../../testSetup.ts";
+} from "../../testSetup.ts";
 import { createShipmentPackagingPdfSpecs } from "./shipmentPackagingPdf.ts";
 import { grouping } from "../utils.ts";
 import {

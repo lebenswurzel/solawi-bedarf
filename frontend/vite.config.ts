@@ -32,7 +32,7 @@ export default defineConfig({
   */
   //base: "2024",
   test: {
-    setupFiles: ["./testSetup.ts"],
+    setupFiles: ["src/testSetup.ts"],
   },
   server: {
     proxy: {
