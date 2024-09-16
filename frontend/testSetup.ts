@@ -1,6 +1,14 @@
 import { beforeEach } from "vitest";
 import { Unit } from "../shared/src/enum";
-import { Product, ProductCategoryWithProducts } from "../shared/src/types";
+import {
+  Depot,
+  NewDepot,
+  NewProduct,
+  Product,
+  ProductCategoryWithProducts,
+  Shipment,
+  ShipmentItem,
+} from "../shared/src/types";
 
 let NEXT_ID = 0;
 
@@ -13,7 +21,7 @@ export function genId(): number {
 }
 
 export const TOMATO = {
-  description: "a tasty tomato",
+  description: "",
   name: "Tomato",
   active: true,
   msrp: 1,
@@ -26,7 +34,7 @@ export const TOMATO = {
 };
 
 export const CUCUMBER = {
-  description: "a tasty cucumber",
+  description: "",
   name: "Cucumber",
   active: true,
   msrp: 1,
@@ -39,7 +47,7 @@ export const CUCUMBER = {
 };
 
 export const MILK = {
-  description: "Milk",
+  description: "",
   name: "Milk",
   active: true,
   msrp: 1,
@@ -76,7 +84,7 @@ export function genProductGroupWithProducts(
   return result;
 }
 
-export function genProduct(overwrite: Partial<Product> = {}): Product {
+export function genProduct(overwrite: Partial<NewProduct> = {}): Product {
   let id = genId();
   const base: Product = {
     id: id,
@@ -91,6 +99,51 @@ export function genProduct(overwrite: Partial<Product> = {}): Product {
     quantityStep: 5,
     unit: Unit.WEIGHT,
     productCategoryId: 0,
+  };
+  return { ...base, ...overwrite };
+}
+
+export function genDepot(overwrite: Partial<NewDepot> = {}): Depot {
+  let id = genId();
+  const base: Depot = {
+    id: id,
+    name: "Main depot",
+    address: "Address",
+    openingHours: "Opening Hours",
+    comment: null,
+    capacity: null,
+    active: true,
+  };
+  return { ...base, ...overwrite };
+}
+
+export function genShipment(overwrite: Partial<Shipment> = {}): Shipment {
+  const base: Shipment = {
+    description: null,
+    validFrom: new Date(),
+    shipmentItems: [],
+    additionalShipmentItems: [],
+    active: true,
+    updatedAt: new Date(),
+  };
+  return { ...base, ...overwrite };
+}
+
+export function genShipmentItem(
+  product: Product,
+  depot: Depot,
+  overwrite: Partial<ShipmentItem> = {},
+): ShipmentItem {
+  const base: ShipmentItem = {
+    productId: product.id,
+    depotId: depot.id,
+    totalShipedQuantity: 1,
+    unit: product.unit,
+    isBio: true,
+    description: product.description,
+    multiplicator: 100,
+    conversionFrom: 1,
+    conversionTo: 1,
   };
   return { ...base, ...overwrite };
 }
