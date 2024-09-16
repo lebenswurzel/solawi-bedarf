@@ -8,7 +8,7 @@ updates:
   - package-ecosystem: "npm"
     directory: "/frontend"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     groups:
       vue-and-vite-deps:
         dependency-type: production
@@ -37,7 +37,7 @@ updates:
   - package-ecosystem: "npm"
     directory: "/backend"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     groups:
       coding-and-language:
         dependency-type: production
