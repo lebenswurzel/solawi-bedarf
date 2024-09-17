@@ -26,17 +26,28 @@ import { generateOverviewPdf } from "../pdf/pdf";
 import { sanitizeFileName } from "../../../../shared/src/util/fileHelper";
 import { format } from "date-fns/format";
 
-export const createShipmentOverviewPdf = async (
+type DepotKey = string;
+type ProductCategoryKey = string;
+type ProductKey = string;
+type ProductAmount = number;
+
+type DataByProductCategoryAndProduct = {
+  [key: ProductCategoryKey]: {
+    [key: DepotKey]: { [key: ProductKey]: ProductAmount };
+  };
+};
+
+export const createShipmentOverviewPdfSpec = (
   shipment: Shipment,
   depots: Depot[],
   productsById: ProductsById,
   productCategories: ProductCategoryWithProducts[],
 ) => {
   const dataByDepotAndProductCategory: {
-    [key: string]: {
-      [key: string]: {
-        Bezeichnung: string;
-        Menge: number;
+    [key: DepotKey]: {
+      [key: ProductCategoryKey]: {
+        Bezeichnung: ProductKey;
+        Menge: ProductAmount;
       }[];
     };
   } = {};
@@ -73,9 +84,7 @@ export const createShipmentOverviewPdf = async (
       Menge: item.totalShipedQuantity,
     });
   }
-  const dataByProductCategoryAndProduct: {
-    [key: string]: { [key: string]: { [key: string]: number } };
-  } = {};
+  const dataByProductCategoryAndProduct: DataByProductCategoryAndProduct = {};
   const depotKeys = Object.keys(dataByDepotAndProductCategory);
   for (let depotKey of depotKeys) {
     const productCategoryKeys = Object.keys(
@@ -103,6 +112,22 @@ export const createShipmentOverviewPdf = async (
       }
     }
   }
+
+  return dataByProductCategoryAndProduct;
+};
+
+export const createShipmentOverviewPdf = async (
+  shipment: Shipment,
+  depots: Depot[],
+  productsById: ProductsById,
+  productCategories: ProductCategoryWithProducts[],
+) => {
+  const dataByProductCategoryAndProduct = createShipmentOverviewPdfSpec(
+    shipment,
+    depots,
+    productsById,
+    productCategories,
+  );
   const zip = new JSZip();
   const productCategoryKeys = Object.keys(dataByProductCategoryAndProduct);
   for (let productCategoryKey of productCategoryKeys) {
