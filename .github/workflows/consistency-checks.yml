@@ -3,6 +3,7 @@ on: [pull_request, push]
 
 jobs:
   file-checks:
+    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
 
     steps:

@@ -6,7 +6,8 @@ defaults:
     working-directory: backend
 
 jobs:
-  test-postgres:
+  test-backend:
+    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     container: node:18
 
