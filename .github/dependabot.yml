@@ -1,69 +1,11 @@
-# To get started with Dependabot version updates, you'll need to specify which
-# package ecosystems to update and where the package manifests are located.
-# Please see the documentation for all configuration options:
-# https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
-
 version: 2
 updates:
   - package-ecosystem: "npm"
     directory: "/frontend"
     schedule:
       interval: "monthly"
-    groups:
-      vue-and-vite-deps:
-        dependency-type: production
-        patterns:
-          - "vue*"
-          - "vite*"
-          - "pinia"
-      coding-and-language:
-        dependency-type: production
-        patterns:
-          - "typescript"
-          - "prettier"
-          - "eslint*"
-      tools:
-        dependency-type: production
-        patterns:
-          - "*pdfmake*"
-          - "date-fns"
-          - "jszip"
-          - "marked"
-      everything-else:
-        dependency-type: production
-        patterns:
-          - "*" # captures everything that wasn't included in any of the above groups
 
   - package-ecosystem: "npm"
     directory: "/backend"
     schedule:
       interval: "monthly"
-    groups:
-      coding-and-language:
-        dependency-type: production
-        patterns:
-          - "typescript"
-          - "prettier"
-          - "eslint*"
-          - "ts-node"
-          - "reflect-metadata"
-      database:
-        dependency-type: production
-        patterns:
-          - "typeorm"
-          - "pg"
-      koa:
-        dependency-type: production
-        patterns:
-          - "*koa*"
-      tools:
-        dependency-type: production
-        patterns:
-          - "basic-auth"
-          - "jsonwebtoken"
-          - "*ldapjs"
-          - "*nodemailer"
-          - "*node*"
-      everything-else:
-        patterns:
-          - "*" # captures everything that wasn't included in any of the above groups
