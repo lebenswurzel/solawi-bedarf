@@ -28,7 +28,7 @@ const defaultDepot: NewDepot = {
   active: false,
 };
 
-const depots = ref<Depot[]>();
+const depots = ref<Depot[]>([]);
 const open = ref(false);
 const dialogDepot = ref<NewDepot | Depot>({ ...defaultDepot });
 
@@ -48,6 +48,10 @@ const onEditDepot = (depot: Depot) => {
   open.value = true;
 };
 
+const onChangeDepotRank = (__depot: Depot, __offset: number) => {
+  alert("Implementierung fehlt");
+};
+
 const onClose = async () => {
   depots.value = await getDepots();
   open.value = false;
@@ -59,11 +63,24 @@ const onClose = async () => {
     <v-card-title> {{ t.title }} </v-card-title>
     <v-card-text>
       <v-list>
-        <v-list-item
-          v-for="depotItem in depots"
-          @click="() => onEditDepot(depotItem)"
-        >
+        <v-list-item v-for="(depotItem, index) in depots">
+          <v-icon icon="mdi-store-off-outline" v-if="!depotItem.active" />
+          <v-icon icon="mdi-store-check" v-if="depotItem.active" />
           {{ depotItem.name }}
+
+          <v-btn-group>
+            <v-btn icon="mdi-pencil" @click="() => onEditDepot(depotItem)" />
+            <v-btn
+              icon="mdi-arrow-up"
+              v-if="index > 0"
+              @click="() => onChangeDepotRank(depotItem, -1)"
+            />
+            <v-btn
+              icon="mdi-arrow-down"
+              v-if="index < depots.length - 1"
+              @click="() => onChangeDepotRank(depotItem, 1)"
+            />
+          </v-btn-group>
         </v-list-item>
       </v-list>
     </v-card-text>
@@ -75,4 +92,3 @@ const onClose = async () => {
   </v-card>
   <DepotDialog :open="open" @close="onClose" />
 </template>
-../../../shared/src/types.ts
