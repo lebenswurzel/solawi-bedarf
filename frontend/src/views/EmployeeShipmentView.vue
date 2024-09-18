@@ -127,9 +127,13 @@ onMounted(async () => {
           v-for="shipment in shipments"
           @click="() => onEditShipment(shipment)"
         >
+          <v-icon :icon="shipment.active ? 'mdi-truck-check' : 'mdi-sprout'" />
+
           {{ format(shipment.validFrom, "dd.MM.yyyy") }} - KW
           {{ getISOWeek(shipment.validFrom).toString() }}
-          {{ shipment.description ? `- ${shipment.description}` : "" }}
+
+          <v-icon v-if="shipment.description" icon="mdi-arrow-right" />
+          {{ shipment.description || "" }}
         </v-list-item>
       </v-list>
     </v-card-text>
