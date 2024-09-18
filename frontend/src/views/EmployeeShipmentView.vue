@@ -122,9 +122,13 @@ onMounted(async () => {
           >{{ t.action.createShipment }}</v-btn
         >
       </v-card-actions>
+      <v-alert title="Hinweis" type="info" closable
+        >Die Reihenfolge der Liste wurde geändert, so dass die aktuellen
+        Verteilungen jetzt oben sind.</v-alert
+      >
       <v-list>
         <v-list-item
-          v-for="shipment in shipments"
+          v-for="shipment in shipments.slice().reverse()"
           @click="() => onEditShipment(shipment)"
         >
           <v-icon :icon="shipment.active ? 'mdi-truck-check' : 'mdi-sprout'" />
