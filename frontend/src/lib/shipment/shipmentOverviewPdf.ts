@@ -16,6 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import JSZip from "jszip";
 import {
+  BaseShipmentItem,
   Depot,
   ProductCategoryWithProducts,
   ProductsById,
@@ -37,53 +38,85 @@ type DataByProductCategoryAndProduct = {
   };
 };
 
+type ProductDescription = {
+  Bezeichnung: ProductKey;
+  Menge: ProductAmount;
+};
+
+type DataByDepotAndProductCategory = {
+  [key: DepotKey]: {
+    [key: ProductCategoryKey]: ProductDescription[];
+  };
+};
+
+const ensureObjectKeys = (
+  obj: DataByDepotAndProductCategory,
+  depotKey: DepotKey,
+  productCategory: ProductCategoryKey,
+): void => {
+  if (!obj[depotKey]) {
+    obj[depotKey] = {};
+  }
+  if (!obj[depotKey][productCategory]) {
+    obj[depotKey][productCategory] = [];
+  }
+};
+
+const createProductDescription = (
+  item: BaseShipmentItem,
+  productName: string,
+): ProductDescription => {
+  return {
+    Bezeichnung: `${productName}${item.isBio ? " [BIO]" : ""} [${getLangUnit(item.unit)}]`,
+    Menge: item.totalShipedQuantity,
+  };
+};
+
 export const createShipmentOverviewPdfSpec = (
   shipment: Shipment,
   depots: Depot[],
   productsById: ProductsById,
   productCategories: ProductCategoryWithProducts[],
 ) => {
-  const dataByDepotAndProductCategory: {
-    [key: DepotKey]: {
-      [key: ProductCategoryKey]: {
-        Bezeichnung: ProductKey;
-        Menge: ProductAmount;
-      }[];
-    };
-  } = {};
+  const findDepotName = (depotId: number): DepotKey => {
+    return depots.find((d) => d.id == depotId)?.name || "Unbekanntes Depot";
+  };
+
+  const findProductCategory = (
+    productCategoryId: number,
+  ): ProductCategoryKey => {
+    return (
+      productCategories.find((pc) => pc.id == productCategoryId)?.name ||
+      "Unbekannte Kategorie"
+    );
+  };
+
+  const dataByDepotAndProductCategory: DataByDepotAndProductCategory = {};
+
+  // collect products
   for (let item of shipment.shipmentItems) {
-    const depot =
-      depots.find((d) => d.id == item.depotId)?.name || "Unbekanntes Depot";
+    const depotKey: DepotKey = findDepotName(item.depotId);
     const product = productsById[item.productId];
-    const productCategory =
-      productCategories.find((pc) => pc.id == product.productCategoryId)
-        ?.name || "Unbekannte Kategorie";
-    if (!dataByDepotAndProductCategory[depot]) {
-      dataByDepotAndProductCategory[depot] = {};
-    }
-    if (!dataByDepotAndProductCategory[depot][productCategory]) {
-      dataByDepotAndProductCategory[depot][productCategory] = [];
-    }
-    dataByDepotAndProductCategory[depot][productCategory].push({
-      Bezeichnung: `${product.name}${item.isBio ? " [BIO]" : ""} [${getLangUnit(item.unit)}]`,
-      Menge: item.totalShipedQuantity,
-    });
+    const productCategory = findProductCategory(product.productCategoryId);
+    ensureObjectKeys(dataByDepotAndProductCategory, depotKey, productCategory);
+    dataByDepotAndProductCategory[depotKey][productCategory].push(
+      createProductDescription(item, product.name),
+    );
   }
+
+  // collect additional products
   for (let item of shipment.additionalShipmentItems) {
+    const depotKey: DepotKey = findDepotName(item.depotId);
     const productCategory = "Zusätzliches Angebot";
-    const depot =
-      depots.find((d) => d.id == item.depotId)?.name || "Unbekanntes Depot";
-    if (!dataByDepotAndProductCategory[depot]) {
-      dataByDepotAndProductCategory[depot] = {};
-    }
-    if (!dataByDepotAndProductCategory[depot][productCategory]) {
-      dataByDepotAndProductCategory[depot][productCategory] = [];
-    }
-    dataByDepotAndProductCategory[depot][productCategory].push({
-      Bezeichnung: `${item.product}${item.isBio ? " [BIO]" : ""} [${getLangUnit(item.unit)}]`,
-      Menge: item.totalShipedQuantity,
-    });
+    ensureObjectKeys(dataByDepotAndProductCategory, depotKey, productCategory);
+    dataByDepotAndProductCategory[depotKey][productCategory].push(
+      createProductDescription(item, item.product),
+    );
   }
+
+  // group products by:
+  // 1. product category names
+  // 2. depot names
   const dataByProductCategoryAndProduct: DataByProductCategoryAndProduct = {};
   const depotKeys = Object.keys(dataByDepotAndProductCategory);
   for (let depotKey of depotKeys) {
