@@ -162,12 +162,15 @@ export type DeliveredByProductIdDepotId = {
   };
 };
 
-export interface ShipmentItem {
-  productId: number;
+export interface BaseShipmentItem {
   depotId: number;
   totalShipedQuantity: number; // delivered quantity
   unit: Unit; // delivered unit
   isBio: boolean;
+}
+
+export interface ShipmentItem extends BaseShipmentItem {
+  productId: number;
   description: string | null;
   multiplicator: number;
   conversionFrom: number; // in requested units
@@ -182,13 +185,9 @@ export interface EditShipmentItem
   showItem: boolean;
 }
 
-export interface AdditionalShipmentItem {
+export interface AdditionalShipmentItem extends BaseShipmentItem {
   product: string;
-  depotId: number;
-  totalShipedQuantity: number; // delivered quantity
   quantity: number; // quantity per user in delivered units
-  unit: Unit; // delivered unit
-  isBio: boolean;
   description: string | null;
 }
 
