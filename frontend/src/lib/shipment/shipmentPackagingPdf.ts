@@ -17,9 +17,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import {
   Depot,
+  Product,
   ProductCategoryWithProducts,
   ProductsById,
   Shipment,
+  ShipmentItem,
 } from "../../../../shared/src/types";
 import { getLangUnit } from "../../lang/template";
 import { multiplicatorOptions } from "../options";
@@ -39,7 +41,34 @@ type GroupedProducts = Map<string, ProductRow[]>;
 type DepotGroupedProducts = Map<string, GroupedProducts>;
 
 function joinStrings(...strings: (string | null | undefined)[]): string {
-  return strings.filter((s) => !!s).join(" ");
+  return strings.filter((s) => !!s).join(" - ");
+}
+
+const NUMBER_FORMAT = new Intl.NumberFormat("de-DE", {
+  maximumFractionDigits: 2,
+});
+
+export function formatNumber(v: number): string {
+  return NUMBER_FORMAT.format(v);
+}
+
+export function formatQuantityChange(
+  item: ShipmentItem,
+  product: Product,
+): string {
+  if (item.unit != product.unit || item.conversionFrom != item.conversionTo) {
+    const mul = item.multiplicator / 100;
+    return `${item.conversionFrom} ${getLangUnit(product.unit)} -> ${formatNumber(item.conversionTo * mul)} ${getLangUnit(item.unit)}`;
+  } else {
+    if (item.multiplicator != 100) {
+      return (
+        multiplicatorOptions.find((mo) => mo.value == item.multiplicator)
+          ?.title ?? ""
+      );
+    } else {
+      return "";
+    }
+  }
 }
 
 export function createShipmentPackagingPdfSpecs(
@@ -66,20 +95,11 @@ export function createShipmentPackagingPdfSpecs(
       productCategory,
       () => [],
     );
-    const multiplicator =
-      item.multiplicator != 100
-        ? multiplicatorOptions.find((mo) => mo.value == item.multiplicator)
-            ?.title
-        : "";
-    const conversion =
-      item.unit != product.unit || item.conversionFrom != item.conversionTo
-        ? `(${item.conversionFrom} ${getLangUnit(product.unit)} -> ${item.conversionTo} ${getLangUnit(item.unit)})`
-        : "";
     const description = item.description ? item.description : "";
     rows.push([
       `${product.name}${item.isBio ? " [BIO]" : ""}`,
       `${item.totalShipedQuantity} ${getLangUnit(item.unit)}`,
-      joinStrings(multiplicator, conversion, description),
+      joinStrings(formatQuantityChange(item, product), description),
     ]);
   }
 

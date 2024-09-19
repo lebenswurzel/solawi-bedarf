@@ -27,12 +27,16 @@ import {
   TOMATO,
   VEGETABLES,
 } from "../../testSetup.ts";
-import { createShipmentPackagingPdfSpecs } from "./shipmentPackagingPdf.ts";
+import {
+  createShipmentPackagingPdfSpecs,
+  formatQuantityChange,
+} from "./shipmentPackagingPdf.ts";
 import { grouping } from "../utils.ts";
 import {
   ProductCategoryWithProducts,
   ProductsById,
 } from "../../../../shared/src/types.ts";
+import { Unit } from "../../../../shared/src/enum.ts";
 
 function getProductsById(
   productCategories: ProductCategoryWithProducts[],
@@ -106,5 +110,80 @@ describe("create shipment pdfs", () => {
         rows: [[MILK.name + " [BIO]", "7000 ml", ""]],
       },
     ]);
+  });
+});
+
+describe("format quantity change", () => {
+  test("of no change", () => {
+    // ARRANGE
+    const product = genProduct(TOMATO);
+    const item = genShipmentItem(product, genDepot());
+
+    // ACT
+    const actual = formatQuantityChange(item, product);
+
+    // ASSERT
+    expect(actual).toBe("");
+  });
+
+  test("of 2x", () => {
+    // ARRANGE
+    const product = genProduct(TOMATO);
+    const item = genShipmentItem(product, genDepot(), {
+      multiplicator: 200,
+    });
+
+    // ACT
+    const actual = formatQuantityChange(item, product);
+
+    // ASSERT
+    expect(actual).toBe("2x");
+  });
+
+  test("of 0.5x", () => {
+    // ARRANGE
+    const product = genProduct(TOMATO);
+    const item = genShipmentItem(product, genDepot(), {
+      multiplicator: 50,
+    });
+
+    // ACT
+    const actual = formatQuantityChange(item, product);
+
+    // ASSERT
+    expect(actual).toBe("0,5x");
+  });
+
+  test("of (1 Stk. -> 100 g)", () => {
+    // ARRANGE
+    const product = genProduct(CUCUMBER);
+    const item = genShipmentItem(product, genDepot(), {
+      conversionFrom: 1,
+      conversionTo: 100,
+      unit: Unit.WEIGHT,
+    });
+
+    // ACT
+    const actual = formatQuantityChange(item, product);
+
+    // ASSERT
+    expect(actual).toBe("1 Stk. -> 100 g");
+  });
+
+  test("of 2x (1 Stk. -> 100 g)", () => {
+    // ARRANGE
+    const product = genProduct(CUCUMBER);
+    const item = genShipmentItem(product, genDepot(), {
+      multiplicator: 200,
+      conversionFrom: 1,
+      conversionTo: 100,
+      unit: Unit.WEIGHT,
+    });
+
+    // ACT
+    const actual = formatQuantityChange(item, product);
+
+    // ASSERT
+    expect(actual).toBe("1 Stk. -> 200 g");
   });
 });
