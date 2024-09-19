@@ -18,7 +18,7 @@ import { Unit } from "../../../shared/src/enum";
 
 export const multiplicatorOptions = [
   {
-    title: "0.5x",
+    title: "0,5x",
     value: 50,
   },
   {
@@ -26,7 +26,7 @@ export const multiplicatorOptions = [
     value: 100,
   },
   {
-    title: "1.5x",
+    title: "1,5x",
     value: 150,
   },
   {
