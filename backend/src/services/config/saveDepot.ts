@@ -60,16 +60,25 @@ export const saveDepot = async (
       ctx.status = http.no_content;
     }
   } else {
+    // new depot
     const depot = new Depot();
     depot.name = requestDepot.name;
     depot.address = requestDepot.address;
     depot.openingHours = requestDepot.openingHours;
     depot.capacity = requestDepot.capacity;
     depot.active = requestDepot.active;
+    depot.rank = (await getMaxRank()) + 1;
     if (requestDepot.comment) {
       depot.comment = requestDepot.comment;
     }
     await AppDataSource.getRepository(Depot).save(depot);
     ctx.status = http.created;
   }
+};
+
+const getMaxRank = async (): Promise<number> => {
+  const result = await AppDataSource.createQueryBuilder(Depot, "depot")
+    .select("MAX(depot.rank)", "maxRank")
+    .getRawOne();
+  return result?.maxRank ?? 0;
 };

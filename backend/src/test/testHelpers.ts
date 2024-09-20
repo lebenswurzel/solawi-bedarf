@@ -30,21 +30,23 @@ export const fillDatabaseWithTestData = async () => {
   const products = ["p1", "p2", "p3", "p4"];
   const depots = ["d1", "d2", "d3"];
 
+  let rank = 1;
   for (const depot of depots) {
-    await createTestDepot(depot);
+    await createTestDepot(depot, rank++);
   }
   for (const product of products) {
     await createTestProduct(product);
   }
 };
 
-const createTestDepot = async (name: string) => {
+const createTestDepot = async (name: string, rank: number) => {
   AppDataSource.getRepository(Depot).save({
     name,
     address: `${name} address`,
     openingHours: "9-5",
     capacity: 12,
     active: true,
+    rank,
   });
 };
 

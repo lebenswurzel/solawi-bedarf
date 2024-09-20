@@ -110,7 +110,11 @@ export interface NewDepot {
   active: boolean;
 }
 
-export type Depot = Required<NewDepot> & Id;
+export interface RankedDepot {
+  rank: number;
+}
+
+export type Depot = Required<NewDepot> & Id & RankedDepot;
 
 export interface NewTextContent {
   title: string;

@@ -27,13 +27,19 @@ import {
 } from "../../shared/src/types";
 
 let NEXT_ID = 0;
+let NEXT_RANK = 1;
 
 beforeEach(() => {
   NEXT_ID = 0;
+  NEXT_RANK = 1;
 });
 
 export function genId(): number {
   return NEXT_ID++;
+}
+
+export function genRank(): number {
+  return NEXT_RANK++;
 }
 
 export const TOMATO = {
@@ -129,6 +135,7 @@ export function genDepot(overwrite: Partial<NewDepot> = {}): Depot {
     comment: null,
     capacity: null,
     active: true,
+    rank: 1,
   };
   return { ...base, ...overwrite };
 }
