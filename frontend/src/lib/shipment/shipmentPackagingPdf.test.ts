@@ -186,4 +186,21 @@ describe("format quantity change", () => {
     // ASSERT
     expect(actual).toBe("1 Stk. -> 200 g");
   });
+
+  test("of 1 Stk. -> 2 Stk.", () => {
+    // e.g., if two small cucumbers count as one
+    // ARRANGE
+    const product = genProduct(CUCUMBER);
+    const item = genShipmentItem(product, genDepot(), {
+      conversionFrom: 1,
+      conversionTo: 2,
+      unit: Unit.PIECE,
+    });
+
+    // ACT
+    const actual = formatQuantityChange(item, product);
+
+    // ASSERT
+    expect(actual).toBe("1 Stk. -> 2 Stk.");
+  });
 });
