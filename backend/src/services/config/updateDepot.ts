@@ -14,23 +14,42 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { AppDataSource } from "../../database/database";
 import { getUserFromContext } from "../getUserFromContext";
+import { http } from "../../consts/http";
 import Koa from "koa";
 import Router from "koa-router";
-import { http } from "../../consts/http";
-import { Depot } from "../../database/Depot";
 import { UserRole } from "../../../../shared/src/enum";
+import { UpdateDepot } from "../../../../shared/src/types";
+import { AppDataSource } from "../../database/database";
+import { Depot } from "../../database/Depot";
 
-export const getDepot = async (
+export const updateDepot = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
 ) => {
   const { role } = await getUserFromContext(ctx);
   if (role != UserRole.ADMIN) {
     ctx.throw(http.forbidden);
   }
-  const depots = await AppDataSource.getRepository(Depot).find({
-    order: { rank: "ASC" },
+  const updateRequest = ctx.request.body as UpdateDepot;
+  const depot = await AppDataSource.getRepository(Depot).findOneBy({
+    id: updateRequest.id,
   });
-  ctx.body = { depots };
+  if (!depot) {
+    ctx.throw(http.bad_request);
+  }
+
+  if (updateRequest.rankDown || updateRequest.rankUp) {
+    const newRank = depot.rank + (updateRequest.rankDown ? -1 : 1);
+    const swappedDepot = await AppDataSource.getRepository(Depot).findOneBy({
+      rank: newRank,
+    });
+    if (!swappedDepot) {
+      ctx.throw(http.bad_request);
+    }
+    await AppDataSource.transaction(async (entityManager) => {
+      await entityManager.update(Depot, depot.id, { rank: newRank });
+      await entityManager.update(Depot, swappedDepot.id, { rank: depot.rank });
+    });
+    ctx.status = http.ok;
+  }
 };

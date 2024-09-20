@@ -14,7 +14,12 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { Depot, NewDepot, OptionalId } from "../../../shared/src/types.ts";
+import {
+  Depot,
+  NewDepot,
+  OptionalId,
+  UpdateDepot,
+} from "../../../shared/src/types.ts";
 import { getUrl, verifyResponse } from "./requests.ts";
 
 export const getDepots = async (): Promise<Depot[]> => {
@@ -27,6 +32,18 @@ export const getDepots = async (): Promise<Depot[]> => {
 
 export const saveDepot = async (depot: Required<NewDepot> & OptionalId) => {
   const response = await fetch(getUrl("/depot"), {
+    method: "POST",
+    body: JSON.stringify(depot),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  await verifyResponse(response);
+};
+
+export const updateDepot = async (depot: UpdateDepot) => {
+  const response = await fetch(getUrl("/depot/update"), {
     method: "POST",
     body: JSON.stringify(depot),
     headers: {

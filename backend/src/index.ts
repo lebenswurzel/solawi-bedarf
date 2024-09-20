@@ -44,6 +44,7 @@ import { getShipment } from "./services/shipment/getShipment";
 import { getShipments } from "./services/shipment/getShipments";
 import { saveShipment } from "./services/shipment/saveShipment";
 import { biHandler } from "./services/bi/bi";
+import { updateDepot } from "./services/config/updateDepot";
 
 const port = config.server.serverPort;
 const app = new Koa();
@@ -81,6 +82,7 @@ router.get("/config", getConfig);
 router.post("/config", saveConfig);
 router.get("/depot", getDepot);
 router.post("/depot", saveDepot);
+router.post("/depot/update", updateDepot);
 
 router.get("/user", getUser);
 router.get("/user/token", login);
