@@ -4,7 +4,7 @@
 GIT_HASH=$(git rev-parse HEAD)
 GIT_HASH_SHORT=$(echo $GIT_HASH | cut -c 1-10)
 GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-GIT_TAG=$(git describe --tags --abbrev=0 2>/dev/null)
+GIT_TAG=$(git describe --tags --exact-match --abbrev=0 2>/dev/null)
 GIT_COMMIT_DATE=$(git log -1 --format=%cd)
 CURRENT_DATE=$(date)
 
