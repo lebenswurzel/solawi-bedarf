@@ -70,6 +70,7 @@ testAsAdmin("create new depots", async ({ userData }: TestUserData) => {
     openingHours: "9-5",
     capacity: 12,
     active: true,
+    rank: 4,
   });
 
   // create a depot with the same name again -> error
@@ -100,6 +101,7 @@ testAsAdmin("create new depots", async ({ userData }: TestUserData) => {
     comment: "another depot",
     capacity: 9,
     active: false,
+    rank: 5,
   });
 });
 

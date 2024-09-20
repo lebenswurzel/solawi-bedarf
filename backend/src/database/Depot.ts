@@ -39,6 +39,9 @@ export class Depot extends BaseEntity {
   capacity: number | null;
 
   @Column()
+  rank: number;
+
+  @Column()
   active: boolean;
 
   @OneToMany(() => Order, (order) => order.depot)
