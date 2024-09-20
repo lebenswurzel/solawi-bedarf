@@ -17,9 +17,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <script setup lang="ts">
 import { onMounted, provide, ref } from "vue";
 import { language } from "../lang/lang.ts";
-import { getDepots } from "../requests/depot";
+import { getDepots, updateDepot } from "../requests/depot";
 import DepotDialog from "../components/DepotDialog.vue";
-import { NewDepot, Depot } from "../../../shared/src/types";
+import { NewDepot, Depot, UpdateDepot } from "../../../shared/src/types";
 const t = language.pages.depots;
 
 const defaultDepot: NewDepot = {
@@ -35,8 +35,12 @@ const dialogDepot = ref<NewDepot | Depot>({ ...defaultDepot });
 provide("dialogDepot", dialogDepot);
 
 onMounted(async () => {
-  depots.value = await getDepots();
+  await refresh();
 });
+
+const refresh = async () => {
+  depots.value = await getDepots();
+};
 
 const onCreateDepot = () => {
   dialogDepot.value = { ...defaultDepot };
@@ -48,12 +52,18 @@ const onEditDepot = (depot: Depot) => {
   open.value = true;
 };
 
-const onChangeDepotRank = (__depot: Depot, __offset: number) => {
-  alert("Implementierung fehlt");
+const onChangeDepotRank = async (depot: Depot, offset: number) => {
+  const update: UpdateDepot = {
+    id: depot.id,
+    rankDown: offset < 0,
+    rankUp: offset > 0,
+  };
+  await updateDepot(update);
+  refresh();
 };
 
 const onClose = async () => {
-  depots.value = await getDepots();
+  await refresh();
   open.value = false;
 };
 </script>
@@ -64,19 +74,33 @@ const onClose = async () => {
     <v-card-text>
       <v-list>
         <v-list-item v-for="(depotItem, index) in depots">
-          <v-icon icon="mdi-store-off-outline" v-if="!depotItem.active" />
-          <v-icon icon="mdi-store-check" v-if="depotItem.active" />
+          <v-icon
+            icon="mdi-store-off-outline"
+            color="grey"
+            v-if="!depotItem.active"
+          />
+          <v-icon
+            icon="mdi-store-check"
+            color="green"
+            v-if="depotItem.active"
+          />
           {{ depotItem.name }}
 
-          <v-btn-group>
-            <v-btn icon="mdi-pencil" @click="() => onEditDepot(depotItem)" />
+          <v-btn-group style="height: 36px">
+            <v-btn
+              icon="mdi-pencil"
+              color="blue"
+              @click="() => onEditDepot(depotItem)"
+            />
             <v-btn
               icon="mdi-arrow-up"
+              color="grey-darken-1"
               v-if="index > 0"
               @click="() => onChangeDepotRank(depotItem, -1)"
             />
             <v-btn
               icon="mdi-arrow-down"
+              color="grey-darken-1"
               v-if="index < depots.length - 1"
               @click="() => onChangeDepotRank(depotItem, 1)"
             />

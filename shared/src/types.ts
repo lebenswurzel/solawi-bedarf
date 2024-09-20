@@ -116,6 +116,11 @@ export interface RankedDepot {
 
 export type Depot = Required<NewDepot> & Id & RankedDepot;
 
+export interface UpdateDepot extends Id {
+  rankUp: boolean;
+  rankDown: boolean;
+}
+
 export interface NewTextContent {
   title: string;
   category: TextContentCategory;
