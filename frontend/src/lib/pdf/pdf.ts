@@ -26,16 +26,28 @@ import { logo } from "../../../../shared/src/logo";
 
 (<any>pdfMake).vfs = pdfFonts.vfs;
 
-const jsonToTableData = (data: { [key: string]: string | number }[]) => {
-  const headers: string[] = [];
+export type HeaderSortKeys = { [key: string]: number };
+
+const jsonToTableData = (
+  data: { [key: string]: string | number }[],
+  headerSortKeys?: HeaderSortKeys,
+) => {
+  let headers: string[] = [];
   for (let item of data) {
-    const itemKeys = Object.keys(item);
+    const itemKeys = Object.keys(item); // depot keys
     for (let itemKey of itemKeys) {
       if (!headers.includes(itemKey)) {
         headers.push(itemKey);
       }
     }
   }
+
+  if (headerSortKeys) {
+    headers = headers.sort((h1, h2) => {
+      return (headerSortKeys[h1] ?? 0) - (headerSortKeys[h2] ?? 0);
+    });
+  }
+
   const tableData: (string | number)[][] = data
     .map((item) => headers.map((header) => item[header] || ""))
     .sort((row1, row2) => {
@@ -157,6 +169,7 @@ export function createDefaultPdf(pdf: PdfSpec): TCreatedPdf {
 const createOverviewPdf = (
   data: { [key: string]: { [key: string]: number } },
   description: string,
+  headerSortKeys?: HeaderSortKeys,
 ): TDocumentDefinitions => {
   const content: Content = [
     {
@@ -166,6 +179,7 @@ const createOverviewPdf = (
   ];
   const tableData = jsonToTableData(
     Object.entries(data).map(([k, v]) => ({ Bezeichnung: k, ...v })),
+    headerSortKeys,
   );
   content.push({
     table: {
@@ -189,7 +203,8 @@ const createOverviewPdf = (
 export const generateOverviewPdf = (
   data: { [key: string]: { [key: string]: number } },
   description: string,
+  headerSortKeys?: HeaderSortKeys,
 ) => {
-  const pdfDefinition = createOverviewPdf(data, description);
+  const pdfDefinition = createOverviewPdf(data, description, headerSortKeys);
   return pdfMake.createPdf(pdfDefinition);
 };

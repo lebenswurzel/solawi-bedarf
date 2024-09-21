@@ -135,7 +135,7 @@ export function genDepot(overwrite: Partial<NewDepot> = {}): Depot {
     comment: null,
     capacity: null,
     active: true,
-    rank: 1,
+    rank: genRank(),
   };
   return { ...base, ...overwrite };
 }
