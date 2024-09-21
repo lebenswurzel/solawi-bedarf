@@ -73,39 +73,44 @@ const onClose = async () => {
     <v-card-title> {{ t.title }} </v-card-title>
     <v-card-text>
       <v-list>
-        <v-list-item v-for="(depotItem, index) in depots">
-          <v-icon
-            icon="mdi-store-off-outline"
-            color="grey"
-            v-if="!depotItem.active"
-          />
-          <v-icon
-            icon="mdi-store-check"
-            color="green"
-            v-if="depotItem.active"
-          />
-          {{ depotItem.name }}
+        <transition-group name="list" tag="div">
+          <v-list-item
+            v-for="(depotItem, index) in depots"
+            :key="depotItem.name"
+          >
+            <v-icon
+              icon="mdi-store-off-outline"
+              color="grey"
+              v-if="!depotItem.active"
+            />
+            <v-icon
+              icon="mdi-store-check"
+              color="green"
+              v-if="depotItem.active"
+            />
+            {{ depotItem.name }}
 
-          <v-btn-group style="height: 36px">
-            <v-btn
-              icon="mdi-pencil"
-              color="blue"
-              @click="() => onEditDepot(depotItem)"
-            />
-            <v-btn
-              icon="mdi-arrow-up"
-              color="grey-darken-1"
-              v-if="index > 0"
-              @click="() => onChangeDepotRank(depotItem, -1)"
-            />
-            <v-btn
-              icon="mdi-arrow-down"
-              color="grey-darken-1"
-              v-if="index < depots.length - 1"
-              @click="() => onChangeDepotRank(depotItem, 1)"
-            />
-          </v-btn-group>
-        </v-list-item>
+            <v-btn-group style="height: 36px">
+              <v-btn
+                icon="mdi-pencil"
+                color="blue"
+                @click="() => onEditDepot(depotItem)"
+              />
+              <v-btn
+                icon="mdi-arrow-up"
+                color="grey-darken-1"
+                v-if="index > 0"
+                @click="() => onChangeDepotRank(depotItem, -1)"
+              />
+              <v-btn
+                icon="mdi-arrow-down"
+                color="grey-darken-1"
+                v-if="index < depots.length - 1"
+                @click="() => onChangeDepotRank(depotItem, 1)"
+              />
+            </v-btn-group>
+          </v-list-item>
+        </transition-group>
       </v-list>
     </v-card-text>
     <v-card-actions>
@@ -116,3 +121,9 @@ const onClose = async () => {
   </v-card>
   <DepotDialog :open="open" @close="onClose" />
 </template>
+
+<style>
+.list-move {
+  transition: transform 0.2s ease;
+}
+</style>
