@@ -74,10 +74,7 @@ const onClose = async () => {
     <v-card-text>
       <v-list>
         <transition-group name="list" tag="div">
-          <v-list-item
-            v-for="(depotItem, index) in depots"
-            :key="depotItem.name"
-          >
+          <v-list-item v-for="(depotItem, index) in depots" :key="depotItem.id">
             <v-icon
               icon="mdi-store-off-outline"
               color="grey"
