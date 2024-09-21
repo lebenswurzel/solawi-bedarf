@@ -23,7 +23,7 @@ import {
   Shipment,
 } from "../../../../shared/src/types";
 import { getLangUnit } from "../../lang/template";
-import { generateOverviewPdf } from "../pdf/pdf";
+import { generateOverviewPdf, HeaderSortKeys } from "../pdf/pdf";
 import { sanitizeFileName } from "../../../../shared/src/util/fileHelper";
 import { format } from "date-fns/format";
 
@@ -77,7 +77,7 @@ export const createShipmentOverviewPdfSpec = (
   depots: Depot[],
   productsById: ProductsById,
   productCategories: ProductCategoryWithProducts[],
-) => {
+): DataByProductCategoryAndProduct => {
   const findDepotName = (depotId: number): DepotKey => {
     return depots.find((d) => d.id == depotId)?.name || "Unbekanntes Depot";
   };
@@ -149,6 +149,20 @@ export const createShipmentOverviewPdfSpec = (
   return dataByProductCategoryAndProduct;
 };
 
+const getOverviewSortKeys = (depots: Depot[]): HeaderSortKeys => {
+  const headerDepotSortKeys = depots
+    .filter((depot) => !!depot.name)
+    .reduce((acc, depot) => {
+      acc[depot.name] = depot.rank;
+      return acc;
+    }, {} as HeaderSortKeys);
+  return {
+    Bezeichnung: -2,
+    Summe: -1,
+    ...headerDepotSortKeys,
+  };
+};
+
 export const createShipmentOverviewPdf = async (
   shipment: Shipment,
   depots: Depot[],
@@ -163,10 +177,15 @@ export const createShipmentOverviewPdf = async (
   );
   const zip = new JSZip();
   const productCategoryKeys = Object.keys(dataByProductCategoryAndProduct);
+
   for (let productCategoryKey of productCategoryKeys) {
     const dataByProduct = dataByProductCategoryAndProduct[productCategoryKey];
     let description = `Übersicht für ${productCategoryKey} vom ${format(shipment.validFrom, "dd.MM.yyyy")}`;
-    const pdf = generateOverviewPdf(dataByProduct, description);
+    const pdf = generateOverviewPdf(
+      dataByProduct,
+      description,
+      getOverviewSortKeys(depots),
+    );
     const blob: Blob = await new Promise((resolve, _) => {
       pdf.getBlob((blob) => resolve(blob));
     });
