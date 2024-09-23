@@ -198,7 +198,7 @@ const onShipmentOverviewPdfClick = async () => {
       <v-card-title>
         {{ t.title }} KW {{ getISOWeek(editShipment.validFrom).toString() }}
       </v-card-title>
-      <v-card-text>
+      <v-card-text style="overflow-y: auto">
         <v-row align="start" justify="center">
           <v-col cols="3">
             <v-text-field
