@@ -53,9 +53,18 @@ cd backend
 npm run test
 ```
 
+## Releasing
+
+A new release in Github can be created using the helper script `./dev/new-release.bash`.
+
+Make sure to include all relevant changes and release notes in the `# NEW` section in `CHANGELOG.md`
+
+The script will ask for a tag name, release title and will commit, push and create the release in
+Github using the [Github CLI](https://cli.github.com/).
+
 ## Glossary
 
-stock: g/ml/Stk
+todo
 
 ## Database Schemas
 

@@ -75,11 +75,13 @@ git push origin main --tags
 # [vX.Y.Z] - YYYY-MM-DD - Release Title
 # followed by the list of changes until the next header.
 
-release_notes=$(sed -n "/^\# $new_version - .*$/,/^\#/p" CHANGELOG.md | sed '1d;$d')
+release_notes=$(sed -n "/^\# $new_version - .*$/,/^\# NEW/p" CHANGELOG.md | sed '1d;$d')
 
 # Step 8: Create the GitHub release
 gh release create "$new_version" \
     --title "$release_title" \
     --notes "$release_notes"
+
+echo "Release Notes: $release_notes"
 
 echo "Release $new_version titled '$release_title' created and published successfully."
