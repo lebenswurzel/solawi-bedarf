@@ -51,9 +51,10 @@ echo "Release title: $release_title"
 if grep -q "^# NEW" CHANGELOG.md; then
     # Rename # NEW to the new version with the release title and date
     current_date=$(date +%Y-%m-%d)
-    sed -i.bak "s/^# NEW/# [$new_version] - $current_date - $release_title/" CHANGELOG.md
+    sed -i.bak "s/^# NEW/# $new_version - $current_date - $release_title/" CHANGELOG.md
     # Add a new # NEW section at the top
     echo -e "\n# NEW" >> CHANGELOG.md
+    rm CHANGELOG.md.bak
 else
     error "ERROR: CHANGELOG.md does not have a # NEW section."
     exit 1
