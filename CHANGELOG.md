@@ -29,6 +29,8 @@ Dieses Release beinhaltet hauptsächlich Anpassungen an Tests und Automatisierun
 
 Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 
-# NEW
+# [v0.3.3] - 2024-09-26 - Sortierbare Depots
 
 #36 Depots können sortiert werden. Depot-Verteilungsübersicht wird an Hand der Sortierung erzeugt.
+
+# NEW
