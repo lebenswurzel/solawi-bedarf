@@ -27,7 +27,7 @@ import { router } from "./routes";
 const vuetify = createVuetify({
   blueprint: md3,
   theme: {
-    defaultTheme: "light",
+    defaultTheme: localStorage.getItem("theme-color") || "light",
   },
 });
 
