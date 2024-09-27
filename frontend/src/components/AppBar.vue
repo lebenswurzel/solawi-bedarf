@@ -25,6 +25,7 @@ import { useConfigStore } from "../store/configStore.ts";
 import { useProductStore } from "../store/productStore.ts";
 import { useOrderStore } from "../store/orderStore.ts";
 import { UserRole } from "../../../shared/src/enum";
+import { useTheme } from "vuetify";
 
 const drawer = ref(false);
 
@@ -35,6 +36,7 @@ const productStore = useProductStore();
 const orderStore = useOrderStore();
 
 const { currentUser } = storeToRefs(userStore);
+const theme = useTheme();
 
 onMounted(async () => {
   if (window.location.hash != "#/register") {
@@ -49,6 +51,12 @@ const onLogout = async () => {
   productStore.clear();
   configStore.clear();
   await router.push("/login");
+};
+
+const onToggleTheme = () => {
+  const newTheme = theme.global.current.value.dark ? "light" : "dark";
+  localStorage.setItem("theme-color", newTheme);
+  theme.global.name.value = newTheme;
 };
 </script>
 
@@ -74,6 +82,9 @@ const onLogout = async () => {
       </div>
     </v-toolbar-title>
     <template v-slot:append>
+      <v-btn icon @click="onToggleTheme">
+        <v-icon color="secondary">mdi-brightness-4</v-icon>
+      </v-btn>
       <v-btn icon @click="onLogout">
         <v-icon color="secondary">mdi-logout</v-icon>
       </v-btn>
