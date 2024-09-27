@@ -20,6 +20,8 @@ import { language } from "../lang/lang.ts";
 import { getDepots, updateDepot } from "../requests/depot";
 import DepotDialog from "../components/DepotDialog.vue";
 import { NewDepot, Depot, UpdateDepot } from "../../../shared/src/types";
+import BusyIndicator from "../components/BusyIndicator.vue";
+import { useError } from "../store/errorStore.ts";
 const t = language.pages.depots;
 
 const defaultDepot: NewDepot = {
@@ -32,6 +34,7 @@ const depots = ref<Depot[]>([]);
 const open = ref(false);
 const dialogDepot = ref<NewDepot | Depot>({ ...defaultDepot });
 const busy = ref<boolean>(true);
+const { setError } = useError();
 
 provide("dialogDepot", dialogDepot);
 
@@ -40,8 +43,17 @@ onMounted(async () => {
 });
 
 const refresh = async () => {
-  depots.value = await getDepots();
-  busy.value = false;
+  getDepots()
+    .then((response) => {
+      depots.value = response;
+    })
+    .catch((e: Error) => {
+      console.log(e);
+      setError(e.message);
+    })
+    .finally(() => {
+      busy.value = false;
+    });
 };
 
 const onCreateDepot = () => {
@@ -62,7 +74,12 @@ const onChangeDepotRank = async (depot: Depot, offset: number) => {
     rankDown: offset < 0,
     rankUp: offset > 0,
   };
-  updateDepot(update).then(refresh);
+  updateDepot(update)
+    .then(refresh)
+    .catch((e: Error) => {
+      setError(e.message);
+      busy.value = false;
+    });
 };
 
 const onClose = async () => {
@@ -74,13 +91,9 @@ const onClose = async () => {
 
 <template>
   <v-card class="ma-4">
+    <BusyIndicator :busy="busy" />
     <v-card-title>
       {{ t.title }}
-      <v-progress-circular
-        indeterminate
-        color="primary"
-        v-if="busy"
-      ></v-progress-circular>
     </v-card-title>
     <v-card-text>
       <transition-group name="list" tag="div">
@@ -120,14 +133,14 @@ const onClose = async () => {
                   <v-btn
                     icon="mdi-arrow-up"
                     color="grey-darken-1"
-                    v-if="index > 0"
+                    v-if="index > 0 || true"
                     @click="() => onChangeDepotRank(depotItem, -1)"
                     size="small"
                   />
                   <v-btn
                     icon="mdi-arrow-down"
                     color="grey-darken-1"
-                    v-if="index < depots.length - 1"
+                    v-if="index < depots.length - 1 || true"
                     @click="() => onChangeDepotRank(depotItem, 1)"
                     size="small"
                   />
