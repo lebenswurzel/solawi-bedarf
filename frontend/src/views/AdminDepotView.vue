@@ -31,6 +31,7 @@ const defaultDepot: NewDepot = {
 const depots = ref<Depot[]>([]);
 const open = ref(false);
 const dialogDepot = ref<NewDepot | Depot>({ ...defaultDepot });
+const busy = ref<boolean>(true);
 
 provide("dialogDepot", dialogDepot);
 
@@ -40,9 +41,11 @@ onMounted(async () => {
 
 const refresh = async () => {
   depots.value = await getDepots();
+  busy.value = false;
 };
 
 const onCreateDepot = () => {
+  busy.value = true;
   dialogDepot.value = { ...defaultDepot };
   open.value = true;
 };
@@ -53,16 +56,17 @@ const onEditDepot = (depot: Depot) => {
 };
 
 const onChangeDepotRank = async (depot: Depot, offset: number) => {
+  busy.value = true;
   const update: UpdateDepot = {
     id: depot.id,
     rankDown: offset < 0,
     rankUp: offset > 0,
   };
-  await updateDepot(update);
-  refresh();
+  updateDepot(update).then(refresh);
 };
 
 const onClose = async () => {
+  busy.value = true;
   await refresh();
   open.value = false;
 };
@@ -70,11 +74,24 @@ const onClose = async () => {
 
 <template>
   <v-card class="ma-4">
-    <v-card-title> {{ t.title }} </v-card-title>
+    <v-card-title>
+      {{ t.title }}
+      <v-progress-circular
+        indeterminate
+        color="primary"
+        v-if="busy"
+      ></v-progress-circular>
+    </v-card-title>
     <v-card-text>
-      <v-list>
-        <transition-group name="list" tag="div">
-          <v-list-item v-for="(depotItem, index) in depots" :key="depotItem.id">
+      <transition-group name="list" tag="div">
+        <v-card
+          v-for="(depotItem, index) in depots"
+          :key="depotItem.id"
+          variant="text"
+          :disabled="busy"
+          class="compact"
+        >
+          <v-card-text class="dense">
             <v-row>
               <v-col cols="2" sm="1">
                 <v-icon
@@ -117,9 +134,9 @@ const onClose = async () => {
                 </v-btn-group>
               </v-col>
             </v-row>
-          </v-list-item>
-        </transition-group>
-      </v-list>
+          </v-card-text>
+        </v-card>
+      </transition-group>
     </v-card-text>
     <v-card-actions>
       <v-btn @click="onCreateDepot" prepend-icon="mdi-account-plus-outline">{{
@@ -139,7 +156,11 @@ const onClose = async () => {
   height: 36px !important;
 }
 
-.v-list {
+.compact {
   max-width: 1000px;
+}
+
+.dense {
+  padding: 0.5rem;
 }
 </style>
