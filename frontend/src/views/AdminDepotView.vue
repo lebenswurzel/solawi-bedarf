@@ -133,14 +133,14 @@ const onClose = async () => {
                   <v-btn
                     icon="mdi-arrow-up"
                     color="grey-darken-1"
-                    v-if="index > 0 || true"
+                    :disabled="index <= 0"
                     @click="() => onChangeDepotRank(depotItem, -1)"
                     size="small"
                   />
                   <v-btn
                     icon="mdi-arrow-down"
                     color="grey-darken-1"
-                    v-if="index < depots.length - 1 || true"
+                    :disabled="index >= depots.length - 1"
                     @click="() => onChangeDepotRank(depotItem, 1)"
                     size="small"
                   />
