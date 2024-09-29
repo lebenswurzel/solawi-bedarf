@@ -38,12 +38,12 @@ const onConfigChanged = async (id: number) => {
 </script>
 
 <template>
-  <v-card-text>
-    <v-select
-      :label="t.label"
-      :items="configOptions"
-      :model-value="config?.id"
-      @update:model-value="onConfigChanged"
-    />
-  </v-card-text>
+  <v-select
+    :label="t.label"
+    :items="configOptions"
+    :model-value="config?.id"
+    @update:model-value="onConfigChanged"
+    variant="solo-filled"
+    density="compact"
+  />
 </template>
