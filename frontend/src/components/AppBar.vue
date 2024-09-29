@@ -26,6 +26,7 @@ import { useProductStore } from "../store/productStore.ts";
 import { useOrderStore } from "../store/orderStore.ts";
 import { UserRole } from "../../../shared/src/enum";
 import { useTheme } from "vuetify";
+import SeasonSelector from "./SeasonSelector.vue";
 
 const drawer = ref(false);
 
@@ -37,6 +38,7 @@ const orderStore = useOrderStore();
 
 const { currentUser } = storeToRefs(userStore);
 const theme = useTheme();
+const { config, seasonColorClass } = storeToRefs(configStore);
 
 onMounted(async () => {
   if (window.location.hash != "#/register") {
@@ -68,6 +70,7 @@ const onToggleTheme = () => {
         @click.stop="drawer = !drawer"
       ></v-app-bar-nav-icon>
     </template>
+
     <v-toolbar-title class="d-inline-flex">
       <div>{{ language.app.title }}</div>
       <div
@@ -81,6 +84,11 @@ const onToggleTheme = () => {
         {{ language.app.subtitle }}
       </div>
     </v-toolbar-title>
+
+    <div class="pa-2 season-indicator rounded-lg" :class="seasonColorClass">
+      {{ config?.name || "" }}
+    </div>
+
     <template v-slot:append>
       <v-btn icon @click="onToggleTheme">
         <v-icon color="secondary">mdi-brightness-4</v-icon>
@@ -90,7 +98,10 @@ const onToggleTheme = () => {
       </v-btn>
     </template>
   </v-app-bar>
-  <v-navigation-drawer v-model="drawer">
+  <v-navigation-drawer v-model="drawer" :class="seasonColorClass">
+    <template v-slot:prepend>
+      <SeasonSelector class="mt-4" />
+    </template>
     <v-list-item>
       <v-list-item-title>{{ language.app.navigation.title }}</v-list-item-title>
       <v-list-item-subtitle>{{
@@ -175,3 +186,10 @@ const onToggleTheme = () => {
     </v-list-item>
   </v-navigation-drawer>
 </template>
+
+<style>
+.season-indicator {
+  font-size: 1.3rem;
+  font-weight: bold;
+}
+</style>
