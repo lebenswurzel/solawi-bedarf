@@ -24,18 +24,29 @@ import {
 } from "../../../shared/src/types.ts";
 import { appConfig } from "../../../shared/src/config.ts";
 
+const seasonColorClasses = [
+  "bg-primary",
+  "bg-secondary",
+  "bg-success",
+  "bg-info",
+  "bg-warning",
+  "bg-error",
+];
+
 export const useConfigStore = defineStore("config", () => {
   const depots = ref<Depot[]>([]);
   const config = ref<RequisitionConfig>();
   const availableConfigs = ref<AvailableConfig[]>([]);
   const loaded = ref<boolean>(false);
   const externalAuthProvider = ref<boolean>(appConfig.externalAuthProvider);
+  const seasonColorClass = ref<string>(seasonColorClasses[0]);
 
   const clear = () => {
     depots.value = [];
     config.value = undefined;
     loaded.value = false;
     availableConfigs.value = [];
+    seasonColorClass.value = seasonColorClasses[0];
   };
 
   const update = async (requisitionConfigId?: number) => {
@@ -51,6 +62,9 @@ export const useConfigStore = defineStore("config", () => {
     depots.value = requestDepots;
     config.value = requestConfig;
     loaded.value = true;
+    seasonColorClass.value =
+      seasonColorClasses[(config.value.id || 0) % seasonColorClasses.length];
+    console.log(seasonColorClass.value, requisitionConfigId);
     availableConfigs.value = requestAvailableConfigs;
   };
 
@@ -60,6 +74,7 @@ export const useConfigStore = defineStore("config", () => {
     config,
     availableConfigs,
     loaded,
+    seasonColorClass,
     update,
     clear,
   };

@@ -107,7 +107,12 @@ const onDelete = () => {
 </script>
 
 <template>
-  <SeasonSelector />
+  <v-card class="ma-4">
+    <v-card-title>Saison-Auswahl</v-card-title>
+    <v-card-text>
+      <SeasonSelector />
+    </v-card-text>
+  </v-card>
   <v-card class="ma-4">
     <v-card-title> {{ t.title }} </v-card-title>
     <v-card-subtitle>{{ t.subtitle }}</v-card-subtitle>
