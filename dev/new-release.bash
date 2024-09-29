@@ -60,28 +60,37 @@ else
     exit 1
 fi
 
-# Step 4: Commit CHANGELOG.md
-git add CHANGELOG.md
-git commit -m "chore: release $new_version"
-
-# Step 5: Create a new tag
-git tag "$new_version"
-
-# Step 6: Push changes and tags to GitHub
-git push origin main --tags
-
-# Step 7: Extract release notes from the renamed section
+# Step 4: Extract release notes from the renamed section
 # This assumes that the renamed section is formatted as:
 # [vX.Y.Z] - YYYY-MM-DD - Release Title
 # followed by the list of changes until the next header.
-
 release_notes=$(sed -n "/^\# $new_version - .*$/,/^\# NEW/p" CHANGELOG.md | sed '1d;$d')
+echo "Release notes: $release_notes"
+
+# Step 5: Commit CHANGELOG.md
+git add CHANGELOG.md
+
+echo "Commit and push the new release to Github? (y/N)"
+echo -n "Are you sure you want to continue? (y/N): "
+read -r confirmation
+
+# Proceed only if the user types 'y' or 'Y'
+if [[ "$confirmation" != "y" && "$confirmation" != "Y" ]]; then
+  echo "Operation canceled."
+  exit 0
+fi
+
+git commit -m "Neues Release $new_version"
+
+# Step 6: Create a new tag
+git tag "$new_version"
+
+# Step 7: Push changes and tags to GitHub
+git push origin main --tags
 
 # Step 8: Create the GitHub release
 gh release create "$new_version" \
     --title "$release_title" \
     --notes "$release_notes"
-
-echo "Release Notes: $release_notes"
 
 echo "Release $new_version titled '$release_title' created and published successfully."
