@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
 import { language } from "../lang/lang.ts";
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useUserStore } from "../store/userStore.ts";
 import { storeToRefs } from "pinia";
 import { logout } from "../requests/login.ts";
@@ -39,6 +39,9 @@ const orderStore = useOrderStore();
 const { currentUser } = storeToRefs(userStore);
 const theme = useTheme();
 const { config, seasonColorClass } = storeToRefs(configStore);
+const isLoggedIn = computed(() => {
+  return currentUser.value !== undefined;
+});
 
 onMounted(async () => {
   if (window.location.hash != "#/register") {
@@ -85,28 +88,21 @@ const onToggleTheme = () => {
       </div>
     </v-toolbar-title>
 
-    <div class="pa-2 season-indicator rounded-lg" :class="seasonColorClass">
-      {{ config?.name || "" }}
-    </div>
+    <SeasonSelector v-if="isLoggedIn" />
 
     <template v-slot:append>
       <v-btn icon @click="onToggleTheme">
         <v-icon color="secondary">mdi-brightness-4</v-icon>
       </v-btn>
-      <v-btn icon @click="onLogout">
+      <v-btn icon @click="onLogout" v-if="isLoggedIn">
         <v-icon color="secondary">mdi-logout</v-icon>
       </v-btn>
     </template>
   </v-app-bar>
-  <v-navigation-drawer v-model="drawer" :class="seasonColorClass">
-    <template v-slot:prepend>
-      <SeasonSelector class="mt-4" />
-    </template>
-    <v-list-item>
+  <v-navigation-drawer v-model="drawer">
+    <v-list-item :class="seasonColorClass">
       <v-list-item-title>{{ language.app.navigation.title }}</v-list-item-title>
-      <v-list-item-subtitle>{{
-        language.app.navigation.subtitle
-      }}</v-list-item-subtitle>
+      <v-list-item-subtitle>{{ config?.name }}</v-list-item-subtitle>
     </v-list-item>
     <v-divider></v-divider>
     <v-list-item to="/">
@@ -186,10 +182,3 @@ const onToggleTheme = () => {
     </v-list-item>
   </v-navigation-drawer>
 </template>
-
-<style>
-.season-indicator {
-  font-size: 1.3rem;
-  font-weight: bold;
-}
-</style>

@@ -47,6 +47,7 @@ export const language = {
       more: "Mehr",
       createNew: "Neu erstellen",
       delete: "Löschen",
+      apply: "Übernehmen",
     },
     uiFeedback: {
       saving: {
@@ -343,6 +344,8 @@ export const language = {
   components: {
     seasonSelector: {
       label: "Saison-Auswahl",
+      description:
+        "Hier kannst du festlegen, für welche Saison du deinen Bedarf anmelden und Einstellungen vornehmen möchtest.",
     },
   },
 };
