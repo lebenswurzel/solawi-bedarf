@@ -21,7 +21,7 @@ import { getDepots, updateDepot } from "../requests/depot";
 import DepotDialog from "../components/DepotDialog.vue";
 import { NewDepot, Depot, UpdateDepot } from "../../../shared/src/types";
 import BusyIndicator from "../components/BusyIndicator.vue";
-import { useError } from "../store/errorStore.ts";
+import { useUiFeedback } from "../store/uiFeedbackStore.ts";
 const t = language.pages.depots;
 
 const defaultDepot: NewDepot = {
@@ -34,7 +34,7 @@ const depots = ref<Depot[]>([]);
 const open = ref(false);
 const dialogDepot = ref<NewDepot | Depot>({ ...defaultDepot });
 const busy = ref<boolean>(true);
-const { setError } = useError();
+const { setError } = useUiFeedback();
 
 provide("dialogDepot", dialogDepot);
 

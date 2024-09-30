@@ -21,10 +21,10 @@ import { useConfigStore } from "../store/configStore.ts";
 import { ref } from "vue";
 import { saveConfig } from "../requests/config.ts";
 import { stringToDate, dateToString } from "../lib/convert.ts";
+import { useUiFeedback } from "../store/uiFeedbackStore.ts";
 const t = language.pages.config;
 
 const loading = ref(false);
-const error = ref<string>();
 const configStore = useConfigStore();
 
 const startOrder = ref<Date>(new Date());
@@ -33,6 +33,7 @@ const startBiddingRound = ref<Date>(new Date());
 const validFrom = ref<Date>(new Date());
 const validTo = ref<Date>(new Date());
 const budget = ref<number>(0);
+const { setError, setSuccess } = useUiFeedback();
 
 onMounted(async () => {
   await configStore.update();
@@ -57,11 +58,19 @@ const onSave = () => {
     name: "not used",
   })
     .then(async () => {
-      await configStore.update();
-      loading.value = false;
+      configStore
+        .update()
+        .then(() => {
+          setSuccess(language.app.uiFeedback.saving.success);
+        })
+        .catch((e: Error) => {
+          setError(language.app.uiFeedback.saving.failed + ": " + e.message);
+        });
     })
     .catch((e: Error) => {
-      error.value = e.message;
+      setError(language.app.uiFeedback.saving.failed + ": " + e.message);
+    })
+    .finally(() => {
       loading.value = false;
     });
 };
@@ -126,12 +135,5 @@ const onSave = () => {
       }}</v-btn>
     </v-card-actions>
   </v-card>
-  <v-snackbar
-    :model-value="!!error"
-    color="red"
-    @update:model-value="() => (error = undefined)"
-  >
-    {{ error }}
-  </v-snackbar>
 </template>
 : string: string: string: string: string: string: string: string
