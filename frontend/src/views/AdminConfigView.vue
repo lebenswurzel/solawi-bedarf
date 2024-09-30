@@ -93,13 +93,15 @@ const onSave = (asNew?: boolean) => {
 
 const onDelete = () => {
   loading.value = true;
+  const deletedName = seasonName.value;
   deleteConfig(configId.value)
     .then(async () => {
       await configStore.update();
+      setSuccess(language.app.uiFeedback.deleting.success + ": " + deletedName);
       loading.value = false;
     })
     .catch((e: Error) => {
-      error.value = e.message;
+      setError(language.app.uiFeedback.deleting.failed + ": " + e.message);
       loading.value = false;
     });
 };
