@@ -54,6 +54,10 @@ export const language = {
         success: "Speichern erfolgreich",
         failed: "Speichern fehlgeschlagen",
       },
+      deleting: {
+        success: "Löschen erfolgreich",
+        failed: "Löschen fehlgeschlagen",
+      },
     },
     options: {
       active: {
