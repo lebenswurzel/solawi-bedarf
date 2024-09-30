@@ -49,23 +49,28 @@ export const useConfigStore = defineStore("config", () => {
     seasonColorClass.value = seasonColorClasses[0];
   };
 
-  const update = async (requisitionConfigId?: number) => {
-    if (requisitionConfigId === undefined) {
+  const update = async (changedConfigId?: number) => {
+    if (changedConfigId === undefined) {
       // keep the currently selected config unless specified otherwise
-      requisitionConfigId = config.value?.id;
+      const activeConfigId = parseInt(
+        localStorage.getItem("activeConfigId") || "-1",
+      );
+      changedConfigId =
+        config.value?.id || (activeConfigId != -1 ? activeConfigId : undefined);
     }
     const {
       depots: requestDepots,
       config: requestConfig,
       availableConfigs: requestAvailableConfigs,
-    } = await getConfig(requisitionConfigId);
+    } = await getConfig(changedConfigId);
     depots.value = requestDepots;
     config.value = requestConfig;
     loaded.value = true;
     seasonColorClass.value =
       seasonColorClasses[(config.value.id || 0) % seasonColorClasses.length];
-    console.log(seasonColorClass.value, requisitionConfigId);
+    console.log(seasonColorClass.value, changedConfigId);
     availableConfigs.value = requestAvailableConfigs;
+    localStorage.setItem("activeConfigId", "" + config.value.id);
   };
 
   return {

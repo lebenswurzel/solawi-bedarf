@@ -16,14 +16,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
 import { storeToRefs } from "pinia";
-import { computed } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { language } from "../lang/lang.ts";
 import { useConfigStore } from "../store/configStore.ts";
 
+const open = ref(false);
 const t = language.components.seasonSelector;
 const configStore = useConfigStore();
 
-const { availableConfigs, config } = storeToRefs(configStore);
+const { availableConfigs, config, seasonColorClass } = storeToRefs(configStore);
+
+const selectedConfig = ref<number | undefined>(config.value?.id);
 
 const configOptions = computed(() => {
   return availableConfigs.value.map((config) => ({
@@ -32,18 +35,58 @@ const configOptions = computed(() => {
   }));
 });
 
-const onConfigChanged = async (id: number) => {
-  await configStore.update(id);
+onMounted(async () => {
+  await configStore.update();
+  selectedConfig.value = config.value?.id;
+});
+
+const onApply = async () => {
+  await configStore.update(selectedConfig.value);
+  open.value = false;
+};
+
+const onCancel = () => {
+  open.value = false;
+};
+
+const openDialog = () => {
+  open.value = true;
 };
 </script>
 
 <template>
-  <v-select
-    :label="t.label"
-    :items="configOptions"
-    :model-value="config?.id"
-    @update:model-value="onConfigChanged"
-    variant="solo-filled"
-    density="compact"
-  />
+  <v-btn
+    class="pa-2 season-indicator rounded-lg"
+    :class="seasonColorClass"
+    @click="openDialog"
+    >{{ config?.name || "Saison ?" }}</v-btn
+  >
+
+  <v-dialog :model-value="open" @update:model-value="onCancel">
+    <v-card>
+      <v-card-title class="text-center">{{
+        language.components.seasonSelector.label
+      }}</v-card-title>
+      <v-card-subtitle>
+        {{ language.components.seasonSelector.description }}
+      </v-card-subtitle>
+      <v-card-text class="enclosing">
+        <v-select
+          :label="t.label"
+          :items="configOptions"
+          v-model="selectedConfig"
+          ant="solo-filled"
+          density="compact"
+        />
+      </v-card-text>
+      <v-card-actions class="justify-center">
+        <v-btn @click="onApply" variant="elevated">
+          {{ language.app.actions.apply }}
+        </v-btn>
+        <v-btn @click="onCancel" variant="elevated" color="error">
+          {{ language.app.actions.cancel }}
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>

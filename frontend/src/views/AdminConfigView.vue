@@ -21,7 +21,6 @@ import { useConfigStore } from "../store/configStore.ts";
 import { ref } from "vue";
 import { deleteConfig, saveConfig } from "../requests/config.ts";
 import { stringToDate, dateToString } from "../lib/convert.ts";
-import SeasonSelector from "../components/SeasonSelector.vue";
 import { RequisitionConfig } from "../../../shared/src/types.ts";
 import { useUiFeedback } from "../store/uiFeedbackStore.ts";
 const t = language.pages.config;
@@ -109,9 +108,6 @@ const onDelete = () => {
 <template>
   <v-card class="ma-4">
     <v-card-title>Saison-Auswahl</v-card-title>
-    <v-card-text>
-      <SeasonSelector />
-    </v-card-text>
   </v-card>
   <v-card class="ma-4">
     <v-card-title> {{ t.title }} </v-card-title>
