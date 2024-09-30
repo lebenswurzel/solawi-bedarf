@@ -15,9 +15,9 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { useError } from "../store/errorStore";
+import { useUiFeedback } from "../store/uiFeedbackStore";
 
-const { error, clearError } = useError();
+const { error, clearError, success, clearSuccess } = useUiFeedback();
 </script>
 <template>
   <v-snackbar
@@ -26,5 +26,12 @@ const { error, clearError } = useError();
     color="red"
   >
     {{ error }}
+  </v-snackbar>
+  <v-snackbar
+    :model-value="!!success"
+    @update:model-value="clearSuccess"
+    color="success"
+  >
+    {{ success }}
   </v-snackbar>
 </template>

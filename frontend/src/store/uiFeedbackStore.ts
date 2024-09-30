@@ -16,13 +16,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { ref, provide, inject, Ref } from "vue";
 
-interface ErrorStore {
+interface UiFeedbackStore {
   error: Ref<string | null>;
   setError: (message: string) => void;
   clearError: () => void;
+
+  success: Ref<string | null>;
+  setSuccess: (message: string) => void;
+  clearSuccess: () => void;
 }
 
-export function useErrorStore(): ErrorStore {
+export function useUiFeedbackStore(): UiFeedbackStore {
   const error = ref<string | null>("");
 
   const setError = (message: string) => {
@@ -33,22 +37,36 @@ export function useErrorStore(): ErrorStore {
     error.value = null;
   };
 
+  const success = ref<string | null>("");
+
+  const setSuccess = (message: string) => {
+    clearSuccess();
+    success.value = message;
+  };
+
+  const clearSuccess = () => {
+    success.value = null;
+  };
+
   return {
     error,
     setError,
     clearError,
+    success,
+    setSuccess,
+    clearSuccess,
   };
 }
 
-export function provideErrorStore(): void {
-  const errorStore = useErrorStore();
-  provide("errorStore", errorStore);
+export function provideUiFeedbackStore(): void {
+  const uiFeedbackStore = useUiFeedbackStore();
+  provide("uiFeedbackStore", uiFeedbackStore);
 }
 
-export function useError(): ErrorStore {
-  const errorStore = inject<ErrorStore>("errorStore");
-  if (!errorStore) {
+export function useUiFeedback(): UiFeedbackStore {
+  const uiFeedbackStore = inject<UiFeedbackStore>("uiFeedbackStore");
+  if (!uiFeedbackStore) {
     throw new Error("useError() must be used within a <provider>");
   }
-  return errorStore;
+  return uiFeedbackStore;
 }

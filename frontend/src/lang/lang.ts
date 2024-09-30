@@ -45,6 +45,12 @@ export const language = {
       save: "Speichern",
       close: "Schließen",
     },
+    uiFeedback: {
+      saving: {
+        success: "Speichern erfolgreich",
+        failed: "Speichern fehlgeschlagen",
+      },
+    },
     options: {
       active: {
         true: "aktive",

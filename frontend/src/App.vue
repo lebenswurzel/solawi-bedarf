@@ -21,12 +21,12 @@ import AppBar from "./components/AppBar.vue";
 import AppBarForRegister from "./components/AppBarForRegister.vue";
 import FooterVue from "./components/Footer.vue";
 import { useTextContentStore } from "./store/textContentStore";
-import { provideErrorStore } from "./store/errorStore";
-import ErrorDisplay from "./components/ErrorDisplay.vue";
+import { provideUiFeedbackStore } from "./store/uiFeedbackStore";
+import UiFeedbackDisplay from "./components/UiFeedbackDisplay.vue";
 
 const route = useRoute();
 const textContentStore = useTextContentStore();
-provideErrorStore();
+provideUiFeedbackStore();
 
 onMounted(async () => {
   await textContentStore.update();
@@ -41,6 +41,6 @@ onMounted(async () => {
       <RouterView />
     </v-main>
     <FooterVue />
-    <ErrorDisplay />
+    <UiFeedbackDisplay />
   </v-app>
 </template>
