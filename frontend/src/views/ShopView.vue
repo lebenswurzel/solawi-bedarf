@@ -68,8 +68,8 @@ const onSave = () => {
 
 onMounted(async () => {
   biStore.update();
-  productStore.update();
-  configStore.update();
+  await configStore.update();
+  productStore.update(configStore.activeConfigId);
   if (requestUserId.value) {
     orderStore.update(requestUserId.value);
   }

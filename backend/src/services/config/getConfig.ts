@@ -22,6 +22,7 @@ import { RequisitionConfig } from "../../database/RequisitionConfig";
 import { AppDataSource } from "../../database/database";
 import { getUserFromContext } from "../getUserFromContext";
 import { AvailableConfig } from "../../../../shared/src/types";
+import { getNumericQueryParameter } from "../../util/requestUtil";
 
 export const getConfig = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -32,18 +33,17 @@ export const getConfig = async (
   });
 
   let requisitionConfig: RequisitionConfig | null;
-  const requestId = ctx.request.query["id"];
-  if (!requestId || Array.isArray(requestId)) {
+  const requestId = getNumericQueryParameter(ctx.request.query, "id");
+  if (requestId == -1) {
     // find any existing config to retain previous behavior
     // ... maybe specify some condition?
     requisitionConfig = await AppDataSource.getRepository(
       RequisitionConfig,
     ).findOneBy({});
   } else {
-    const id = parseInt(requestId);
     requisitionConfig = await AppDataSource.getRepository(
       RequisitionConfig,
-    ).findOneBy({ id });
+    ).findOneBy({ id: requestId });
   }
 
   if (!requisitionConfig) {

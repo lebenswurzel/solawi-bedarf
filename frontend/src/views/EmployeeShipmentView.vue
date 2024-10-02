@@ -105,7 +105,7 @@ const onClose = async () => {
 
 onMounted(async () => {
   await configStore.update();
-  await productStore.update();
+  await productStore.update(configStore.activeConfigId);
   await biStore.update();
   shipments.value = (await getShipments()).shipments;
 });

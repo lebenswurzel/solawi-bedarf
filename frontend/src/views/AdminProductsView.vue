@@ -29,6 +29,7 @@ import {
   ProductCategory,
 } from "../../../shared/src/types";
 import { useBIStore } from "../store/biStore";
+import { useConfigStore } from "../store/configStore.ts";
 const t = language.pages.product;
 
 const defaultProductCategory: NewProductCategory = {
@@ -39,6 +40,7 @@ const defaultProduct: NewProduct = {
   active: false,
 };
 
+const configStore = useConfigStore();
 const productStore = useProductStore();
 const biStore = useBIStore();
 
@@ -54,9 +56,14 @@ provide("dialogProductCategory", dialogProductCategory);
 provide("dialogProduct", dialogProduct);
 
 onMounted(async () => {
-  await productStore.update();
-  await biStore.update();
+  await refresh();
 });
+
+const refresh = async () => {
+  await productStore.update(configStore.activeConfigId);
+  await biStore.update();
+};
+configStore.$subscribe(refresh);
 
 const onCreateProduct = () => {
   dialogProduct.value = { ...defaultProduct };
@@ -70,7 +77,7 @@ const onEditProduct = (product: Product) => {
 
 const onCloseProduct = async () => {
   openProduct.value = false;
-  await productStore.update();
+  await productStore.update(configStore.activeConfigId);
 };
 
 const onCreateProductCategory = () => {
@@ -85,13 +92,15 @@ const onEditProductCategory = (productCategory: ProductCategory) => {
 
 const onCloseProductCategory = async () => {
   openProductCategory.value = false;
-  await productStore.update();
+  await productStore.update(configStore.activeConfigId);
 };
 </script>
 
 <template>
   <v-card class="ma-4">
-    <v-card-title> {{ t.title }} </v-card-title>
+    <v-card-title>
+      {{ t.title }} - {{ configStore.config?.name }}
+    </v-card-title>
     <v-card-subtitle>
       {{
         interpolate(t.subtitle, {

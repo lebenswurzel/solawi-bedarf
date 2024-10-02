@@ -21,6 +21,7 @@ import { http } from "../../consts/http";
 import { RequisitionConfig } from "../../database/RequisitionConfig";
 import { AppDataSource } from "../../database/database";
 import { getUserFromContext } from "../getUserFromContext";
+import { getNumericQueryParameter } from "../../util/requestUtil";
 
 export const deleteConfig = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -30,20 +31,21 @@ export const deleteConfig = async (
     ctx.throw(http.forbidden);
   }
 
-  const requestId = ctx.request.query["id"];
-  if (!requestId || Array.isArray(requestId)) {
+  const requestId = getNumericQueryParameter(ctx.request.query, "id");
+  if (requestId < 1) {
     ctx.throw(http.bad_request, "invalid or no id specified");
   }
-  const id = parseInt(requestId);
   let config = await AppDataSource.getRepository(RequisitionConfig).findOneBy({
-    id: id || 0, // prevent an undefined id as this would return the first config from the db
+    id: requestId,
   });
   if (!config) {
-    ctx.throw(http.bad_request, `config with id=${id} does not exist`);
+    ctx.throw(http.bad_request, `config with id=${requestId} does not exist`);
   }
 
   try {
-    await AppDataSource.getRepository(RequisitionConfig).delete({ id });
+    await AppDataSource.getRepository(RequisitionConfig).delete({
+      id: requestId,
+    });
     ctx.status = http.no_content;
   } catch {
     ctx.throw(http.method_not_allowed, "cannot delete if still in use");
