@@ -67,7 +67,7 @@ const onSave = () => {
 };
 
 const refresh = async () => {
-  biStore.update();
+  biStore.update(configStore.activeConfigId);
   productStore.update(configStore.activeConfigId);
   if (requestUserId.value) {
     orderStore.update(requestUserId.value);

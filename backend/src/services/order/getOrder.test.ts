@@ -43,10 +43,11 @@ testAsUser1(
 );
 
 testAsUser1("get order", async ({ userData }: TestUserData) => {
-  await updateRequisition(true);
+  const configId = await updateRequisition(true);
 
   const ctx = createBasicTestCtx({}, userData.token, undefined, {
     id: userData.userId,
+    configId,
   });
 
   await getOrder(ctx);
@@ -73,6 +74,7 @@ testAsUser1("get order", async ({ userData }: TestUserData) => {
     undefined,
     {
       id: userData.userId,
+      configId,
     },
   );
   await saveOrder(ctxCreateOrder);

@@ -51,7 +51,7 @@ testAsUser1(
 );
 
 testAsUser1("save empty order", async ({ userData }: TestUserData) => {
-  await updateRequisition(true);
+  const configId = await updateRequisition(true);
   const depot = await getDepotByName("d1");
   const request: ConfirmedOrder = {
     confirmGTC: true,
@@ -68,6 +68,7 @@ testAsUser1("save empty order", async ({ userData }: TestUserData) => {
   // create order
   const ctx = createBasicTestCtx(request, userData.token, undefined, {
     id: userData.userId,
+    configId,
   });
 
   expect((await findOrdersByUser(userData.userId)).length).toBe(0);
@@ -86,6 +87,7 @@ testAsUser1("save empty order", async ({ userData }: TestUserData) => {
     undefined,
     {
       id: userData.userId,
+      configId,
     },
   );
   await saveOrder(ctx2);
@@ -97,7 +99,7 @@ testAsUser1("save empty order", async ({ userData }: TestUserData) => {
 });
 
 testAsUser1("save order with products", async ({ userData }: TestUserData) => {
-  await updateRequisition(true);
+  const configId = await updateRequisition(true);
   const depot = await getDepotByName("d1");
   const baseRequest: ConfirmedOrder = {
     confirmGTC: true,
@@ -131,6 +133,7 @@ testAsUser1("save order with products", async ({ userData }: TestUserData) => {
   // create order
   const ctx = createBasicTestCtx(request, userData.token, undefined, {
     id: userData.userId,
+    configId,
   });
 
   // run twice to ensure idempotency
@@ -144,7 +147,8 @@ testAsUser1("save order with products", async ({ userData }: TestUserData) => {
     expect(orders[0].userId).toBe(userData.userId);
     expect(orders[0].orderItems).toMatchObject([orderItem1, orderItem2]);
 
-    const { soldByProductId, capacityByDepotId, productsById } = await bi();
+    const { soldByProductId, capacityByDepotId, productsById } =
+      await bi(configId);
     expect(soldByProductId[product1.id].sold).toBe(60);
     expect(soldByProductId[product2.id].sold).toBe(40);
     expect(capacityByDepotId[depot.id].reserved).toBe(1);
@@ -155,27 +159,28 @@ testAsUser1("save order with products", async ({ userData }: TestUserData) => {
 });
 
 testAsUser1("bad requests", async ({ userData }: TestUserData) => {
+  let configId = await updateRequisition(false);
   // requisition is not active
-  let ctx = await _createCtx({}, { userData });
+  let ctx = await _createCtx({}, { userData }, configId);
   await expect(() => saveOrder(ctx)).rejects.toThrowError(
     "Error 400: requisition not active",
   );
 
   // confirmGTC=false
-  ctx = await _createCtx({ confirmGTC: false }, { userData });
+  ctx = await _createCtx({ confirmGTC: false }, { userData }, configId);
   await expect(() => saveOrder(ctx)).rejects.toThrowError(
     "Error 400: commitment not confirmed",
   );
-  await updateRequisition(true);
+  configId = await updateRequisition(true);
 
   // no depot id
-  ctx = await _createCtx({ depotId: undefined }, { userData });
+  ctx = await _createCtx({ depotId: undefined }, { userData }, configId);
   await expect(() => saveOrder(ctx)).rejects.toThrowError(
     "Error 400: no valid depot",
   );
 
   // invalid depot id
-  ctx = await _createCtx({ depotId: -12 }, { userData });
+  ctx = await _createCtx({ depotId: -12 }, { userData }, configId);
   await expect(() => saveOrder(ctx)).rejects.toThrowError(
     "Error 400: no valid depot",
   );
@@ -184,6 +189,7 @@ testAsUser1("bad requests", async ({ userData }: TestUserData) => {
   ctx = await _createCtx(
     { category: UserCategory.CAT115, categoryReason: "" },
     { userData },
+    configId,
   );
   await expect(() => saveOrder(ctx)).rejects.toThrowError(
     "Error 400: no category reason",
@@ -191,51 +197,46 @@ testAsUser1("bad requests", async ({ userData }: TestUserData) => {
 
   // invalid category
   // @ts-ignore just for testing
-  ctx = await _createCtx({ category: "CAT1000" }, { userData });
+  ctx = await _createCtx({ category: "CAT1000" }, { userData }, configId);
   await expect(() => saveOrder(ctx)).rejects.toThrowError(
     "Error 400: no valid category",
   );
 
   // order item invalid
-  ctx = await _createCtx({}, { userData }, 100);
+  ctx = await _createCtx({}, { userData }, configId, 100);
   await expect(() => saveOrder(ctx)).rejects.toThrowError(
     "Error 400: order item invalid",
   );
 
   // bid too low
-  ctx = await _createCtx({ offer: 1 }, { userData });
+  ctx = await _createCtx({ offer: 1 }, { userData }, configId);
   await expect(() => saveOrder(ctx)).rejects.toThrowError(
     "Error 400: bid too low",
   );
 
   // invalid offer reason
-  ctx = await _createCtx({ offer: 18 }, { userData });
+  ctx = await _createCtx({ offer: 18 }, { userData }, configId);
   await expect(() => saveOrder(ctx)).rejects.toThrowError(
     "Error 400: no offer reason",
   );
 
   // full depot
-  ctx = await _createCtx({}, { userData }, undefined, true);
+  ctx = await _createCtx({}, { userData }, configId, undefined, true);
   await expect(() => saveOrder(ctx)).rejects.toThrowError(
     "Error 400: no depot capacity left",
   );
 
   // increase only
-  await updateRequisition(true, true);
-  ctx = await _createCtx({ offer: 25 }, { userData }, 4); // increase -> ok
+  configId = await updateRequisition(true, true);
+  ctx = await _createCtx({ offer: 25 }, { userData }, configId, 4); // increase -> ok
   await saveOrder(ctx);
-  ctx = await _createCtx({}, { userData }, 3); // try decrease -> error
+  ctx = await _createCtx({}, { userData }, configId, 3); // try decrease -> error
   await expect(() => saveOrder(ctx)).rejects.toThrowError(
     "Error 400: not valid in bidding round",
   );
 
   // requisition not found
-  const requisition = await AppDataSource.getRepository(
-    RequisitionConfig,
-  ).findOneByOrFail({});
-  requisition.name = "another name";
-  await AppDataSource.getRepository(RequisitionConfig).save(requisition);
-  ctx = await _createCtx({}, { userData });
+  ctx = await _createCtx({}, { userData }, configId + 1);
   await expect(() => saveOrder(ctx)).rejects.toThrowError(
     "Error 400: no valid config",
   );
@@ -245,6 +246,7 @@ testAsUser1("bad requests", async ({ userData }: TestUserData) => {
 const _createCtx = async (
   updatedFields: Partial<ConfirmedOrder>,
   { userData }: TestUserData,
+  configId: number,
   orderItem1Value?: number,
   fullDepot?: boolean,
 ) => {
@@ -290,6 +292,7 @@ const _createCtx = async (
     undefined,
     {
       id: userData.userId,
+      configId,
     },
   );
 };
