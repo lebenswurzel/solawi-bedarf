@@ -29,17 +29,21 @@ import { ProductCategory } from "../../database/ProductCategory";
 import { Shipment } from "../../database/Shipment";
 import { AppDataSource } from "../../database/database";
 import { getUserFromContext } from "../getUserFromContext";
+import { getNumericQueryParameter } from "../../util/requestUtil";
 
 export const biHandler = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
 ) => {
   await getUserFromContext(ctx);
-  ctx.body = await bi();
+  const configId = getNumericQueryParameter(ctx.request.query, "configId");
+  ctx.body = await bi(configId);
 };
 
-export const bi = async () => {
+export const bi = async (configId: number) => {
   const now = new Date();
   const depots = await AppDataSource.getRepository(Depot).find();
+
+  // TODO: find must respect configId
   const orders = await AppDataSource.getRepository(Order).find({
     relations: { orderItems: true },
     select: {
@@ -57,7 +61,10 @@ export const bi = async () => {
     ProductCategory,
   ).find({
     relations: { products: true },
+    where: { requisitionConfigId: configId },
   });
+
+  // TODO: find must respect configId
   const shipments = await AppDataSource.getRepository(Shipment).find({
     relations: { shipmentItems: true },
   });

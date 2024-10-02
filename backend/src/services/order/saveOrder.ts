@@ -45,6 +45,7 @@ import {
   isOrderItemValid,
 } from "../../../../shared/src/validation/capacity";
 import { LessThan } from "typeorm";
+import { getNumericQueryParameter } from "../../util/requestUtil";
 
 export const saveOrder = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -53,13 +54,19 @@ export const saveOrder = async (
   const { role, active, id } = await getUserFromContext(ctx);
   const requestUserId = await getRequestUserId(ctx);
   const body = ctx.request.body as ConfirmedOrder;
+
+  const configId = getNumericQueryParameter(ctx.request.query, "configId");
+  if (configId < 1) {
+    ctx.throw(http.bad_request, `missing or bad config id (${configId})`);
+  }
+
   const requisitionConfig = await AppDataSource.getRepository(
     RequisitionConfig,
   ).findOne({
-    where: { name: RequisitionConfigName },
+    where: { id: configId },
   });
   if (!requisitionConfig) {
-    ctx.throw(http.bad_request, "no valid config");
+    ctx.throw(http.bad_request, `no valid config (id=${configId})`);
   }
   if (!body.confirmGTC) {
     ctx.throw(http.bad_request, "commitment not confirmed");
@@ -91,7 +98,9 @@ export const saveOrder = async (
   ) {
     ctx.throw(http.bad_request, "not valid in bidding round");
   }
-  const { soldByProductId, capacityByDepotId, productsById } = await bi();
+  const { soldByProductId, capacityByDepotId, productsById } = await bi(
+    requisitionConfig.id,
+  );
   const remainingDepotCapacity = getRemainingDepotCapacity(
     depot,
     capacityByDepotId[body.depotId].reserved,
