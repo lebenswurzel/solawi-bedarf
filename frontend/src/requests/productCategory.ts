@@ -21,10 +21,10 @@ import {
 } from "../../../shared/src/types.ts";
 import { getUrl, verifyResponse } from "./requests.ts";
 
-export const getProductCategory = async (): Promise<
-  ProductCategoryWithProducts[]
-> => {
-  const response = await fetch(getUrl("/productCategory"));
+export const getProductCategory = async (
+  configId: number,
+): Promise<ProductCategoryWithProducts[]> => {
+  const response = await fetch(getUrl(`/productCategory?configId=${configId}`));
 
   await verifyResponse(response);
 

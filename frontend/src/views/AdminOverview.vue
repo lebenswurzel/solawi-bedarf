@@ -26,13 +26,18 @@ import {
 import { sanitizeFileName } from "../../../shared/src/util/fileHelper";
 import { Zip } from "../lib/pdf/zip.ts";
 import { createDefaultPdf } from "../lib/pdf/pdf.ts";
+import { useConfigStore } from "../store/configStore.ts";
 
 const loading = ref(false);
+
+const configStore = useConfigStore();
 
 const onClick = async () => {
   loading.value = true;
   const overview = await getOverview();
-  const productCategories = await getProductCategory();
+  const productCategories = await getProductCategory(
+    configStore.activeConfigId,
+  );
   const csv = generateOverviewCsv(overview, productCategories);
   const blob = new Blob([csv], { type: "text/csv" });
   const url = window.URL.createObjectURL(blob);
@@ -49,7 +54,9 @@ const onClick = async () => {
 const onDepotPdfClick = async () => {
   loading.value = true;
   const overview = await getOverview();
-  const productCategories = await getProductCategory();
+  const productCategories = await getProductCategory(
+    configStore.activeConfigId,
+  );
   const dataByDepotAndProductCategory = generateDepotData(
     overview,
     productCategories,
@@ -67,7 +74,9 @@ const onDepotPdfClick = async () => {
 const onUserPdfClick = async () => {
   loading.value = true;
   const overview = await getOverview();
-  const productCategories = await getProductCategory();
+  const productCategories = await getProductCategory(
+    configStore.activeConfigId,
+  );
   const dataByUserAndProductCategory = generateUserData(
     overview,
     productCategories,
