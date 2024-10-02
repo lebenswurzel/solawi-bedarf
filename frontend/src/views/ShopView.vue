@@ -66,14 +66,15 @@ const onSave = () => {
   open.value = true;
 };
 
-onMounted(async () => {
+const refresh = async () => {
   biStore.update();
-  await configStore.update();
   productStore.update(configStore.activeConfigId);
   if (requestUserId.value) {
     orderStore.update(requestUserId.value);
   }
-});
+};
+onMounted(refresh);
+configStore.$subscribe(refresh);
 </script>
 
 <template>
