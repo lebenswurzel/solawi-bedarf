@@ -61,7 +61,7 @@ onMounted(async () => {
 
 const refresh = async () => {
   await productStore.update(configStore.activeConfigId);
-  await biStore.update();
+  await biStore.update(configStore.activeConfigId);
 };
 configStore.$subscribe(refresh);
 

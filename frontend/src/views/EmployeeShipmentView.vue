@@ -99,16 +99,17 @@ const onEditShipment = (dialogShipment: Shipment & Id) => {
 
 const onClose = async () => {
   open.value = false;
-  await biStore.update();
+  await biStore.update(configStore.activeConfigId);
   shipments.value = (await getShipments()).shipments;
 };
 
-onMounted(async () => {
-  await configStore.update();
+const refresh = async () => {
   await productStore.update(configStore.activeConfigId);
-  await biStore.update();
+  await biStore.update(configStore.activeConfigId);
   shipments.value = (await getShipments()).shipments;
-});
+};
+onMounted(refresh);
+configStore.$subscribe(refresh);
 </script>
 
 <template>

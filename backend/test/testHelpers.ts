@@ -79,7 +79,7 @@ export const updateRequisition = async (
   biddingOpen: boolean,
   increaseOnly?: boolean,
   requistionName?: string,
-) => {
+): Promise<number> => {
   increaseOnly = increaseOnly || false;
   const now = new Date();
   requistionName = requistionName || RequisitionConfigName;
@@ -102,6 +102,7 @@ export const updateRequisition = async (
     requisition.startBiddingRound = dateDeltaDays(-15);
   }
   await repo.save(requisition);
+  return requisition.id;
 };
 
 export const dateDeltaDays = (deltaDays: number): Date => {

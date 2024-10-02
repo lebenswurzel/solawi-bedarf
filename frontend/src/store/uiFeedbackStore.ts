@@ -26,7 +26,7 @@ interface UiFeedbackStore {
   clearSuccess: () => void;
 }
 
-export function useUiFeedbackStore(): UiFeedbackStore {
+function useUiFeedbackStore(): UiFeedbackStore {
   const error = ref<string | null>("");
 
   const setError = (message: string) => {

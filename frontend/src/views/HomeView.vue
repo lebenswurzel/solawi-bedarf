@@ -55,7 +55,7 @@ const percentageSold = computed(() => {
 
 onMounted(async () => {
   await configStore.update();
-  await biStore.update();
+  await biStore.update(configStore.activeConfigId);
   await userStore.update();
 });
 </script>

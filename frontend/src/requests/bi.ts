@@ -22,14 +22,16 @@ import {
 } from "../../../shared/src/types.ts";
 import { getUrl, verifyResponse } from "./requests.ts";
 
-export const getBI = async (): Promise<{
+export const getBI = async (
+  configId: number,
+): Promise<{
   soldByProductId: SoldByProductId;
   deliveredByProductIdDepotId: DeliveredByProductIdDepotId;
   capacityByDepotId: CapacityByDepotId;
   productsById: ProductsById;
   offers: number;
 }> => {
-  const response = await fetch(getUrl("/bi"));
+  const response = await fetch(getUrl(`/bi?configId=${configId}`));
 
   await verifyResponse(response);
 

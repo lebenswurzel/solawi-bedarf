@@ -27,68 +27,84 @@ import { sanitizeFileName } from "../../../shared/src/util/fileHelper";
 import { Zip } from "../lib/pdf/zip.ts";
 import { createDefaultPdf } from "../lib/pdf/pdf.ts";
 import { useConfigStore } from "../store/configStore.ts";
+import { useUiFeedback } from "../store/uiFeedbackStore.ts";
 
 const loading = ref(false);
 
 const configStore = useConfigStore();
+const uiFeedbackStore = useUiFeedback();
 
 const onClick = async () => {
   loading.value = true;
-  const overview = await getOverview();
-  const productCategories = await getProductCategory(
-    configStore.activeConfigId,
-  );
-  const csv = generateOverviewCsv(overview, productCategories);
-  const blob = new Blob([csv], { type: "text/csv" });
-  const url = window.URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "uebersicht.csv";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  window.URL.revokeObjectURL(url);
+  try {
+    const overview = await getOverview(configStore.activeConfigId);
+    const productCategories = await getProductCategory(
+      configStore.activeConfigId,
+    );
+    const csv = generateOverviewCsv(overview, productCategories);
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "uebersicht.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  } catch (e) {
+    uiFeedbackStore.setError("" + e);
+  }
   loading.value = false;
 };
 
 const onDepotPdfClick = async () => {
   loading.value = true;
-  const overview = await getOverview();
-  const productCategories = await getProductCategory(
-    configStore.activeConfigId,
-  );
-  const dataByDepotAndProductCategory = generateDepotData(
-    overview,
-    productCategories,
-  );
-  const zip = new Zip();
-  for (const pdfSpec of dataByDepotAndProductCategory) {
-    await zip.addPdf(
-      createDefaultPdf(pdfSpec),
-      `${sanitizeFileName(pdfSpec.receiver)}.pdf`,
+  try {
+    const overview = await getOverview(configStore.activeConfigId);
+    const productCategories = await getProductCategory(
+      configStore.activeConfigId,
     );
+    const dataByDepotAndProductCategory = generateDepotData(
+      overview,
+      productCategories,
+    );
+    const zip = new Zip();
+    for (const pdfSpec of dataByDepotAndProductCategory) {
+      await zip.addPdf(
+        createDefaultPdf(pdfSpec),
+        `${sanitizeFileName(pdfSpec.receiver)}.pdf`,
+      );
+    }
+    zip.download("depots.zip");
+  } catch (e) {
+    uiFeedbackStore.setError("" + e);
   }
-  zip.download("depots.zip");
+  loading.value = false;
 };
 
 const onUserPdfClick = async () => {
   loading.value = true;
-  const overview = await getOverview();
-  const productCategories = await getProductCategory(
-    configStore.activeConfigId,
-  );
-  const dataByUserAndProductCategory = generateUserData(
-    overview,
-    productCategories,
-  );
-  const zip = new Zip();
-  for (const pdf of dataByUserAndProductCategory) {
-    await zip.addPdf(
-      createDefaultPdf(pdf),
-      `${sanitizeFileName(pdf.receiver)}.pdf`,
+  try {
+    const overview = await getOverview(configStore.activeConfigId);
+    const productCategories = await getProductCategory(
+      configStore.activeConfigId,
     );
+    const dataByUserAndProductCategory = generateUserData(
+      overview,
+      productCategories,
+    );
+    const zip = new Zip();
+    for (const pdf of dataByUserAndProductCategory) {
+      await zip.addPdf(
+        createDefaultPdf(pdf),
+        `${sanitizeFileName(pdf.receiver)}.pdf`,
+      );
+    }
+    zip.download("users.zip");
+  } catch (e) {
+    uiFeedbackStore.setError("" + e);
   }
-  zip.download("users.zip");
+  loading.value = false;
 };
 </script>
 

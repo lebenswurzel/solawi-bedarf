@@ -203,7 +203,7 @@ const onSave = () => {
     validFrom: validFrom.value,
   })
     .then(async () => {
-      await biStore.update();
+      await biStore.update(configStore.activeConfigId);
       requestUserId?.value && (await orderStore.update(requestUserId.value));
       loading.value = false;
       emit("close");
