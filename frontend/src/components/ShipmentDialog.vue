@@ -143,6 +143,7 @@ const onClose = () => {
 
 const onSave = () => {
   loading.value = true;
+  editShipment.value.requisitionConfigId = configStore.activeConfigId;
   saveShipment(
     prepareShipment(
       editShipment.value,
