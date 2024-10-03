@@ -25,7 +25,11 @@ import {
 import { http } from "../../consts/http";
 import { Order } from "../../database/Order";
 import { AppDataSource } from "../../database/database";
-import { getDepotByName, getDepots } from "../../../test/testHelpers";
+import {
+  getDepotByName,
+  getDepots,
+  updateRequisition,
+} from "../../../test/testHelpers";
 import { DepotInfo } from "./depotTypes";
 import { saveDepot } from "./saveDepot";
 
@@ -106,6 +110,7 @@ testAsAdmin("create new depots", async ({ userData }: TestUserData) => {
 });
 
 testAsAdmin("update depot info", async ({ userData }: TestUserData) => {
+  const configId = await updateRequisition(true);
   const token = userData.token;
   const infoDepot1 = {
     name: "Depot 1",
@@ -170,6 +175,7 @@ testAsAdmin("update depot info", async ({ userData }: TestUserData) => {
   order.category = UserCategory.CAT100;
   order.productConfiguration = "{}";
   order.userId = userData.userId;
+  order.requisitionConfigId = configId;
   await AppDataSource.getRepository(Order).save(order);
 
   // Set Depot 1 inactive --> fails

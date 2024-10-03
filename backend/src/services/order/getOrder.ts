@@ -20,15 +20,23 @@ import Router from "koa-router";
 import { AppDataSource } from "../../database/database";
 import { Order } from "../../database/Order";
 import { Order as OrderType } from "../../../../shared/src/types";
+import { getNumericQueryParameter } from "../../util/requestUtil";
+import { http } from "../../consts/http";
 
 export const getOrder = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
 ) => {
   const requestUserId = await getRequestUserId(ctx);
+
+  const configId = getNumericQueryParameter(ctx.request.query, "configId");
+  if (configId < 1) {
+    ctx.throw(http.bad_request, `missing or bad config id (${configId})`);
+  }
+
   const order: OrderType | null = await AppDataSource.getRepository(
     Order,
   ).findOne({
-    where: { userId: requestUserId },
+    where: { userId: requestUserId, requisitionConfigId: configId },
     relations: { orderItems: true },
   });
 
