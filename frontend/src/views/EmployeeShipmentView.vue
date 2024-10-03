@@ -103,13 +103,13 @@ const onEditShipment = (dialogShipment: Shipment & Id) => {
 const onClose = async () => {
   open.value = false;
   await biStore.update(activeConfigId.value);
-  shipments.value = (await getShipments()).shipments;
+  shipments.value = (await getShipments(activeConfigId.value)).shipments;
 };
 
 const refresh = async () => {
   await productStore.update(activeConfigId.value);
   await biStore.update(activeConfigId.value);
-  shipments.value = (await getShipments()).shipments;
+  shipments.value = (await getShipments(activeConfigId.value)).shipments;
 };
 onMounted(refresh);
 watch(activeConfigId, async () => {
