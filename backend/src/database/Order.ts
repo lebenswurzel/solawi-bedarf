@@ -26,6 +26,7 @@ import { Depot } from "./Depot";
 import { OrderItem } from "./OrderItem";
 import { BaseEntity } from "./BaseEntity";
 import { UserCategory } from "../../../shared/src/enum";
+import { RequisitionConfig } from "./RequisitionConfig";
 
 @Entity()
 export class Order extends BaseEntity {
@@ -76,4 +77,10 @@ export class Order extends BaseEntity {
 
   @OneToMany(() => OrderItem, (orderItem) => orderItem.order)
   orderItems: OrderItem[];
+
+  @Column()
+  requisitionConfigId: number;
+
+  @ManyToOne(() => RequisitionConfig, { nullable: false })
+  requisitionConfig: RequisitionConfig;
 }
