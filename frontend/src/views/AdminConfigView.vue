@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { onMounted } from "vue";
+import { onMounted, watch } from "vue";
 import { language } from "../lang/lang.ts";
 import { useConfigStore } from "../store/configStore.ts";
 import { ref } from "vue";
@@ -54,7 +54,7 @@ const onConfigUpdated = () => {
   configId.value = orderConfig?.id || 0;
 };
 
-configStore.$subscribe(() => {
+watch(configStore, () => {
   onConfigUpdated();
 });
 
@@ -108,9 +108,6 @@ const onDelete = () => {
 </script>
 
 <template>
-  <v-card class="ma-4">
-    <v-card-title>Saison-Auswahl</v-card-title>
-  </v-card>
   <v-card class="ma-4">
     <v-card-title> {{ t.title }} </v-card-title>
     <v-card-subtitle>{{ t.subtitle }}</v-card-subtitle>

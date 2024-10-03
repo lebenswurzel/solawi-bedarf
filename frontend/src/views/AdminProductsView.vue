@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import ProductDialog from "../components/ProductDialog.vue";
 import ProductCategoryDialog from "../components/ProductCategoryDialog.vue";
 import { language } from "../lang/lang.ts";
@@ -30,6 +30,7 @@ import {
 } from "../../../shared/src/types";
 import { useBIStore } from "../store/biStore";
 import { useConfigStore } from "../store/configStore.ts";
+import { storeToRefs } from "pinia";
 const t = language.pages.product;
 
 const defaultProductCategory: NewProductCategory = {
@@ -44,6 +45,8 @@ const defaultProduct: NewProduct = {
 const configStore = useConfigStore();
 const productStore = useProductStore();
 const biStore = useBIStore();
+
+const { activeConfigId, config } = storeToRefs(configStore);
 
 const openProductCategory = ref(false);
 const openProduct = ref(false);
@@ -60,11 +63,14 @@ onMounted(async () => {
   await refresh();
 });
 
+watch(activeConfigId, async () => {
+  await refresh();
+});
+
 const refresh = async () => {
-  await productStore.update(configStore.activeConfigId);
-  await biStore.update(configStore.activeConfigId);
+  await productStore.update(activeConfigId.value);
+  await biStore.update(activeConfigId.value);
 };
-configStore.$subscribe(refresh);
 
 const onCreateProduct = () => {
   dialogProduct.value = { ...defaultProduct };
@@ -78,13 +84,13 @@ const onEditProduct = (product: Product) => {
 
 const onCloseProduct = async () => {
   openProduct.value = false;
-  await productStore.update(configStore.activeConfigId);
+  await productStore.update(activeConfigId.value);
 };
 
 const onCreateProductCategory = () => {
   dialogProductCategory.value = {
     ...defaultProductCategory,
-    requisitionConfigId: configStore.activeConfigId,
+    requisitionConfigId: activeConfigId.value,
   };
   openProductCategory.value = true;
 };
@@ -96,15 +102,13 @@ const onEditProductCategory = (productCategory: ProductCategory) => {
 
 const onCloseProductCategory = async () => {
   openProductCategory.value = false;
-  await productStore.update(configStore.activeConfigId);
+  await productStore.update(activeConfigId.value);
 };
 </script>
 
 <template>
   <v-card class="ma-4">
-    <v-card-title>
-      {{ t.title }} - {{ configStore.config?.name }}
-    </v-card-title>
+    <v-card-title> {{ t.title }} - {{ config?.name }} </v-card-title>
     <v-card-subtitle>
       {{
         interpolate(t.subtitle, {
