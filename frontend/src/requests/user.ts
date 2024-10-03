@@ -27,7 +27,9 @@ export const getUser = async (): Promise<{ userId: number; users: User[] }> => {
 
 export const saveUser = async (
   user: Required<NewUser> &
-    OptionalId & { password?: string } & { orderValidFrom: Date | null },
+    OptionalId & { password?: string } & { orderValidFrom: Date | null } & {
+      requisitionConfigId: number;
+    },
 ) => {
   const response = await fetch(getUrl("/user"), {
     method: "POST",

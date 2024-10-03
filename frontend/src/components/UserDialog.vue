@@ -27,7 +27,7 @@ import { stringToDate, dateToString } from "../lib/convert.ts";
 const t = language.pages.user.dialog;
 
 const configStore = useConfigStore();
-const { externalAuthProvider } = storeToRefs(configStore);
+const { externalAuthProvider, activeConfigId } = storeToRefs(configStore);
 
 defineProps(["open"]);
 const emit = defineEmits(["close"]);
@@ -69,6 +69,7 @@ const onSave = () => {
     active: dialogUser.value.active,
     password: password.value || undefined,
     orderValidFrom: orderValidFrom.value,
+    requisitionConfigId: activeConfigId.value,
   })
     .then(() => {
       loading.value = false;
@@ -83,10 +84,7 @@ const onSave = () => {
 
 watchEffect(async () => {
   if (isIdType(dialogUser.value)) {
-    const order = await getOrder(
-      dialogUser.value.id,
-      configStore.activeConfigId,
-    );
+    const order = await getOrder(dialogUser.value.id, activeConfigId.value);
     orderValidFrom.value = order.validFrom || null;
   } else {
     orderValidFrom.value = null;

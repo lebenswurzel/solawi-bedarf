@@ -24,7 +24,10 @@ import { saveUser } from "./src/services/user/saveUser";
 import { UserRole } from "../shared/src/enum";
 import { Order } from "./src/database/Order";
 import { User } from "./src/database/User";
-import { fillDatabaseWithTestData } from "./test/testHelpers";
+import {
+  fillDatabaseWithTestData,
+  getRequisitionConfigId,
+} from "./test/testHelpers";
 import { Product } from "./src/database/Product";
 import { ProductCategory } from "./src/database/ProductCategory";
 import { Depot } from "./src/database/Depot";
@@ -74,6 +77,7 @@ const reinitializeDatabase = async () => {
         password: "123456",
         role: UserRole.USER,
         active: true,
+        requisitionConfigId: await getRequisitionConfigId(),
       },
       token,
     ),
