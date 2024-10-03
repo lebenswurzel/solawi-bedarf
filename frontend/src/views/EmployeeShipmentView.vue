@@ -48,6 +48,7 @@ const defaultEditShipment: EditShipment = {
   shipmentItems: [],
   additionalShipmentItems: [],
   active: false,
+  requisitionConfigId: -1,
 };
 
 const shipments = ref<(Shipment & Id)[]>([]);

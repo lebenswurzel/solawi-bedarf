@@ -150,6 +150,7 @@ export function genShipment(overwrite: Partial<Shipment> = {}): Shipment {
     additionalShipmentItems: [],
     active: true,
     updatedAt: new Date(),
+    requisitionConfigId: -1,
   };
   return { ...base, ...overwrite };
 }
