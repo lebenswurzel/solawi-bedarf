@@ -23,7 +23,6 @@ import {
   testAsUser1,
 } from "../../../testSetup";
 import { Depot } from "../../database/Depot";
-import { RequisitionConfig } from "../../database/RequisitionConfig";
 import { AppDataSource } from "../../database/database";
 import {
   dateDeltaDays,
