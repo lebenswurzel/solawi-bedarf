@@ -118,8 +118,7 @@ const additionalShipmentItems = computed(() => {
 });
 
 watchEffect(async () => {
-  if (userStore.currentUser?.id) {
-    console.log("active config id", configStore.activeConfigId);
+  if (userStore.currentUser?.id && configStore.activeConfigId != -1) {
     await orderStore.update(
       userStore.currentUser.id,
       configStore.activeConfigId,
