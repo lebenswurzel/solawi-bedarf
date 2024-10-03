@@ -28,6 +28,7 @@ export const saveOrder = async (order: ConfirmedOrder & { userId: number }) => {
     categoryReason: order.categoryReason,
     confirmGTC: order.confirmGTC,
     validFrom: order.validFrom,
+    requisitionConfigId: order.requisitionConfigId,
   };
   const response = await fetch(getUrl(`/shop/order?id=${order.userId}`), {
     method: "POST",
@@ -40,8 +41,13 @@ export const saveOrder = async (order: ConfirmedOrder & { userId: number }) => {
   await verifyResponse(response);
 };
 
-export const getOrder = async (userId: number): Promise<Order> => {
-  const response = await fetch(getUrl(`/shop/order?id=${userId}`));
+export const getOrder = async (
+  userId: number,
+  configId: number,
+): Promise<Order> => {
+  const response = await fetch(
+    getUrl(`/shop/order?id=${userId}&configId=${configId}`),
+  );
 
   await verifyResponse(response);
 

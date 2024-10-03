@@ -28,6 +28,7 @@ import { Unit } from "../../../shared/src/enum.ts";
 import { useBIStore } from "../store/biStore.ts";
 import { valueToDelivered } from "../lib/convert.ts";
 import { getLangUnit } from "../lang/template.ts";
+import { useConfigStore } from "../store/configStore.ts";
 
 const t = language.pages.home;
 
@@ -35,6 +36,7 @@ const userStore = useUserStore();
 const biStore = useBIStore();
 const orderStore = useOrderStore();
 const shipments = ref<(Shipment & Id)[]>([]);
+const configStore = useConfigStore();
 
 const { orderItems, validFrom } = storeToRefs(orderStore);
 const { productsById } = storeToRefs(biStore);
@@ -117,7 +119,11 @@ const additionalShipmentItems = computed(() => {
 
 watchEffect(async () => {
   if (userStore.currentUser?.id) {
-    await orderStore.update(userStore.currentUser.id);
+    console.log("active config id", configStore.activeConfigId);
+    await orderStore.update(
+      userStore.currentUser.id,
+      configStore.activeConfigId,
+    );
     const { shipments: requestShipments } = await getShipment(
       userStore.currentUser?.id,
     );

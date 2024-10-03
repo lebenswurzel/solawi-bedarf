@@ -183,7 +183,8 @@ const onBlur = (blur: boolean) => {
 };
 
 const onClose = async () => {
-  requestUserId?.value && (await orderStore.update(requestUserId?.value));
+  requestUserId?.value &&
+    (await orderStore.update(requestUserId?.value, configStore.activeConfigId));
   model.value = offer.value.toString() || "0";
   emit("close");
 };
@@ -201,10 +202,15 @@ const onSave = () => {
     categoryReason: categoryReason.value,
     confirmGTC: confirmGTC.value,
     validFrom: validFrom.value,
+    requisitionConfigId: configStore.activeConfigId,
   })
     .then(async () => {
       await biStore.update(configStore.activeConfigId);
-      requestUserId?.value && (await orderStore.update(requestUserId.value));
+      requestUserId?.value &&
+        (await orderStore.update(
+          requestUserId.value,
+          configStore.activeConfigId,
+        ));
       loading.value = false;
       emit("close");
     })

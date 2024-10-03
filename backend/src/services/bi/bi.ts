@@ -43,7 +43,6 @@ export const bi = async (configId: number) => {
   const now = new Date();
   const depots = await AppDataSource.getRepository(Depot).find();
 
-  // TODO: find must respect configId
   const orders = await AppDataSource.getRepository(Order).find({
     relations: { orderItems: true },
     select: {
@@ -56,6 +55,9 @@ export const bi = async (configId: number) => {
         productId: true,
       },
     },
+    where: {
+      requisitionConfigId: configId,
+    },
   });
   const productCategories = await AppDataSource.getRepository(
     ProductCategory,
@@ -64,9 +66,11 @@ export const bi = async (configId: number) => {
     where: { requisitionConfigId: configId },
   });
 
-  // TODO: find must respect configId
   const shipments = await AppDataSource.getRepository(Shipment).find({
     relations: { shipmentItems: true },
+    where: {
+      requisitionConfigId: configId,
+    },
   });
 
   const soldByProductId: SoldByProductId = {};

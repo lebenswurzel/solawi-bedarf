@@ -159,11 +159,8 @@ testAsAdmin("add more configs", async ({ userData }: TestUserData) => {
   const ctxGetConfig = createBasicTestCtx(undefined, userData.token);
   await getConfig(ctxGetConfig);
   const response = ctxGetConfig.body as ConfigResponse;
+
   expect(response.availableConfigs).toMatchObject([
-    {
-      id: originalConfig.id,
-      name: "Saison 24/25",
-    },
     {
       id: newConfigFromDb.id,
       name: "config no.1",
@@ -171,6 +168,10 @@ testAsAdmin("add more configs", async ({ userData }: TestUserData) => {
     {
       id: newConfig2FromDb.id,
       name: "config no.2",
+    },
+    {
+      id: originalConfig.id,
+      name: "Saison 24/25",
     },
   ]);
 });

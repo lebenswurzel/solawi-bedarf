@@ -65,6 +65,7 @@ testAsUser1("get order", async ({ userData }: TestUserData) => {
     alternateDepotId: null,
     offerReason: "",
     validFrom: null,
+    requisitionConfigId: configId,
   };
 
   // create order

@@ -28,6 +28,7 @@ import {
 
 let NEXT_ID = 0;
 let NEXT_RANK = 1;
+let CONFIG_1_ID = 1;
 
 beforeEach(() => {
   NEXT_ID = 0;
@@ -100,6 +101,7 @@ export function genProductGroupWithProducts(
     name: "Product Group " + id,
     active: true,
     products: [],
+    requisitionConfigId: CONFIG_1_ID,
   };
   const result = { ...base, ...overwrite };
   result.products.forEach((product) => (product.productCategoryId = id));
