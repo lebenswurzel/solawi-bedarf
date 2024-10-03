@@ -25,6 +25,7 @@ import { invalidateTokenForUser } from "../../token";
 import { UserRole } from "../../../../shared/src/enum";
 import { Order } from "../../database/Order";
 import { appConfig } from "../../../../shared/src/config";
+import { RequisitionConfig } from "../../database/RequisitionConfig";
 
 export const saveUser = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -40,7 +41,19 @@ export const saveUser = async (
     role: UserRole;
     active: boolean;
     orderValidFrom?: Date | null;
+    requisitionConfigId: number;
   };
+  if (
+    !requestUser.requisitionConfigId ||
+    !(await AppDataSource.getRepository(RequisitionConfig).find({
+      where: { id: requestUser.requisitionConfigId },
+    }))
+  ) {
+    ctx.throw(
+      http.bad_request,
+      "missing or bad requisition config id " + requestUser.requisitionConfigId,
+    );
+  }
   if (requestUser.id) {
     const user = await AppDataSource.getRepository(User).findOneBy({
       id: requestUser.id,
@@ -57,7 +70,11 @@ export const saveUser = async (
       }
       await AppDataSource.getRepository(User).save(user);
       if (requestUser.orderValidFrom) {
-        await updateOrderValidFrom(user, requestUser.orderValidFrom);
+        await updateOrderValidFrom(
+          user,
+          requestUser.orderValidFrom,
+          requestUser.requisitionConfigId,
+        );
       }
       ctx.status = http.no_content;
     }
@@ -69,7 +86,11 @@ export const saveUser = async (
     user.active = requestUser.active;
     await AppDataSource.getRepository(User).save(user);
     if (requestUser.orderValidFrom) {
-      await updateOrderValidFrom(user, requestUser.orderValidFrom);
+      await updateOrderValidFrom(
+        user,
+        requestUser.orderValidFrom,
+        requestUser.requisitionConfigId,
+      );
     }
     ctx.status = http.created;
   }
@@ -78,9 +99,10 @@ export const saveUser = async (
 export const updateOrderValidFrom = async (
   user: User,
   orderValidFrom: Date,
+  configId: number,
 ) => {
   let order = await AppDataSource.getRepository(Order).findOne({
-    where: { userId: user.id },
+    where: { userId: user.id, requisitionConfigId: configId },
   });
   if (order) {
     order.validFrom = orderValidFrom;
@@ -92,6 +114,7 @@ export const updateOrderValidFrom = async (
     order.category = appConfig.defaultCategory;
     order.validFrom = orderValidFrom;
     order.productConfiguration = "";
+    order.requisitionConfigId = configId;
     await AppDataSource.getRepository(Order).save(order);
   }
 };

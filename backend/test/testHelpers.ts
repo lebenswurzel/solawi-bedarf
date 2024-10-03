@@ -75,6 +75,14 @@ const createTestProduct = async (name: string) => {
   });
 };
 
+export const getRequisitionConfigId = async (): Promise<number> => {
+  return (
+    await AppDataSource.getRepository(RequisitionConfig).findOneOrFail({
+      where: { name: RequisitionConfigName },
+    })
+  ).id;
+};
+
 export const updateRequisition = async (
   biddingOpen: boolean,
   increaseOnly?: boolean,
