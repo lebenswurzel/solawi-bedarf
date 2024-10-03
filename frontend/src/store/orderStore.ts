@@ -52,8 +52,8 @@ export const useOrderStore = defineStore("orderStore", () => {
     actualOrderItemsByProductId.value[productId] = value;
   };
 
-  const update = async (requestUserId: number) => {
-    const order = await getOrder(requestUserId);
+  const update = async (requestUserId: number, configId: number) => {
+    const order = await getOrder(requestUserId, configId);
     offer.value = order.offer || 0;
     offerReason.value = order.offerReason || null;
     depotId.value = { saved: order.depotId, actual: order.depotId };

@@ -51,7 +51,8 @@ watch(userId, async () => {
 });
 
 watch(requestUserId, async () => {
-  requestUserId.value && (await orderStore.update(requestUserId.value));
+  requestUserId.value &&
+    (await orderStore.update(requestUserId.value, configStore.activeConfigId));
 });
 
 const onClose = async () => {
@@ -70,7 +71,7 @@ const refresh = async () => {
   biStore.update(configStore.activeConfigId);
   productStore.update(configStore.activeConfigId);
   if (requestUserId.value) {
-    orderStore.update(requestUserId.value);
+    orderStore.update(requestUserId.value, configStore.activeConfigId);
   }
 };
 onMounted(refresh);
@@ -146,7 +147,10 @@ configStore.$subscribe(refresh);
     <v-card-actions class="justify-center">
       <v-card-actions>
         <v-btn
-          @click="requestUserId && orderStore.update(requestUserId)"
+          @click="
+            requestUserId &&
+              orderStore.update(requestUserId, configStore.activeConfigId)
+          "
           class="text-error"
           variant="outlined"
         >
