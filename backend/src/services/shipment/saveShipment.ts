@@ -49,6 +49,15 @@ export const saveShipment = async (
       },
     });
     if (
+      shipment &&
+      shipment.requisitionConfigId != requestShipment.requisitionConfigId
+    ) {
+      ctx.throw(
+        http.bad_request,
+        `shipment configId=${shipment.requisitionConfigId} does not match request shipment configId=${requestShipment.requisitionConfigId}`,
+      );
+    }
+    if (
       !shipment ||
       (shipment.active && shipment.validFrom < new Date()) ||
       !requestShipment.updatedAt ||
@@ -144,6 +153,7 @@ export const saveShipment = async (
     shipment.validFrom = requestShipment.validFrom;
     shipment.active = requestShipment.active;
     shipment.description = requestShipment.description;
+    shipment.requisitionConfigId = requestShipment.requisitionConfigId;
     shipment.updatedAt = new Date();
     await AppDataSource.getRepository(Shipment).save(shipment);
     for (let requestShipmentItem of requestShipment.shipmentItems) {
