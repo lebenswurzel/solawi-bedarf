@@ -53,6 +53,7 @@ export type ProductsById = {
 export interface NewProductCategory {
   name?: string;
   active: boolean;
+  requisitionConfigId: number;
 }
 
 export type ProductCategory = Required<NewProductCategory> & Id;
@@ -75,6 +76,7 @@ export interface Order {
   category: UserCategory;
   categoryReason: string | null;
   validFrom: Date | null;
+  requisitionConfigId: number;
 }
 
 export interface ConfirmedOrder extends Order {

@@ -34,6 +34,7 @@ const t = language.pages.product;
 
 const defaultProductCategory: NewProductCategory = {
   active: false,
+  requisitionConfigId: -1,
 };
 
 const defaultProduct: NewProduct = {
@@ -81,7 +82,10 @@ const onCloseProduct = async () => {
 };
 
 const onCreateProductCategory = () => {
-  dialogProductCategory.value = { ...defaultProductCategory };
+  dialogProductCategory.value = {
+    ...defaultProductCategory,
+    requisitionConfigId: configStore.activeConfigId,
+  };
   openProductCategory.value = true;
 };
 
