@@ -43,7 +43,7 @@ const configStore = useConfigStore();
 const orderStore = useOrderStore();
 const biStore = useBIStore();
 
-const { depots } = storeToRefs(configStore);
+const { depots, activeConfigId } = storeToRefs(configStore);
 const { depot, msrp, capacityByDepotId, increaseOnly } = storeToRefs(biStore);
 const {
   offer,
@@ -99,7 +99,7 @@ const modelInt = computed(() => {
 });
 
 const alternateDepot = computed(() => {
-  return configStore.depots.find((d) => d.id == alternateDepotId.value);
+  return depots.value.find((d) => d.id == alternateDepotId.value);
 });
 
 const enableOfferReason = computed(() =>
@@ -184,7 +184,7 @@ const onBlur = (blur: boolean) => {
 
 const onClose = async () => {
   requestUserId?.value &&
-    (await orderStore.update(requestUserId?.value, configStore.activeConfigId));
+    (await orderStore.update(requestUserId?.value, activeConfigId.value));
   model.value = offer.value.toString() || "0";
   emit("close");
 };
@@ -202,15 +202,12 @@ const onSave = () => {
     categoryReason: categoryReason.value,
     confirmGTC: confirmGTC.value,
     validFrom: validFrom.value,
-    requisitionConfigId: configStore.activeConfigId,
+    requisitionConfigId: activeConfigId.value,
   })
     .then(async () => {
-      await biStore.update(configStore.activeConfigId);
+      await biStore.update(activeConfigId.value);
       requestUserId?.value &&
-        (await orderStore.update(
-          requestUserId.value,
-          configStore.activeConfigId,
-        ));
+        (await orderStore.update(requestUserId.value, activeConfigId.value));
       loading.value = false;
       emit("close");
     })
