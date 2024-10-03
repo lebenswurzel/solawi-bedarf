@@ -39,6 +39,7 @@ const biStore = useBIStore();
 const { depot, msrp, submit } = storeToRefs(biStore);
 const { userId } = storeToRefs(userStore);
 const { productCategories } = storeToRefs(productStore);
+const { activeConfigId } = storeToRefs(configStore);
 
 const open = ref(false);
 const faqOpen = ref(false);
@@ -50,9 +51,8 @@ watch(userId, async () => {
   requestUserId.value = userId.value;
 });
 
-watch(requestUserId, async () => {
-  requestUserId.value &&
-    (await orderStore.update(requestUserId.value, configStore.activeConfigId));
+watch([requestUserId, configStore], async () => {
+  await refresh();
 });
 
 const onClose = async () => {
@@ -68,14 +68,13 @@ const onSave = () => {
 };
 
 const refresh = async () => {
-  biStore.update(configStore.activeConfigId);
-  productStore.update(configStore.activeConfigId);
-  if (requestUserId.value) {
-    orderStore.update(requestUserId.value, configStore.activeConfigId);
+  if (requestUserId.value && activeConfigId.value != -1) {
+    productStore.update(configStore.activeConfigId);
+    biStore.update(configStore.activeConfigId);
+    orderStore.update(requestUserId.value, activeConfigId.value);
   }
 };
 onMounted(refresh);
-configStore.$subscribe(refresh);
 </script>
 
 <template>
@@ -148,8 +147,7 @@ configStore.$subscribe(refresh);
       <v-card-actions>
         <v-btn
           @click="
-            requestUserId &&
-              orderStore.update(requestUserId, configStore.activeConfigId)
+            requestUserId && orderStore.update(requestUserId, activeConfigId)
           "
           class="text-error"
           variant="outlined"

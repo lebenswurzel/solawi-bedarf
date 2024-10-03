@@ -19,10 +19,15 @@ import { storeToRefs } from "pinia";
 import { computed, onMounted, ref } from "vue";
 import { language } from "../lang/lang.ts";
 import { useConfigStore } from "../store/configStore.ts";
+import { useProductStore } from "../store/productStore.ts";
+import { useBIStore } from "../store/biStore.ts";
 
 const open = ref(false);
+const loading = ref(false);
 const t = language.components.seasonSelector;
 const configStore = useConfigStore();
+const productStore = useProductStore();
+const biStore = useBIStore();
 
 const { availableConfigs, config, seasonColorClass } = storeToRefs(configStore);
 
@@ -41,7 +46,14 @@ onMounted(async () => {
 });
 
 const onApply = async () => {
-  await configStore.update(selectedConfig.value);
+  loading.value = true;
+  try {
+    await configStore.update(selectedConfig.value);
+    await productStore.update(configStore.activeConfigId);
+    await biStore.update(configStore.activeConfigId);
+  } finally {
+    loading.value = false;
+  }
   open.value = false;
 };
 
@@ -80,7 +92,7 @@ const openDialog = () => {
         />
       </v-card-text>
       <v-card-actions class="justify-center">
-        <v-btn @click="onApply" variant="elevated">
+        <v-btn @click="onApply" :loading="loading" variant="elevated">
           {{ language.app.actions.apply }}
         </v-btn>
         <v-btn @click="onCancel" variant="elevated" color="error">
