@@ -23,10 +23,7 @@ import { Order } from "../../database/Order";
 import { OrderItem } from "../../database/OrderItem";
 import { ProductCategory } from "../../database/ProductCategory";
 import { Depot } from "../../database/Depot";
-import {
-  RequisitionConfig,
-  RequisitionConfigName,
-} from "../../database/RequisitionConfig";
+import { RequisitionConfig } from "../../database/RequisitionConfig";
 import { ConfirmedOrder } from "../../../../shared/src/types";
 import { appConfig } from "../../../../shared/src/config";
 import { getMsrp } from "../../../../shared/src/msrp";
@@ -45,7 +42,6 @@ import {
   isOrderItemValid,
 } from "../../../../shared/src/validation/capacity";
 import { LessThan } from "typeorm";
-import { getNumericQueryParameter } from "../../util/requestUtil";
 
 export const saveOrder = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -55,7 +51,7 @@ export const saveOrder = async (
   const requestUserId = await getRequestUserId(ctx);
   const body = ctx.request.body as ConfirmedOrder;
 
-  const configId = getNumericQueryParameter(ctx.request.query, "configId");
+  const configId = body.requisitionConfigId;
   if (configId < 1) {
     ctx.throw(http.bad_request, `missing or bad config id (${configId})`);
   }
@@ -89,7 +85,7 @@ export const saveOrder = async (
     ctx.throw(http.bad_request, "no valid depot");
   }
   let order = await AppDataSource.getRepository(Order).findOne({
-    where: { userId: requestUserId },
+    where: { userId: requestUserId, requisitionConfigId: configId },
     relations: { orderItems: true },
   });
   if (
@@ -137,13 +133,6 @@ export const saveOrder = async (
     order = new Order();
     order.userId = requestUserId;
     order.requisitionConfigId = configId;
-  } else {
-    if (order.requisitionConfigId != configId) {
-      ctx.throw(
-        http.bad_request,
-        `order season mismatch (${configId} != ${order.requisitionConfig})`,
-      );
-    }
   }
 
   order.offer = body.offer;
