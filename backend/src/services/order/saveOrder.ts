@@ -136,7 +136,16 @@ export const saveOrder = async (
   if (!order) {
     order = new Order();
     order.userId = requestUserId;
+    order.requisitionConfigId = configId;
+  } else {
+    if (order.requisitionConfigId != configId) {
+      ctx.throw(
+        http.bad_request,
+        `order season mismatch (${configId} != ${order.requisitionConfig})`,
+      );
+    }
   }
+
   order.offer = body.offer;
   order.depotId = body.depotId;
   order.alternateDepotId = body.alternateDepotId;
