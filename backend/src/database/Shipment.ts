@@ -14,10 +14,17 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  ManyToOne,
+} from "typeorm";
 import { BaseEntity } from "./BaseEntity";
 import { ShipmentItem } from "./ShipmentItem";
 import { AdditionalShipmentItem } from "./AdditionalShipmentItem";
+import { RequisitionConfig } from "./RequisitionConfig";
 
 @Entity()
 export class Shipment extends BaseEntity {
@@ -44,4 +51,10 @@ export class Shipment extends BaseEntity {
     (additionalShipmentItem) => additionalShipmentItem.shipment,
   )
   additionalShipmentItems: AdditionalShipmentItem[];
+
+  @Column()
+  requisitionConfigId: number;
+
+  @ManyToOne(() => RequisitionConfig, { nullable: false })
+  requisitionConfig: RequisitionConfig;
 }
