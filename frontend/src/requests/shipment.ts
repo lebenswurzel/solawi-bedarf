@@ -29,10 +29,12 @@ export const saveShipment = async (shipment: Shipment & OptionalId) => {
   await verifyResponse(response);
 };
 
-export const getShipments = async (): Promise<{
+export const getShipments = async (
+  configId: number,
+): Promise<{
   shipments: (Shipment & Id)[];
 }> => {
-  const response = await fetch(getUrl("/shipments"));
+  const response = await fetch(getUrl(`/shipments?configId=${configId}`));
 
   await verifyResponse(response);
 

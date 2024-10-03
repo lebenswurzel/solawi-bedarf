@@ -21,6 +21,7 @@ import { http } from "../../consts/http";
 import { AppDataSource } from "../../database/database";
 import { getUserFromContext } from "../getUserFromContext";
 import { UserRole } from "../../../../shared/src/enum";
+import { getNumericQueryParameter } from "../../util/requestUtil";
 
 export const getShipments = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -29,6 +30,10 @@ export const getShipments = async (
   if (![UserRole.ADMIN, UserRole.EMPLOYEE].includes(role)) {
     ctx.throw(http.forbidden);
   }
+  const configId = getNumericQueryParameter(ctx.request.query, "configId");
+  if (configId < 1) {
+    ctx.throw(http.bad_request, `missing or bad config id (${configId})`);
+  }
   const shipments = await AppDataSource.getRepository(Shipment).find({
     relations: {
       shipmentItems: true,
@@ -36,6 +41,9 @@ export const getShipments = async (
     },
     order: {
       validFrom: "ASC",
+    },
+    where: {
+      requisitionConfigId: configId,
     },
   });
   ctx.body = { shipments };
