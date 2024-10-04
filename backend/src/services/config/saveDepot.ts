@@ -38,7 +38,7 @@ export const saveDepot = async (
       id: requestDepot.id,
     });
     if (!depot) {
-      ctx.throw(http.bad_request);
+      ctx.throw(http.bad_request, `depot id=${requestDepot.id} does not exist`);
     } else {
       depot.name = requestDepot.name;
       depot.address = requestDepot.address;
@@ -52,7 +52,10 @@ export const saveDepot = async (
           where: [{ depotId: depot.id }, { alternateDepotId: depot.id }],
         });
         if (count > 0) {
-          ctx.throw(http.bad_request);
+          ctx.throw(
+            http.bad_request,
+            "cannot disable because depot has active orders",
+          );
         }
       }
       depot.active = requestDepot.active;
