@@ -38,6 +38,7 @@ const onClick = async () => {
   loading.value = true;
   try {
     const overview = await getOverview(configStore.activeConfigId);
+    console.log(overview);
     const productCategories = await getProductCategory(
       configStore.activeConfigId,
     );
@@ -53,8 +54,10 @@ const onClick = async () => {
     window.URL.revokeObjectURL(url);
   } catch (e) {
     uiFeedbackStore.setError("" + e);
+    throw e;
+  } finally {
+    loading.value = false;
   }
-  loading.value = false;
 };
 
 const onDepotPdfClick = async () => {
@@ -78,8 +81,10 @@ const onDepotPdfClick = async () => {
     zip.download("depots.zip");
   } catch (e) {
     uiFeedbackStore.setError("" + e);
+    throw e;
+  } finally {
+    loading.value = false;
   }
-  loading.value = false;
 };
 
 const onUserPdfClick = async () => {
@@ -103,8 +108,10 @@ const onUserPdfClick = async () => {
     zip.download("users.zip");
   } catch (e) {
     uiFeedbackStore.setError("" + e);
+    throw e;
+  } finally {
+    loading.value = false;
   }
-  loading.value = false;
 };
 </script>
 

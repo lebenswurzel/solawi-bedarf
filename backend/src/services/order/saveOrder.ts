@@ -127,7 +127,10 @@ export const saveOrder = async (
   }
   const productCategories = await AppDataSource.getRepository(
     ProductCategory,
-  ).find({ relations: { products: true } });
+  ).find({
+    relations: { products: true },
+    where: { requisitionConfigId: configId },
+  });
 
   if (!order) {
     order = new Order();
