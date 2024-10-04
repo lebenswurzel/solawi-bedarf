@@ -26,6 +26,7 @@ import { UserRole } from "../../../../shared/src/enum";
 import { Order } from "../../database/Order";
 import { appConfig } from "../../../../shared/src/config";
 import { RequisitionConfig } from "../../database/RequisitionConfig";
+import { SaveUserRequest } from "../../../../shared/src/types";
 
 export const saveUser = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -34,15 +35,7 @@ export const saveUser = async (
   if (role != UserRole.ADMIN) {
     ctx.throw(http.forbidden);
   }
-  const requestUser = ctx.request.body as {
-    id?: number;
-    name: string;
-    password?: string;
-    role: UserRole;
-    active: boolean;
-    orderValidFrom?: Date | null;
-    requisitionConfigId: number;
-  };
+  const requestUser = ctx.request.body as SaveUserRequest;
   if (
     !requestUser.requisitionConfigId ||
     !(await AppDataSource.getRepository(RequisitionConfig).find({
