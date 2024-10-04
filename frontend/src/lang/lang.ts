@@ -309,12 +309,17 @@ export const language = {
       navigation: {
         subtitle: "Admin",
       },
+      name: "Bezeichnung",
       startOrder: "Start der Bedarfsmeldung",
       startBiddingRound: "Start der Bieterrunde",
       endBiddingRound: "Ende der Bieterrunde",
       budget: "Budget [€]",
       validFrom: "Start der Saison",
       validTo: "Ende der Saison",
+      newSeason: {
+        title: "Neue Saison anlegen",
+        copyFromPrevious: "Kopiere Produktkonfiguration von vorheriger Saison",
+      },
     },
     content: {
       title: "Text",
