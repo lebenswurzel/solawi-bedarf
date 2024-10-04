@@ -23,6 +23,7 @@ import { deleteConfig, saveConfig } from "../requests/config.ts";
 import { stringToDate, dateToString } from "../lib/convert.ts";
 import { RequisitionConfig } from "../../../shared/src/types.ts";
 import { useUiFeedback } from "../store/uiFeedbackStore.ts";
+import NewSeasonDialog from "../components/NewSeasonDialog.vue";
 const t = language.pages.config;
 
 const loading = ref(false);
@@ -37,6 +38,7 @@ const validTo = ref<Date>(new Date());
 const budget = ref<number>(0);
 const { setError, setSuccess } = useUiFeedback();
 const configId = ref<number>(0);
+const openCreateDialog = ref<boolean>(false);
 
 onMounted(async () => {
   await configStore.update();
@@ -44,7 +46,7 @@ onMounted(async () => {
 
 const onConfigUpdated = () => {
   const orderConfig = configStore.config;
-  seasonName.value = orderConfig?.name || "Saison-Bezeichner";
+  seasonName.value = orderConfig?.name || "Saison-Bezeichnung";
   startOrder.value = orderConfig?.startOrder || new Date();
   endBiddingRound.value = orderConfig?.endBiddingRound || new Date();
   startBiddingRound.value = orderConfig?.startBiddingRound || new Date();
@@ -58,9 +60,10 @@ watch(configStore, () => {
   onConfigUpdated();
 });
 
-const onSave = (asNew?: boolean) => {
+const onSave = () => {
   loading.value = true;
   const updatedConfig: RequisitionConfig = {
+    id: configId.value,
     startOrder: startOrder.value,
     endBiddingRound: endBiddingRound.value,
     startBiddingRound: startBiddingRound.value,
@@ -69,9 +72,6 @@ const onSave = (asNew?: boolean) => {
     validTo: validTo.value,
     name: seasonName.value,
   };
-  if (asNew !== true) {
-    updatedConfig.id = configId.value;
-  }
   saveConfig(updatedConfig)
     .then(async () => {
       configStore
@@ -89,6 +89,10 @@ const onSave = (asNew?: boolean) => {
     .finally(() => {
       loading.value = false;
     });
+};
+
+const onCreate = () => {
+  openCreateDialog.value = true;
 };
 
 const onDelete = () => {
@@ -113,7 +117,7 @@ const onDelete = () => {
     <v-card-subtitle>{{ t.subtitle }}</v-card-subtitle>
     <v-card-text>
       <v-text-field
-        label="Bezeichner"
+        :label="t.name"
         type="text"
         v-model="seasonName"
       ></v-text-field>
@@ -182,7 +186,7 @@ const onDelete = () => {
           <v-list>
             <v-list-item>
               <v-list-item-title>
-                <v-btn @click="() => onSave(true)" :loading="loading">
+                <v-btn @click="onCreate" :loading="loading">
                   {{ language.app.actions.createNew }}
                 </v-btn>
               </v-list-item-title>
@@ -203,4 +207,6 @@ const onDelete = () => {
       </v-btn>
     </v-card-actions>
   </v-card>
+
+  <NewSeasonDialog :open="openCreateDialog" @close="openCreateDialog = false" />
 </template>
