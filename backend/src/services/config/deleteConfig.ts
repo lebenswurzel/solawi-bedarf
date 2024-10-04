@@ -21,7 +21,7 @@ import { http } from "../../consts/http";
 import { RequisitionConfig } from "../../database/RequisitionConfig";
 import { AppDataSource } from "../../database/database";
 import { getUserFromContext } from "../getUserFromContext";
-import { getNumericQueryParameter } from "../../util/requestUtil";
+import { getConfigIdFromQuery } from "../../util/requestUtil";
 
 export const deleteConfig = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -31,20 +31,17 @@ export const deleteConfig = async (
     ctx.throw(http.forbidden);
   }
 
-  const requestId = getNumericQueryParameter(ctx.request.query, "id");
-  if (requestId < 1) {
-    ctx.throw(http.bad_request, "invalid or no id specified");
-  }
+  const configId = getConfigIdFromQuery(ctx);
   let config = await AppDataSource.getRepository(RequisitionConfig).findOneBy({
-    id: requestId,
+    id: configId,
   });
   if (!config) {
-    ctx.throw(http.bad_request, `config with id=${requestId} does not exist`);
+    ctx.throw(http.bad_request, `config with id=${configId} does not exist`);
   }
 
   try {
     await AppDataSource.getRepository(RequisitionConfig).delete({
-      id: requestId,
+      id: configId,
     });
     ctx.status = http.no_content;
   } catch {

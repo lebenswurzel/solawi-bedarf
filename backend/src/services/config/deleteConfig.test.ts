@@ -49,7 +49,7 @@ testAsAdmin(
   async ({ userData }: TestUserData) => {
     const originalConfig = await getConfigByName(RequisitionConfigName);
     const ctx = createBasicTestCtx(undefined, userData.token, undefined, {
-      id: originalConfig.id,
+      configId: originalConfig.id,
     });
 
     await expect(() => deleteConfig(ctx)).rejects.toThrowError("Error 405");
@@ -78,7 +78,7 @@ testAsAdmin("delete unused config", async ({ userData }: TestUserData) => {
 
   const newConfigFromDb = await getConfigByName("config no.1");
   const ctx = createBasicTestCtx(undefined, userData.token, undefined, {
-    id: newConfigFromDb.id,
+    configId: newConfigFromDb.id,
   });
 
   // delete t

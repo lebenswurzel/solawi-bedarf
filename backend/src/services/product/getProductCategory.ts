@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { AppDataSource } from "../../database/database";
 import { ProductCategory } from "../../database/ProductCategory";
-import { getNumericQueryParameter } from "../../util/requestUtil";
+import { getConfigIdFromQuery } from "../../util/requestUtil";
 import { getUserFromContext } from "../getUserFromContext";
 import Koa from "koa";
 import Router from "koa-router";
@@ -25,7 +25,7 @@ export const getProductCategory = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
 ) => {
   await getUserFromContext(ctx);
-  const configId = getNumericQueryParameter(ctx.request.query, "configId");
+  const configId = getConfigIdFromQuery(ctx);
 
   const productCategories = await AppDataSource.getRepository(
     ProductCategory,

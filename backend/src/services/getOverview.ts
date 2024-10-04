@@ -24,7 +24,10 @@ import { MoreThan } from "typeorm";
 import { UserRole } from "../../../shared/src/enum";
 import { getMsrp } from "../../../shared/src/msrp";
 import { bi } from "./bi/bi";
-import { getNumericQueryParameter } from "../util/requestUtil";
+import {
+  getConfigIdFromQuery,
+  getNumericQueryParameter,
+} from "../util/requestUtil";
 
 export const getOverview = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -33,10 +36,7 @@ export const getOverview = async (
   if (role != UserRole.ADMIN) {
     ctx.throw(http.forbidden);
   }
-  const configId = getNumericQueryParameter(ctx.request.query, "configId");
-  if (configId < 1) {
-    ctx.throw(http.bad_request, `missing or bad config id (${configId})`);
-  }
+  const configId = getConfigIdFromQuery(ctx);
 
   const { productsById } = await bi(configId);
   const orders = await AppDataSource.getRepository(Order).find({
