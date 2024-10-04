@@ -56,13 +56,13 @@ testAsUser1("get config", async ({ userData }: TestUserData) => {
   );
   expect(response.config).toMatchObject(originalConfig);
 
-  // check config with wrong
+  // check config with wrong id
   const ctxWithWrongId = createBasicTestCtx(
     undefined,
     userData.token,
     undefined,
     {
-      id: originalConfig.id - 1,
+      configId: originalConfig.id - 1,
     },
   );
   await expect(() => getConfig(ctxWithWrongId)).rejects.toThrowError(

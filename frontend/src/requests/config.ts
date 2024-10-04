@@ -25,7 +25,7 @@ export const getConfig = async (
 ): Promise<ConfigResponse> => {
   let query = "";
   if (requisitionConfigId !== undefined) {
-    query = `?id=${requisitionConfigId}`;
+    query = `?configId=${requisitionConfigId}`;
   }
   const response = await fetch(getUrl(`/config${query}`));
 
@@ -61,8 +61,11 @@ export const saveConfig = async (config: RequisitionConfig) => {
 };
 
 export const deleteConfig = async (requisitionConfigId: number) => {
-  const response = await fetch(getUrl(`/config?id=${requisitionConfigId}`), {
-    method: "DELETE",
-  });
+  const response = await fetch(
+    getUrl(`/config?configId=${requisitionConfigId}`),
+    {
+      method: "DELETE",
+    },
+  );
   await verifyResponse(response);
 };

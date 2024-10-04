@@ -15,6 +15,9 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { ParsedUrlQuery } from "querystring";
+import Koa from "koa";
+import Router from "koa-router";
+import { http } from "../consts/http";
 
 export const getNumericQueryParameter = (
   requestQuery: ParsedUrlQuery,
@@ -28,4 +31,17 @@ export const getNumericQueryParameter = (
   }
   const numericValue = parseInt(requestValue);
   return isFinite(numericValue) ? numericValue : fallback;
+};
+
+export const getConfigIdFromQuery = (
+  ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
+): number => {
+  const configId = getNumericQueryParameter(ctx.request.query, "configId");
+  if (configId < 1) {
+    ctx.throw(
+      http.bad_request,
+      `missing or bad config id=${configId} in query`,
+    );
+  }
+  return configId;
 };
