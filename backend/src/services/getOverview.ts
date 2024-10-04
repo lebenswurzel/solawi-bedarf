@@ -50,6 +50,7 @@ export const getOverview = async (
     },
     where: {
       offer: MoreThan(0),
+      requisitionConfigId: configId,
     },
     select: {
       offer: true,
