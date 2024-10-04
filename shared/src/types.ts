@@ -30,6 +30,13 @@ export interface NewUser {
 
 export type User = Required<NewUser> & Id;
 
+export type SaveUserRequest = Required<NewUser> &
+  OptionalId & {
+    password?: string;
+    orderValidFrom: Date | null;
+    requisitionConfigId: number;
+  };
+
 export interface NewProduct {
   description?: string | null;
   name?: string;

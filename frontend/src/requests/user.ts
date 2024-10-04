@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { OptionalId, User, NewUser } from "../../../shared/src/types.ts";
+import { User, SaveUserRequest } from "../../../shared/src/types.ts";
 import { getUrl, verifyResponse } from "./requests.ts";
 
 export const getUser = async (): Promise<{ userId: number; users: User[] }> => {
@@ -25,12 +25,7 @@ export const getUser = async (): Promise<{ userId: number; users: User[] }> => {
   return await response.json();
 };
 
-export const saveUser = async (
-  user: Required<NewUser> &
-    OptionalId & { password?: string } & { orderValidFrom: Date | null } & {
-      requisitionConfigId: number;
-    },
-) => {
+export const saveUser = async (user: SaveUserRequest) => {
   const response = await fetch(getUrl("/user"), {
     method: "POST",
     body: JSON.stringify(user),
