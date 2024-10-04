@@ -29,13 +29,13 @@ import { ProductCategory } from "../../database/ProductCategory";
 import { Shipment } from "../../database/Shipment";
 import { AppDataSource } from "../../database/database";
 import { getUserFromContext } from "../getUserFromContext";
-import { getNumericQueryParameter } from "../../util/requestUtil";
+import { getConfigIdFromQuery } from "../../util/requestUtil";
 
 export const biHandler = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
 ) => {
   await getUserFromContext(ctx);
-  const configId = getNumericQueryParameter(ctx.request.query, "configId");
+  const configId = getConfigIdFromQuery(ctx);
   ctx.body = await bi(configId);
 };
 

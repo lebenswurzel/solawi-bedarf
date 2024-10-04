@@ -21,18 +21,14 @@ import { AppDataSource } from "../../database/database";
 import { Shipment } from "../../database/Shipment";
 import { Order } from "../../database/Order";
 import { In } from "typeorm";
-import { getNumericQueryParameter } from "../../util/requestUtil";
-import { http } from "../../consts/http";
+import { getConfigIdFromQuery } from "../../util/requestUtil";
 
 export const getShipment = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
 ) => {
   const requestUserId = await getRequestUserId(ctx);
 
-  const configId = getNumericQueryParameter(ctx.request.query, "configId");
-  if (configId < 1) {
-    ctx.throw(http.bad_request, `missing or bad config id (${configId})`);
-  }
+  const configId = getConfigIdFromQuery(ctx);
 
   const depotIds = (
     await AppDataSource.getRepository(Order).find({

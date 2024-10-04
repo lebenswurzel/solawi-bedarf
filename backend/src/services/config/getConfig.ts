@@ -33,7 +33,7 @@ export const getConfig = async (
   });
 
   let requisitionConfig: RequisitionConfig | null;
-  const requestId = getNumericQueryParameter(ctx.request.query, "id");
+  const requestId = getNumericQueryParameter(ctx.request.query, "configId");
   if (requestId < 0) {
     // find any existing config to retain previous behavior
     // ... maybe specify some condition?
