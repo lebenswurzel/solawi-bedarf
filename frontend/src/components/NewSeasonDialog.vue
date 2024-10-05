@@ -44,12 +44,6 @@ const onConfirmCreate = async () => {
   if (!isValid.value) {
     return;
   }
-  console.log(
-    "CREATE",
-    copyFromSeasonId.value,
-    newSeasonName.value,
-    newSeasonStartDate.value,
-  );
 
   const newConfig: NewConfig = {
     name: newSeasonName.value,
@@ -62,7 +56,7 @@ const onConfirmCreate = async () => {
   };
 
   try {
-    await createConfig(newConfig);
+    await createConfig({ config: newConfig, copyFrom: copyFromSeasonId.value });
     setSuccess("Erstellung erfolgreich");
     configStore.update();
   } catch (e) {
