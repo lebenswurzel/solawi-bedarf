@@ -39,6 +39,7 @@ import { PostgresConnectionOptions } from "typeorm/driver/postgres/PostgresConne
 import { DepotRank1726862542988 } from "../migrations/1726862542988-depot-rank";
 import { MultiSeason1727640942892 } from "../migrations/1727640942892-multi-season";
 import { MultiSeasonForShipmentAndOrder1727966567905 } from "../migrations/1727966567905-multi-season-for-shipment-and-order";
+import { NonUniqueProductNames1728134733135 } from "../migrations/1728134733135-non-unique-product-names";
 
 const entities = [
   User,
@@ -69,6 +70,7 @@ const migrations = [
   DepotRank1726862542988,
   MultiSeason1727640942892,
   MultiSeasonForShipmentAndOrder1727966567905,
+  NonUniqueProductNames1728134733135,
 ];
 
 const configuredPort = config.testing.isTesting
