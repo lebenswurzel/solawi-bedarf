@@ -21,7 +21,7 @@ import Router from "koa-router";
 import { http } from "../../consts/http";
 import { UserRole } from "../../../../shared/src/enum";
 import { RequisitionConfig } from "../../database/RequisitionConfig";
-import { NewConfig } from "../../../../shared/src/types";
+import { CreateConfigRequest, NewConfig } from "../../../../shared/src/types";
 
 export const createConfig = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -30,7 +30,8 @@ export const createConfig = async (
   if (role != UserRole.ADMIN) {
     ctx.throw(http.forbidden);
   }
-  const requestConfig = ctx.request.body as NewConfig;
+  const { config: requestConfig, copyFrom } = ctx.request
+    .body as CreateConfigRequest;
   const config = new RequisitionConfig();
 
   config.name = requestConfig.name;
@@ -41,6 +42,10 @@ export const createConfig = async (
   config.validFrom = requestConfig.validFrom;
   config.validTo = requestConfig.validTo;
   await AppDataSource.getRepository(RequisitionConfig).save(config);
+
+  if (copyFrom) {
+    console.log("copying from " + copyFrom);
+  }
 
   ctx.status = http.created;
 };

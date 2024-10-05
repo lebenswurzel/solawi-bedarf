@@ -29,7 +29,7 @@ import {
 import { AppDataSource } from "../../database/database";
 import { deleteConfig } from "./deleteConfig";
 import { createConfig } from "./createConfig";
-import { NewConfig } from "../../../../shared/src/types";
+import { CreateConfigRequest, NewConfig } from "../../../../shared/src/types";
 
 test("prevent unauthorized access", async () => {
   const ctx = createBasicTestCtx();
@@ -72,7 +72,10 @@ testAsAdmin("delete unused config", async ({ userData }: TestUserData) => {
     validTo: new Date("2002-04-01"),
   };
 
-  const ctxNewConfig = createBasicTestCtx(newConfig, userData.token);
+  const ctxNewConfig = createBasicTestCtx<CreateConfigRequest>(
+    { config: newConfig, copyFrom: undefined },
+    userData.token,
+  );
   await createConfig(ctxNewConfig);
   expect(ctxNewConfig.status).toBe(http.created);
 
