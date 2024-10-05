@@ -17,10 +17,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { UserRole } from "../enum";
 import {
   Depot,
+  ExistingConfig,
   Order,
   OrderItem,
   ProductsById,
-  RequisitionConfig,
   SoldByProductId,
 } from "../types";
 import { isIncreaseOnly } from "./requisition";
@@ -28,7 +28,7 @@ import { isIncreaseOnly } from "./requisition";
 export const getRemainingDepotCapacity = (
   depot: Depot,
   reserved: number,
-  savedDepotId: number,
+  savedDepotId: number
 ): number | null => {
   if (depot.capacity == null) {
     return null;
@@ -44,7 +44,7 @@ export const isOrderItemValid = (
   savedOrder: Order | null,
   actualOrderItem: OrderItem,
   soldByProductId: SoldByProductId,
-  productsById: ProductsById,
+  productsById: ProductsById
 ) => {
   if (actualOrderItem.value == 0) {
     return true;
@@ -64,7 +64,7 @@ export const isOrderItemValid = (
     soldByProductId[actualOrderItem.productId].sold;
   if (savedOrder) {
     const savedOrderItem = savedOrder.orderItems.find(
-      (orderItem) => orderItem.productId == actualOrderItem.productId,
+      (orderItem) => orderItem.productId == actualOrderItem.productId
     );
     if (savedOrderItem) {
       remaining +=
@@ -74,7 +74,7 @@ export const isOrderItemValid = (
   }
   let maxAvailable = Math.min(
     remaining / product.frequency,
-    product.quantityMax,
+    product.quantityMax
   );
   if (maxAvailable < actualOrderItem.value) {
     return false;
@@ -88,7 +88,7 @@ export const isOrderItemValid = (
 export const getMaxAvailable = (
   savedOrderItem: OrderItem,
   productsById: ProductsById,
-  soldByProductId: SoldByProductId,
+  soldByProductId: SoldByProductId
 ) => {
   const sold = soldByProductId[savedOrderItem.productId];
   const product = productsById[savedOrderItem.productId];
@@ -102,9 +102,9 @@ export const getMaxAvailable = (
 export const getMinAvailable = (
   savedOrderItem: OrderItem,
   userRole: UserRole | undefined,
-  requisitionConfig: RequisitionConfig,
+  requisitionConfig: ExistingConfig,
   now: Date,
-  productsById: ProductsById,
+  productsById: ProductsById
 ) => {
   const product = productsById[savedOrderItem.productId];
   if (isIncreaseOnly(userRole, requisitionConfig, now)) {

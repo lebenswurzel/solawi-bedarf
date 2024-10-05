@@ -20,7 +20,7 @@ import { getConfig } from "../requests/config.ts";
 import {
   AvailableConfig,
   Depot,
-  RequisitionConfig,
+  ExistingConfig,
 } from "../../../shared/src/types.ts";
 import { appConfig } from "../../../shared/src/config.ts";
 
@@ -35,7 +35,7 @@ const seasonColorClasses = [
 
 export const useConfigStore = defineStore("config", () => {
   const depots = ref<Depot[]>([]);
-  const config = ref<RequisitionConfig>();
+  const config = ref<ExistingConfig>();
   const activeConfigId = ref<number>(-1);
   const availableConfigs = ref<AvailableConfig[]>([]);
   const externalAuthProvider = ref<boolean>(appConfig.externalAuthProvider);

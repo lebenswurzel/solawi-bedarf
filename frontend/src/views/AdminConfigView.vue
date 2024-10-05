@@ -21,7 +21,7 @@ import { useConfigStore } from "../store/configStore.ts";
 import { ref } from "vue";
 import { deleteConfig, saveConfig } from "../requests/config.ts";
 import { stringToDate, dateToString } from "../lib/convert.ts";
-import { RequisitionConfig } from "../../../shared/src/types.ts";
+import { ExistingConfig } from "../../../shared/src/types.ts";
 import { useUiFeedback } from "../store/uiFeedbackStore.ts";
 import NewSeasonDialog from "../components/NewSeasonDialog.vue";
 const t = language.pages.config;
@@ -62,7 +62,7 @@ watch(configStore, () => {
 
 const onSave = () => {
   loading.value = true;
-  const updatedConfig: RequisitionConfig = {
+  const updatedConfig: ExistingConfig = {
     id: configId.value,
     startOrder: startOrder.value,
     endBiddingRound: endBiddingRound.value,
