@@ -29,9 +29,10 @@ const configStore = useConfigStore();
 const productStore = useProductStore();
 const biStore = useBIStore();
 
-const { availableConfigs, config, seasonColorClass } = storeToRefs(configStore);
+const { availableConfigs, config, seasonColorClass, activeConfigId } =
+  storeToRefs(configStore);
 
-const selectedConfig = ref<number | undefined>(config.value?.id);
+const selectedConfig = ref<number | undefined>(activeConfigId.value);
 
 const configOptions = computed(() => {
   return availableConfigs.value.map((config) => ({
