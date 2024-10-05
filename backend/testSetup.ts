@@ -101,8 +101,8 @@ afterEach(async () => {
 ////////////////////////////////////////////////////
 // test helper methods
 ////////////////////////////////////////////////////
-export const createBasicTestCtx = (
-  body?: any,
+export const createBasicTestCtx = <BodyType>(
+  body?: BodyType,
   token?: string,
   headers?: any,
   query?: object,

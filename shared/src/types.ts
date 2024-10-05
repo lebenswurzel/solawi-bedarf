@@ -160,6 +160,11 @@ export interface AvailableConfig {
   name: string;
 }
 
+export interface CreateConfigRequest {
+  config: NewConfig;
+  copyFrom: number | undefined;
+}
+
 export interface ConfigResponse {
   depots: Depot[];
   config: RequisitionConfig & Id;

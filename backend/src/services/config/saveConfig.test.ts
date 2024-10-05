@@ -17,6 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { expect, test } from "vitest";
 import {
   ConfigResponse,
+  CreateConfigRequest,
   ExistingConfig,
   NewConfig,
 } from "../../../../shared/src/types";
@@ -99,7 +100,10 @@ testAsAdmin("add more configs", async ({ userData }: TestUserData) => {
     validTo: new Date("2002-04-01"),
   };
 
-  const ctxNewConfig = createBasicTestCtx(newConfig, userData.token);
+  const ctxNewConfig = createBasicTestCtx<CreateConfigRequest>(
+    { config: newConfig, copyFrom: undefined },
+    userData.token,
+  );
   await createConfig(ctxNewConfig);
   expect(ctxNewConfig.status).toBe(http.created);
 
@@ -119,7 +123,10 @@ testAsAdmin("add more configs", async ({ userData }: TestUserData) => {
     validTo: new Date("2003-04-01"),
   };
 
-  const ctxNewConfig2 = createBasicTestCtx(newConfig2, userData.token);
+  const ctxNewConfig2 = createBasicTestCtx<CreateConfigRequest>(
+    { config: newConfig2, copyFrom: undefined },
+    userData.token,
+  );
   await createConfig(ctxNewConfig2);
   expect(ctxNewConfig2.status).toBe(http.created);
   expect(await AppDataSource.getRepository(RequisitionConfig).count()).toBe(3);
