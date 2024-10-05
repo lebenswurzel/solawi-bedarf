@@ -16,7 +16,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import {
   ConfigResponse,
-  RequisitionConfig,
+  ExistingConfig,
+  NewConfig,
 } from "../../../shared/src/types.ts";
 import { getUrl, verifyResponse } from "./requests.ts";
 
@@ -48,9 +49,21 @@ export const getConfig = async (
   };
 };
 
-export const saveConfig = async (config: RequisitionConfig) => {
+export const createConfig = async (config: NewConfig) => {
   const response = await fetch(getUrl("/config"), {
     method: "POST",
+    body: JSON.stringify(config),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  await verifyResponse(response);
+};
+
+export const saveConfig = async (config: ExistingConfig) => {
+  const response = await fetch(getUrl("/config"), {
+    method: "PUT",
     body: JSON.stringify(config),
     headers: {
       "Content-Type": "application/json",

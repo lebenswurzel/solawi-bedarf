@@ -15,7 +15,6 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { expect, test } from "vitest";
-import { RequisitionConfig as RequisitionConfigType } from "../../../../shared/src/types";
 import {
   TestUserData,
   createBasicTestCtx,
@@ -29,7 +28,8 @@ import {
 } from "../../database/RequisitionConfig";
 import { AppDataSource } from "../../database/database";
 import { deleteConfig } from "./deleteConfig";
-import { saveConfig } from "./saveConfig";
+import { createConfig } from "./createConfig";
+import { NewConfig } from "../../../../shared/src/types";
 
 test("prevent unauthorized access", async () => {
   const ctx = createBasicTestCtx();
@@ -62,7 +62,7 @@ testAsAdmin(
 
 testAsAdmin("delete unused config", async ({ userData }: TestUserData) => {
   // add a new config
-  const newConfig: RequisitionConfigType = {
+  const newConfig: NewConfig = {
     name: "config no.1",
     budget: 12345,
     startOrder: new Date("2000-11-01"),
@@ -73,7 +73,7 @@ testAsAdmin("delete unused config", async ({ userData }: TestUserData) => {
   };
 
   const ctxNewConfig = createBasicTestCtx(newConfig, userData.token);
-  await saveConfig(ctxNewConfig);
+  await createConfig(ctxNewConfig);
   expect(ctxNewConfig.status).toBe(http.created);
 
   const newConfigFromDb = await getConfigByName("config no.1");

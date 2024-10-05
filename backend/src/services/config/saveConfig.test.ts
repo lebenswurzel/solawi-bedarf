@@ -17,7 +17,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { expect, test } from "vitest";
 import {
   ConfigResponse,
-  RequisitionConfig as RequisitionConfigType,
+  ExistingConfig,
+  NewConfig,
 } from "../../../../shared/src/types";
 import {
   TestUserData,
@@ -33,6 +34,7 @@ import { AppDataSource } from "../../database/database";
 import { getConfig } from "./getConfig";
 import { saveConfig } from "./saveConfig";
 import { http } from "../../consts/http";
+import { createConfig } from "./createConfig";
 
 test("prevent unauthorized access", async () => {
   const ctx = createBasicTestCtx();
@@ -63,7 +65,7 @@ testAsAdmin("get and change config", async ({ userData }: TestUserData) => {
     await getConfigByName(RequisitionConfigName),
   );
 
-  const updatedConfig: RequisitionConfigType = {
+  const updatedConfig: ExistingConfig = {
     id: response.config.id,
     name: "new name",
     budget: 123,
@@ -87,7 +89,7 @@ testAsAdmin("get and change config", async ({ userData }: TestUserData) => {
 });
 
 testAsAdmin("add more configs", async ({ userData }: TestUserData) => {
-  const newConfig: RequisitionConfigType = {
+  const newConfig: NewConfig = {
     name: "config no.1",
     budget: 12345,
     startOrder: new Date("2000-11-01"),
@@ -98,7 +100,7 @@ testAsAdmin("add more configs", async ({ userData }: TestUserData) => {
   };
 
   const ctxNewConfig = createBasicTestCtx(newConfig, userData.token);
-  await saveConfig(ctxNewConfig);
+  await createConfig(ctxNewConfig);
   expect(ctxNewConfig.status).toBe(http.created);
 
   const newConfigFromDb = await getConfigByName("config no.1");
@@ -107,7 +109,7 @@ testAsAdmin("add more configs", async ({ userData }: TestUserData) => {
   const originalConfig = await getConfigByName(RequisitionConfigName);
   expect(newConfigFromDb.id).not.toEqual(originalConfig.id);
 
-  const newConfig2: RequisitionConfigType = {
+  const newConfig2: NewConfig = {
     name: "config no.2",
     budget: 999,
     startOrder: new Date("2001-11-01"),
@@ -118,14 +120,14 @@ testAsAdmin("add more configs", async ({ userData }: TestUserData) => {
   };
 
   const ctxNewConfig2 = createBasicTestCtx(newConfig2, userData.token);
-  await saveConfig(ctxNewConfig2);
+  await createConfig(ctxNewConfig2);
   expect(ctxNewConfig2.status).toBe(http.created);
   expect(await AppDataSource.getRepository(RequisitionConfig).count()).toBe(3);
   const newConfig2FromDb = await getConfigByName("config no.2");
   expect(newConfig2FromDb).toMatchObject(newConfig2);
 
   // disallow configs with same name
-  const newConfigBad: RequisitionConfigType = {
+  const newConfigBad: NewConfig = {
     name: "config no.2",
     budget: 100,
     startOrder: new Date("2001-11-01"),
@@ -142,7 +144,7 @@ testAsAdmin("add more configs", async ({ userData }: TestUserData) => {
   expect(stillConfig2).toMatchObject(newConfig2);
 
   // disallow renaming to existing name
-  const newConfig2_renamed: RequisitionConfigType = {
+  const newConfig2_renamed: ExistingConfig = {
     ...newConfig2,
     id: newConfig2FromDb.id,
     name: "config no.1",

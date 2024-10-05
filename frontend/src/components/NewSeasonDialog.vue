@@ -19,6 +19,10 @@ import { computed, onMounted, ref, watch } from "vue";
 import { useConfigStore } from "../store/configStore";
 import { language } from "../lang/lang";
 import { dateToString, stringToDate } from "../lib/convert";
+import { createConfig } from "../requests/config";
+import { NewConfig } from "../../../shared/src/types";
+import { addDays, addMonths, addYears } from "date-fns";
+import { useUiFeedback } from "../store/uiFeedbackStore";
 
 defineProps(["open"]);
 const emit = defineEmits(["close"]);
@@ -29,13 +33,14 @@ const onClose = () => {
 const t = language.pages.config;
 
 const configStore = useConfigStore();
+const { setError, setSuccess } = useUiFeedback();
 const newSeasonName = ref<string>("");
 const newSeasonStartDate = ref<Date>(
   new Date(new Date().getFullYear() + 1, 3, 1),
 );
 const copyFromSeasonId = ref<number | undefined>();
 const isValid = ref<boolean>(false);
-const onConfirmCreate = () => {
+const onConfirmCreate = async () => {
   if (!isValid.value) {
     return;
   }
@@ -45,6 +50,25 @@ const onConfirmCreate = () => {
     newSeasonName.value,
     newSeasonStartDate.value,
   );
+
+  const newConfig: NewConfig = {
+    name: newSeasonName.value,
+    validFrom: newSeasonStartDate.value,
+    validTo: addDays(addYears(newSeasonStartDate.value, 1), -1),
+    startOrder: addMonths(newSeasonStartDate.value, -5),
+    startBiddingRound: addMonths(newSeasonStartDate.value, -2),
+    endBiddingRound: addMonths(newSeasonStartDate.value, -1),
+    budget: 0,
+  };
+
+  try {
+    await createConfig(newConfig);
+    setSuccess("Erstellung erfolgreich");
+    configStore.update();
+  } catch (e) {
+    setError("" + e);
+    throw e;
+  }
 
   onClose();
 };
