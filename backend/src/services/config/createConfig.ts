@@ -22,6 +22,7 @@ import { http } from "../../consts/http";
 import { UserRole } from "../../../../shared/src/enum";
 import { RequisitionConfig } from "../../database/RequisitionConfig";
 import { CreateConfigRequest, NewConfig } from "../../../../shared/src/types";
+import { copyProductCategories } from "../../util/productUtil";
 
 export const createConfig = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -41,10 +42,11 @@ export const createConfig = async (
   config.budget = requestConfig.budget;
   config.validFrom = requestConfig.validFrom;
   config.validTo = requestConfig.validTo;
-  await AppDataSource.getRepository(RequisitionConfig).save(config);
+  const savedConfig =
+    await AppDataSource.getRepository(RequisitionConfig).save(config);
 
   if (copyFrom) {
-    console.log("copying from " + copyFrom);
+    await copyProductCategories(copyFrom, savedConfig.id);
   }
 
   ctx.status = http.created;
