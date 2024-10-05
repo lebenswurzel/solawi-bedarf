@@ -142,8 +142,7 @@ export function isIdType(entity: any): entity is Id {
   return entity.id !== undefined;
 }
 
-export interface RequisitionConfig {
-  id?: number;
+interface RequisitionConfig {
   name: string;
   startOrder: Date;
   startBiddingRound: Date;
@@ -152,6 +151,9 @@ export interface RequisitionConfig {
   validFrom: Date;
   validTo: Date;
 }
+
+export type ExistingConfig = RequisitionConfig & Id;
+export type NewConfig = RequisitionConfig;
 
 export interface AvailableConfig {
   id: number;
