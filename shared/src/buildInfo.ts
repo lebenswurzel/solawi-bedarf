@@ -15,12 +15,14 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { BuildInfo } from "./types";
+
 /**
  * NOTE: This dummy file will be overwritten with the actual git information when running
  * the build script in dev/build/build-and-deploy.bash
  */
 
-export const buildInfo = {
+export const buildInfo: BuildInfo = {
   buildDate: "Do 1. Jan 01:00:00 CET 1970",
   git: {
     hash: "dev",
@@ -28,5 +30,9 @@ export const buildInfo = {
     branch: "local",
     tag: "",
     commitDate: "Do 1. Jan 01:00:00 CET 1970",
-  }
+  },
+  maintenance: {
+    enabled: true,
+    message: "",
+  },
 };
