@@ -251,3 +251,18 @@ export interface EditShipment
   shipmentItems: EditShipmentItem[];
   additionalShipmentItems: EditAdditionalShipmentItem[];
 }
+
+export interface BuildInfo {
+  buildDate: string;
+  git: {
+    hash: string;
+    hashShort: string;
+    branch: string;
+    tag: string;
+    commitDate: string;
+  };
+  maintenance?: {
+    enabled?: boolean;
+    message?: string;
+  };
+}
