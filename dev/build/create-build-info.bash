@@ -8,12 +8,20 @@ GIT_TAG=$(git describe --tags --exact-match --abbrev=0 2>/dev/null)
 GIT_COMMIT_DATE=$(git log -1 --format=%cd)
 CURRENT_DATE=$(date)
 
+MAINTENTANCE_ENABLED=false
+MAINTENTANCE_MESSAGE=
+if [ "$1" == "--maintenance" ]; then
+  MAINTENTANCE_ENABLED=true
+  MAINTENTANCE_MESSAGE="$2"
+fi
+
 
 TARGET_PATH=buildInfo.ts
 
 # Create json files
 cat <<EOF > $TARGET_PATH
-export const buildInfo = {
+import { BuildInfo } from "./types"
+export const buildInfo: BuildInfo = {
   buildDate: "$CURRENT_DATE",
   git: {
     hash: "$GIT_HASH",
@@ -21,7 +29,11 @@ export const buildInfo = {
     branch: "$GIT_BRANCH",
     tag: "$GIT_TAG",
     commitDate: "$GIT_COMMIT_DATE",
-  }
+  },
+  maintenance: {
+    enabled: $MAINTENTANCE_ENABLED,
+    message: "$MAINTENTANCE_MESSAGE",
+  },
 };
 EOF
 
