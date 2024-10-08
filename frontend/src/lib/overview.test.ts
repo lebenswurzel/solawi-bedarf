@@ -89,7 +89,7 @@ describe("summarize demand by user", () => {
     ];
 
     // ACT
-    let actual = generateUserData(orders, productCategories);
+    let actual = generateUserData(orders, productCategories, "Saison 2024/25");
 
     // ASSERT
     expect(actual.length).toBe(1);
@@ -143,7 +143,7 @@ describe("summarize demand by user", () => {
     ];
 
     // ACT
-    let actual = generateUserData(orders, productCategories);
+    let actual = generateUserData(orders, productCategories, "Saison 2024/25");
 
     // ASSERT
     expect(actual.length).toBe(2);
@@ -198,7 +198,7 @@ describe("summarize demand by user", () => {
     ];
 
     // ACT
-    let actual = generateUserData(orders, productCategories);
+    let actual = generateUserData(orders, productCategories, "Saison 2024/25");
 
     // ASSERT
     expect(actual.length).toBe(0);
@@ -246,7 +246,7 @@ describe("summarize demand by depot", () => {
     ];
 
     // ACT
-    let actual = generateDepotData(orders, productCategories);
+    let actual = generateDepotData(orders, productCategories, "Saison 2024/25");
 
     // ASSERT
     expect(actual.length).toBe(1);
@@ -300,7 +300,7 @@ describe("summarize demand by depot", () => {
     ];
 
     // ACT
-    let actual = generateDepotData(orders, productCategories);
+    let actual = generateDepotData(orders, productCategories, "Saison 2024/25");
 
     // ASSERT
     expect(actual.length).toBe(2);
@@ -355,7 +355,7 @@ describe("summarize demand by depot", () => {
     ];
 
     // ACT
-    let actual = generateDepotData(orders, productCategories);
+    let actual = generateDepotData(orders, productCategories, "Saison 2024/25");
 
     // ASSERT
     expect(actual.length).toBe(0);

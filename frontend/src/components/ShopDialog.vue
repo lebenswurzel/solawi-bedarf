@@ -33,6 +33,7 @@ import {
   needsOfferReason,
   minOffer,
 } from "../../../shared/src/validation/reason.ts";
+import SeasonText from "./styled/SeasonText.vue";
 
 defineProps(["open"]);
 const emit = defineEmits(["close"]);
@@ -43,7 +44,7 @@ const configStore = useConfigStore();
 const orderStore = useOrderStore();
 const biStore = useBIStore();
 
-const { depots, activeConfigId } = storeToRefs(configStore);
+const { depots, activeConfigId, config } = storeToRefs(configStore);
 const { depot, msrp, capacityByDepotId, increaseOnly } = storeToRefs(biStore);
 const {
   offer,
@@ -222,7 +223,7 @@ const onSave = () => {
   <v-dialog :model-value="open" @update:model-value="onClose">
     <v-card>
       <v-card-title>
-        <span class="text-h5">Bedarfsanmeldung</span>
+        <span class="text-h5">Bedarfsanmeldung für <SeasonText /></span>
       </v-card-title>
       <v-card-text>
         <v-alert
@@ -313,7 +314,12 @@ const onSave = () => {
           :persistent-hint="categoryReasonHint"
         />
         <div class="mb-3">{{ t.confirm.title }}</div>
-        <v-checkbox v-model="confirmGTC" :label="t.confirm.label" />
+        <v-checkbox
+          v-model="confirmGTC"
+          :label="
+            interpolate(t.confirm.label, { season: config?.name ?? 'SAISON?' })
+          "
+        />
       </v-card-text>
       <v-card-actions class="justify-center">
         <v-btn class="text-error" @click="onClose" variant="outlined">
