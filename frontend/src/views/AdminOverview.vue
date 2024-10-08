@@ -70,6 +70,7 @@ const onDepotPdfClick = async () => {
     const dataByDepotAndProductCategory = generateDepotData(
       overview,
       productCategories,
+      configStore.config?.name ?? "SAISON?",
     );
     const zip = new Zip();
     for (const pdfSpec of dataByDepotAndProductCategory) {
@@ -97,6 +98,7 @@ const onUserPdfClick = async () => {
     const dataByUserAndProductCategory = generateUserData(
       overview,
       productCategories,
+      configStore.config?.name ?? "SAISON?",
     );
     const zip = new Zip();
     for (const pdf of dataByUserAndProductCategory) {

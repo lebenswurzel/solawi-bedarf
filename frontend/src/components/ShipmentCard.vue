@@ -29,6 +29,7 @@ import { useBIStore } from "../store/biStore.ts";
 import { valueToDelivered } from "../lib/convert.ts";
 import { getLangUnit } from "../lang/template.ts";
 import { useConfigStore } from "../store/configStore.ts";
+import SeasonText from "./styled/SeasonText.vue";
 
 const t = language.pages.home;
 
@@ -137,9 +138,9 @@ watchEffect(async () => {
 
 <template>
   <v-card class="ma-4">
-    <v-card-title style="white-space: normal">{{
-      t.cards.list.title
-    }}</v-card-title>
+    <v-card-title style="white-space: normal"
+      >{{ t.cards.list.title }} <SeasonText
+    /></v-card-title>
     <v-card-subtitle
       v-if="dateOptions.length > 0 && validFrom && validFrom < now"
     >
