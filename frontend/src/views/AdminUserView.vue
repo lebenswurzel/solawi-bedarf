@@ -19,8 +19,6 @@ import { onMounted, provide, ref } from "vue";
 import UserDialog from "../components/UserDialog.vue";
 import { language } from "../lang/lang.ts";
 import { useUserStore } from "../store/userStore.ts";
-import { computed } from "vue";
-import { userAlphabeticalDown, userAlphabeticalUp } from "../lib/compare";
 import { storeToRefs } from "pinia";
 import { useConfigStore } from "../store/configStore";
 import { NewUser, User } from "../../../shared/src/types";
@@ -36,46 +34,25 @@ const defaultUser: NewUser = {
   active: false,
 };
 
-const sortOrderOptions = {
-  alphabetical_up: t.sort.alpha_up,
-  alphabetical_down: t.sort.alpha_down,
-};
-
-const filterOptions = {
-  active: language.app.options.active.true,
-  inactive: language.app.options.active.false,
-};
-
 const userStore = useUserStore();
+const { users } = storeToRefs(userStore);
 const open = ref(false);
-const filter = ref<string[]>([filterOptions.active, filterOptions.inactive]);
-const sortOrder = ref<string>(sortOrderOptions.alphabetical_down);
 const dialogUser = ref<NewUser | User>({ ...defaultUser });
+const search = ref<string>("");
+const selectedUsers = ref<User[]>([]);
 
 provide("dialogUser", dialogUser);
 
+const headers = [
+  { title: "Name", key: "name" },
+  { title: "Rolle", key: "role" },
+  { title: "Aktiv", key: "active" },
+  { title: "ID", key: "id" },
+  { title: "Bearbeiten", key: "edit" },
+];
+
 onMounted(async () => {
   await userStore.update();
-});
-
-const userlist = computed(() => {
-  const filteredUserlist = userStore.users.filter((u) => {
-    if (filter.value.includes(filterOptions.active) && u.active) {
-      return true;
-    }
-    if (filter.value.includes(filterOptions.inactive) && !u.active) {
-      return true;
-    }
-    return false;
-  });
-  if (sortOrder.value == sortOrderOptions.alphabetical_down) {
-    return filteredUserlist.sort(userAlphabeticalDown);
-  }
-  if (sortOrder.value == sortOrderOptions.alphabetical_up) {
-    return filteredUserlist.sort(userAlphabeticalUp);
-  }
-
-  return filteredUserlist;
 });
 
 const onCreateUser = () => {
@@ -96,41 +73,49 @@ const onClose = async () => {
 
 <template>
   <v-card class="ma-4">
-    <v-card-title> {{ t.title }} </v-card-title>
+    <v-card-title class="d-flex">
+      {{ t.title }}
+      <v-spacer></v-spacer>
+      <v-text-field
+        prepend-inner-icon="mdi-magnify"
+        v-model="search"
+        variant="outlined"
+        label="Suche nach Benutzername"
+        hide-details
+        single-line
+      />
+    </v-card-title>
     <v-card-text>
-      <v-row dense>
-        <v-col cols="12" sm="6">
-          <v-select
-            chips
-            multiple
-            :label="t.filter.label"
-            :items="[filterOptions.active, filterOptions.inactive]"
-            v-model="filter"
-          />
-        </v-col>
-        <v-col cols="12" sm="6">
-          <v-select
-            chips
-            :label="t.sort.label"
-            :items="[
-              sortOrderOptions.alphabetical_up,
-              sortOrderOptions.alphabetical_down,
-            ]"
-            v-model="sortOrder"
-          />
-        </v-col>
-      </v-row>
-      <v-list>
-        <v-list-item
-          v-for="userItem in userlist"
-          @click="() => onEditUser(userItem)"
+      <v-data-table
+        :headers="headers"
+        :items="users"
+        density="compact"
+        :item-value="(item: User) => item"
+        show-select
+        v-model="selectedUsers"
+        :search="search"
+      >
+        <template v-slot:item.active="{ item }">
+          <v-checkbox-btn v-model="item.active" readonly></v-checkbox-btn>
+        </template>
+        <template v-slot:item.edit="{ item }">
+          <v-btn
+            icon="mdi-pencil"
+            variant="plain"
+            @click="() => onEditUser(item)"
+          ></v-btn>
+        </template>
+      </v-data-table>
+      <div v-if="selectedUsers.length">
+        <p>Auswahl: {{ selectedUsers.map((v) => v.name).join(", ") }}</p>
+        <p>Hier könnte bei Bedarf eine Aktion ausgelöst werden, z.B.:</p>
+        <v-btn @click="() => console.log(selectedUsers)" variant="outlined"
+          >aktivieren</v-btn
         >
-          {{ userItem.name }}
-          <v-list-item-subtitle>
-            {{ userItem.id }} - {{ userItem.role }}
-          </v-list-item-subtitle>
-        </v-list-item>
-      </v-list>
+        <v-btn @click="() => console.log(selectedUsers)" variant="outlined"
+          >deaktivieren</v-btn
+        >
+      </div>
     </v-card-text>
     <v-card-actions v-if="!externalAuthProvider">
       <v-btn @click="onCreateUser" prepend-icon="mdi-account-plus-outline">{{
