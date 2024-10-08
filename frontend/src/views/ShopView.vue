@@ -27,6 +27,7 @@ import FAQDialog from "../components/FAQDialog.vue";
 import { useBIStore } from "../store/biStore";
 import { storeToRefs } from "pinia";
 import { useConfigStore } from "../store/configStore.ts";
+import SeasonText from "../components/styled/SeasonText.vue";
 
 const t = language.pages.shop;
 
@@ -39,7 +40,7 @@ const biStore = useBIStore();
 const { depot, msrp, submit } = storeToRefs(biStore);
 const { userId } = storeToRefs(userStore);
 const { productCategories } = storeToRefs(productStore);
-const { activeConfigId } = storeToRefs(configStore);
+const { activeConfigId, config } = storeToRefs(configStore);
 
 const open = ref(false);
 const faqOpen = ref(false);
@@ -96,7 +97,11 @@ onMounted(refresh);
       {{ depot?.comment }}
     </v-card-subtitle>
     <v-card-text>
-      {{ t.cards.header.explaination }}
+      {{
+        interpolate(t.cards.header.explaination, {
+          season: config?.name || "KEINE SAISON",
+        })
+      }}
       <a
         style="color: #6750a4; cursor: pointer"
         @click="() => (faqOpen = true)"
@@ -108,7 +113,7 @@ onMounted(refresh);
   </v-card>
 
   <v-card class="ma-4">
-    <v-card-title>{{ t.cards.products.title }}</v-card-title>
+    <v-card-title>{{ t.cards.products.title }} für <SeasonText /></v-card-title>
     <v-card-subtitle class="text-wrap">
       {{
         interpolate(t.cards.products.msrp, {

@@ -131,7 +131,7 @@ export const language = {
           detailText:
             "Bitte entnimm in deinem Depot genau die hier angegebenen Mengen. Diese berücksichtigen bereits mögliche Abweichungen in der Lieferung durch variierende Erntemengen.",
           subtitle: "KW {kw}",
-          text: "Hier erscheinen ab der nächsten Saison 2024/25 die Nahrungsmittel, die Du entsprechend Deiner Bedarfsanmeldung in Deinem Depot abholen kannst.",
+          text: "Hier erscheinen zu gegebener Zeit die Nahrungsmittel, die Du entsprechend Deiner Bedarfsanmeldung in Deinem Depot abholen kannst.",
           shipment: "Nach der Bedarfsanmeldung gibt es:",
           additionalShipment: "Zusätzlich gibt es:",
         },
@@ -147,7 +147,7 @@ export const language = {
           depot: "Dein Depot:",
           openingHours: "Abholzeiten:",
           explaination:
-            "Bitte wähle in den entsprechenden Kategorien das Gemüse bzw. die Nahrungsmittel aus, die Du in der Saison 2024/25 im Rahmen des Solawi-Projektes beziehen möchtest. Lege dafür Deine entsprechende Menge je geplanter Verteilung \u26DF fest. Bitte beachte die zusätzlichen Infor­matio­nen für manche Nahrungs­mittel (abrufbar über das Information-Symbol \u24D8 hinter dem Namen des Nahrungsmittels) sowie die",
+            "Bitte wähle in den entsprechenden Kategorien das Gemüse bzw. die Nahrungsmittel aus, die Du in der {season} im Rahmen des Solawi-Projektes beziehen möchtest. Lege dafür Deine entsprechende Menge je geplanter Verteilung \u26DF fest. Bitte beachte die zusätzlichen Infor­matio­nen für manche Nahrungs­mittel (abrufbar über das Information-Symbol \u24D8 hinter dem Namen des Nahrungsmittels) sowie die",
           faq: "Fragen & Antworten (F&A)",
         },
         products: {
@@ -195,7 +195,7 @@ export const language = {
         confirm: {
           title: "Deine Zustimmung zu den Bedingungen",
           label:
-            "Ich habe die »Fragen & Antworten« (F&A) gelesen. Mir ist bewusst, dass meine Bedarfsanmeldung im gesamten Zeitraum vor Ablauf der Anmeldefrist unverbindlich bleibt und jederzeit änderbar ist. Erst mit Ablauf der Anmeldefrist werden meine zuletzt ausgewählten Nahrungsmittel und -mengen sowie mein Solawi-Beitrag verbindlich. Ich verpflichte mich, mit meinem verbindlichen Solawi-Beitrag für die gesamte Saison 2024/25 (12 Monate) das Solawi-Projekt mitzufinanzieren.",
+            "Ich habe die »Fragen & Antworten« (F&A) gelesen. Mir ist bewusst, dass meine Bedarfsanmeldung im gesamten Zeitraum vor Ablauf der Anmeldefrist unverbindlich bleibt und jederzeit änderbar ist. Erst mit Ablauf der Anmeldefrist werden meine zuletzt ausgewählten Nahrungsmittel und -mengen sowie mein Solawi-Beitrag verbindlich. Ich verpflichte mich, mit meinem verbindlichen Solawi-Beitrag für die gesamte {season} (12 Monate) das Solawi-Projekt mitzufinanzieren.",
         },
         action: {
           faq: "F&A",
@@ -341,11 +341,10 @@ export const language = {
       action: "Übersicht Herunterladen",
       documents: {
         user: {
-          description:
-            "Dein angemeldeter Bedarf für die Solawi-Saison 2024/2025",
+          description: "Dein angemeldeter Bedarf für die Solawi-{season}",
         },
         depot: {
-          description: "Angemeldeter Bedarf für die Solawi-Saison 2024/2025",
+          description: "Angemeldeter Bedarf für die Solawi-{season}",
         },
       },
     },
