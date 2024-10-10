@@ -18,7 +18,7 @@ import { ref, provide, inject, Ref } from "vue";
 
 interface UiFeedbackStore {
   error: Ref<string | null>;
-  setError: (message: string) => void;
+  setError: (message: string, e?: Error) => void;
   clearError: () => void;
 
   success: Ref<string | null>;
@@ -29,8 +29,12 @@ interface UiFeedbackStore {
 function useUiFeedbackStore(): UiFeedbackStore {
   const error = ref<string | null>("");
 
-  const setError = (message: string) => {
-    error.value = message;
+  const setError = (message: string, e?: Error) => {
+    if (e) {
+      error.value = message + ": " + e.message;
+    } else {
+      error.value = message;
+    }
   };
 
   const clearError = () => {

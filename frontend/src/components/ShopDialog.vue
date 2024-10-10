@@ -34,6 +34,7 @@ import {
   minOffer,
 } from "../../../shared/src/validation/reason.ts";
 import SeasonText from "./styled/SeasonText.vue";
+import { useUiFeedback } from "../store/uiFeedbackStore.ts";
 
 defineProps(["open"]);
 const emit = defineEmits(["close"]);
@@ -43,6 +44,7 @@ const t = language.pages.shop.dialog;
 const configStore = useConfigStore();
 const orderStore = useOrderStore();
 const biStore = useBIStore();
+const uiFeedback = useUiFeedback();
 
 const { depots, activeConfigId, config } = storeToRefs(configStore);
 const { depot, msrp, capacityByDepotId, increaseOnly } = storeToRefs(biStore);
@@ -60,7 +62,6 @@ const {
 const confirmGTC = ref(false);
 const openFAQ = ref(false);
 const loading = ref(false);
-const error = ref<string>();
 const model = ref<string>();
 
 const requestUserId = inject<Ref<number>>("requestUserId") as Ref<number>;
@@ -210,10 +211,11 @@ const onSave = () => {
       requestUserId?.value &&
         (await orderStore.update(requestUserId.value, activeConfigId.value));
       loading.value = false;
+      uiFeedback.setSuccess(language.app.uiFeedback.saving.success);
       emit("close");
     })
     .catch((e: Error) => {
-      error.value = `${language.app.errors.general} [${e.message}]`;
+      uiFeedback.setError(language.app.uiFeedback.saving.failed, e);
       loading.value = false;
     });
 };
@@ -347,11 +349,4 @@ const onSave = () => {
     </v-card>
   </v-dialog>
   <FAQDialog :open="openFAQ" @close="() => (openFAQ = false)" />
-  <v-snackbar
-    :model-value="!!error"
-    color="red"
-    @update:model-value="() => (error = undefined)"
-  >
-    {{ error }}
-  </v-snackbar>
 </template>
