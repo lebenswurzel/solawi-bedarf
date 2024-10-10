@@ -19,15 +19,11 @@ import { storeToRefs } from "pinia";
 import { computed, onMounted, ref } from "vue";
 import { language } from "../lang/lang.ts";
 import { useConfigStore } from "../store/configStore.ts";
-import { useProductStore } from "../store/productStore.ts";
-import { useBIStore } from "../store/biStore.ts";
 
 const open = ref(false);
 const loading = ref(false);
 const t = language.components.seasonSelector;
 const configStore = useConfigStore();
-const productStore = useProductStore();
-const biStore = useBIStore();
 
 const { availableConfigs, config, seasonColorClass, activeConfigId } =
   storeToRefs(configStore);
@@ -42,6 +38,7 @@ const configOptions = computed(() => {
 });
 
 onMounted(async () => {
+  console.log("SeasonSelector: onMounted");
   await configStore.update();
   selectedConfig.value = config.value?.id;
 });
@@ -50,8 +47,7 @@ const onApply = async () => {
   loading.value = true;
   try {
     await configStore.update(selectedConfig.value);
-    await productStore.update(configStore.activeConfigId);
-    await biStore.update(configStore.activeConfigId);
+    location.reload();
   } finally {
     loading.value = false;
   }
@@ -75,7 +71,11 @@ const openDialog = () => {
     >{{ config?.name || "Saison ?" }}</v-btn
   >
 
-  <v-dialog :model-value="open" @update:model-value="onCancel">
+  <v-dialog
+    :model-value="open"
+    @update:model-value="onCancel"
+    style="max-width: 800px"
+  >
     <v-card>
       <v-card-title class="text-center">{{
         language.components.seasonSelector.label

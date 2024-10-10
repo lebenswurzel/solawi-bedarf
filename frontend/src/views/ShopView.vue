@@ -134,13 +134,17 @@ onMounted(refresh);
     </v-card-subtitle>
     <v-card-text>
       <v-expansion-panels class="pa-0">
-        <v-expansion-panel v-for="category in productCategories" class="px-0">
+        <v-expansion-panel
+          v-for="category in productCategories"
+          class="px-0"
+          :key="category.id"
+        >
           <v-expansion-panel-title>{{ category.name }}</v-expansion-panel-title>
-          <v-expansion-panel-text
-            v-for="product in category.products"
-            class="px-0"
-          >
+          <v-expansion-panel-text>
             <ShopItem
+              v-for="product in category.products"
+              class="px-0"
+              :key="product.id"
               :user-id="userStore.currentUser!.id"
               :product-id="product.id"
             ></ShopItem>
