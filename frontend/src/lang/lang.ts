@@ -61,7 +61,7 @@ export const language = {
     },
     options: {
       active: {
-        true: "aktive",
+        true: "aktiv",
         false: "inaktiv",
       },
       userRoles: {
@@ -263,6 +263,7 @@ export const language = {
         productCategory: "Produkt Kategorie",
         product: "Produkt",
         name: "Name",
+        active: "Aktiv",
         description: "Beschreibung",
         msrp: "Orientierungswert [ct/{unit}]",
         frequency: "Verteilhäufigkeit",
