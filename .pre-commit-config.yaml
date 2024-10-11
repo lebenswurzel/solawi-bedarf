@@ -19,6 +19,10 @@ repos:
         name: Checks TypeScript consistency on the backend
         language: system
         entry: ./dev/run-npm.bash backend tsc
+      - id: check-prettier-backend
+        name: Checks formatting according to Prettier
+        language: system
+        entry: ./dev/run-npm.bash backend format-check
       - id: check-file-headers
         name: Checks that all files have the correct headers
         language: system

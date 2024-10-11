@@ -17,16 +17,23 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { MigrationInterface, QueryRunner } from "typeorm";
 
 export class ConfigPublicFlag1728677345133 implements MigrationInterface {
-    name = 'ConfigPublicFlag1728677345133'
+  name = "ConfigPublicFlag1728677345133";
 
-    public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`ALTER TABLE "requisition_config" ADD "public" boolean NOT NULL DEFAULT true`);
-        await queryRunner.query(`ALTER TABLE "depot" ALTER COLUMN "rank" SET NOT NULL`);
-    }
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(
+      `ALTER TABLE "requisition_config" ADD "public" boolean NOT NULL DEFAULT true`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "depot" ALTER COLUMN "rank" SET NOT NULL`,
+    );
+  }
 
-    public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`ALTER TABLE "depot" ALTER COLUMN "rank" DROP NOT NULL`);
-        await queryRunner.query(`ALTER TABLE "requisition_config" DROP COLUMN "public"`);
-    }
-
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(
+      `ALTER TABLE "depot" ALTER COLUMN "rank" DROP NOT NULL`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "requisition_config" DROP COLUMN "public"`,
+    );
+  }
 }
