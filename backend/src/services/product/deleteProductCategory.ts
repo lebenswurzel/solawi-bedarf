@@ -23,6 +23,9 @@ import { http } from "../../consts/http";
 import { UserRole } from "../../../../shared/src/enum";
 import { Id } from "../../../../shared/src/types";
 import { Product } from "../../database/Product";
+import { Order } from "../../database/Order";
+import { OrderItem } from "../../database/OrderItem";
+import { ShipmentItem } from "../../database/ShipmentItem";
 
 export const deleteProductCategory = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -40,6 +43,42 @@ export const deleteProductCategory = async (
       http.bad_request,
       `product category id=${productCategory.id} does not exist`,
     );
+  }
+
+  const products = await AppDataSource.getRepository(Product).find({
+    where: {
+      productCategoryId: productCategory.id,
+    },
+  });
+
+  // check existing orders
+  for (let product of products) {
+    const order = await AppDataSource.getRepository(OrderItem).findOne({
+      where: {
+        productId: product.id,
+      },
+    });
+    if (order) {
+      ctx.throw(
+        http.bad_request,
+        `product ${product.name} id=${product.id} is part of an order`,
+      );
+    }
+  }
+
+  // check existing shipments
+  for (let product of products) {
+    const order = await AppDataSource.getRepository(ShipmentItem).findOne({
+      where: {
+        productId: product.id,
+      },
+    });
+    if (order) {
+      ctx.throw(
+        http.bad_request,
+        `product ${product.name} id=${product.id} is part of a shipment`,
+      );
+    }
   }
 
   // delete products
