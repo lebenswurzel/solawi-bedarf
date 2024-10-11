@@ -69,7 +69,7 @@ const onCloseProductCategory = async () => {
 
 <template>
   <v-row no-gutters>
-    <v-col cols="6">
+    <v-col cols="10">
       {{
         interpolate(t.item.subtitle, {
           msrp: Math.round(
@@ -82,7 +82,8 @@ const onCloseProductCategory = async () => {
       }}
     </v-col>
     <v-spacer></v-spacer>
-    <v-col cols="1">
+    <v-col cols="1" class="d-flex">
+      <v-spacer></v-spacer>
       <v-menu>
         <template v-slot:activator="{ props }">
           <v-btn variant="plain" icon="mdi-dots-vertical" v-bind="props">

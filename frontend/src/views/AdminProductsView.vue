@@ -85,11 +85,11 @@ const onCloseProductCategory = async () => {
       }}
     </v-card-subtitle>
     <v-card-text>
-      <v-expansion-panels
-        v-for="productCategory in productStore.productCategories"
-        :key="productCategory.id"
-      >
-        <v-expansion-panel :expanded="true">
+      <v-expansion-panels multiple>
+        <v-expansion-panel
+          v-for="productCategory in productStore.productCategories"
+          :key="productCategory.id"
+        >
           <v-expansion-panel-title
             >{{ productCategory.name }}
           </v-expansion-panel-title>
@@ -102,6 +102,7 @@ const onCloseProductCategory = async () => {
       </v-expansion-panels>
     </v-card-text>
     <v-card-actions>
+      <v-spacer></v-spacer>
       <v-btn @click="onCreateProductCategory" prepend-icon="mdi-plus">{{
         t.action.createProductCategory
       }}</v-btn>
