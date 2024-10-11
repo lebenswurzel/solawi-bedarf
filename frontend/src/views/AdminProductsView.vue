@@ -19,13 +19,13 @@ import { ref, watch } from "vue";
 import ProductCategoryDialog from "../components/ProductCategoryDialog.vue";
 import { language } from "../lang/lang.ts";
 import { interpolate } from "../lang/template.ts";
-import { onMounted, provide } from "vue";
+import { onMounted } from "vue";
 import { useProductStore } from "../store/productStore.ts";
-import { NewProductCategory, ProductCategory } from "../../../shared/src/types";
+import { NewProductCategory } from "../../../shared/src/types";
 import { useBIStore } from "../store/biStore";
 import { useConfigStore } from "../store/configStore.ts";
 import { storeToRefs } from "pinia";
-import ProductsTable from "../components/products/ProductsTable.vue";
+import ProductCategoryConfig from "../components/products/ProductCategoryConfig.vue";
 const t = language.pages.product;
 
 const defaultProductCategory: NewProductCategory = {
@@ -41,11 +41,9 @@ const { activeConfigId, config } = storeToRefs(configStore);
 
 const openProductCategory = ref(false);
 
-const dialogProductCategory = ref<NewProductCategory | ProductCategory>({
+let dialogProductCategory: NewProductCategory = {
   ...defaultProductCategory,
-});
-
-provide("dialogProductCategory", dialogProductCategory);
+};
 
 onMounted(async () => {
   await refresh();
@@ -64,21 +62,15 @@ const refresh = async () => {
 };
 
 const onCreateProductCategory = () => {
-  dialogProductCategory.value = {
+  dialogProductCategory = {
     ...defaultProductCategory,
     requisitionConfigId: activeConfigId.value,
   };
   openProductCategory.value = true;
 };
 
-const onEditProductCategory = (productCategory: ProductCategory) => {
-  dialogProductCategory.value = productCategory;
-  openProductCategory.value = true;
-};
-
 const onCloseProductCategory = async () => {
   openProductCategory.value = false;
-  await productStore.update(activeConfigId.value);
 };
 </script>
 
@@ -102,25 +94,9 @@ const onCloseProductCategory = async () => {
             >{{ productCategory.name }}
           </v-expansion-panel-title>
           <v-expansion-panel-text>
-            <div>
-              {{
-                interpolate(t.item.subtitle, {
-                  msrp: Math.round(
-                    productCategory.products.reduce((acc, cur) => {
-                      acc = acc + (cur.quantity * cur.msrp) / 100;
-                      return acc;
-                    }, 0),
-                  ).toString(),
-                })
-              }}
-              <v-btn
-                @click="() => onEditProductCategory(productCategory)"
-                variant="plain"
-                prepend-icon="mdi-pencil"
-                >Kategorie</v-btn
-              >
-            </div>
-            <ProductsTable :productCategoryWithProducts="productCategory" />
+            <ProductCategoryConfig
+              :productCategoryWithProducts="productCategory"
+            ></ProductCategoryConfig>
           </v-expansion-panel-text>
         </v-expansion-panel>
       </v-expansion-panels>
@@ -132,7 +108,9 @@ const onCloseProductCategory = async () => {
     </v-card-actions>
   </v-card>
   <ProductCategoryDialog
+    v-if="openProductCategory"
     :open="openProductCategory"
+    :productCategory="dialogProductCategory"
     @close="onCloseProductCategory"
   />
 </template>

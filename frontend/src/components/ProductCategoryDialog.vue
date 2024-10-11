@@ -15,7 +15,6 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { inject, Ref, ref } from "vue";
 import { saveProductCategory } from "../requests/productCategory";
 import {
   NewProductCategory,
@@ -23,33 +22,58 @@ import {
   ProductCategory,
 } from "../../../shared/src/types.ts";
 import { language } from "../lang/lang.ts";
+import { useUiFeedback } from "../store/uiFeedbackStore.ts";
+import { ref, watch } from "vue";
+import { useConfigStore } from "../store/configStore.ts";
+import { useProductStore } from "../store/productStore.ts";
 const t = language.pages.product.dialog;
 
-defineProps(["open"]);
+const uiFeedback = useUiFeedback();
+const configStore = useConfigStore();
+const productStore = useProductStore();
+
+const props = defineProps<{
+  open: boolean;
+  productCategory: NewProductCategory | ProductCategory;
+}>();
+
+const editedProductCategory = ref<NewProductCategory | ProductCategory>({
+  ...props.productCategory,
+});
+
+watch(
+  () => props.open,
+  () => {
+    if (props.open) {
+      // update the edited value when opening the dialog
+      editedProductCategory.value = {
+        ...props.productCategory,
+      };
+    }
+  },
+);
+
 const emit = defineEmits(["close"]);
 
 const loading = ref(false);
-const error = ref<string>();
-
-const dialogProductCategory = inject<Ref<NewProductCategory | ProductCategory>>(
-  "dialogProductCategory",
-) as Ref<NewProductCategory | ProductCategory>;
 
 const onClose = () => {
   emit("close");
 };
 
-const onSave = () => {
+const onSave = async () => {
   loading.value = true;
   saveProductCategory(
-    dialogProductCategory.value as Required<NewProductCategory> & OptionalId,
+    editedProductCategory.value as Required<NewProductCategory> & OptionalId,
   )
     .then(() => {
+      uiFeedback.setSuccess(language.app.uiFeedback.saving.success);
+      productStore.update(configStore.activeConfigId);
       loading.value = false;
       emit("close");
     })
     .catch((e: Error) => {
-      error.value = e.message;
+      uiFeedback.setError(language.app.uiFeedback.saving.failed, e);
       loading.value = false;
     });
 };
@@ -63,13 +87,13 @@ const onSave = () => {
       </v-card-title>
       <v-card-text>
         <v-text-field
-          v-model="dialogProductCategory.name"
+          v-model="editedProductCategory.name"
           :label="t.name"
         ></v-text-field>
         <v-switch
-          v-model="dialogProductCategory.active"
+          v-model="editedProductCategory.active"
           :label="`${
-            dialogProductCategory.active
+            editedProductCategory.active
               ? language.app.options.active.true
               : language.app.options.active.false
           }`"
@@ -86,12 +110,5 @@ const onSave = () => {
       </v-card-actions>
     </v-card>
   </v-dialog>
-  <v-snackbar
-    :model-value="!!error"
-    color="red"
-    @update:model-value="() => (error = undefined)"
-  >
-    {{ error }}
-  </v-snackbar>
 </template>
 ../../../shared/src/types.ts
