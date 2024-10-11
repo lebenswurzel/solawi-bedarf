@@ -57,4 +57,7 @@ export class RequisitionConfig extends BaseEntity {
     (productCategory) => productCategory.requisitionConfig,
   )
   productCategories: ProductCategory[];
+
+  @Column({ default: true })
+  public: boolean;
 }
