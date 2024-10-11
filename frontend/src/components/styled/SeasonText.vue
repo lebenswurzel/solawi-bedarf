@@ -23,9 +23,10 @@ const { config, seasonColorClass } = storeToRefs(configStore);
 </script>
 
 <template>
-  <span :class="seasonColorClass" class="season_text">{{
-    config?.name || "SAISON??"
-  }}</span>
+  <span :class="seasonColorClass" class="season_text">
+    <v-icon v-if="!config?.public" size="x-small">mdi-eye-off-outline</v-icon>
+    {{ config?.name || "SAISON??" }}</span
+  >
 </template>
 
 <style>

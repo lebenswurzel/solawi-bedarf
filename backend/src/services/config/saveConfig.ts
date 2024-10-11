@@ -50,6 +50,7 @@ export const saveConfig = async (
   config.budget = requestConfig.budget;
   config.validFrom = requestConfig.validFrom;
   config.validTo = requestConfig.validTo;
+  config.public = requestConfig.public;
   await AppDataSource.getRepository(RequisitionConfig).save(config);
 
   ctx.status = http.no_content;

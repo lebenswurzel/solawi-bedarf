@@ -316,6 +316,10 @@ export const language = {
         subtitle: "Admin",
       },
       name: "Bezeichnung",
+      public: {
+        yes: "Veröffentlicht: für alle Benutzer sichtbar",
+        no: "Nicht veröffentlicht: sichtbar nur für Administratoren und Mitarbeiter",
+      },
       startOrder: "Start der Bedarfsmeldung",
       startBiddingRound: "Start der Bieterrunde",
       endBiddingRound: "Ende der Bieterrunde",
