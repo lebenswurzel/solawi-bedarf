@@ -48,6 +48,7 @@ export const language = {
       createNew: "Neu erstellen",
       delete: "Löschen",
       apply: "Übernehmen",
+      edit: "Bearbeiten",
     },
     uiFeedback: {
       saving: {
@@ -256,11 +257,12 @@ export const language = {
         subtitle: "Umsatz (Gesamt): {msrp} €",
       },
       action: {
-        createProductCategory: "Produkt Kategorie",
+        createProductCategory: "Produktkategorie",
         createProduct: "Produkt",
+        editProductCategory: "Einstellungen",
       },
       dialog: {
-        productCategory: "Produkt Kategorie",
+        productCategory: "Produktkategorie",
         product: "Produkt",
         name: "Name",
         active: "Aktiv",
