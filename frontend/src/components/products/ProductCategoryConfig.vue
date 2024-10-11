@@ -24,11 +24,19 @@ import { language } from "../../lang/lang";
 import { interpolate } from "../../lang/template";
 import ProductCategoryDialog from "../ProductCategoryDialog.vue";
 import ProductsTable from "./ProductsTable.vue";
+import { deleteProductCategory } from "../../requests/productCategory";
+import { useUiFeedback } from "../../store/uiFeedbackStore";
+import { useConfigStore } from "../../store/configStore";
+import { useProductStore } from "../../store/productStore";
 const t = language.pages.product;
 
 const props = defineProps<{
   productCategoryWithProducts: ProductCategoryWithProducts;
 }>();
+
+const uiFeedback = useUiFeedback();
+const configStore = useConfigStore();
+const productStore = useProductStore();
 
 const openProductCategory = ref(false);
 
@@ -36,9 +44,22 @@ const dialogProductCategory = ref<ProductCategory>({
   ...props.productCategoryWithProducts,
 });
 
-const onEditProductCategory = (productCategory: ProductCategory) => {
-  dialogProductCategory.value = { ...productCategory };
+const onEditProductCategory = () => {
+  dialogProductCategory.value = { ...props.productCategoryWithProducts };
   openProductCategory.value = true;
+};
+
+const onDelete = () => {
+  deleteProductCategory({ id: props.productCategoryWithProducts.id })
+    .then(() => {
+      console.log("DELETE OK");
+      uiFeedback.setSuccess(language.app.uiFeedback.deleting.success);
+      productStore.update(configStore.activeConfigId);
+    })
+    .catch((e: Error) => {
+      console.log("DELETE KAPUTT");
+      uiFeedback.setError(language.app.uiFeedback.deleting.failed, e);
+    });
 };
 
 const onCloseProductCategory = async () => {
@@ -70,18 +91,14 @@ const onCloseProductCategory = async () => {
         <v-list>
           <v-list-item>
             <v-list-item-title>
-              <v-btn
-                @click="
-                  () => onEditProductCategory(props.productCategoryWithProducts)
-                "
-              >
+              <v-btn @click="onEditProductCategory">
                 {{ language.app.actions.edit }}
               </v-btn>
             </v-list-item-title>
           </v-list-item>
           <v-list-item>
             <v-list-item-title>
-              <v-btn color="error" @click="">
+              <v-btn color="error" @click="onDelete">
                 {{ language.app.actions.delete }}
               </v-btn>
             </v-list-item-title>
