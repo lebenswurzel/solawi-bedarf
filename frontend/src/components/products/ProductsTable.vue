@@ -84,6 +84,25 @@ const onCloseProduct = async () => {
   openProduct.value = false;
   await productStore.update(activeConfigId.value);
 };
+
+const calculateDelivered = (): string => {
+  return "?";
+  // const deliveredByDepotId =
+  //   deliveredByProductIdDepotId.value[product.id] ?? {};
+  // const depotIds = Object.keys(deliveredByDepotId).map((key) => parseInt(key));
+  // return (
+  //   Math.round(
+  //     depots.value
+  //       .filter((d) => depotIds.includes(d.id))
+  //       .map(
+  //         (d) =>
+  //           deliveredByDepotId[d.id].delivered /
+  //           deliveredByDepotId[d.id].frequency,
+  //       )
+  //       .reduce((sum, value) => sum + value, 0) / depots.value.length,
+  //   ) + "%"
+  // );
+};
 </script>
 <template>
   <v-row no-gutters>
@@ -105,11 +124,9 @@ const onCloseProduct = async () => {
       <v-icon v-if="!item.active">mdi-close</v-icon>
     </template>
 
-    <template v-slot:item.delivered="{ item }">
-      {{
-        convertToBigUnit(soldByProductId[item.id].soldForShipment, item.unit)
-          .value
-      }}
+    <template v-slot:item.delivered>
+      {{ calculateDelivered() }}
+      <!-- {{ deliveredByProductIdDepotId[item.id] }} -->
     </template>
 
     <template v-slot:item.sold="{ item }">
