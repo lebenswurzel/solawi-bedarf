@@ -79,18 +79,14 @@ const onCloseProduct = async () => {
 };
 </script>
 <template>
-  <v-container>
-    <v-row no-gutters>
-      <v-col>
-        <v-btn
-          @click="onCreateProduct"
-          prepend-icon="mdi-plus"
-          variant="plain"
-          >{{ language.pages.product.action.createProduct }}</v-btn
-        >
-      </v-col>
-    </v-row>
-  </v-container>
+  <v-row no-gutters>
+    <v-spacer></v-spacer>
+    <v-col cols="1">
+      <v-btn @click="onCreateProduct" prepend-icon="mdi-plus" variant="plain">{{
+        language.pages.product.action.createProduct
+      }}</v-btn>
+    </v-col>
+  </v-row>
   <v-data-table
     :headers="headers"
     :items="props.productCategoryWithProducts.products"
