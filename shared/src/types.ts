@@ -195,6 +195,7 @@ export type DeliveredByProductIdDepotId = {
     [key: number]: {
       value: number;
       delivered: number;
+      actuallyDelivered: number;
       frequency: number;
       valueForShipment: number;
     };
