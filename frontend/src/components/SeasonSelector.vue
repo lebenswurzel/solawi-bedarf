@@ -38,7 +38,6 @@ const configOptions = computed(() => {
 });
 
 onMounted(async () => {
-  console.log("SeasonSelector: onMounted");
   await configStore.update();
   selectedConfig.value = config.value?.id;
 });

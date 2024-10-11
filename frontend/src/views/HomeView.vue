@@ -80,9 +80,11 @@ onMounted(async () => {
       }}
       Deinen Bedarf beliebig anpassen.
     </v-card-subtitle>
-    <v-btn class="ml-5 my-5" color="primary" href="/#/shop" variant="elevated">
-      Zur Bedarfsanmeldung
-    </v-btn>
+    <router-link to="/shop">
+      <v-btn class="ml-5 my-5" color="primary" variant="elevated">
+        Zur Bedarfsanmeldung
+      </v-btn>
+    </router-link>
     <v-card-text>
       <v-progress-circular
         :model-value="percentageBudget"
