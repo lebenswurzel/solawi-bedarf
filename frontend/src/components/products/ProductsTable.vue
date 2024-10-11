@@ -47,9 +47,9 @@ const configStore = useConfigStore();
 const productStore = useProductStore();
 const biStore = useBIStore();
 const openProduct = ref(false);
-const { activeConfigId } = storeToRefs(configStore);
+const { activeConfigId, depots } = storeToRefs(configStore);
 const dialogProduct = ref<NewProduct | Product>({ ...defaultProduct });
-const { soldByProductId } = storeToRefs(biStore);
+const { soldByProductId, deliveredByProductIdDepotId } = storeToRefs(biStore);
 
 provide("dialogProduct", dialogProduct);
 
@@ -61,8 +61,16 @@ const headers = [
   { title: t.active, key: "active" },
   { title: interpolate(t.msrp, { unit }), key: "msrp" },
   { title: t.frequency, key: "frequency" },
-  { title: t.delivered, key: "delivered" },
-  { title: t.sold, key: "sold" },
+  {
+    title: t.deliveries,
+    key: "deliveries",
+    sortRaw(a: Product, b: Product) {
+      return Math.sign(
+        calculateDeliveries(a).percentage - calculateDeliveries(b).percentage,
+      );
+    },
+  },
+  { title: interpolate(t.sold, { unit }), key: "sold" },
   { title: interpolate(t.quantity, { unit }), key: "quantity" },
   // { title: t.quantityMin, key: "quantityMin" },
   // { title: t.quantityMax, key: "quantityMax" },
@@ -85,23 +93,23 @@ const onCloseProduct = async () => {
   await productStore.update(activeConfigId.value);
 };
 
-const calculateDelivered = (): string => {
-  return "?";
-  // const deliveredByDepotId =
-  //   deliveredByProductIdDepotId.value[product.id] ?? {};
-  // const depotIds = Object.keys(deliveredByDepotId).map((key) => parseInt(key));
-  // return (
-  //   Math.round(
-  //     depots.value
-  //       .filter((d) => depotIds.includes(d.id))
-  //       .map(
-  //         (d) =>
-  //           deliveredByDepotId[d.id].delivered /
-  //           deliveredByDepotId[d.id].frequency,
-  //       )
-  //       .reduce((sum, value) => sum + value, 0) / depots.value.length,
-  //   ) + "%"
-  // );
+const calculateDeliveries = (
+  product: Product,
+): { display: string; percentage: number } => {
+  const deliveredByDepotId =
+    deliveredByProductIdDepotId.value[product.id] ?? {};
+  const depotIds = Object.keys(deliveredByDepotId).map((key) => parseInt(key));
+  const targetDeliveries = depotIds.length * product.frequency;
+  const actualDeliveries =
+    depots.value
+      .filter((d) => depotIds.includes(d.id))
+      .map((d) => deliveredByDepotId[d.id].delivered)
+      .reduce((sum, value) => sum + value, 0) / 100;
+
+  return {
+    display: `${actualDeliveries}/${targetDeliveries}`,
+    percentage: Math.round((actualDeliveries / (targetDeliveries || 1)) * 100),
+  };
 };
 </script>
 <template>
@@ -124,8 +132,8 @@ const calculateDelivered = (): string => {
       <v-icon v-if="!item.active">mdi-close</v-icon>
     </template>
 
-    <template v-slot:item.delivered>
-      {{ calculateDelivered() }}
+    <template v-slot:item.deliveries="{ item }">
+      {{ calculateDeliveries(item).display }}
       <!-- {{ deliveredByProductIdDepotId[item.id] }} -->
     </template>
 
