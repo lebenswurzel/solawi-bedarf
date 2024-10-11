@@ -87,13 +87,8 @@ const getName = ({ address: { firstname, lastname }, name }: Applicant) =>
     <v-card-text>
       <v-list>
         <template v-for="applicant in applicants">
-          <v-hover v-slot="{ isHovering, props }">
-            <v-list-item
-              :style="{
-                'background-color': isHovering ? '#f6f2f5' : '#fffbfe',
-              }"
-              v-bind="props"
-            >
+          <v-hover v-slot="{ props }">
+            <v-list-item v-bind="props">
               <v-list-item-title>
                 {{ getName(applicant) }}
               </v-list-item-title>
