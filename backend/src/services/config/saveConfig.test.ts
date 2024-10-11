@@ -222,10 +222,12 @@ testAsAdmin("non-public configs", async ({ userData }: TestUserData) => {
     {
       id: newConfigFromDb.id,
       name: "config non-public",
+      public: false,
     },
     {
       id: originalConfig.id,
       name: "Saison 24/25",
+      public: true,
     },
   ]);
 
@@ -239,6 +241,37 @@ testAsAdmin("non-public configs", async ({ userData }: TestUserData) => {
     {
       id: originalConfig.id,
       name: "Saison 24/25",
+      public: true,
+    },
+  ]);
+
+  // turn config public
+  const updatedConfig: ExistingConfig = {
+    ...newConfig,
+    id: newConfigFromDb.id,
+    public: true,
+    name: "is now public",
+  };
+  const ctxUpdatedConfig = createBasicTestCtx<ExistingConfig>(
+    updatedConfig,
+    userData.token,
+  );
+  await saveConfig(ctxUpdatedConfig);
+
+  // get all existing configs as regular user
+  await getConfig(ctxGetConfigUser);
+  const responseUserUpdated = ctxGetConfigUser.body as ConfigResponse;
+
+  expect(responseUserUpdated.availableConfigs).toMatchObject([
+    {
+      id: newConfigFromDb.id,
+      name: "is now public",
+      public: true,
+    },
+    {
+      id: originalConfig.id,
+      name: "Saison 24/25",
+      public: true,
     },
   ]);
 });

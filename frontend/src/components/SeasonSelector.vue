@@ -32,7 +32,7 @@ const selectedConfig = ref<number | undefined>(activeConfigId.value);
 
 const configOptions = computed(() => {
   return availableConfigs.value.map((config) => ({
-    title: config.name,
+    title: config.name + (config.public ? "" : " (unveröffentlicht)"),
     value: config.id,
   }));
 });
@@ -67,6 +67,7 @@ const openDialog = () => {
     class="pa-2 season-indicator rounded-lg"
     :class="seasonColorClass"
     @click="openDialog"
+    :prepend-icon="config?.public ? '' : 'mdi-eye-off-outline'"
     >{{ config?.name || "Saison ?" }}</v-btn
   >
 

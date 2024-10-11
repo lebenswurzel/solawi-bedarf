@@ -58,7 +58,7 @@ export const getConfig = async (
 
   const availableConfigs: AvailableConfig[] = (
     await AppDataSource.getRepository(RequisitionConfig).find({
-      select: ["id", "name"],
+      select: ["id", "name", "public"],
       order: {
         validFrom: "ASC",
       },
