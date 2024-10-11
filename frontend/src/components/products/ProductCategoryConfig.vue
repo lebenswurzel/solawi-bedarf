@@ -47,24 +47,49 @@ const onCloseProductCategory = async () => {
 </script>
 
 <template>
-  <div>
-    {{
-      interpolate(t.item.subtitle, {
-        msrp: Math.round(
-          props.productCategoryWithProducts.products.reduce((acc, cur) => {
-            acc = acc + (cur.quantity * cur.msrp) / 100;
-            return acc;
-          }, 0),
-        ).toString(),
-      })
-    }}
-    <v-btn
-      @click="() => onEditProductCategory(props.productCategoryWithProducts)"
-      variant="plain"
-      prepend-icon="mdi-pencil"
-      >Kategorie</v-btn
-    >
-  </div>
+  <v-row no-gutters>
+    <v-col cols="6">
+      {{
+        interpolate(t.item.subtitle, {
+          msrp: Math.round(
+            props.productCategoryWithProducts.products.reduce((acc, cur) => {
+              acc = acc + (cur.quantity * cur.msrp) / 100;
+              return acc;
+            }, 0),
+          ).toString(),
+        })
+      }}
+    </v-col>
+    <v-spacer></v-spacer>
+    <v-col cols="1">
+      <v-menu>
+        <template v-slot:activator="{ props }">
+          <v-btn variant="plain" icon="mdi-dots-vertical" v-bind="props">
+          </v-btn>
+        </template>
+        <v-list>
+          <v-list-item>
+            <v-list-item-title>
+              <v-btn
+                @click="
+                  () => onEditProductCategory(props.productCategoryWithProducts)
+                "
+              >
+                {{ language.app.actions.edit }}
+              </v-btn>
+            </v-list-item-title>
+          </v-list-item>
+          <v-list-item>
+            <v-list-item-title>
+              <v-btn color="error" @click="">
+                {{ language.app.actions.delete }}
+              </v-btn>
+            </v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
+    </v-col>
+  </v-row>
   <ProductsTable
     :productCategoryWithProducts="props.productCategoryWithProducts"
   />
