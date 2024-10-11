@@ -266,6 +266,8 @@ export const language = {
         product: "Produkt",
         name: "Name",
         active: "Aktiv",
+        sold: "Verkauft",
+        delivered: "Geliefert",
         description: "Beschreibung",
         msrp: "Orientierungswert [ct/{unit}]",
         frequency: "Verteilhäufigkeit",

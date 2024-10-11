@@ -15,18 +15,23 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { computed, provide, ref } from "vue";
+import { provide, ref } from "vue";
 import {
   NewProduct,
   Product,
   ProductCategoryWithProducts,
 } from "../../../../shared/src/types";
 import { language } from "../../lang/lang";
-import { getLangUnit, interpolate } from "../../lang/template";
+import {
+  convertToBigUnit,
+  getLangUnit,
+  interpolate,
+} from "../../lang/template";
 import ProductDialog from "../ProductDialog.vue";
 import { useConfigStore } from "../../store/configStore";
 import { useProductStore } from "../../store/productStore";
 import { storeToRefs } from "pinia";
+import { useBIStore } from "../../store/biStore";
 const t = language.pages.product.dialog;
 
 const props = defineProps<{
@@ -40,29 +45,31 @@ const defaultProduct: NewProduct = {
 
 const configStore = useConfigStore();
 const productStore = useProductStore();
+const biStore = useBIStore();
 const openProduct = ref(false);
 const { activeConfigId } = storeToRefs(configStore);
 const dialogProduct = ref<NewProduct | Product>({ ...defaultProduct });
+const { soldByProductId } = storeToRefs(biStore);
 
 provide("dialogProduct", dialogProduct);
 
 const unit = language.app.units.unit;
 
-const headers = computed(() => {
-  return [
-    { title: t.name, key: "name" },
-    // { title: t.description, key: "description" },
-    { title: t.active, key: "active" },
-    { title: interpolate(t.msrp, { unit }), key: "msrp" },
-    { title: t.frequency, key: "frequency" },
-    { title: interpolate(t.quantity, { unit }), key: "quantity" },
-    // { title: t.quantityMin, key: "quantityMin" },
-    // { title: t.quantityMax, key: "quantityMax" },
-    // { title: t.quantityStep, key: "quantityStep" },
-    { title: unit, key: "unit" },
-    { title: "Bearbeiten", key: "edit" },
-  ];
-});
+const headers = [
+  { title: t.name, key: "name" },
+  // { title: t.description, key: "description" },
+  { title: t.active, key: "active" },
+  { title: interpolate(t.msrp, { unit }), key: "msrp" },
+  { title: t.frequency, key: "frequency" },
+  { title: t.delivered, key: "delivered" },
+  { title: t.sold, key: "sold" },
+  { title: interpolate(t.quantity, { unit }), key: "quantity" },
+  // { title: t.quantityMin, key: "quantityMin" },
+  // { title: t.quantityMax, key: "quantityMax" },
+  // { title: t.quantityStep, key: "quantityStep" },
+  { title: unit, key: "unit" },
+  { title: "Bearbeiten", key: "edit" },
+];
 
 const onCreateProduct = () => {
   dialogProduct.value = { ...defaultProduct };
@@ -98,6 +105,17 @@ const onCloseProduct = async () => {
       <v-icon v-if="!item.active">mdi-close</v-icon>
     </template>
 
+    <template v-slot:item.delivered="{ item }">
+      {{
+        convertToBigUnit(soldByProductId[item.id].soldForShipment, item.unit)
+          .value
+      }}
+    </template>
+
+    <template v-slot:item.sold="{ item }">
+      {{ convertToBigUnit(soldByProductId[item.id].sold, item.unit).value }}
+    </template>
+
     <template v-slot:item.edit="{ item }">
       <v-btn
         icon="mdi-pencil"
@@ -106,7 +124,7 @@ const onCloseProduct = async () => {
       ></v-btn>
     </template>
     <template v-slot:item.unit="{ item }">
-      {{ getLangUnit(item.unit) }}
+      {{ getLangUnit(item.unit, true) }}
     </template>
   </v-data-table>
   <ProductDialog :open="openProduct" @close="onCloseProduct" />
