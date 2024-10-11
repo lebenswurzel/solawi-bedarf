@@ -50,6 +50,7 @@ const openProduct = ref(false);
 const { activeConfigId, depots } = storeToRefs(configStore);
 const dialogProduct = ref<NewProduct | Product>({ ...defaultProduct });
 const { soldByProductId, deliveredByProductIdDepotId } = storeToRefs(biStore);
+const search = ref<string>("");
 
 provide("dialogProduct", dialogProduct);
 
@@ -113,44 +114,64 @@ const calculateDeliveries = (
 };
 </script>
 <template>
-  <v-row no-gutters>
-    <v-spacer></v-spacer>
-    <v-col cols="1">
-      <v-btn @click="onCreateProduct" prepend-icon="mdi-plus" variant="plain">{{
-        language.pages.product.action.createProduct
-      }}</v-btn>
-    </v-col>
-  </v-row>
-  <v-data-table
-    :headers="headers"
-    :items="props.productCategoryWithProducts.products"
-    :item-value="(item: Product) => item"
-    :items-per-page="5"
-  >
-    <template v-slot:item.active="{ item }">
-      <v-icon v-if="item.active">mdi-check</v-icon>
-      <v-icon v-if="!item.active">mdi-close</v-icon>
-    </template>
+  <v-card variant="tonal">
+    <v-card-text>
+      <v-row no-gutters>
+        <v-col cols="12" sm="7" lg="5">
+          <v-text-field
+            prepend-inner-icon="mdi-magnify"
+            v-model="search"
+            variant="underlined"
+            label="Suche nach Produkt"
+            hide-details
+            single-line
+            clearable
+          />
+        </v-col>
+        <v-spacer></v-spacer>
+        <v-col cols="12" sm="2" class="d-flex">
+          <v-spacer></v-spacer>
+          <v-btn
+            @click="onCreateProduct"
+            prepend-icon="mdi-plus"
+            variant="plain"
+            >{{ language.pages.product.action.createProduct }}</v-btn
+          >
+        </v-col>
+      </v-row>
+    </v-card-text>
+    <v-data-table
+      :headers="headers"
+      :items="props.productCategoryWithProducts.products"
+      :item-value="(item: Product) => item"
+      :items-per-page="10"
+      :search="search"
+    >
+      <template v-slot:item.active="{ item }">
+        <v-icon v-if="item.active">mdi-check</v-icon>
+        <v-icon v-if="!item.active">mdi-close</v-icon>
+      </template>
 
-    <template v-slot:item.deliveries="{ item }">
-      {{ calculateDeliveries(item).display }}
-      <!-- {{ deliveredByProductIdDepotId[item.id] }} -->
-    </template>
+      <template v-slot:item.deliveries="{ item }">
+        {{ calculateDeliveries(item).display }}
+        <!-- {{ deliveredByProductIdDepotId[item.id] }} -->
+      </template>
 
-    <template v-slot:item.sold="{ item }">
-      {{ convertToBigUnit(soldByProductId[item.id].sold, item.unit).value }}
-    </template>
+      <template v-slot:item.sold="{ item }">
+        {{ convertToBigUnit(soldByProductId[item.id].sold, item.unit).value }}
+      </template>
 
-    <template v-slot:item.edit="{ item }">
-      <v-btn
-        icon="mdi-pencil"
-        @click="onEditProduct(item)"
-        variant="plain"
-      ></v-btn>
-    </template>
-    <template v-slot:item.unit="{ item }">
-      {{ getLangUnit(item.unit, true) }}
-    </template>
-  </v-data-table>
+      <template v-slot:item.edit="{ item }">
+        <v-btn
+          icon="mdi-pencil"
+          @click="onEditProduct(item)"
+          variant="plain"
+        ></v-btn>
+      </template>
+      <template v-slot:item.unit="{ item }">
+        {{ getLangUnit(item.unit, true) }}
+      </template>
+    </v-data-table>
+  </v-card>
   <ProductDialog :open="openProduct" @close="onCloseProduct" />
 </template>

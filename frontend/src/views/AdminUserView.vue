@@ -83,6 +83,7 @@ const onClose = async () => {
         label="Suche nach Benutzername"
         hide-details
         single-line
+        clearable
       />
     </v-card-title>
     <v-card-text>
