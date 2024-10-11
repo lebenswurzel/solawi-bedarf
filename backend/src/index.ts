@@ -47,6 +47,7 @@ import { biHandler } from "./services/bi/bi";
 import { deleteConfig } from "./services/config/deleteConfig";
 import { updateDepot } from "./services/config/updateDepot";
 import { createConfig } from "./services/config/createConfig";
+import { deleteProductCategory } from "./services/product/deleteProductCategory";
 
 const port = config.server.serverPort;
 const app = new Koa();
@@ -107,6 +108,7 @@ router.post("/shipment", saveShipment);
 
 router.get("/productCategory", getProductCategory);
 router.post("/productCategory", saveProductCategory);
+router.delete("/productCategory", deleteProductCategory);
 router.post("/productCategory/product", saveProduct);
 
 router.get("/content/text", getTextContent);
