@@ -104,7 +104,7 @@ const calculateDeliveries = (
   const actualDeliveries =
     depots.value
       .filter((d) => depotIds.includes(d.id))
-      .map((d) => deliveredByDepotId[d.id].delivered)
+      .map((d) => deliveredByDepotId[d.id].actuallyDelivered)
       .reduce((sum, value) => sum + value, 0) / 100;
 
   return {

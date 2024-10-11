@@ -119,6 +119,7 @@ export const bi = async (configId: number) => {
           value: 0,
           valueForShipment: 0,
           delivered: 0,
+          actuallyDelivered: 0,
           frequency: product.frequency,
         };
       }
@@ -157,12 +158,18 @@ export const bi = async (configId: number) => {
           value: 0,
           valueForShipment: 0,
           delivered: 0,
+          actuallyDelivered: 0,
           frequency: product.frequency,
         };
       }
       deliveredByProductIdDepotId[shipmentItem.productId][
         shipmentItem.depotId
       ].delivered += shipmentItem.multiplicator;
+      if (shipment.active) {
+        deliveredByProductIdDepotId[shipmentItem.productId][
+          shipmentItem.depotId
+        ].actuallyDelivered += shipmentItem.multiplicator;
+      }
     });
   });
 
