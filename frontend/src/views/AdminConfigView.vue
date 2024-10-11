@@ -55,6 +55,7 @@ const onConfigUpdated = () => {
   validFrom.value = orderConfig?.validFrom || new Date();
   validTo.value = orderConfig?.validTo || new Date();
   configId.value = orderConfig?.id || 0;
+  isPublic.value = orderConfig?.public || false;
 };
 
 watch(configStore, () => {
@@ -123,6 +124,11 @@ const onDelete = () => {
         type="text"
         v-model="seasonName"
       ></v-text-field>
+      <v-switch
+        v-model="isPublic"
+        :label="isPublic ? t.public.yes : t.public.no"
+        color="primary"
+      ></v-switch>
       <v-text-field
         :label="t.validFrom"
         type="datetime-local"
