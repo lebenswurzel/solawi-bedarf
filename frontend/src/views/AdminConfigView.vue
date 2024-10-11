@@ -39,6 +39,7 @@ const budget = ref<number>(0);
 const { setError, setSuccess } = useUiFeedback();
 const configId = ref<number>(0);
 const openCreateDialog = ref<boolean>(false);
+const isPublic = ref<boolean>(false);
 
 onMounted(async () => {
   await configStore.update();
@@ -71,6 +72,7 @@ const onSave = () => {
     validFrom: validFrom.value,
     validTo: validTo.value,
     name: seasonName.value,
+    public: isPublic.value,
   };
   saveConfig(updatedConfig)
     .then(async () => {

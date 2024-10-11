@@ -53,6 +53,7 @@ const onConfirmCreate = async () => {
     startBiddingRound: addMonths(newSeasonStartDate.value, -2),
     endBiddingRound: addMonths(newSeasonStartDate.value, -1),
     budget: 0,
+    public: false,
   };
 
   try {
@@ -60,7 +61,7 @@ const onConfirmCreate = async () => {
     setSuccess("Erstellung erfolgreich");
     configStore.update();
   } catch (e) {
-    setError("" + e);
+    setError("Erstellung fehlgeschlagen", e as Error);
     throw e;
   }
 

@@ -70,6 +70,7 @@ testAsAdmin("delete unused config", async ({ userData }: TestUserData) => {
     endBiddingRound: new Date("2001-01-01"),
     validFrom: new Date("2001-04-01"),
     validTo: new Date("2002-04-01"),
+    public: true,
   };
 
   const ctxNewConfig = createBasicTestCtx<CreateConfigRequest>(
