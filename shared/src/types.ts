@@ -150,6 +150,7 @@ interface RequisitionConfig {
   budget: number;
   validFrom: Date;
   validTo: Date;
+  public: boolean;
 }
 
 export type ExistingConfig = RequisitionConfig & Id;
@@ -158,6 +159,7 @@ export type NewConfig = RequisitionConfig;
 export interface AvailableConfig {
   id: number;
   name: string;
+  public: boolean;
 }
 
 export interface CreateConfigRequest {

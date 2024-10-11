@@ -44,6 +44,7 @@ export const getConfig = async (
       validFrom: new Date(raw.config.validFrom),
       validTo: new Date(raw.config.validTo),
       budget: parseInt(raw.config.budget),
+      public: raw.config.public,
     },
     availableConfigs: raw.availableConfigs,
   };
