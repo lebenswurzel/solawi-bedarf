@@ -42,6 +42,7 @@ export const createConfig = async (
   config.budget = requestConfig.budget;
   config.validFrom = requestConfig.validFrom;
   config.validTo = requestConfig.validTo;
+  config.public = requestConfig.public;
   const savedConfig =
     await AppDataSource.getRepository(RequisitionConfig).save(config);
 

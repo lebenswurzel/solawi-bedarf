@@ -24,6 +24,7 @@ import {
 import {
   TestUserData,
   createBasicTestCtx,
+  loginUser,
   testAsAdmin,
   testAsUser1,
 } from "../../../testSetup";
@@ -75,6 +76,7 @@ testAsAdmin("get and change config", async ({ userData }: TestUserData) => {
     endBiddingRound: new Date("2000-01-01"),
     validFrom: new Date("2000-04-01"),
     validTo: new Date("2001-04-01"),
+    public: true,
   };
 
   const ctxUpdate1 = createBasicTestCtx(updatedConfig, userData.token);
@@ -98,6 +100,7 @@ testAsAdmin("add more configs", async ({ userData }: TestUserData) => {
     endBiddingRound: new Date("2001-01-01"),
     validFrom: new Date("2001-04-01"),
     validTo: new Date("2002-04-01"),
+    public: true,
   };
 
   const ctxNewConfig = createBasicTestCtx<CreateConfigRequest>(
@@ -121,6 +124,7 @@ testAsAdmin("add more configs", async ({ userData }: TestUserData) => {
     endBiddingRound: new Date("2002-01-01"),
     validFrom: new Date("2002-04-01"),
     validTo: new Date("2003-04-01"),
+    public: true,
   };
 
   const ctxNewConfig2 = createBasicTestCtx<CreateConfigRequest>(
@@ -142,6 +146,7 @@ testAsAdmin("add more configs", async ({ userData }: TestUserData) => {
     endBiddingRound: new Date("2002-01-01"),
     validFrom: new Date("2002-04-01"),
     validTo: new Date("2003-04-01"),
+    public: true,
   };
   const ctxNewConfigBad = createBasicTestCtx(newConfigBad, userData.token);
   await expect(() => saveConfig(ctxNewConfigBad)).rejects.toThrowError(
@@ -178,6 +183,59 @@ testAsAdmin("add more configs", async ({ userData }: TestUserData) => {
       id: newConfig2FromDb.id,
       name: "config no.2",
     },
+    {
+      id: originalConfig.id,
+      name: "Saison 24/25",
+    },
+  ]);
+});
+
+testAsAdmin("non-public configs", async ({ userData }: TestUserData) => {
+  const originalConfig = await getConfigByName(RequisitionConfigName);
+  const newConfig: NewConfig = {
+    name: "config non-public",
+    budget: 12345,
+    startOrder: new Date("2000-11-01"),
+    startBiddingRound: new Date("2000-12-01"),
+    endBiddingRound: new Date("2001-01-01"),
+    validFrom: new Date("2001-04-01"),
+    validTo: new Date("2002-04-01"),
+    public: false,
+  };
+
+  const ctxNewConfig = createBasicTestCtx<CreateConfigRequest>(
+    { config: newConfig, copyFrom: undefined },
+    userData.token,
+  );
+  await createConfig(ctxNewConfig);
+  expect(ctxNewConfig.status).toBe(http.created);
+
+  const newConfigFromDb = await getConfigByName("config non-public");
+  expect(newConfigFromDb).toMatchObject(newConfig);
+
+  // get all existing configs as Admin
+  const ctxGetConfig = createBasicTestCtx(undefined, userData.token);
+  await getConfig(ctxGetConfig);
+  const response = ctxGetConfig.body as ConfigResponse;
+
+  expect(response.availableConfigs).toMatchObject([
+    {
+      id: newConfigFromDb.id,
+      name: "config non-public",
+    },
+    {
+      id: originalConfig.id,
+      name: "Saison 24/25",
+    },
+  ]);
+
+  // get all existing configs as regular user
+  const userToken = await loginUser("user1", "123456");
+  const ctxGetConfigUser = createBasicTestCtx(undefined, userToken);
+  await getConfig(ctxGetConfigUser);
+  const responseUser = ctxGetConfigUser.body as ConfigResponse;
+
+  expect(responseUser.availableConfigs).toMatchObject([
     {
       id: originalConfig.id,
       name: "Saison 24/25",

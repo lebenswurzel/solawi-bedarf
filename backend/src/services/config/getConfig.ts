@@ -23,11 +23,12 @@ import { AppDataSource } from "../../database/database";
 import { getUserFromContext } from "../getUserFromContext";
 import { AvailableConfig } from "../../../../shared/src/types";
 import { getNumericQueryParameter } from "../../util/requestUtil";
+import { UserRole } from "../../../../shared/src/enum";
 
 export const getConfig = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
 ) => {
-  await getUserFromContext(ctx);
+  const user = await getUserFromContext(ctx);
   const depots = await AppDataSource.getRepository(Depot).find({
     where: { active: true },
   });
@@ -50,17 +51,24 @@ export const getConfig = async (
     ctx.throw(http.not_found);
   }
 
+  let where = {};
+  if (user.role == UserRole.USER) {
+    where = { public: true };
+  }
+
   const availableConfigs: AvailableConfig[] = (
     await AppDataSource.getRepository(RequisitionConfig).find({
       select: ["id", "name"],
       order: {
         validFrom: "ASC",
       },
+      where,
     })
   ).map((row) => {
     return {
       id: row.id,
       name: row.name,
+      public: row.public,
     };
   });
 
