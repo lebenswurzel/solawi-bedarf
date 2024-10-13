@@ -138,9 +138,13 @@ watchEffect(async () => {
     <v-card-subtitle
       v-if="dateOptions.length > 0 && validFrom && validFrom < now"
     >
-      <v-select :items="dateOptions" v-model="model" variant="outlined">
+      <v-select
+        :items="dateOptions"
+        v-model="model"
+        variant="outlined"
+        hide-details
+      >
       </v-select>
-      {{ t.cards.list.detailText }}
     </v-card-subtitle>
     <v-card-subtitle v-else>
       {{
@@ -153,6 +157,7 @@ watchEffect(async () => {
       {{ shipment.description }}
     </v-card-subtitle>
     <v-card-text>
+      <p class="text-medium-emphasis mb-2">{{ t.cards.list.detailText }}</p>
       <v-list v-if="shipmentItems.length > 0 && validFrom && validFrom < now">
         {{ t.cards.list.shipment }}
         <v-list-item v-for="item of shipmentItems">
