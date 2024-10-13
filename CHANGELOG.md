@@ -34,6 +34,8 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #36 Depots können sortiert werden. Depot-Verteilungsübersicht wird an Hand der Sortierung erzeugt.
 #102 Umschaltung auf dunkles Thema möglich.
 
-# NEW
+# v0.3.4 - 2024-10-13 - Hinweistext zur Lieferung
 
 #114 Hinweistext zur Entnahmemenge
+
+# NEW
