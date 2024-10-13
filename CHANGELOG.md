@@ -35,3 +35,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #102 Umschaltung auf dunkles Thema möglich.
 
 # NEW
+
+#114 Hinweistext zur Entnahmemenge
