@@ -140,6 +140,7 @@ watchEffect(async () => {
     >
       <v-select :items="dateOptions" v-model="model" variant="outlined">
       </v-select>
+      {{ t.cards.list.detailText }}
     </v-card-subtitle>
     <v-card-subtitle v-else>
       {{

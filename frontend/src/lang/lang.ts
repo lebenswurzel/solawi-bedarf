@@ -119,7 +119,9 @@ export const language = {
           action: "Zur Bedarfsmeldung",
         },
         list: {
-          title: "Nahrungsmittel entsprechend Deiner Bedarfsanmeldung für:",
+          title: "Nahrungsmittel entsprechend Deiner Bedarfsanmeldung für",
+          detailText:
+            "Bitte entnimm in deinem Depot genau die hier angegebenen Mengen. Diese berücksichtigen bereits mögliche Abweichungen in der Lieferung durch variierende Erntemengen.",
           subtitle: "KW {kw}",
           text: "Hier erscheinen ab der nächsten Saison 2024/25 die Nahrungsmittel, die Du entsprechend Deiner Bedarfsanmeldung in Deinem Depot abholen kannst.",
           shipment: "Nach der Bedarfsanmeldung gibt es:",
