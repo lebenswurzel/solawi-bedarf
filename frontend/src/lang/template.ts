@@ -32,15 +32,29 @@ export const interpolate = (
   return result;
 };
 
-export const getLangUnit = (unit?: Unit) => {
+export const getLangUnit = (unit?: Unit, useBigUnit?: boolean) => {
   switch (unit) {
     case Unit.WEIGHT:
-      return language.app.units.g;
+      return useBigUnit ? language.app.units.kg : language.app.units.g;
     case Unit.PIECE:
       return language.app.units.pcs;
     case Unit.VOLUME:
-      return language.app.units.ml;
+      return useBigUnit ? language.app.units.l : language.app.units.ml;
     default:
       return language.app.units.unit;
+  }
+};
+
+export const convertToBigUnit = (
+  value: number,
+  unit: Unit,
+): { label: string; value?: number } => {
+  switch (unit) {
+    case Unit.WEIGHT:
+      return { label: language.app.units.kg, value: value / 1000 };
+    case Unit.PIECE:
+      return { label: language.app.units.pcs, value };
+    case Unit.VOLUME:
+      return { label: language.app.units.l, value: value / 1000 };
   }
 };

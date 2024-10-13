@@ -24,6 +24,10 @@ import { MoreThan } from "typeorm";
 import { UserRole } from "../../../shared/src/enum";
 import { getMsrp } from "../../../shared/src/msrp";
 import { bi } from "./bi/bi";
+import {
+  getConfigIdFromQuery,
+  getNumericQueryParameter,
+} from "../util/requestUtil";
 
 export const getOverview = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -32,7 +36,9 @@ export const getOverview = async (
   if (role != UserRole.ADMIN) {
     ctx.throw(http.forbidden);
   }
-  const { productsById } = await bi();
+  const configId = getConfigIdFromQuery(ctx);
+
+  const { productsById } = await bi(configId);
   const orders = await AppDataSource.getRepository(Order).find({
     relations: {
       orderItems: {
@@ -44,6 +50,7 @@ export const getOverview = async (
     },
     where: {
       offer: MoreThan(0),
+      requisitionConfigId: configId,
     },
     select: {
       offer: true,

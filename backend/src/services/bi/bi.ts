@@ -29,17 +29,20 @@ import { ProductCategory } from "../../database/ProductCategory";
 import { Shipment } from "../../database/Shipment";
 import { AppDataSource } from "../../database/database";
 import { getUserFromContext } from "../getUserFromContext";
+import { getConfigIdFromQuery } from "../../util/requestUtil";
 
 export const biHandler = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
 ) => {
   await getUserFromContext(ctx);
-  ctx.body = await bi();
+  const configId = getConfigIdFromQuery(ctx);
+  ctx.body = await bi(configId);
 };
 
-export const bi = async () => {
+export const bi = async (configId: number) => {
   const now = new Date();
   const depots = await AppDataSource.getRepository(Depot).find();
+
   const orders = await AppDataSource.getRepository(Order).find({
     relations: { orderItems: true },
     select: {
@@ -52,14 +55,22 @@ export const bi = async () => {
         productId: true,
       },
     },
+    where: {
+      requisitionConfigId: configId,
+    },
   });
   const productCategories = await AppDataSource.getRepository(
     ProductCategory,
   ).find({
     relations: { products: true },
+    where: { requisitionConfigId: configId },
   });
+
   const shipments = await AppDataSource.getRepository(Shipment).find({
     relations: { shipmentItems: true },
+    where: {
+      requisitionConfigId: configId,
+    },
   });
 
   const soldByProductId: SoldByProductId = {};
@@ -108,6 +119,7 @@ export const bi = async () => {
           value: 0,
           valueForShipment: 0,
           delivered: 0,
+          actuallyDelivered: 0,
           frequency: product.frequency,
         };
       }
@@ -146,12 +158,18 @@ export const bi = async () => {
           value: 0,
           valueForShipment: 0,
           delivered: 0,
+          actuallyDelivered: 0,
           frequency: product.frequency,
         };
       }
       deliveredByProductIdDepotId[shipmentItem.productId][
         shipmentItem.depotId
       ].delivered += shipmentItem.multiplicator;
+      if (shipment.active) {
+        deliveredByProductIdDepotId[shipmentItem.productId][
+          shipmentItem.depotId
+        ].actuallyDelivered += shipmentItem.multiplicator;
+      }
     });
   });
 

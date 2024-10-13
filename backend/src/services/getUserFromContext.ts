@@ -22,6 +22,7 @@ import { AppDataSource } from "../database/database";
 import { Token } from "../database/Token";
 import { http } from "../consts/http";
 import { UserRole } from "../../../shared/src/enum";
+import { getNumericQueryParameter } from "../util/requestUtil";
 
 export const getUserFromContext = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -51,12 +52,12 @@ export const getRequestUserId = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
 ): Promise<number> => {
   const { id, role } = await getUserFromContext(ctx);
-  const requestUserId = ctx.request.query["id"];
-  if (!requestUserId || Array.isArray(requestUserId)) {
+  const requestUserId = getNumericQueryParameter(ctx.request.query, "id");
+  if (requestUserId < 1) {
     ctx.throw(http.forbidden);
   }
-  if (id != parseInt(requestUserId) && role != UserRole.ADMIN) {
+  if (id != requestUserId && role != UserRole.ADMIN) {
     ctx.throw(http.forbidden);
   }
-  return parseInt(requestUserId);
+  return requestUserId;
 };

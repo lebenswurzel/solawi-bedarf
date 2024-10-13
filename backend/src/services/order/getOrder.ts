@@ -20,15 +20,19 @@ import Router from "koa-router";
 import { AppDataSource } from "../../database/database";
 import { Order } from "../../database/Order";
 import { Order as OrderType } from "../../../../shared/src/types";
+import { getConfigIdFromQuery } from "../../util/requestUtil";
 
 export const getOrder = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
 ) => {
   const requestUserId = await getRequestUserId(ctx);
+
+  const configId = getConfigIdFromQuery(ctx);
+
   const order: OrderType | null = await AppDataSource.getRepository(
     Order,
   ).findOne({
-    where: { userId: requestUserId },
+    where: { userId: requestUserId, requisitionConfigId: configId },
     relations: { orderItems: true },
   });
 

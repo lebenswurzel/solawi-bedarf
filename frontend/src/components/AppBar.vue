@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
 import { language } from "../lang/lang.ts";
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useUserStore } from "../store/userStore.ts";
 import { storeToRefs } from "pinia";
 import { logout } from "../requests/login.ts";
@@ -26,6 +26,7 @@ import { useProductStore } from "../store/productStore.ts";
 import { useOrderStore } from "../store/orderStore.ts";
 import { UserRole } from "../../../shared/src/enum";
 import { useTheme } from "vuetify";
+import SeasonSelector from "./SeasonSelector.vue";
 
 const drawer = ref(false);
 
@@ -37,6 +38,10 @@ const orderStore = useOrderStore();
 
 const { currentUser } = storeToRefs(userStore);
 const theme = useTheme();
+const { config, seasonColorClass } = storeToRefs(configStore);
+const isLoggedIn = computed(() => {
+  return currentUser.value !== undefined;
+});
 
 onMounted(async () => {
   if (window.location.hash != "#/register") {
@@ -68,6 +73,7 @@ const onToggleTheme = () => {
         @click.stop="drawer = !drawer"
       ></v-app-bar-nav-icon>
     </template>
+
     <v-toolbar-title class="d-inline-flex">
       <div>{{ language.app.title }}</div>
       <div
@@ -81,21 +87,22 @@ const onToggleTheme = () => {
         {{ language.app.subtitle }}
       </div>
     </v-toolbar-title>
+
+    <SeasonSelector v-if="isLoggedIn" />
+
     <template v-slot:append>
       <v-btn icon @click="onToggleTheme">
         <v-icon color="secondary">mdi-brightness-4</v-icon>
       </v-btn>
-      <v-btn icon @click="onLogout">
+      <v-btn icon @click="onLogout" v-if="isLoggedIn">
         <v-icon color="secondary">mdi-logout</v-icon>
       </v-btn>
     </template>
   </v-app-bar>
   <v-navigation-drawer v-model="drawer">
-    <v-list-item>
+    <v-list-item :class="seasonColorClass">
       <v-list-item-title>{{ language.app.navigation.title }}</v-list-item-title>
-      <v-list-item-subtitle>{{
-        language.app.navigation.subtitle
-      }}</v-list-item-subtitle>
+      <v-list-item-subtitle>{{ config?.name }}</v-list-item-subtitle>
     </v-list-item>
     <v-divider></v-divider>
     <v-list-item to="/">

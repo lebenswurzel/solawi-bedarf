@@ -34,8 +34,10 @@ export interface OverviewItem {
   }[];
 }
 
-export const getOverview = async (): Promise<OverviewItem[]> => {
-  const response = await fetch(getUrl("/overview"), {});
+export const getOverview = async (
+  configId: number,
+): Promise<OverviewItem[]> => {
+  const response = await fetch(getUrl(`/overview?configId=${configId}`), {});
 
   await verifyResponse(response);
 

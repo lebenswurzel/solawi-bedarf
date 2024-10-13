@@ -14,14 +14,21 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { Depot, RequisitionConfig } from "../../../shared/src/types.ts";
+import {
+  ConfigResponse,
+  CreateConfigRequest,
+  ExistingConfig,
+} from "../../../shared/src/types.ts";
 import { getUrl, verifyResponse } from "./requests.ts";
 
-export const getConfig = async (): Promise<{
-  depots: Depot[];
-  config: RequisitionConfig;
-}> => {
-  const response = await fetch(getUrl("/config"));
+export const getConfig = async (
+  requisitionConfigId?: number,
+): Promise<ConfigResponse> => {
+  let query = "";
+  if (requisitionConfigId !== undefined) {
+    query = `?configId=${requisitionConfigId}`;
+  }
+  const response = await fetch(getUrl(`/config${query}`));
 
   await verifyResponse(response);
 
@@ -29,6 +36,7 @@ export const getConfig = async (): Promise<{
   return {
     depots: raw.depots,
     config: {
+      id: raw.config.id,
       name: raw.config.name,
       startOrder: new Date(raw.config.startOrder),
       startBiddingRound: new Date(raw.config.startBiddingRound),
@@ -36,18 +44,42 @@ export const getConfig = async (): Promise<{
       validFrom: new Date(raw.config.validFrom),
       validTo: new Date(raw.config.validTo),
       budget: parseInt(raw.config.budget),
+      public: raw.config.public,
     },
+    availableConfigs: raw.availableConfigs,
   };
 };
 
-export const saveConfig = async (config: RequisitionConfig) => {
+export const createConfig = async (request: CreateConfigRequest) => {
   const response = await fetch(getUrl("/config"), {
     method: "POST",
+    body: JSON.stringify(request),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  await verifyResponse(response);
+};
+
+export const saveConfig = async (config: ExistingConfig) => {
+  const response = await fetch(getUrl("/config"), {
+    method: "PUT",
     body: JSON.stringify(config),
     headers: {
       "Content-Type": "application/json",
     },
   });
 
+  await verifyResponse(response);
+};
+
+export const deleteConfig = async (requisitionConfigId: number) => {
+  const response = await fetch(
+    getUrl(`/config?configId=${requisitionConfigId}`),
+    {
+      method: "DELETE",
+    },
+  );
   await verifyResponse(response);
 };

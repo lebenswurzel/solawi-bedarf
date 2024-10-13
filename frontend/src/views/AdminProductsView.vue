@@ -15,83 +15,68 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { ref } from "vue";
-import ProductDialog from "../components/ProductDialog.vue";
+import { ref, watch } from "vue";
 import ProductCategoryDialog from "../components/ProductCategoryDialog.vue";
 import { language } from "../lang/lang.ts";
 import { interpolate } from "../lang/template.ts";
-import { onMounted, provide } from "vue";
+import { onMounted } from "vue";
 import { useProductStore } from "../store/productStore.ts";
-import {
-  NewProduct,
-  NewProductCategory,
-  Product,
-  ProductCategory,
-} from "../../../shared/src/types";
+import { NewProductCategory } from "../../../shared/src/types";
 import { useBIStore } from "../store/biStore";
+import { useConfigStore } from "../store/configStore.ts";
+import { storeToRefs } from "pinia";
+import ProductCategoryConfig from "../components/products/ProductCategoryConfig.vue";
 const t = language.pages.product;
 
 const defaultProductCategory: NewProductCategory = {
   active: false,
+  requisitionConfigId: -1,
 };
 
-const defaultProduct: NewProduct = {
-  active: false,
-};
-
+const configStore = useConfigStore();
 const productStore = useProductStore();
 const biStore = useBIStore();
 
+const { activeConfigId, config } = storeToRefs(configStore);
+
 const openProductCategory = ref(false);
-const openProduct = ref(false);
 
-const dialogProductCategory = ref<NewProductCategory | ProductCategory>({
+let dialogProductCategory: NewProductCategory = {
   ...defaultProductCategory,
-});
-const dialogProduct = ref<NewProduct | Product>({ ...defaultProduct });
-
-provide("dialogProductCategory", dialogProductCategory);
-provide("dialogProduct", dialogProduct);
+};
 
 onMounted(async () => {
-  await productStore.update();
-  await biStore.update();
+  await refresh();
 });
 
-const onCreateProduct = () => {
-  dialogProduct.value = { ...defaultProduct };
-  openProduct.value = true;
-};
+watch(activeConfigId, async () => {
+  await refresh();
+});
 
-const onEditProduct = (product: Product) => {
-  dialogProduct.value = product;
-  openProduct.value = true;
-};
-
-const onCloseProduct = async () => {
-  openProduct.value = false;
-  await productStore.update();
+const refresh = async () => {
+  if (activeConfigId.value < 0) {
+    return;
+  }
+  await productStore.update(activeConfigId.value);
+  await biStore.update(activeConfigId.value);
 };
 
 const onCreateProductCategory = () => {
-  dialogProductCategory.value = { ...defaultProductCategory };
-  openProductCategory.value = true;
-};
-
-const onEditProductCategory = (productCategory: ProductCategory) => {
-  dialogProductCategory.value = productCategory;
+  dialogProductCategory = {
+    ...defaultProductCategory,
+    requisitionConfigId: activeConfigId.value,
+  };
   openProductCategory.value = true;
 };
 
 const onCloseProductCategory = async () => {
   openProductCategory.value = false;
-  await productStore.update();
 };
 </script>
 
 <template>
   <v-card class="ma-4">
-    <v-card-title> {{ t.title }} </v-card-title>
+    <v-card-title> {{ t.title }} - {{ config?.name }} </v-card-title>
     <v-card-subtitle>
       {{
         interpolate(t.subtitle, {
@@ -99,43 +84,34 @@ const onCloseProductCategory = async () => {
         })
       }}
     </v-card-subtitle>
-    <v-card-text v-for="productCategory in productStore.productCategories">
-      <v-list elevation="1" rounded>
-        <v-list-item @click="() => onEditProductCategory(productCategory)">
-          <v-list-item-title>{{ productCategory.name }}</v-list-item-title>
-          <v-list-item-subtitle>
-            {{
-              interpolate(t.item.subtitle, {
-                msrp: Math.round(
-                  productCategory.products.reduce((acc, cur) => {
-                    acc = acc + (cur.quantity * cur.msrp) / 100;
-                    return acc;
-                  }, 0),
-                ).toString(),
-              })
-            }}
-          </v-list-item-subtitle>
-        </v-list-item>
-        <v-list-item
-          v-for="product in productCategory.products"
-          @click="() => onEditProduct(product)"
+    <v-card-text>
+      <v-expansion-panels multiple>
+        <v-expansion-panel
+          v-for="productCategory in productStore.productCategories"
+          :key="productCategory.id"
         >
-          {{ product.name }}
-        </v-list-item>
-      </v-list>
+          <v-expansion-panel-title
+            >{{ productCategory.name }}
+          </v-expansion-panel-title>
+          <v-expansion-panel-text>
+            <ProductCategoryConfig
+              :productCategoryWithProducts="productCategory"
+            ></ProductCategoryConfig>
+          </v-expansion-panel-text>
+        </v-expansion-panel>
+      </v-expansion-panels>
     </v-card-text>
     <v-card-actions>
+      <v-spacer></v-spacer>
       <v-btn @click="onCreateProductCategory" prepend-icon="mdi-plus">{{
         t.action.createProductCategory
       }}</v-btn>
-      <v-btn @click="onCreateProduct" prepend-icon="mdi-plus">{{
-        t.action.createProduct
-      }}</v-btn>
     </v-card-actions>
   </v-card>
-  <ProductDialog :open="openProduct" @close="onCloseProduct" />
   <ProductCategoryDialog
+    v-if="openProductCategory"
     :open="openProductCategory"
+    :productCategory="dialogProductCategory"
     @close="onCloseProductCategory"
   />
 </template>

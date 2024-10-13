@@ -17,33 +17,76 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import { getConfig } from "../requests/config.ts";
-import { Depot, RequisitionConfig } from "../../../shared/src/types.ts";
+import {
+  AvailableConfig,
+  Depot,
+  ExistingConfig,
+} from "../../../shared/src/types.ts";
 import { appConfig } from "../../../shared/src/config.ts";
+
+const seasonColorClasses = [
+  "bg-primary",
+  "bg-secondary",
+  "bg-success",
+  "bg-info",
+  "bg-warning",
+  "bg-error",
+];
 
 export const useConfigStore = defineStore("config", () => {
   const depots = ref<Depot[]>([]);
-  const config = ref<RequisitionConfig>();
-  const loaded = ref<boolean>(false);
+  const config = ref<ExistingConfig>();
+  const activeConfigId = ref<number>(-1);
+  const availableConfigs = ref<AvailableConfig[]>([]);
   const externalAuthProvider = ref<boolean>(appConfig.externalAuthProvider);
+  const seasonColorClass = ref<string>(seasonColorClasses[0]);
 
   const clear = () => {
     depots.value = [];
     config.value = undefined;
-    loaded.value = false;
+    availableConfigs.value = [];
+    seasonColorClass.value = seasonColorClasses[0];
   };
 
-  const update = async () => {
-    const { depots: requestDepots, config: requestConfig } = await getConfig();
+  const getConfigOrDefaultConfig = async (configId: number | undefined) => {
+    try {
+      return await getConfig(configId);
+    } catch {
+      return await getConfig();
+    }
+  };
+
+  const update = async (requestedConfigId?: number) => {
+    if (requestedConfigId === undefined) {
+      // keep the currently selected config unless specified otherwise
+      const activeConfigId = parseInt(
+        localStorage.getItem("activeConfigId") || "-1",
+      );
+      requestedConfigId =
+        config.value?.id || (activeConfigId != -1 ? activeConfigId : undefined);
+    }
+    const {
+      depots: requestDepots,
+      config: requestConfig,
+      availableConfigs: requestAvailableConfigs,
+    } = await getConfigOrDefaultConfig(requestedConfigId);
+
     depots.value = requestDepots;
     config.value = requestConfig;
-    loaded.value = true;
+    activeConfigId.value = requestConfig.id;
+    seasonColorClass.value =
+      seasonColorClasses[(config.value.id || 0) % seasonColorClasses.length];
+    availableConfigs.value = requestAvailableConfigs;
+    localStorage.setItem("activeConfigId", "" + activeConfigId.value);
   };
 
   return {
     externalAuthProvider,
     depots,
     config,
-    loaded,
+    activeConfigId,
+    availableConfigs,
+    seasonColorClass,
     update,
     clear,
   };

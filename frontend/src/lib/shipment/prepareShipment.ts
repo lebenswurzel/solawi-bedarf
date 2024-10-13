@@ -97,6 +97,7 @@ export const prepareShipment = (
     active: editShipment.active,
     id: editShipment.id,
     updatedAt: editShipment.updatedAt,
+    requisitionConfigId: editShipment.requisitionConfigId,
   };
   return shipment;
 };

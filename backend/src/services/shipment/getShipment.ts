@@ -21,15 +21,20 @@ import { AppDataSource } from "../../database/database";
 import { Shipment } from "../../database/Shipment";
 import { Order } from "../../database/Order";
 import { In } from "typeorm";
+import { getConfigIdFromQuery } from "../../util/requestUtil";
 
 export const getShipment = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
 ) => {
   const requestUserId = await getRequestUserId(ctx);
+
+  const configId = getConfigIdFromQuery(ctx);
+
   const depotIds = (
     await AppDataSource.getRepository(Order).find({
       where: {
         userId: requestUserId,
+        requisitionConfigId: configId,
       },
       select: {
         depotId: true,
