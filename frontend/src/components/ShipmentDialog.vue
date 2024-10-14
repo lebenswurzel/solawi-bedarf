@@ -66,7 +66,7 @@ const onDeleteShipmentItem = (idx: number) => {
 };
 
 const onAddAdditionalShipmentItem = () => {
-  editShipment.value.additionalShipmentItems.push({
+  editShipment.value.additionalShipmentItems.unshift({
     depotIds: [],
     quantity: 0,
     totalShipedQuantity: 0,
@@ -77,7 +77,7 @@ const onAddAdditionalShipmentItem = () => {
 };
 
 const onAddShipmentItem = () => {
-  editShipment.value.shipmentItems.push({
+  editShipment.value.shipmentItems.unshift({
     depotIds: [],
     totalShipedQuantity: 0,
     isBio: false,
@@ -195,82 +195,19 @@ const onShipmentOverviewPdfClick = async () => {
 <template>
   <v-dialog :model-value="open" @update:model-value="onClose">
     <v-card>
-      <v-card-title>
-        {{ t.title }} KW {{ getISOWeek(editShipment.validFrom).toString() }}
-      </v-card-title>
-      <v-card-text style="overflow-y: auto">
-        <v-row align="start" justify="center">
-          <v-col cols="3">
-            <v-text-field
-              label="Von"
-              type="datetime-local"
-              :model-value="dateToString(editShipment.validFrom)"
-              @update:model-value="
-                (val: string) =>
-                  (editShipment.validFrom =
-                    stringToDate(val) || editShipment.validFrom)
-              "
-            ></v-text-field>
-          </v-col>
-          <v-col cols="8">
-            <v-text-field
-              label="Beschreibung"
-              v-model="editShipment.description"
-              clearable
-            ></v-text-field>
-          </v-col>
-          <v-col cols="1">
-            <v-checkbox
-              label="aktive"
-              v-model="editShipment.active"
-            ></v-checkbox>
-          </v-col>
-        </v-row>
-        <v-list class="ma-0 pa-0">
-          <template v-for="(item, idx) in editShipment.shipmentItems">
-            <v-list-item class="ma-0 pa-0" v-if="item.showItem">
-              <ShipmentItem
-                :shipment-item="item"
-                :used-depot-ids-by-product-id="usedShipmentDepotIdsByProductId"
-              />
-              <template v-slot:append>
-                <v-btn
-                  icon="mdi-close-thick"
-                  @click="() => onDeleteShipmentItem(idx)"
-                >
-                </v-btn>
-              </template>
-            </v-list-item>
-          </template>
-        </v-list>
-        <v-list class="ma-0 pa-0">
-          <template v-for="(item, idx) in editShipment.additionalShipmentItems">
-            <v-list-item class="ma-0 pa-0" v-if="item.showItem">
-              <AdditionalShipmentItem
-                :additional-shipment-item="item"
-                :used-depot-ids-by-product="
-                  usedAdditionalShipmentDepotIdsByProduct
-                "
-              />
-              <template v-slot:append>
-                <v-btn
-                  icon="mdi-close-thick"
-                  @click="() => onDeleteAdditionalShipmentItem(idx)"
-                >
-                </v-btn>
-              </template>
-            </v-list-item>
-          </template>
-        </v-list>
-      </v-card-text>
-      <v-card-actions>
-        <v-btn @click="onAddShipmentItem"> Produkt </v-btn>
-        <v-btn @click="onAddAdditionalShipmentItem"> Zusatz </v-btn>
-        <v-btn @click="onClose"> {{ language.app.actions.close }} </v-btn>
-        <v-btn :loading="loading" @click="onSave" :disabled="!canSave">
+      <v-toolbar density="compact" dark>
+        <v-btn
+          prepend-icon="mdi-content-save"
+          :loading="loading"
+          @click="onSave"
+          :disabled="!canSave"
+          color="primary"
+        >
           {{ language.app.actions.save }}
         </v-btn>
+        <v-spacer />
         <v-btn
+          prepend-icon="mdi-download"
           :loading="loading"
           @click="onShipmentPdfClick"
           :disabled="disableDownloadPdf"
@@ -278,13 +215,125 @@ const onShipmentOverviewPdfClick = async () => {
           Lieferscheine
         </v-btn>
         <v-btn
+          prepend-icon="mdi-download"
           :loading="loading"
           @click="onShipmentOverviewPdfClick"
           :disabled="disableDownloadPdf"
         >
-          Übersicht
+          Übersichten
         </v-btn>
-      </v-card-actions>
+        <v-spacer />
+        <v-btn prepend-icon="mdi-close" @click="onClose" color="error">
+          {{ language.app.actions.close }}
+        </v-btn>
+      </v-toolbar>
+      <v-card-title>
+        {{ t.title }} KW {{ getISOWeek(editShipment.validFrom).toString() }}
+      </v-card-title>
+      <v-card-text style="overflow-y: auto">
+        <v-expansion-panels variant="popout">
+          <v-expansion-panel>
+            <v-expansion-panel-title
+              >Datum und Beschreibung</v-expansion-panel-title
+            >
+            <v-expansion-panel-text class="px-0">
+              <v-row align="start" justify="center">
+                <v-col cols="3">
+                  <v-text-field
+                    label="Von"
+                    type="datetime-local"
+                    :model-value="dateToString(editShipment.validFrom)"
+                    @update:model-value="
+                      (val: string) =>
+                        (editShipment.validFrom =
+                          stringToDate(val) || editShipment.validFrom)
+                    "
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="8">
+                  <v-text-field
+                    label="Beschreibung"
+                    v-model="editShipment.description"
+                    clearable
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="1">
+                  <v-checkbox
+                    label="aktiv"
+                    v-model="editShipment.active"
+                  ></v-checkbox>
+                </v-col>
+              </v-row>
+            </v-expansion-panel-text>
+          </v-expansion-panel>
+          <v-expansion-panel>
+            <v-expansion-panel-title
+              >Produkte ({{
+                editShipment.shipmentItems.length
+              }})</v-expansion-panel-title
+            >
+            <v-expansion-panel-text class="px-0">
+              <v-row>
+                <v-btn @click="onAddShipmentItem">Produkt hinzufügen</v-btn>
+              </v-row>
+              <v-row>
+                <v-list class="ma-0 pa-0" style="width: 100%">
+                  <template v-for="(item, idx) in editShipment.shipmentItems">
+                    <v-list-item class="ma-0 pa-0" v-if="item.showItem">
+                      <ShipmentItem
+                        :shipment-item="item"
+                        :used-depot-ids-by-product-id="
+                          usedShipmentDepotIdsByProductId
+                        "
+                      />
+                      <template v-slot:append>
+                        <v-btn
+                          icon="mdi-close-thick"
+                          @click="() => onDeleteShipmentItem(idx)"
+                        >
+                        </v-btn>
+                      </template>
+                    </v-list-item>
+                  </template>
+                </v-list>
+              </v-row>
+            </v-expansion-panel-text>
+          </v-expansion-panel>
+          <v-expansion-panel>
+            <v-expansion-panel-title
+              >Zusatzprodukte ({{
+                editShipment.additionalShipmentItems.length
+              }})</v-expansion-panel-title
+            >
+            <v-expansion-panel-text>
+              <v-btn @click="onAddAdditionalShipmentItem"
+                >Zusatzprodukt hinzufügen</v-btn
+              >
+              <v-list class="ma-0 pa-0">
+                <template
+                  v-for="(item, idx) in editShipment.additionalShipmentItems"
+                >
+                  <v-list-item class="ma-0 pa-0" v-if="item.showItem">
+                    <AdditionalShipmentItem
+                      :additional-shipment-item="item"
+                      :used-depot-ids-by-product="
+                        usedAdditionalShipmentDepotIdsByProduct
+                      "
+                    />
+                    <template v-slot:append>
+                      <v-btn
+                        icon="mdi-close-thick"
+                        @click="() => onDeleteAdditionalShipmentItem(idx)"
+                      >
+                      </v-btn>
+                    </template>
+                  </v-list-item>
+                </template>
+              </v-list>
+            </v-expansion-panel-text>
+          </v-expansion-panel>
+        </v-expansion-panels>
+      </v-card-text>
     </v-card>
   </v-dialog>
   <v-snackbar
