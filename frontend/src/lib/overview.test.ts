@@ -31,7 +31,7 @@ import {
   MILK_PRODUCTS,
   TOMATO,
   VEGETABLES,
-} from "../testSetup.ts";
+} from "../../../shared/testSetup.ts";
 
 function genOrder(overwrite: Partial<OverviewItem> = {}): OverviewItem {
   const base: OverviewItem = {

@@ -50,15 +50,20 @@ const createTestDepot = async (name: string, rank: number) => {
   });
 };
 
-const createTestProduct = async (name: string) => {
+export const createTestProductCategory = async (name: string) => {
   const requisitionConfig = await AppDataSource.getRepository(
     RequisitionConfig,
   ).findOneOrFail({ where: { name: RequisitionConfigName } });
   const pcEntity = await AppDataSource.getRepository(ProductCategory).save({
-    name: `${name} category`,
+    name,
     active: true,
     requisitionConfig,
   });
+  return pcEntity;
+};
+
+const createTestProduct = async (name: string) => {
+  const pcEntity = await createTestProductCategory(`${name} category`);
   await AppDataSource.getRepository(Product).save({
     name,
     description: `description of product ${name}`,
