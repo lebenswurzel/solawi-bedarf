@@ -24,8 +24,8 @@
     "src/**/*.ts",
     "src/**/*.tsx",
     "src/**/*.vue",
-    "../shared/src/**/*.ts",
-    "../shared/testSetup.ts"
+    "../shared/src/**/*.ts"
   ],
+  "exclude": ["**/*.test.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
