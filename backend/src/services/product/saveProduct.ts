@@ -37,6 +37,23 @@ export const saveProduct = async (
     if (!existing) {
       ctx.throw(http.bad_request);
     }
+    ctx.status = http.ok;
+  } else {
+    ctx.status = http.created;
   }
+
+  // prevent product with same name in the product category
+  const sameName = await AppDataSource.getRepository(Product).findOneBy({
+    name: product.name,
+    productCategoryId: product.productCategoryId,
+  });
+
+  if (sameName) {
+    ctx.throw(
+      http.bad_request,
+      "product with same name exists in the product category",
+    );
+  }
+
   ctx.body = await AppDataSource.getRepository(Product).save(product);
 };

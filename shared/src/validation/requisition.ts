@@ -15,13 +15,13 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { UserRole } from "../enum";
-import { Order, RequisitionConfig } from "../types";
+import { ExistingConfig, Order } from "../types";
 
 export const isRequisitionActive = (
   userRole: UserRole,
   userActive: boolean,
-  requisitionConfig: RequisitionConfig,
-  now: Date,
+  requisitionConfig: ExistingConfig,
+  now: Date
 ) => {
   if (!userActive) {
     return false;
@@ -37,8 +37,8 @@ export const isRequisitionActive = (
 
 export const isIncreaseOnly = (
   userRole: UserRole | undefined,
-  requisitionConfig: RequisitionConfig,
-  now: Date,
+  requisitionConfig: ExistingConfig,
+  now: Date
 ) => {
   return (
     now > requisitionConfig.startBiddingRound && userRole != UserRole.ADMIN
@@ -47,10 +47,10 @@ export const isIncreaseOnly = (
 
 export const isValidBiddingOrder = (
   userRole: UserRole,
-  requisitionConfig: RequisitionConfig,
+  requisitionConfig: ExistingConfig,
   now: Date,
   savedOrder: Order,
-  actualOrder: Order,
+  actualOrder: Order
 ) => {
   if (!isIncreaseOnly(userRole, requisitionConfig, now)) {
     return true;
@@ -60,7 +60,7 @@ export const isValidBiddingOrder = (
   }
   for (let savedOrderItem of savedOrder.orderItems) {
     const actualOrderItem = actualOrder.orderItems.find(
-      (orderItem) => orderItem.productId == savedOrderItem.productId,
+      (orderItem) => orderItem.productId == savedOrderItem.productId
     );
     if (
       savedOrderItem.value > 0 &&

@@ -27,6 +27,7 @@ import FAQDialog from "../components/FAQDialog.vue";
 import { useBIStore } from "../store/biStore";
 import { storeToRefs } from "pinia";
 import { useConfigStore } from "../store/configStore.ts";
+import SeasonText from "../components/styled/SeasonText.vue";
 
 const t = language.pages.shop;
 
@@ -39,6 +40,7 @@ const biStore = useBIStore();
 const { depot, msrp, submit } = storeToRefs(biStore);
 const { userId } = storeToRefs(userStore);
 const { productCategories } = storeToRefs(productStore);
+const { activeConfigId, config } = storeToRefs(configStore);
 
 const open = ref(false);
 const faqOpen = ref(false);
@@ -50,8 +52,8 @@ watch(userId, async () => {
   requestUserId.value = userId.value;
 });
 
-watch(requestUserId, async () => {
-  requestUserId.value && (await orderStore.update(requestUserId.value));
+watch([requestUserId, configStore], async () => {
+  await refresh();
 });
 
 const onClose = async () => {
@@ -66,14 +68,14 @@ const onSave = () => {
   open.value = true;
 };
 
-onMounted(async () => {
-  biStore.update();
-  productStore.update();
-  configStore.update();
-  if (requestUserId.value) {
-    orderStore.update(requestUserId.value);
+const refresh = async () => {
+  if (requestUserId.value && activeConfigId.value != -1) {
+    productStore.update(configStore.activeConfigId);
+    biStore.update(configStore.activeConfigId);
+    orderStore.update(requestUserId.value, activeConfigId.value);
   }
-});
+};
+onMounted(refresh);
 </script>
 
 <template>
@@ -95,7 +97,11 @@ onMounted(async () => {
       {{ depot?.comment }}
     </v-card-subtitle>
     <v-card-text>
-      {{ t.cards.header.explaination }}
+      {{
+        interpolate(t.cards.header.explaination, {
+          season: config?.name || "KEINE SAISON",
+        })
+      }}
       <a
         style="color: #6750a4; cursor: pointer"
         @click="() => (faqOpen = true)"
@@ -107,7 +113,7 @@ onMounted(async () => {
   </v-card>
 
   <v-card class="ma-4">
-    <v-card-title>{{ t.cards.products.title }}</v-card-title>
+    <v-card-title>{{ t.cards.products.title }} für <SeasonText /></v-card-title>
     <v-card-subtitle class="text-wrap">
       {{
         interpolate(t.cards.products.msrp, {
@@ -128,13 +134,17 @@ onMounted(async () => {
     </v-card-subtitle>
     <v-card-text>
       <v-expansion-panels class="pa-0">
-        <v-expansion-panel v-for="category in productCategories" class="px-0">
+        <v-expansion-panel
+          v-for="category in productCategories"
+          class="px-0"
+          :key="category.id"
+        >
           <v-expansion-panel-title>{{ category.name }}</v-expansion-panel-title>
-          <v-expansion-panel-text
-            v-for="product in category.products"
-            class="px-0"
-          >
+          <v-expansion-panel-text>
             <ShopItem
+              v-for="product in category.products"
+              class="px-0"
+              :key="product.id"
               :user-id="userStore.currentUser!.id"
               :product-id="product.id"
             ></ShopItem>
@@ -145,7 +155,9 @@ onMounted(async () => {
     <v-card-actions class="justify-center">
       <v-card-actions>
         <v-btn
-          @click="requestUserId && orderStore.update(requestUserId)"
+          @click="
+            requestUserId && orderStore.update(requestUserId, activeConfigId)
+          "
           class="text-error"
           variant="outlined"
         >

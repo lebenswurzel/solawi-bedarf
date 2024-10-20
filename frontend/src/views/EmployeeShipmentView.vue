@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { onMounted, provide, ref } from "vue";
+import { onMounted, provide, ref, watch } from "vue";
 import { language } from "../lang/lang.ts";
 import { useBIStore } from "../store/biStore.ts";
 import ShipmentDialog from "../components/ShipmentDialog.vue";
@@ -38,6 +38,7 @@ import {
   Shipment,
 } from "../../../shared/src/types.ts";
 import { getShipments } from "../requests/shipment.ts";
+import { storeToRefs } from "pinia";
 
 const t = language.pages.shipment;
 
@@ -47,6 +48,7 @@ const defaultEditShipment: EditShipment = {
   shipmentItems: [],
   additionalShipmentItems: [],
   active: false,
+  requisitionConfigId: -1,
 };
 
 const shipments = ref<(Shipment & Id)[]>([]);
@@ -54,6 +56,8 @@ const shipments = ref<(Shipment & Id)[]>([]);
 const biStore = useBIStore();
 const configStore = useConfigStore();
 const productStore = useProductStore();
+
+const { activeConfigId } = storeToRefs(configStore);
 
 const shipment = ref<EditShipment & OptionalId>(defaultEditShipment);
 const savedShipment = ref<Shipment & Id>();
@@ -99,15 +103,18 @@ const onEditShipment = (dialogShipment: Shipment & Id) => {
 
 const onClose = async () => {
   open.value = false;
-  await biStore.update();
-  shipments.value = (await getShipments()).shipments;
+  await biStore.update(activeConfigId.value);
+  shipments.value = (await getShipments(activeConfigId.value)).shipments;
 };
 
-onMounted(async () => {
-  await configStore.update();
-  await productStore.update();
-  await biStore.update();
-  shipments.value = (await getShipments()).shipments;
+const refresh = async () => {
+  await productStore.update(activeConfigId.value);
+  await biStore.update(activeConfigId.value);
+  shipments.value = (await getShipments(activeConfigId.value)).shipments;
+};
+onMounted(refresh);
+watch(activeConfigId, async () => {
+  refresh();
 });
 </script>
 

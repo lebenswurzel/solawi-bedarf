@@ -22,8 +22,8 @@ import { getProductCategory } from "../requests/productCategory.ts";
 export const useProductStore = defineStore("productStore", () => {
   const productCategories = ref<ProductCategoryWithProducts[]>([]);
 
-  const update = async () => {
-    productCategories.value = await getProductCategory();
+  const update = async (configId: number) => {
+    productCategories.value = await getProductCategory(configId);
   };
 
   const clear = () => {

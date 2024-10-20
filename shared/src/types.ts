@@ -30,6 +30,13 @@ export interface NewUser {
 
 export type User = Required<NewUser> & Id;
 
+export type SaveUserRequest = Required<NewUser> &
+  OptionalId & {
+    password?: string;
+    orderValidFrom: Date | null;
+    requisitionConfigId: number;
+  };
+
 export interface NewProduct {
   description?: string | null;
   name?: string;
@@ -53,6 +60,7 @@ export type ProductsById = {
 export interface NewProductCategory {
   name?: string;
   active: boolean;
+  requisitionConfigId: number;
 }
 
 export type ProductCategory = Required<NewProductCategory> & Id;
@@ -75,6 +83,7 @@ export interface Order {
   category: UserCategory;
   categoryReason: string | null;
   validFrom: Date | null;
+  requisitionConfigId: number;
 }
 
 export interface ConfirmedOrder extends Order {
@@ -133,7 +142,7 @@ export function isIdType(entity: any): entity is Id {
   return entity.id !== undefined;
 }
 
-export interface RequisitionConfig {
+interface RequisitionConfig {
   name: string;
   startOrder: Date;
   startBiddingRound: Date;
@@ -141,6 +150,27 @@ export interface RequisitionConfig {
   budget: number;
   validFrom: Date;
   validTo: Date;
+  public: boolean;
+}
+
+export type ExistingConfig = RequisitionConfig & Id;
+export type NewConfig = RequisitionConfig;
+
+export interface AvailableConfig {
+  id: number;
+  name: string;
+  public: boolean;
+}
+
+export interface CreateConfigRequest {
+  config: NewConfig;
+  copyFrom: number | undefined;
+}
+
+export interface ConfigResponse {
+  depots: Depot[];
+  config: RequisitionConfig & Id;
+  availableConfigs: AvailableConfig[];
 }
 
 export type SoldByProductId = {
@@ -165,6 +195,7 @@ export type DeliveredByProductIdDepotId = {
     [key: number]: {
       value: number;
       delivered: number;
+      actuallyDelivered: number;
       frequency: number;
       valueForShipment: number;
     };
@@ -215,10 +246,26 @@ export interface Shipment {
   additionalShipmentItems: AdditionalShipmentItem[];
   active: boolean;
   updatedAt?: Date;
+  requisitionConfigId: number;
 }
 
 export interface EditShipment
   extends Omit<Shipment, "id" | "shipmentItems" | "additionalShipmentItems"> {
   shipmentItems: EditShipmentItem[];
   additionalShipmentItems: EditAdditionalShipmentItem[];
+}
+
+export interface BuildInfo {
+  buildDate: string;
+  git: {
+    hash: string;
+    hashShort: string;
+    branch: string;
+    tag: string;
+    commitDate: string;
+  };
+  maintenance?: {
+    enabled?: boolean;
+    message?: string;
+  };
 }

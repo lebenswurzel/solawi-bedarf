@@ -44,7 +44,10 @@ import { getShipment } from "./services/shipment/getShipment";
 import { getShipments } from "./services/shipment/getShipments";
 import { saveShipment } from "./services/shipment/saveShipment";
 import { biHandler } from "./services/bi/bi";
+import { deleteConfig } from "./services/config/deleteConfig";
 import { updateDepot } from "./services/config/updateDepot";
+import { createConfig } from "./services/config/createConfig";
+import { deleteProductCategory } from "./services/product/deleteProductCategory";
 
 const port = config.server.serverPort;
 const app = new Koa();
@@ -79,7 +82,9 @@ const connectToDatabase = async (tries: number = 10) => {
 connectToDatabase().then(() => {});
 
 router.get("/config", getConfig);
-router.post("/config", saveConfig);
+router.post("/config", createConfig);
+router.put("/config", saveConfig);
+router.delete("/config", deleteConfig);
 router.get("/depot", getDepot);
 router.post("/depot", saveDepot);
 router.post("/depot/update", updateDepot);
@@ -103,6 +108,7 @@ router.post("/shipment", saveShipment);
 
 router.get("/productCategory", getProductCategory);
 router.post("/productCategory", saveProductCategory);
+router.delete("/productCategory", deleteProductCategory);
 router.post("/productCategory/product", saveProduct);
 
 router.get("/content/text", getTextContent);
