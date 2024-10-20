@@ -12,5 +12,6 @@
     "moduleResolution": "node",
     "outDir": "./dist"
   },
-  "include": ["src/**/*.ts", "../shared/src/**/*.ts"]
+  "include": ["src/**/*.ts", "../shared/src/**/*.ts"],
+  "exclude": ["**/*.test.ts"]
 }
