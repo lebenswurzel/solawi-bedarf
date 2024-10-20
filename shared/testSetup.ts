@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { beforeEach } from "vitest";
-import { Unit } from "../../shared/src/enum";
+import { Unit } from "./src/enum";
 import {
   Depot,
   NewDepot,
@@ -24,7 +24,7 @@ import {
   ProductCategoryWithProducts,
   Shipment,
   ShipmentItem,
-} from "../../shared/src/types";
+} from "./src/types";
 
 let NEXT_ID = 0;
 let NEXT_RANK = 1;
@@ -93,7 +93,7 @@ export const MILK_PRODUCTS = {
 };
 
 export function genProductGroupWithProducts(
-  overwrite: Partial<ProductCategoryWithProducts> = {},
+  overwrite: Partial<ProductCategoryWithProducts> = {}
 ): ProductCategoryWithProducts {
   let id = genId();
   const base: ProductCategoryWithProducts = {
@@ -158,7 +158,7 @@ export function genShipment(overwrite: Partial<Shipment> = {}): Shipment {
 export function genShipmentItem(
   product: Product,
   depot: Depot,
-  overwrite: Partial<ShipmentItem> = {},
+  overwrite: Partial<ShipmentItem> = {}
 ): ShipmentItem {
   const base: ShipmentItem = {
     productId: product.id,

@@ -26,7 +26,7 @@ import {
   MILK_PRODUCTS,
   TOMATO,
   VEGETABLES,
-} from "../../testSetup.ts";
+} from "../../../../shared/testSetup.ts";
 import {
   createShipmentPackagingPdfSpecs,
   formatQuantityChange,

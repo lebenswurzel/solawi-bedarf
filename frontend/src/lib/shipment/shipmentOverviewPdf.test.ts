@@ -26,7 +26,7 @@ import {
   MILK_PRODUCTS,
   TOMATO,
   VEGETABLES,
-} from "../../testSetup.ts";
+} from "../../../../shared/testSetup.ts";
 import { grouping } from "../utils.ts";
 import {
   ProductCategoryWithProducts,
