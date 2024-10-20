@@ -14,7 +14,6 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { beforeEach } from "vitest";
 import { Unit } from "./src/enum";
 import {
   Depot,
@@ -30,10 +29,10 @@ let NEXT_ID = 0;
 let NEXT_RANK = 1;
 let CONFIG_1_ID = 1;
 
-beforeEach(() => {
+export function resetIds() {
   NEXT_ID = 0;
   NEXT_RANK = 1;
-});
+}
 
 export function genId(): number {
   return NEXT_ID++;

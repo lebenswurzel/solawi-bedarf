@@ -14,14 +14,9 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+import { beforeEach } from "vitest";
+import { resetIds } from "../shared/testSetup";
 
-import { defineConfig } from "vitest/config";
-
-export default defineConfig({
-  test: {
-    setupFiles: ["./testSetup.ts"],
-    deps: {
-      inline: [/shared/], // This ensures that the shared folder is not excluded
-    },
-  },
+beforeEach(() => {
+  resetIds();
 });
