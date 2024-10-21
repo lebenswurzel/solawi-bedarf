@@ -362,3 +362,19 @@ export function generateDepotData(
       }) as PdfSpec,
   ).sort(byKey((pdf) => pdf.receiver, inLocaleOrder));
 }
+
+export function objectToCsv(data: any[]): string {
+  if (!data || !data.length) {
+    return "";
+  }
+  const headers = Object.keys(data[0]);
+  const rows = [
+    headers.join(","),
+    ...data.map((obj) =>
+      headers
+        .map((header) => `"${String(obj[header] || "").replace(/"/g, '""')}"`)
+        .join(","),
+    ),
+  ];
+  return rows.join("\n");
+}
