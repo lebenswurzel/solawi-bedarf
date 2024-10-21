@@ -58,6 +58,7 @@ export const language = {
       deleting: {
         success: "Löschen erfolgreich",
         failed: "Löschen fehlgeschlagen",
+        askConfirmation: "Soll {item} wirklich gelöscht werden?",
       },
     },
     options: {

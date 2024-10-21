@@ -48,7 +48,7 @@ export const saveProduct = async (
     productCategoryId: product.productCategoryId,
   });
 
-  if (sameName) {
+  if (sameName && sameName.id != product.id) {
     ctx.throw(
       http.bad_request,
       "product with same name exists in the product category",

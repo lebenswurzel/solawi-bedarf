@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { NewProduct, OptionalId } from "../../../shared/src/types.ts";
+import { Id, NewProduct, OptionalId } from "../../../shared/src/types.ts";
 import { getUrl, verifyResponse } from "./requests.ts";
 
 export const saveProduct = async (
@@ -23,6 +23,18 @@ export const saveProduct = async (
   const response = await fetch(getUrl("/productCategory/product"), {
     method: "POST",
     body: JSON.stringify(product),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  await verifyResponse(response);
+};
+
+export const deleteProduct = async (productId: Id) => {
+  const response = await fetch(getUrl("/productCategory/product"), {
+    method: "DELETE",
+    body: JSON.stringify(productId),
     headers: {
       "Content-Type": "application/json",
     },
