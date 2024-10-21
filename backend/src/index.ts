@@ -48,6 +48,7 @@ import { deleteConfig } from "./services/config/deleteConfig";
 import { updateDepot } from "./services/config/updateDepot";
 import { createConfig } from "./services/config/createConfig";
 import { deleteProductCategory } from "./services/product/deleteProductCategory";
+import { deleteProduct } from "./services/product/deleteProduct";
 
 const port = config.server.serverPort;
 const app = new Koa();
@@ -110,6 +111,7 @@ router.get("/productCategory", getProductCategory);
 router.post("/productCategory", saveProductCategory);
 router.delete("/productCategory", deleteProductCategory);
 router.post("/productCategory/product", saveProduct);
+router.delete("/productCategory/product", deleteProduct);
 
 router.get("/content/text", getTextContent);
 router.post("/content/text", saveTextContent);
