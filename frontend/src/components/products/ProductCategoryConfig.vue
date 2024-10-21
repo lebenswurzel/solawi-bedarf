@@ -28,6 +28,8 @@ import { deleteProductCategory } from "../../requests/productCategory";
 import { useUiFeedback } from "../../store/uiFeedbackStore";
 import { useConfigStore } from "../../store/configStore";
 import { useProductStore } from "../../store/productStore";
+import { sanitizeFileName } from "../../../../shared/src/util/fileHelper";
+import { objectToCsv } from "../../lib/overview";
 const t = language.pages.product;
 
 const props = defineProps<{
@@ -47,6 +49,24 @@ const dialogProductCategory = ref<ProductCategory>({
 const onEditProductCategory = () => {
   dialogProductCategory.value = { ...props.productCategoryWithProducts };
   openProductCategory.value = true;
+};
+
+const onExportProducts = async () => {
+  try {
+    const csv = objectToCsv(props.productCategoryWithProducts.products);
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = sanitizeFileName(props.productCategoryWithProducts.name);
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  } catch (e) {
+    uiFeedback.setError("" + e);
+    throw e;
+  }
 };
 
 const onDelete = () => {
@@ -92,6 +112,13 @@ const onCloseProductCategory = async () => {
             <v-list-item-title>
               <v-btn @click="onEditProductCategory">
                 {{ language.app.actions.edit }}
+              </v-btn>
+            </v-list-item-title>
+          </v-list-item>
+          <v-list-item>
+            <v-list-item-title>
+              <v-btn @click="onExportProducts" color="secondary">
+                CSV-Export
               </v-btn>
             </v-list-item-title>
           </v-list-item>
