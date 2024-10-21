@@ -52,12 +52,10 @@ const onEditProductCategory = () => {
 const onDelete = () => {
   deleteProductCategory({ id: props.productCategoryWithProducts.id })
     .then(() => {
-      console.log("DELETE OK");
       uiFeedback.setSuccess(language.app.uiFeedback.deleting.success);
       productStore.update(configStore.activeConfigId);
     })
     .catch((e: Error) => {
-      console.log("DELETE KAPUTT");
       uiFeedback.setError(language.app.uiFeedback.deleting.failed, e);
     });
 };

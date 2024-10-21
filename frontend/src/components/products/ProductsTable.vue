@@ -32,6 +32,8 @@ import { useConfigStore } from "../../store/configStore";
 import { useProductStore } from "../../store/productStore";
 import { storeToRefs } from "pinia";
 import { useBIStore } from "../../store/biStore";
+import { deleteProduct } from "../../requests/product";
+import { useUiFeedback } from "../../store/uiFeedbackStore";
 const t = language.pages.product.dialog;
 
 const props = defineProps<{
@@ -46,11 +48,13 @@ const defaultProduct: NewProduct = {
 const configStore = useConfigStore();
 const productStore = useProductStore();
 const biStore = useBIStore();
+const uiFeedback = useUiFeedback();
 const openProduct = ref(false);
 const { activeConfigId, depots } = storeToRefs(configStore);
 const dialogProduct = ref<NewProduct | Product>({ ...defaultProduct });
 const { soldByProductId, deliveredByProductIdDepotId } = storeToRefs(biStore);
 const search = ref<string>("");
+const deletionProduct = ref<Product | undefined>();
 
 provide("dialogProduct", dialogProduct);
 
@@ -88,6 +92,25 @@ const onCreateProduct = () => {
 const onEditProduct = (product: Product) => {
   dialogProduct.value = product;
   openProduct.value = true;
+};
+const onDeleteProduct = async (product: Product) => {
+  deletionProduct.value = product;
+};
+
+const onConfirmDeleteProduct = async (product?: Product) => {
+  if (!product) {
+    return;
+  }
+  deleteProduct({ id: product.id })
+    .then(() => {
+      uiFeedback.setSuccess(language.app.uiFeedback.deleting.success);
+      deletionProduct.value = undefined;
+      productStore.update(activeConfigId.value);
+    })
+    .catch((e: Error) => {
+      deletionProduct.value = undefined;
+      uiFeedback.setError(language.app.uiFeedback.deleting.failed, e);
+    });
 };
 const onCloseProduct = async () => {
   openProduct.value = false;
@@ -167,6 +190,11 @@ const calculateDeliveries = (
           @click="onEditProduct(item)"
           variant="plain"
         ></v-btn>
+        <v-btn
+          icon="mdi-trash-can-outline"
+          @click="onDeleteProduct(item)"
+          variant="plain"
+        ></v-btn>
       </template>
       <template v-slot:item.unit="{ item }">
         {{ getLangUnit(item.unit, true) }}
@@ -174,4 +202,28 @@ const calculateDeliveries = (
     </v-data-table>
   </v-card>
   <ProductDialog :open="openProduct" @close="onCloseProduct" />
+
+  <v-dialog v-model="deletionProduct" max-width="600">
+    <v-card>
+      <v-card-title>{{ language.app.actions.delete }}</v-card-title>
+      <v-card-text>{{
+        interpolate(language.app.uiFeedback.deleting.askConfirmation, {
+          item: deletionProduct?.name || "undefined",
+        })
+      }}</v-card-text>
+      <v-card-actions>
+        <v-btn @click="onConfirmDeleteProduct(deletionProduct)" color="error">{{
+          language.app.actions.delete
+        }}</v-btn>
+        <v-btn
+          @click="
+            () => {
+              deletionProduct = undefined;
+            }
+          "
+          >{{ language.app.actions.cancel }}</v-btn
+        >
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
