@@ -35,7 +35,7 @@ export const saveProduct = async (
       id: product.id,
     });
     if (!existing) {
-      ctx.throw(http.bad_request);
+      ctx.throw(http.not_found, `Product id=${product.id} not found`);
     }
     ctx.status = http.ok;
   } else {

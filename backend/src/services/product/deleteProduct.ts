@@ -37,7 +37,7 @@ export const deleteProduct = async (
     id: product.id || -1,
   });
   if (!existing) {
-    ctx.throw(http.bad_request, `product id=${product.id} does not exist`);
+    ctx.throw(http.not_found, `product id=${product.id} does not exist`);
   }
 
   // check existing orders

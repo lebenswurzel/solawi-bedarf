@@ -110,12 +110,12 @@ export const createBasicTestCtx = <BodyType>(
   const ctx = {
     cookies: new Map(),
     req: {
-      body,
-      headers,
+      body: { ...body },
+      headers: { ...headers },
     },
     request: {
-      body,
-      query: query || {},
+      body: { ...body },
+      query: { ...(query || {}) },
     },
     status: -1,
     throw: (status: number, message?: string) => {
