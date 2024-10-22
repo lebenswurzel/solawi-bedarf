@@ -33,6 +33,8 @@ import {
   needsOfferReason,
   minOffer,
 } from "../../../shared/src/validation/reason.ts";
+import SeasonText from "./styled/SeasonText.vue";
+import { useUiFeedback } from "../store/uiFeedbackStore.ts";
 
 defineProps(["open"]);
 const emit = defineEmits(["close"]);
@@ -42,8 +44,9 @@ const t = language.pages.shop.dialog;
 const configStore = useConfigStore();
 const orderStore = useOrderStore();
 const biStore = useBIStore();
+const uiFeedback = useUiFeedback();
 
-const { depots } = storeToRefs(configStore);
+const { depots, activeConfigId, config } = storeToRefs(configStore);
 const { depot, msrp, capacityByDepotId, increaseOnly } = storeToRefs(biStore);
 const {
   offer,
@@ -59,7 +62,6 @@ const {
 const confirmGTC = ref(false);
 const openFAQ = ref(false);
 const loading = ref(false);
-const error = ref<string>();
 const model = ref<string>();
 
 const requestUserId = inject<Ref<number>>("requestUserId") as Ref<number>;
@@ -99,7 +101,7 @@ const modelInt = computed(() => {
 });
 
 const alternateDepot = computed(() => {
-  return configStore.depots.find((d) => d.id == alternateDepotId.value);
+  return depots.value.find((d) => d.id == alternateDepotId.value);
 });
 
 const enableOfferReason = computed(() =>
@@ -183,7 +185,8 @@ const onBlur = (blur: boolean) => {
 };
 
 const onClose = async () => {
-  requestUserId?.value && (await orderStore.update(requestUserId?.value));
+  requestUserId?.value &&
+    (await orderStore.update(requestUserId?.value, activeConfigId.value));
   model.value = offer.value.toString() || "0";
   emit("close");
 };
@@ -201,15 +204,18 @@ const onSave = () => {
     categoryReason: categoryReason.value,
     confirmGTC: confirmGTC.value,
     validFrom: validFrom.value,
+    requisitionConfigId: activeConfigId.value,
   })
     .then(async () => {
-      await biStore.update();
-      requestUserId?.value && (await orderStore.update(requestUserId.value));
+      await biStore.update(activeConfigId.value);
+      requestUserId?.value &&
+        (await orderStore.update(requestUserId.value, activeConfigId.value));
       loading.value = false;
+      uiFeedback.setSuccess(language.app.uiFeedback.saving.success);
       emit("close");
     })
     .catch((e: Error) => {
-      error.value = `${language.app.errors.general} [${e.message}]`;
+      uiFeedback.setError(language.app.uiFeedback.saving.failed, e);
       loading.value = false;
     });
 };
@@ -219,7 +225,7 @@ const onSave = () => {
   <v-dialog :model-value="open" @update:model-value="onClose">
     <v-card>
       <v-card-title>
-        <span class="text-h5">Bedarfsanmeldung</span>
+        <span class="text-h5">Bedarfsanmeldung für <SeasonText /></span>
       </v-card-title>
       <v-card-text>
         <v-alert
@@ -310,7 +316,12 @@ const onSave = () => {
           :persistent-hint="categoryReasonHint"
         />
         <div class="mb-3">{{ t.confirm.title }}</div>
-        <v-checkbox v-model="confirmGTC" :label="t.confirm.label" />
+        <v-checkbox
+          v-model="confirmGTC"
+          :label="
+            interpolate(t.confirm.label, { season: config?.name ?? 'SAISON?' })
+          "
+        />
       </v-card-text>
       <v-card-actions class="justify-center">
         <v-btn class="text-error" @click="onClose" variant="outlined">
@@ -338,11 +349,4 @@ const onSave = () => {
     </v-card>
   </v-dialog>
   <FAQDialog :open="openFAQ" @close="() => (openFAQ = false)" />
-  <v-snackbar
-    :model-value="!!error"
-    color="red"
-    @update:model-value="() => (error = undefined)"
-  >
-    {{ error }}
-  </v-snackbar>
 </template>

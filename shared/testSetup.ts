@@ -14,25 +14,28 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { beforeEach } from "vitest";
-import { Unit } from "../../shared/src/enum";
+import { Unit, UserCategory } from "./src/enum";
 import {
+  ConfirmedOrder,
   Depot,
   NewDepot,
   NewProduct,
+  Order,
+  OrderItem,
   Product,
   ProductCategoryWithProducts,
   Shipment,
   ShipmentItem,
-} from "../../shared/src/types";
+} from "./src/types";
 
 let NEXT_ID = 0;
 let NEXT_RANK = 1;
+let CONFIG_1_ID = 1;
 
-beforeEach(() => {
+export function resetIds() {
   NEXT_ID = 0;
   NEXT_RANK = 1;
-});
+}
 
 export function genId(): number {
   return NEXT_ID++;
@@ -92,7 +95,7 @@ export const MILK_PRODUCTS = {
 };
 
 export function genProductGroupWithProducts(
-  overwrite: Partial<ProductCategoryWithProducts> = {},
+  overwrite: Partial<ProductCategoryWithProducts> = {}
 ): ProductCategoryWithProducts {
   let id = genId();
   const base: ProductCategoryWithProducts = {
@@ -100,6 +103,7 @@ export function genProductGroupWithProducts(
     name: "Product Group " + id,
     active: true,
     products: [],
+    requisitionConfigId: CONFIG_1_ID,
   };
   const result = { ...base, ...overwrite };
   result.products.forEach((product) => (product.productCategoryId = id));
@@ -148,6 +152,7 @@ export function genShipment(overwrite: Partial<Shipment> = {}): Shipment {
     additionalShipmentItems: [],
     active: true,
     updatedAt: new Date(),
+    requisitionConfigId: -1,
   };
   return { ...base, ...overwrite };
 }
@@ -155,7 +160,7 @@ export function genShipment(overwrite: Partial<Shipment> = {}): Shipment {
 export function genShipmentItem(
   product: Product,
   depot: Depot,
-  overwrite: Partial<ShipmentItem> = {},
+  overwrite: Partial<ShipmentItem> = {}
 ): ShipmentItem {
   const base: ShipmentItem = {
     productId: product.id,
@@ -167,6 +172,27 @@ export function genShipmentItem(
     multiplicator: 100,
     conversionFrom: 1,
     conversionTo: 1,
+  };
+  return { ...base, ...overwrite };
+}
+
+export function genOrder(
+  orderItems: OrderItem[],
+  depotId: number,
+  requisitionConfigId,
+  overwrite: Partial<ConfirmedOrder> = {}
+): ConfirmedOrder {
+  const base: ConfirmedOrder = {
+    orderItems,
+    depotId,
+    alternateDepotId: null,
+    offer: 7,
+    offerReason: "The Offer Reason",
+    category: UserCategory.CAT100,
+    categoryReason: "The Category Reason",
+    validFrom: new Date(),
+    requisitionConfigId,
+    confirmGTC: true,
   };
   return { ...base, ...overwrite };
 }

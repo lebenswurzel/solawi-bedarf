@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { Unit, UserCategory } from "../../../shared/src/enum";
 import { ProductCategoryWithProducts } from "../../../shared/src/types";
-import { getLangUnit } from "../lang/template";
+import { getLangUnit, interpolate } from "../lang/template";
 import { PdfSpec, PdfTable } from "./pdf/pdf.ts";
 import {
   byKey,
@@ -206,6 +206,7 @@ export const generateOverviewCsv = (
 export function generateUserData(
   overview: OverviewItem[],
   productCategories: ProductCategoryWithProducts[],
+  seasonName: string,
 ): PdfSpec[] {
   const categories = productCategories.reduce(
     grouping(
@@ -241,7 +242,9 @@ export function generateUserData(
     ([user, userProducts]) =>
       ({
         receiver: user,
-        description: t.documents.user.description,
+        description: interpolate(t.documents.user.description, {
+          season: seasonName,
+        }),
         footerTextLeft: `Bedarf Ernteteiler ${user}`,
         footerTextCenter: `Stand ${prettyDate}`,
         tables: Array.from(
@@ -270,6 +273,7 @@ export function generateUserData(
 export function generateDepotData(
   overview: OverviewItem[],
   productCategories: ProductCategoryWithProducts[],
+  seasonName: string,
 ): PdfSpec[] {
   type Value = {
     depot: string;
@@ -336,7 +340,9 @@ export function generateDepotData(
     ([depot, depotProducts]) =>
       ({
         receiver: depot,
-        description: t.documents.depot.description,
+        description: interpolate(t.documents.depot.description, {
+          season: seasonName,
+        }),
         footerTextLeft: `Anmeldung Depot ${depot}`,
         footerTextCenter: `Stand ${prettyDate}`,
         tables: Array.from(
@@ -355,4 +361,20 @@ export function generateDepotData(
         ).sort(byKey((table) => table.name, inLocaleOrder)),
       }) as PdfSpec,
   ).sort(byKey((pdf) => pdf.receiver, inLocaleOrder));
+}
+
+export function objectToCsv(data: any[]): string {
+  if (!data || !data.length) {
+    return "";
+  }
+  const headers = Object.keys(data[0]);
+  const rows = [
+    headers.join(","),
+    ...data.map((obj) =>
+      headers
+        .map((header) => `"${String(obj[header] || "").replace(/"/g, '""')}"`)
+        .join(","),
+    ),
+  ];
+  return rows.join("\n");
 }

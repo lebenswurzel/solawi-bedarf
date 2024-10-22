@@ -15,16 +15,17 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import {
+  Id,
   NewProductCategory,
   OptionalId,
   ProductCategoryWithProducts,
 } from "../../../shared/src/types.ts";
 import { getUrl, verifyResponse } from "./requests.ts";
 
-export const getProductCategory = async (): Promise<
-  ProductCategoryWithProducts[]
-> => {
-  const response = await fetch(getUrl("/productCategory"));
+export const getProductCategory = async (
+  configId: number,
+): Promise<ProductCategoryWithProducts[]> => {
+  const response = await fetch(getUrl(`/productCategory?configId=${configId}`));
 
   await verifyResponse(response);
 
@@ -37,6 +38,18 @@ export const saveProductCategory = async (
   const response = await fetch(getUrl("/productCategory"), {
     method: "POST",
     body: JSON.stringify(productCategory),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  await verifyResponse(response);
+};
+
+export const deleteProductCategory = async (productCategoryId: Id) => {
+  const response = await fetch(getUrl("/productCategory"), {
+    method: "DELETE",
+    body: JSON.stringify(productCategoryId),
     headers: {
       "Content-Type": "application/json",
     },

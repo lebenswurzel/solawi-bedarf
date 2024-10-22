@@ -23,7 +23,7 @@ import {
   testAsUser1,
 } from "../../../testSetup";
 import { Order } from "../../database/Order";
-import { getDepotByName, updateRequisition } from "../../test/testHelpers";
+import { getDepotByName, updateRequisition } from "../../../test/testHelpers";
 import { getOrder } from "./getOrder";
 import { saveOrder } from "./saveOrder";
 
@@ -43,10 +43,11 @@ testAsUser1(
 );
 
 testAsUser1("get order", async ({ userData }: TestUserData) => {
-  await updateRequisition(true);
+  const configId = await updateRequisition(true);
 
   const ctx = createBasicTestCtx({}, userData.token, undefined, {
     id: userData.userId,
+    configId,
   });
 
   await getOrder(ctx);
@@ -64,6 +65,7 @@ testAsUser1("get order", async ({ userData }: TestUserData) => {
     alternateDepotId: null,
     offerReason: "",
     validFrom: null,
+    requisitionConfigId: configId,
   };
 
   // create order
@@ -73,6 +75,7 @@ testAsUser1("get order", async ({ userData }: TestUserData) => {
     undefined,
     {
       id: userData.userId,
+      configId,
     },
   );
   await saveOrder(ctxCreateOrder);

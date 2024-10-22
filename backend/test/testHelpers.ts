@@ -14,17 +14,17 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { Unit } from "../../../shared/src/enum";
-import { Depot } from "../database/Depot";
-import { Order } from "../database/Order";
-import { OrderItem } from "../database/OrderItem";
-import { Product } from "../database/Product";
-import { ProductCategory } from "../database/ProductCategory";
+import { Unit } from "../../shared/src/enum";
+import { Depot } from "../src/database/Depot";
+import { Order } from "../src/database/Order";
+import { OrderItem } from "../src/database/OrderItem";
+import { Product } from "../src/database/Product";
+import { ProductCategory } from "../src/database/ProductCategory";
 import {
   RequisitionConfig,
   RequisitionConfigName,
-} from "../database/RequisitionConfig";
-import { AppDataSource } from "../database/database";
+} from "../src/database/RequisitionConfig";
+import { AppDataSource } from "../src/database/database";
 
 export const fillDatabaseWithTestData = async () => {
   const products = ["p1", "p2", "p3", "p4"];
@@ -50,11 +50,20 @@ const createTestDepot = async (name: string, rank: number) => {
   });
 };
 
-const createTestProduct = async (name: string) => {
+export const createTestProductCategory = async (name: string) => {
+  const requisitionConfig = await AppDataSource.getRepository(
+    RequisitionConfig,
+  ).findOneOrFail({ where: { name: RequisitionConfigName } });
   const pcEntity = await AppDataSource.getRepository(ProductCategory).save({
-    name: `${name} category`,
+    name,
     active: true,
+    requisitionConfig,
   });
+  return pcEntity;
+};
+
+const createTestProduct = async (name: string) => {
+  const pcEntity = await createTestProductCategory(`${name} category`);
   await AppDataSource.getRepository(Product).save({
     name,
     description: `description of product ${name}`,
@@ -71,11 +80,19 @@ const createTestProduct = async (name: string) => {
   });
 };
 
+export const getRequisitionConfigId = async (): Promise<number> => {
+  return (
+    await AppDataSource.getRepository(RequisitionConfig).findOneOrFail({
+      where: { name: RequisitionConfigName },
+    })
+  ).id;
+};
+
 export const updateRequisition = async (
   biddingOpen: boolean,
   increaseOnly?: boolean,
   requistionName?: string,
-) => {
+): Promise<number> => {
   increaseOnly = increaseOnly || false;
   const now = new Date();
   requistionName = requistionName || RequisitionConfigName;
@@ -98,6 +115,7 @@ export const updateRequisition = async (
     requisition.startBiddingRound = dateDeltaDays(-15);
   }
   await repo.save(requisition);
+  return requisition.id;
 };
 
 export const dateDeltaDays = (deltaDays: number): Date => {

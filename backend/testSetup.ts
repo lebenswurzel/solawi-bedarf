@@ -24,7 +24,10 @@ import { saveUser } from "./src/services/user/saveUser";
 import { UserRole } from "../shared/src/enum";
 import { Order } from "./src/database/Order";
 import { User } from "./src/database/User";
-import { fillDatabaseWithTestData } from "./src/test/testHelpers";
+import {
+  fillDatabaseWithTestData,
+  getRequisitionConfigId,
+} from "./test/testHelpers";
 import { Product } from "./src/database/Product";
 import { ProductCategory } from "./src/database/ProductCategory";
 import { Depot } from "./src/database/Depot";
@@ -32,7 +35,6 @@ import { Token } from "./src/database/Token";
 import { OrderItem } from "./src/database/OrderItem";
 import { Applicant } from "./src/database/Applicant";
 import { UserAddress } from "./src/database/UserAddress";
-import { TextContent } from "./src/database/TextContent";
 import { AdditionalShipmentItem } from "./src/database/AdditionalShipmentItem";
 import { Shipment } from "./src/database/Shipment";
 import { ShipmentItem } from "./src/database/ShipmentItem";
@@ -75,6 +77,7 @@ const reinitializeDatabase = async () => {
         password: "123456",
         role: UserRole.USER,
         active: true,
+        requisitionConfigId: await getRequisitionConfigId(),
       },
       token,
     ),
@@ -98,8 +101,8 @@ afterEach(async () => {
 ////////////////////////////////////////////////////
 // test helper methods
 ////////////////////////////////////////////////////
-export const createBasicTestCtx = (
-  body?: any,
+export const createBasicTestCtx = <BodyType>(
+  body?: BodyType,
   token?: string,
   headers?: any,
   query?: object,
@@ -107,12 +110,12 @@ export const createBasicTestCtx = (
   const ctx = {
     cookies: new Map(),
     req: {
-      body,
-      headers,
+      body: { ...body },
+      headers: { ...headers },
     },
     request: {
-      body,
-      query,
+      body: { ...body },
+      query: { ...(query || {}) },
     },
     status: -1,
     throw: (status: number, message?: string) => {

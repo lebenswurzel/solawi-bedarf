@@ -20,11 +20,8 @@ import Koa from "koa";
 import Router from "koa-router";
 import { http } from "../../consts/http";
 import { UserRole } from "../../../../shared/src/enum";
-import { RequisitionConfig as RequisitionConfigType } from "../../../../shared/src/types";
-import {
-  RequisitionConfig,
-  RequisitionConfigName,
-} from "../../database/RequisitionConfig";
+import { ExistingConfig } from "../../../../shared/src/types";
+import { RequisitionConfig } from "../../database/RequisitionConfig";
 
 export const saveConfig = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -33,22 +30,28 @@ export const saveConfig = async (
   if (role != UserRole.ADMIN) {
     ctx.throw(http.forbidden);
   }
-  const requestConfig = ctx.request.body as RequisitionConfigType;
-  const config = await AppDataSource.getRepository(RequisitionConfig).findOneBy(
-    {
-      name: RequisitionConfigName,
-    },
-  );
-  if (config) {
-    config.startBiddingRound = requestConfig.startBiddingRound;
-    config.endBiddingRound = requestConfig.endBiddingRound;
-    config.startOrder = requestConfig.startOrder;
-    config.budget = requestConfig.budget;
-    config.validFrom = requestConfig.validFrom;
-    config.validTo = requestConfig.validTo;
-    await AppDataSource.getRepository(RequisitionConfig).save(config);
-  } else {
-    ctx.throw(http.bad_request);
+  const requestConfig = ctx.request.body as ExistingConfig;
+  let config = await AppDataSource.getRepository(RequisitionConfig).findOneBy({
+    id: requestConfig.id, // prevent an undefined id as this would return the first config from the db
+  });
+  if (!config) {
+    ctx.throw(
+      http.bad_request,
+      `config with id=${requestConfig.id} does not exist`,
+    );
   }
+
+  if (requestConfig.name) {
+    config.name = requestConfig.name;
+  }
+  config.startBiddingRound = requestConfig.startBiddingRound;
+  config.endBiddingRound = requestConfig.endBiddingRound;
+  config.startOrder = requestConfig.startOrder;
+  config.budget = requestConfig.budget;
+  config.validFrom = requestConfig.validFrom;
+  config.validTo = requestConfig.validTo;
+  config.public = requestConfig.public;
+  await AppDataSource.getRepository(RequisitionConfig).save(config);
+
   ctx.status = http.no_content;
 };

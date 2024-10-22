@@ -14,28 +14,67 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { AppDataSource } from "../../database/database";
-import { getUserFromContext } from "../getUserFromContext";
 import Koa from "koa";
 import Router from "koa-router";
+import { http } from "../../consts/http";
 import { Depot } from "../../database/Depot";
-import {
-  RequisitionConfig,
-  RequisitionConfigName,
-} from "../../database/RequisitionConfig";
+import { RequisitionConfig } from "../../database/RequisitionConfig";
+import { AppDataSource } from "../../database/database";
+import { getUserFromContext } from "../getUserFromContext";
+import { AvailableConfig } from "../../../../shared/src/types";
+import { getNumericQueryParameter } from "../../util/requestUtil";
+import { UserRole } from "../../../../shared/src/enum";
 
 export const getConfig = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
 ) => {
-  await getUserFromContext(ctx);
+  const user = await getUserFromContext(ctx);
   const depots = await AppDataSource.getRepository(Depot).find({
     where: { active: true },
   });
-  const requisitionConfig = await AppDataSource.getRepository(
-    RequisitionConfig,
-  ).findOneBy({ name: RequisitionConfigName });
+
+  let requisitionConfig: RequisitionConfig | null;
+  const requestId = getNumericQueryParameter(ctx.request.query, "configId");
+  if (requestId < 0) {
+    // find any existing config to retain previous behavior
+    // ... maybe specify some condition?
+    requisitionConfig = await AppDataSource.getRepository(
+      RequisitionConfig,
+    ).findOneBy({});
+  } else {
+    requisitionConfig = await AppDataSource.getRepository(
+      RequisitionConfig,
+    ).findOneBy({ id: requestId });
+  }
+
+  if (!requisitionConfig) {
+    ctx.throw(http.not_found);
+  }
+
+  let where = {};
+  if (user.role == UserRole.USER) {
+    where = { public: true };
+  }
+
+  const availableConfigs: AvailableConfig[] = (
+    await AppDataSource.getRepository(RequisitionConfig).find({
+      select: ["id", "name", "public"],
+      order: {
+        validFrom: "ASC",
+      },
+      where,
+    })
+  ).map((row) => {
+    return {
+      id: row.id,
+      name: row.name,
+      public: row.public,
+    };
+  });
+
   ctx.body = {
     depots,
     config: requisitionConfig,
+    availableConfigs,
   };
 };

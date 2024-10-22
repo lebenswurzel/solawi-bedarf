@@ -23,13 +23,17 @@ import FooterVue from "./components/Footer.vue";
 import { useTextContentStore } from "./store/textContentStore";
 import { provideUiFeedbackStore } from "./store/uiFeedbackStore";
 import UiFeedbackDisplay from "./components/UiFeedbackDisplay.vue";
+import MaintenanceBanner from "./components/MaintenanceBanner.vue";
+import { useConfigStore } from "./store/configStore";
 
 const route = useRoute();
+const configStore = useConfigStore();
 const textContentStore = useTextContentStore();
 provideUiFeedbackStore();
 
 onMounted(async () => {
   await textContentStore.update();
+  await configStore.update();
 });
 </script>
 
@@ -38,6 +42,7 @@ onMounted(async () => {
     <AppBarForRegister v-if="route.fullPath == '/register'" />
     <AppBar v-else />
     <v-main>
+      <MaintenanceBanner />
       <RouterView />
     </v-main>
     <FooterVue />

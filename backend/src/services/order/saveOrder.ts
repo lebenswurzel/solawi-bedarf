@@ -23,10 +23,7 @@ import { Order } from "../../database/Order";
 import { OrderItem } from "../../database/OrderItem";
 import { ProductCategory } from "../../database/ProductCategory";
 import { Depot } from "../../database/Depot";
-import {
-  RequisitionConfig,
-  RequisitionConfigName,
-} from "../../database/RequisitionConfig";
+import { RequisitionConfig } from "../../database/RequisitionConfig";
 import { ConfirmedOrder } from "../../../../shared/src/types";
 import { appConfig } from "../../../../shared/src/config";
 import { getMsrp } from "../../../../shared/src/msrp";
@@ -53,13 +50,19 @@ export const saveOrder = async (
   const { role, active, id } = await getUserFromContext(ctx);
   const requestUserId = await getRequestUserId(ctx);
   const body = ctx.request.body as ConfirmedOrder;
+
+  const configId = body.requisitionConfigId;
+  if (configId < 1) {
+    ctx.throw(http.bad_request, `missing or bad config id (${configId})`);
+  }
+
   const requisitionConfig = await AppDataSource.getRepository(
     RequisitionConfig,
   ).findOne({
-    where: { name: RequisitionConfigName },
+    where: { id: configId },
   });
   if (!requisitionConfig) {
-    ctx.throw(http.bad_request, "no valid config");
+    ctx.throw(http.bad_request, `no valid config (id=${configId})`);
   }
   if (!body.confirmGTC) {
     ctx.throw(http.bad_request, "commitment not confirmed");
@@ -82,7 +85,7 @@ export const saveOrder = async (
     ctx.throw(http.bad_request, "no valid depot");
   }
   let order = await AppDataSource.getRepository(Order).findOne({
-    where: { userId: requestUserId },
+    where: { userId: requestUserId, requisitionConfigId: configId },
     relations: { orderItems: true },
   });
   if (
@@ -91,7 +94,9 @@ export const saveOrder = async (
   ) {
     ctx.throw(http.bad_request, "not valid in bidding round");
   }
-  const { soldByProductId, capacityByDepotId, productsById } = await bi();
+  const { soldByProductId, capacityByDepotId, productsById } = await bi(
+    requisitionConfig.id,
+  );
   const remainingDepotCapacity = getRemainingDepotCapacity(
     depot,
     capacityByDepotId[body.depotId].reserved,
@@ -122,12 +127,17 @@ export const saveOrder = async (
   }
   const productCategories = await AppDataSource.getRepository(
     ProductCategory,
-  ).find({ relations: { products: true } });
+  ).find({
+    relations: { products: true },
+    where: { requisitionConfigId: configId },
+  });
 
   if (!order) {
     order = new Order();
     order.userId = requestUserId;
+    order.requisitionConfigId = configId;
   }
+
   order.offer = body.offer;
   order.depotId = body.depotId;
   order.alternateDepotId = body.alternateDepotId;

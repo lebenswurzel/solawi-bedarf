@@ -28,6 +28,8 @@ import { Unit } from "../../../shared/src/enum.ts";
 import { useBIStore } from "../store/biStore.ts";
 import { valueToDelivered } from "../lib/convert.ts";
 import { getLangUnit } from "../lang/template.ts";
+import { useConfigStore } from "../store/configStore.ts";
+import SeasonText from "./styled/SeasonText.vue";
 
 const t = language.pages.home;
 
@@ -35,6 +37,7 @@ const userStore = useUserStore();
 const biStore = useBIStore();
 const orderStore = useOrderStore();
 const shipments = ref<(Shipment & Id)[]>([]);
+const configStore = useConfigStore();
 
 const { orderItems, validFrom } = storeToRefs(orderStore);
 const { productsById } = storeToRefs(biStore);
@@ -116,8 +119,11 @@ const additionalShipmentItems = computed(() => {
 });
 
 watchEffect(async () => {
-  if (userStore.currentUser?.id) {
-    await orderStore.update(userStore.currentUser.id);
+  if (userStore.currentUser?.id && configStore.activeConfigId != -1) {
+    await orderStore.update(
+      userStore.currentUser.id,
+      configStore.activeConfigId,
+    );
     const { shipments: requestShipments } = await getShipment(
       userStore.currentUser?.id,
     );
@@ -132,9 +138,9 @@ watchEffect(async () => {
 
 <template>
   <v-card class="ma-4">
-    <v-card-title style="white-space: normal">{{
-      t.cards.list.title
-    }}</v-card-title>
+    <v-card-title style="white-space: normal"
+      >{{ t.cards.list.title }} <SeasonText
+    /></v-card-title>
     <v-card-subtitle
       v-if="dateOptions.length > 0 && validFrom && validFrom < now"
     >
