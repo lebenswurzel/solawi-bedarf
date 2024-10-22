@@ -18,6 +18,7 @@ import { expect, test } from "vitest";
 import { UserCategory } from "../../../../shared/src/enum";
 import {
   ConfirmedOrder,
+  NewDepot,
   NewProduct,
   OptionalId,
 } from "../../../../shared/src/types";
@@ -44,6 +45,7 @@ import { Product } from "../../database/Product";
 import {
   CUCUMBER,
   genDepot,
+  genOrder,
   genProduct,
   genProductGroupWithProducts,
   genShipment,
@@ -54,6 +56,8 @@ import {
   VEGETABLES,
 } from "../../../../shared/testSetup";
 import { http } from "../../consts/http";
+import { Order } from "../../database/Order";
+import { saveOrder } from "../order/saveOrder";
 
 test("prevent unauthorized access", async () => {
   const ctx = createBasicTestCtx();
@@ -106,5 +110,42 @@ testAsAdmin(
   async ({ userData }: TestUserData) => {
     const ctx = createBasicTestCtx({ id: 1 }, userData.token);
     await expect(() => deleteProduct(ctx)).rejects.toThrowError("Error 404");
+  },
+);
+
+testAsAdmin(
+  "delete product that is part of an order",
+  async ({ userData }: TestUserData) => {
+    const configId = await updateRequisition(true);
+    const product1 = await getProductByName("p1");
+
+    // add product to order
+    const depot = await getDepotByName("d1");
+    const order = genOrder(
+      [
+        {
+          productId: product1.id,
+          value: 2,
+        },
+      ],
+      depot.id,
+      configId,
+    );
+
+    const ctxCreateOrder = createBasicTestCtx(
+      { ...order },
+      userData.token,
+      undefined,
+      {
+        id: userData.userId,
+        configId,
+      },
+    );
+    await saveOrder(ctxCreateOrder);
+
+    const ctx = createBasicTestCtx({ id: product1.id }, userData.token);
+    await expect(() => deleteProduct(ctx)).rejects.toThrowError(
+      "is part of an order",
+    );
   },
 );

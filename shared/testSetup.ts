@@ -14,11 +14,14 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { Unit } from "./src/enum";
+import { Unit, UserCategory } from "./src/enum";
 import {
+  ConfirmedOrder,
   Depot,
   NewDepot,
   NewProduct,
+  Order,
+  OrderItem,
   Product,
   ProductCategoryWithProducts,
   Shipment,
@@ -169,6 +172,27 @@ export function genShipmentItem(
     multiplicator: 100,
     conversionFrom: 1,
     conversionTo: 1,
+  };
+  return { ...base, ...overwrite };
+}
+
+export function genOrder(
+  orderItems: OrderItem[],
+  depotId: number,
+  requisitionConfigId,
+  overwrite: Partial<ConfirmedOrder> = {}
+): ConfirmedOrder {
+  const base: ConfirmedOrder = {
+    orderItems,
+    depotId,
+    alternateDepotId: null,
+    offer: 7,
+    offerReason: "The Offer Reason",
+    category: UserCategory.CAT100,
+    categoryReason: "The Category Reason",
+    validFrom: new Date(),
+    requisitionConfigId,
+    confirmGTC: true,
   };
   return { ...base, ...overwrite };
 }
