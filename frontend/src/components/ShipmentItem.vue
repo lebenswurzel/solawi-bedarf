@@ -94,6 +94,7 @@ const depotOptions = computed(() => {
             !usedDepotIds.includes(d.id) ||
             props.shipmentItem.depotIds.includes(d.id),
         )
+        .filter((d) => deliveredByDepotId[d.id].valueForShipment > 0)
         .map((d) => ({
           title: `${d.name} (${deliveredByDepotId[d.id].delivered / 100}/${
             deliveredByDepotId[d.id].frequency
