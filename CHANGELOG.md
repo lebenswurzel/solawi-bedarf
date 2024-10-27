@@ -39,3 +39,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #114 Hinweistext zur Entnahmemenge
 
 # NEW
+
+#120 Verteilungsdialog: Ausblenden von Depots die nach Bedarfsänderung keine Lieferung eines Produkts mehr erhalten müssen
