@@ -33,20 +33,41 @@ const { capacityByDepotId } = storeToRefs(biStore);
 const { depots } = storeToRefs(configStore);
 
 const depotOptions = computed(() => {
-  if (props.additionalShipmentItem.product?.trim()) {
-    const usedDepotIds =
-      props.usedDepotIdsByProduct[props.additionalShipmentItem.product.trim()];
-    return depots.value
-      .filter(
-        (d) =>
-          !usedDepotIds.includes(d.id) ||
-          props.additionalShipmentItem.depotIds.includes(d.id),
-      )
-      .map((d) => ({
-        title: `${d.name} (${capacityByDepotId.value[d.id].reserved})`,
-        value: d.id,
-      }));
+  return getAvailableDepotsForProduct(
+    props.additionalShipmentItem.product?.trim(),
+  )?.map((d) => ({
+    title: `${d.name} (${capacityByDepotId.value[d.id].reserved})`,
+    value: d.id,
+  }));
+});
+
+const getAvailableDepotsForProduct = (product?: string) => {
+  if (product) {
+    const usedDepotIds = props.usedDepotIdsByProduct[product];
+    return depots.value.filter(
+      (d) =>
+        !usedDepotIds.includes(d.id) ||
+        props.additionalShipmentItem.depotIds.includes(d.id),
+    );
   }
+};
+
+const onSelectAllDepots = () => {
+  if (selectAllDepots.value) {
+    props.additionalShipmentItem.depotIds = [];
+  } else {
+    props.additionalShipmentItem.depotIds =
+      getAvailableDepotsForProduct(props.additionalShipmentItem.product)?.map(
+        (d) => d.id,
+      ) || [];
+  }
+};
+
+const selectAllDepots = computed(() => {
+  const value = getAvailableDepotsForProduct(
+    props.additionalShipmentItem.product,
+  )?.map((d) => d.id);
+  return value?.length == props.additionalShipmentItem.depotIds.length;
 });
 
 const unitOptions = [
@@ -86,7 +107,17 @@ const onProductChange = (val: string) => {
           :items="depotOptions"
           v-model="additionalShipmentItem.depotIds"
           multiple
-        ></v-select>
+        >
+          <template v-slot:prepend-item v-if="(depotOptions?.length || 0) > 1">
+            <v-list-item title="Alle auswählen" @click="onSelectAllDepots">
+              <template v-slot:prepend>
+                <v-checkbox-btn :model-value="selectAllDepots"></v-checkbox-btn>
+              </template>
+            </v-list-item>
+
+            <v-divider class="mt-2"></v-divider>
+          </template>
+        </v-select>
       </v-col>
       <v-col cols="1">
         <v-select
