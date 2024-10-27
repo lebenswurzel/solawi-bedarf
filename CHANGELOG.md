@@ -41,3 +41,4 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 # NEW
 
 #120 Verteilungsdialog: Ausblenden von Depots die nach Bedarfsänderung keine Lieferung eines Produkts mehr erhalten müssen
+#122 Verteilungsdialog: "Alle auswählen" für Depots
