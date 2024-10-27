@@ -77,32 +77,37 @@ const unitOptions = computed(() => {
   }
 });
 
-const depotOptions = computed(() => {
-  if (props.shipmentItem.productId) {
-    const deliveredByDepotId =
-      deliveredByProductIdDepotId.value[props.shipmentItem.productId];
-    const usedDepotIds =
-      props.usedDepotIdsByProductId[props.shipmentItem.productId];
-    if (deliveredByDepotId) {
-      const depotIds = Object.keys(deliveredByDepotId).map((key) =>
-        parseInt(key),
-      );
-      return depots.value
-        .filter((d) => depotIds.includes(d.id))
-        .filter(
-          (d) =>
-            !usedDepotIds.includes(d.id) ||
-            props.shipmentItem.depotIds.includes(d.id),
-        )
-        .filter((d) => deliveredByDepotId[d.id].valueForShipment > 0)
-        .map((d) => ({
-          title: `${d.name} (${deliveredByDepotId[d.id].delivered / 100}/${
-            deliveredByDepotId[d.id].frequency
-          })`,
-          value: d.id,
-        }));
-    }
+const getAvailableDepotsForProduct = (productId?: number) => {
+  if (!productId) {
+    return [];
   }
+  const deliveredByDepotId = deliveredByProductIdDepotId.value[productId];
+  const usedDepotIds = props.usedDepotIdsByProductId[productId];
+  if (deliveredByDepotId) {
+    const depotIds = Object.keys(deliveredByDepotId).map((key) =>
+      parseInt(key),
+    );
+    return depots.value
+      .filter((d) => depotIds.includes(d.id))
+      .filter(
+        (d) =>
+          !usedDepotIds.includes(d.id) ||
+          props.shipmentItem.depotIds.includes(d.id),
+      )
+      .filter((d) => deliveredByDepotId[d.id].valueForShipment > 0)
+      .map((d) => ({ depot: d, delivered: deliveredByDepotId[d.id] }));
+  }
+};
+
+const depotOptions = computed(() => {
+  return getAvailableDepotsForProduct(props.shipmentItem.productId)?.map(
+    (dd) => ({
+      title: `${dd.depot.name} (${dd.delivered.delivered / 100}/${
+        dd.delivered.frequency
+      })`,
+      value: dd.depot.id,
+    }),
+  );
 });
 
 const onProductIdChange = (val: number) => {
@@ -117,6 +122,24 @@ const onProductIdChange = (val: number) => {
   props.shipmentItem.isBio = false;
   props.shipmentItem.description = null;
 };
+
+const onSelectAllDepots = () => {
+  if (selectAllDepots.value) {
+    props.shipmentItem.depotIds = [];
+  } else {
+    props.shipmentItem.depotIds =
+      getAvailableDepotsForProduct(props.shipmentItem.productId)?.map(
+        (dd) => dd.depot.id,
+      ) || [];
+  }
+};
+
+const selectAllDepots = computed(() => {
+  const value = getAvailableDepotsForProduct(props.shipmentItem.productId)?.map(
+    (dd) => dd.depot.id,
+  );
+  return value?.length == props.shipmentItem.depotIds.length;
+});
 </script>
 
 <template>
@@ -136,7 +159,17 @@ const onProductIdChange = (val: number) => {
           :items="depotOptions"
           v-model="shipmentItem.depotIds"
           multiple
-        ></v-select>
+        >
+          <template v-slot:prepend-item v-if="(depotOptions?.length || 0) > 1">
+            <v-list-item title="Alle auswählen" @click="onSelectAllDepots">
+              <template v-slot:prepend>
+                <v-checkbox-btn :model-value="selectAllDepots"></v-checkbox-btn>
+              </template>
+            </v-list-item>
+
+            <v-divider class="mt-2"></v-divider>
+          </template>
+        </v-select>
       </v-col>
       <v-col cols="1">
         <v-text-field
