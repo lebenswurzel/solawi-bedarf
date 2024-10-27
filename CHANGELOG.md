@@ -38,7 +38,9 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 
 #114 Hinweistext zur Entnahmemenge
 
-# NEW
+# v0.3.5 - 2024-10-27 - Verbesserung Depot-Auswahl im Verteilungsdialog
 
 #120 Verteilungsdialog: Ausblenden von Depots die nach Bedarfsänderung keine Lieferung eines Produkts mehr erhalten müssen
 #122 Verteilungsdialog: "Alle auswählen" für Depots
+
+# NEW
