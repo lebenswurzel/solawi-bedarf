@@ -13,3 +13,4 @@ coverage/
 database/backups/*.sql*
 .env
 env-*-prod.env
+TODO.md
