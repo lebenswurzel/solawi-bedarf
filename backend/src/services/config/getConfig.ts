@@ -33,6 +33,12 @@ export const getConfig = async (
     where: { active: true },
   });
 
+  // omit non-public configs for regular users
+  let where = {};
+  if (user.role == UserRole.USER) {
+    where = { public: true };
+  }
+
   let requisitionConfig: RequisitionConfig | null;
   const requestId = getNumericQueryParameter(ctx.request.query, "configId");
   if (requestId < 0) {
@@ -40,20 +46,15 @@ export const getConfig = async (
     // ... maybe specify some condition?
     requisitionConfig = await AppDataSource.getRepository(
       RequisitionConfig,
-    ).findOneBy({});
+    ).findOne({ where });
   } else {
     requisitionConfig = await AppDataSource.getRepository(
       RequisitionConfig,
-    ).findOneBy({ id: requestId });
+    ).findOne({ where: { ...where, id: requestId } });
   }
 
   if (!requisitionConfig) {
     ctx.throw(http.not_found);
-  }
-
-  let where = {};
-  if (user.role == UserRole.USER) {
-    where = { public: true };
   }
 
   const availableConfigs: AvailableConfig[] = (
