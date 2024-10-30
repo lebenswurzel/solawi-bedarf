@@ -43,8 +43,11 @@ export const getShipments = async (
 
 export const getShipment = async (
   userId: number,
+  configId: number,
 ): Promise<{ shipments: (Shipment & Id)[] }> => {
-  const response = await fetch(getUrl(`/shipment?id=${userId}`));
+  const response = await fetch(
+    getUrl(`/shipment?id=${userId}&configId=${configId}`),
+  );
 
   await verifyResponse(response);
 
