@@ -126,6 +126,7 @@ watchEffect(async () => {
     );
     const { shipments: requestShipments } = await getShipment(
       userStore.currentUser?.id,
+      configStore.activeConfigId,
     );
     shipments.value = requestShipments;
     if (requestShipments.length) {
