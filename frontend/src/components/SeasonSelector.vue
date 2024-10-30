@@ -37,6 +37,10 @@ const configOptions = computed(() => {
   }));
 });
 
+const selectionAvailable = computed(() => {
+  return availableConfigs.value.length > 1;
+});
+
 onMounted(async () => {
   await configStore.update();
   selectedConfig.value = config.value?.id;
@@ -81,9 +85,13 @@ const openDialog = () => {
         language.components.seasonSelector.label
       }}</v-card-title>
       <v-card-subtitle>
-        {{ language.components.seasonSelector.description }}
+        {{
+          selectionAvailable
+            ? language.components.seasonSelector.description
+            : language.components.seasonSelector.notYetAvailable
+        }}
       </v-card-subtitle>
-      <v-card-text class="enclosing">
+      <v-card-text class="enclosing" v-if="selectionAvailable">
         <v-select
           :label="t.label"
           :items="configOptions"
@@ -93,11 +101,20 @@ const openDialog = () => {
         />
       </v-card-text>
       <v-card-actions class="justify-center">
-        <v-btn @click="onApply" :loading="loading" variant="elevated">
+        <v-btn
+          @click="onApply"
+          :loading="loading"
+          variant="elevated"
+          v-if="selectionAvailable"
+        >
           {{ language.app.actions.apply }}
         </v-btn>
-        <v-btn @click="onCancel" variant="elevated" color="error">
-          {{ language.app.actions.cancel }}
+        <v-btn @click="onCancel" variant="elevated" color="secondary">
+          {{
+            selectionAvailable
+              ? language.app.actions.cancel
+              : language.app.actions.close
+          }}
         </v-btn>
       </v-card-actions>
     </v-card>

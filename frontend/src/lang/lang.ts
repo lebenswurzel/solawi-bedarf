@@ -365,6 +365,8 @@ export const language = {
       label: "Saison-Auswahl",
       description:
         "Hier kannst du festlegen, für welche Saison du deinen Bedarf anmelden und Einstellungen vornehmen möchtest.",
+      notYetAvailable:
+        "Hier kann die nächste Saison für die Bedarfsanmeldung ausgewählt werden, sobald diese freigeschaltet wurde.",
     },
   },
 };

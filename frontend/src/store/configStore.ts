@@ -52,6 +52,8 @@ export const useConfigStore = defineStore("config", () => {
     try {
       return await getConfig(configId);
     } catch {
+      // if anything goes wrong (e.g., config is not longer available), fallback to
+      // fetching the default config
       return await getConfig();
     }
   };
