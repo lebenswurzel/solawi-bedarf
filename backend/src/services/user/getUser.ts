@@ -30,7 +30,16 @@ export const getUser = async (
     role == UserRole.ADMIN
       ? {
           order: { name: "ASC" },
-          select: { name: true, id: true, role: true, active: true },
+          select: {
+            name: true,
+            id: true,
+            role: true,
+            active: true,
+            orders: { updatedAt: true },
+          },
+          relations: {
+            orders: true,
+          },
         }
       : {
           order: { name: "ASC" },
@@ -45,6 +54,7 @@ export const getUser = async (
       id: u.id,
       role: u.role,
       active: u.active,
+      lastOrderChange: u.orders.map((o) => o.updatedAt).sort()[0],
     })),
   };
 };

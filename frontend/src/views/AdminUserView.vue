@@ -47,6 +47,7 @@ const headers = [
   { title: "Name", key: "name" },
   { title: "Rolle", key: "role" },
   { title: "Aktiv", key: "active" },
+  { title: "Letzte Bedarfsänderung", key: "lastOrderChange" },
   { title: "ID", key: "id" },
   { title: "Bearbeiten", key: "edit" },
 ];
