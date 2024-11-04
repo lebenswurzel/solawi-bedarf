@@ -32,7 +32,7 @@ export const buildInfo: BuildInfo = {
     commitDate: "Do 1. Jan 01:00:00 CET 1970",
   },
   maintenance: {
-    enabled: true,
+    enabled: false,
     message: "",
   },
 };
