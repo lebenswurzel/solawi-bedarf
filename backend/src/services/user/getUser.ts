@@ -21,6 +21,7 @@ import { getUserFromContext } from "../getUserFromContext";
 import Koa from "koa";
 import Router from "koa-router";
 import { UserRole } from "../../../../shared/src/enum";
+import { UserWithLastOrderChange } from "../../../../shared/src/types";
 
 export const getUser = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -54,7 +55,7 @@ export const getUser = async (
       id: u.id,
       role: u.role,
       active: u.active,
-      lastOrderChange: u.orders.map((o) => o.updatedAt).sort()[0],
-    })),
+      lastOrderChange: u.orders?.map((o) => o.updatedAt).sort()[0],
+    })) as UserWithLastOrderChange[],
   };
 };

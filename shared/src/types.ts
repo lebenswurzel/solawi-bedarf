@@ -37,6 +37,10 @@ export type SaveUserRequest = Required<NewUser> &
     requisitionConfigId: number;
   };
 
+export type UserWithLastOrderChange = Required<User> & {
+  lastOrderChange: Date;
+};
+
 export interface NewProduct {
   description?: string | null;
   name?: string;

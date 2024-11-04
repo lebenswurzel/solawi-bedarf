@@ -16,12 +16,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { defineStore } from "pinia";
 import { computed, ref } from "vue";
-import type { User } from "../../../shared/src/types.ts";
+import type { UserWithLastOrderChange } from "../../../shared/src/types.ts";
 import { getUser } from "../requests/user.ts";
 
 export const useUserStore = defineStore("userStore", () => {
   const userId = ref<number>();
-  const users = ref<User[]>([]);
+  const users = ref<UserWithLastOrderChange[]>([]);
 
   const clear = () => {
     userId.value = undefined;
