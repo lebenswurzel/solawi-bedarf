@@ -181,7 +181,9 @@ const calculateDeliveries = (
       </template>
 
       <template v-slot:item.sold="{ item }">
-        {{ convertToBigUnit(soldByProductId[item.id].sold, item.unit).value }}
+        {{
+          convertToBigUnit(soldByProductId[item.id]?.sold || 0, item.unit).value
+        }}
       </template>
 
       <template v-slot:item.edit="{ item }">
