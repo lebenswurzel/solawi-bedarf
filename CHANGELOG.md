@@ -44,3 +44,7 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #122 Verteilungsdialog: "Alle auswählen" für Depots
 
 # NEW
+
+#23 Neue Saisons können angelegt und konfiguriert werden und werden nach Aktivierung den Benutzern angezeigt.
+#23 Übersichtlichere Verwaltung von Produkten inkl. Löschen von Produkten und Produktkategorien, falls diese nirgends verwendet werden.
+#23 Übersichtlichere Verwaltung von Benutzern inkl. Anzeige des Datums der letzten Aktualisierung der Bedarfsanmeldung.
