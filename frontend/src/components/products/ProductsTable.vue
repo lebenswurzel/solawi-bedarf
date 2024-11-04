@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { provide, ref } from "vue";
+import { computed, provide, ref } from "vue";
 import {
   NewProduct,
   Product,
@@ -112,6 +112,9 @@ const onConfirmDeleteProduct = async (product?: Product) => {
       uiFeedback.setError(language.app.uiFeedback.deleting.failed, e);
     });
 };
+const showDeletionProductDialog = computed(() => {
+  return !!deletionProduct.value;
+});
 const onCloseProduct = async () => {
   openProduct.value = false;
   await productStore.update(activeConfigId.value);
@@ -205,7 +208,7 @@ const calculateDeliveries = (
   </v-card>
   <ProductDialog :open="openProduct" @close="onCloseProduct" />
 
-  <v-dialog v-model="deletionProduct" max-width="600">
+  <v-dialog v-model="showDeletionProductDialog" max-width="600">
     <v-card>
       <v-card-title>{{ language.app.actions.delete }}</v-card-title>
       <v-card-text>{{
