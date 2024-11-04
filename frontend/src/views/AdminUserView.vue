@@ -39,7 +39,6 @@ const { users } = storeToRefs(userStore);
 const open = ref(false);
 const dialogUser = ref<NewUser | User>({ ...defaultUser });
 const search = ref<string>("");
-const selectedUsers = ref<User[]>([]);
 
 provide("dialogUser", dialogUser);
 
@@ -93,8 +92,6 @@ const onClose = async () => {
         :items="users"
         density="compact"
         :item-value="(item: User) => item"
-        show-select
-        v-model="selectedUsers"
         :search="search"
       >
         <template v-slot:item.active="{ item }">
@@ -108,16 +105,6 @@ const onClose = async () => {
           ></v-btn>
         </template>
       </v-data-table>
-      <div v-if="selectedUsers.length">
-        <p>Auswahl: {{ selectedUsers.map((v) => v.name).join(", ") }}</p>
-        <p>Hier könnte bei Bedarf eine Aktion ausgelöst werden, z.B.:</p>
-        <v-btn @click="() => console.log(selectedUsers)" variant="outlined"
-          >aktivieren</v-btn
-        >
-        <v-btn @click="() => console.log(selectedUsers)" variant="outlined"
-          >deaktivieren</v-btn
-        >
-      </div>
     </v-card-text>
     <v-card-actions v-if="!externalAuthProvider">
       <v-btn @click="onCreateUser" prepend-icon="mdi-account-plus-outline">{{
