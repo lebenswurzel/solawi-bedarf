@@ -38,7 +38,6 @@ const onClick = async () => {
   loading.value = true;
   try {
     const overview = await getOverview(configStore.activeConfigId);
-    console.log(overview);
     const productCategories = await getProductCategory(
       configStore.activeConfigId,
     );
