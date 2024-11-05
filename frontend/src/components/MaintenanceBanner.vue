@@ -56,12 +56,12 @@ const reload = () => {
 </script>
 <template>
   <div
-    v-if="buildInfo.maintenance?.enabled ?? false"
+    v-if="serverVersionInfo?.buildInfo.maintenance?.enabled ?? false"
     class="maintenance banner"
   >
     <p class="bg-yellow message">
       {{
-        buildInfo.maintenance?.message ||
+        serverVersionInfo?.buildInfo.maintenance?.message ||
         language.app.maintenance.defaultMessage
       }}
     </p>
@@ -102,7 +102,7 @@ const reload = () => {
   z-index: 100;
 }
 
-.maintenancer {
+.maintenance {
   background-image: repeating-linear-gradient(
     45deg,
     yellow,
