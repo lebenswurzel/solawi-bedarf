@@ -50,3 +50,6 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #23 Übersichtlichere Verwaltung von Benutzern inkl. Anzeige des Datums der letzten Aktualisierung der Bedarfsanmeldung.
 
 # NEW
+
+#130 Versionsabgleich zwischen Server und Client und Nutzerhinweis, dass eine Aktualisierung notwendig.
+#130 Erkennung, dass der Server nicht verfügbar war und Hinweis auf notwendige Aktualisierung.
