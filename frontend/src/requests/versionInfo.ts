@@ -14,24 +14,14 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { router } from "../routes.ts";
+import { VersionInfo } from "../../../shared/src/types.ts";
+import { getUrl, verifyResponse } from "./requests.ts";
 
-const host = "api";
+export const getVersionInfo = async (): Promise<VersionInfo> => {
+  const response = await fetch(getUrl(`/version`));
 
-export const getUrl = (path: string): string => `${host}${path}`;
+  await verifyResponse(response);
 
-export const verifyResponse = async (response: Response) => {
-  if (response.status == 401 && router.currentRoute.value.path != "/login") {
-    await router.push({
-      path: "/login",
-      query: { redirect: router.currentRoute.value.path },
-    });
-  }
-  if (response.status > 299) {
-    const text = await response.text();
-    if (text) {
-      throw new Error(text);
-    }
-    throw new Error("Error " + response.status);
-  }
+  const raw = (await response.json()) as VersionInfo;
+  return raw;
 };

@@ -15,30 +15,91 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script lang="ts" setup>
+import { computed, onMounted, ref } from "vue";
 import { buildInfo } from "../../../shared/src/buildInfo";
+import { getVersionInfo } from "../requests/versionInfo";
+import { VersionInfo } from "../../../shared/src/types";
+import { language } from "../lang/lang";
+import { useUiFeedback } from "../store/uiFeedbackStore";
+
+const serverVersionInfo = ref<VersionInfo | undefined>();
+const serverError = ref<string>("");
+const uiFeedback = useUiFeedback();
+
+const refreshServerVersionInfo = async () => {
+  getVersionInfo()
+    .then((response: VersionInfo) => {
+      serverVersionInfo.value = response;
+      serverError.value = "";
+    })
+    .catch((e: Error) => {
+      uiFeedback.setError("Server error", e);
+      serverError.value = e.message;
+    });
+};
+
+onMounted(refreshServerVersionInfo);
+
+const showVersionInfo = computed(() => {
+  return (
+    serverVersionInfo.value &&
+    serverVersionInfo.value?.buildInfo.git.hashShort != buildInfo.git.hashShort
+  );
+});
+
+const reload = () => {
+  location.reload();
+};
 </script>
 <template>
   <div
     v-if="buildInfo.maintenance?.enabled ?? false"
-    class="maintenance-banner"
+    class="maintenance banner"
   >
-    <span class="bg-yellow">
+    <p class="bg-yellow message">
       {{
         buildInfo.maintenance?.message ||
-        "Wartungsmodus: Änderungen gehen möglicherweise verloren!"
+        language.app.maintenance.defaultMessage
       }}
-    </span>
+    </p>
+  </div>
+  <div v-if="showVersionInfo" class="version banner">
+    <p class="bg-yellow message">
+      {{ language.app.maintenance.inconsistentServerVersion }}
+    </p>
+    <v-btn
+      class="mt-2"
+      prepend-icon="mdi-reload"
+      variant="elevated"
+      color="green"
+      @click="reload"
+      >{{ language.app.actions.update }}</v-btn
+    >
+  </div>
+  <div v-if="serverError" class="server-error banner">
+    <p class="bg-red message">Server-Fehler: {{ serverError }}</p>
+    <v-btn
+      class="mt-2"
+      prepend-icon="mdi-reload"
+      variant="elevated"
+      color="red"
+      @click="reload"
+      >{{ language.app.actions.update }}</v-btn
+    >
   </div>
 </template>
 
 <style>
-.maintenance-banner {
+.banner {
   width: 100%;
   padding: 0.5em;
   text-align: center;
   position: sticky;
   top: 60px;
   z-index: 100;
+}
+
+.maintenancer {
   background-image: repeating-linear-gradient(
     45deg,
     yellow,
@@ -48,8 +109,34 @@ import { buildInfo } from "../../../shared/src/buildInfo";
   );
 }
 
-.maintenance-banner span {
+.banner p.message {
   padding: 0.2em;
   background-color: yellow !important;
+}
+
+.version {
+  background-image: repeating-linear-gradient(
+    45deg,
+    #8f8,
+    #8f8 1em,
+    white 1em,
+    white 2em
+  );
+}
+.version p.message {
+  background-color: #8f8 !important;
+}
+
+.server-error {
+  background-image: repeating-linear-gradient(
+    45deg,
+    red,
+    red 1em,
+    white 1em,
+    white 2em
+  );
+}
+.server-error p.message {
+  background-color: red !important;
 }
 </style>
