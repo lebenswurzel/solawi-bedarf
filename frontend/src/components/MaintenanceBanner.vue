@@ -21,6 +21,7 @@ import { getVersionInfo } from "../requests/versionInfo";
 import { VersionInfo } from "../../../shared/src/types";
 import { language } from "../lang/lang";
 import { useUiFeedback } from "../store/uiFeedbackStore";
+import { interpolate } from "../lang/template";
 
 const serverVersionInfo = ref<VersionInfo | undefined>();
 const serverError = ref<string>("");
@@ -30,10 +31,16 @@ const refreshServerVersionInfo = async () => {
   getVersionInfo()
     .then((response: VersionInfo) => {
       serverVersionInfo.value = response;
+      if (serverError.value) {
+        serverError.value = language.app.maintenance.serverAvailable;
+      }
     })
     .catch((e: Error) => {
       uiFeedback.setError("Server error", e);
-      serverError.value = e.message;
+      serverError.value = interpolate(language.app.maintenance.serverError, {
+        message: e.message,
+      });
+      serverVersionInfo.value = undefined;
     })
     .finally(() => {
       // cyclically check server status
@@ -50,15 +57,16 @@ const showVersionInfo = computed(() => {
   );
 });
 
+const showMaintenanceBanner = computed(() => {
+  return serverVersionInfo.value?.buildInfo.maintenance?.enabled ?? false;
+});
+
 const reload = () => {
   location.reload();
 };
 </script>
 <template>
-  <div
-    v-if="serverVersionInfo?.buildInfo.maintenance?.enabled ?? false"
-    class="maintenance banner"
-  >
+  <div v-if="showMaintenanceBanner" class="maintenance banner">
     <p class="bg-yellow message">
       {{
         serverVersionInfo?.buildInfo.maintenance?.message ||
@@ -80,7 +88,7 @@ const reload = () => {
     >
   </div>
   <div v-if="serverError" class="server-error banner">
-    <p class="bg-red message">Server-Fehler: {{ serverError }}</p>
+    <p class="bg-red message">{{ serverError }}</p>
     <v-btn
       class="mt-2"
       prepend-icon="mdi-reload"
