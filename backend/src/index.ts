@@ -49,6 +49,7 @@ import { updateDepot } from "./services/config/updateDepot";
 import { createConfig } from "./services/config/createConfig";
 import { deleteProductCategory } from "./services/product/deleteProductCategory";
 import { deleteProduct } from "./services/product/deleteProduct";
+import { getVersion } from "./services/getVersion";
 
 const port = config.server.serverPort;
 const app = new Koa();
@@ -119,6 +120,8 @@ router.delete("/content/text", deleteTextContent);
 
 router.get("/bi", biHandler);
 router.get("/overview", getOverview);
+
+router.get("/version", getVersion);
 
 app.use(bodyParser());
 app.use(router.routes()).use(router.allowedMethods());

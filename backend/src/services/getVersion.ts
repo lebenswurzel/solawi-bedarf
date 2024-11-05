@@ -14,24 +14,15 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { router } from "../routes.ts";
+import Koa from "koa";
+import Router from "koa-router";
+import { buildInfo } from "../../../shared/src/buildInfo";
+import { VersionInfo } from "../../../shared/src/types";
 
-const host = "api";
-
-export const getUrl = (path: string): string => `${host}${path}`;
-
-export const verifyResponse = async (response: Response) => {
-  if (response.status == 401 && router.currentRoute.value.path != "/login") {
-    await router.push({
-      path: "/login",
-      query: { redirect: router.currentRoute.value.path },
-    });
-  }
-  if (response.status > 299) {
-    const text = await response.text();
-    if (text) {
-      throw new Error(text);
-    }
-    throw new Error("Error " + response.status);
-  }
+export const getVersion = async (
+  ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
+) => {
+  ctx.body = {
+    buildInfo,
+  } as VersionInfo;
 };

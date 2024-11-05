@@ -273,3 +273,7 @@ export interface BuildInfo {
     message?: string;
   };
 }
+
+export interface VersionInfo {
+  buildInfo: BuildInfo;
+}

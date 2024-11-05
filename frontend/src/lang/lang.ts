@@ -49,6 +49,7 @@ export const language = {
       delete: "Löschen",
       apply: "Übernehmen",
       edit: "Bearbeiten",
+      update: "Aktualisieren",
     },
     uiFeedback: {
       saving: {
@@ -60,6 +61,12 @@ export const language = {
         failed: "Löschen fehlgeschlagen",
         askConfirmation: "Soll {item} wirklich gelöscht werden?",
       },
+    },
+    maintenance: {
+      defaultMessage:
+        "Wartungsmodus: Änderungen gehen möglicherweise verloren!",
+      inconsistentServerVersion:
+        "Es existiert eine neuere Version der App. Bitte die Seite aktualisieren.",
     },
     options: {
       active: {
