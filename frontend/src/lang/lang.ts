@@ -67,6 +67,9 @@ export const language = {
         "Wartungsmodus: Änderungen gehen möglicherweise verloren!",
       inconsistentServerVersion:
         "Es existiert eine neuere Version der App. Bitte die Seite aktualisieren.",
+      serverError: "Server nicht verfügbar: {message}",
+      serverAvailable:
+        "Server wieder verfügbar. Bitte die die Seite aktualsieren.",
     },
     options: {
       active: {
