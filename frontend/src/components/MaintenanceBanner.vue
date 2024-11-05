@@ -38,7 +38,7 @@ import { buildInfo } from "../../../shared/src/buildInfo";
   text-align: center;
   position: sticky;
   top: 60px;
-  z-index: 100000;
+  z-index: 100;
   background-image: repeating-linear-gradient(
     45deg,
     yellow,
