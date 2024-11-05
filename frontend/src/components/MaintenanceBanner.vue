@@ -33,9 +33,7 @@ const refreshServerVersionInfo = async () => {
   getVersionInfo(userStore.currentUser?.id || 0)
     .then((response: VersionInfo) => {
       serverVersionInfo.value = response;
-      if (serverError.value) {
-        serverError.value = language.app.maintenance.serverAvailable;
-      }
+      serverError.value = "";
     })
     .catch((e: Error) => {
       uiFeedback.setError("Server error", e);
