@@ -84,13 +84,13 @@ const openDialog = () => {
       <v-card-title class="text-center">{{
         language.components.seasonSelector.label
       }}</v-card-title>
-      <v-card-subtitle>
+      <v-card-text class="text-medium-emphasis">
         {{
           selectionAvailable
             ? language.components.seasonSelector.description
             : language.components.seasonSelector.notYetAvailable
         }}
-      </v-card-subtitle>
+      </v-card-text>
       <v-card-text class="enclosing" v-if="selectionAvailable">
         <v-select
           :label="t.label"
