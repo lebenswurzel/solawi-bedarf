@@ -69,7 +69,7 @@ export const language = {
         "Es existiert eine neuere Version der App. Bitte die Seite aktualisieren.",
       serverError: "Server nicht verfügbar: {message}",
       serverAvailable:
-        "Server wieder verfügbar. Bitte die die Seite aktualsieren.",
+        "Server wieder verfügbar. Bitte die die Seite aktualisieren.",
     },
     options: {
       active: {

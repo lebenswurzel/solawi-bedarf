@@ -22,13 +22,15 @@ import { VersionInfo } from "../../../shared/src/types";
 import { language } from "../lang/lang";
 import { useUiFeedback } from "../store/uiFeedbackStore";
 import { interpolate } from "../lang/template";
+import { useUserStore } from "../store/userStore";
 
 const serverVersionInfo = ref<VersionInfo | undefined>();
 const serverError = ref<string>("");
 const uiFeedback = useUiFeedback();
+const userStore = useUserStore();
 
 const refreshServerVersionInfo = async () => {
-  getVersionInfo()
+  getVersionInfo(userStore.currentUser?.id || 0)
     .then((response: VersionInfo) => {
       serverVersionInfo.value = response;
       if (serverError.value) {

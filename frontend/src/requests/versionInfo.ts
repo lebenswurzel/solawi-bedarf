@@ -17,8 +17,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { VersionInfo } from "../../../shared/src/types.ts";
 import { getUrl, verifyResponse } from "./requests.ts";
 
-export const getVersionInfo = async (): Promise<VersionInfo> => {
-  const response = await fetch(getUrl(`/version`));
+export const getVersionInfo = async (userId: number): Promise<VersionInfo> => {
+  const response = await fetch(getUrl(`/version?id=${userId}`));
 
   await verifyResponse(response);
 
