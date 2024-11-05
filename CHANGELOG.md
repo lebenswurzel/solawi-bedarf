@@ -49,7 +49,9 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #23 Übersichtlichere Verwaltung von Produkten inkl. Löschen von Produkten und Produktkategorien, falls diese nirgends verwendet werden.
 #23 Übersichtlichere Verwaltung von Benutzern inkl. Anzeige des Datums der letzten Aktualisierung der Bedarfsanmeldung.
 
-# NEW
+# v0.4.1 - 2024-11-05 - Versionsabgleich Client und Server
 
 #130 Versionsabgleich zwischen Server und Client und Nutzerhinweis, dass eine Aktualisierung notwendig.
 #130 Erkennung, dass der Server nicht verfügbar war und Hinweis auf notwendige Aktualisierung.
+
+# NEW
