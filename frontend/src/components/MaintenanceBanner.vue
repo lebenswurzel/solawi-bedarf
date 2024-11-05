@@ -30,11 +30,14 @@ const refreshServerVersionInfo = async () => {
   getVersionInfo()
     .then((response: VersionInfo) => {
       serverVersionInfo.value = response;
-      serverError.value = "";
     })
     .catch((e: Error) => {
       uiFeedback.setError("Server error", e);
       serverError.value = e.message;
+    })
+    .finally(() => {
+      // cyclically check server status
+      setTimeout(refreshServerVersionInfo, 60000);
     });
 };
 
