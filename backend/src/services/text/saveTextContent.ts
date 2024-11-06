@@ -36,61 +36,53 @@ export const saveTextContent = async (
   }
   const requestTextContent = ctx.request.body as SaveTextContentRequest;
 
-  if (requestTextContent.category == TextContentCategory.IMPRINT) {
-    const imprint = await AppDataSource.getRepository(TextContent).findOneBy({
-      category: TextContentCategory.IMPRINT,
-    });
-    imprint!.content = requestTextContent.content;
-    await AppDataSource.getRepository(TextContent).save(imprint!);
-    ctx.status = http.no_content;
-  } else if (
-    requestTextContent.category == TextContentCategory.PRIVACY_NOTICE
-  ) {
-    const privacyNotice = await AppDataSource.getRepository(
-      TextContent,
-    ).findOneBy({
-      category: TextContentCategory.PRIVACY_NOTICE,
-    });
-    privacyNotice!.content = requestTextContent.content;
-    await AppDataSource.getRepository(TextContent).save(privacyNotice!);
-    ctx.status = http.no_content;
-  } else if (
-    requestTextContent.category == TextContentCategory.MAINTENANCE_MESSAGE
-  ) {
-    const maintenanceMessage = await AppDataSource.getRepository(
-      TextContent,
-    ).findOneBy({
-      category: TextContentCategory.MAINTENANCE_MESSAGE,
-    });
-    maintenanceMessage!.content = requestTextContent.content;
-    await AppDataSource.getRepository(TextContent).save(maintenanceMessage!);
-    ctx.status = http.no_content;
-  } else if (
-    requestTextContent.category == TextContentCategory.FAQ &&
-    requestTextContent.id
-  ) {
-    const faq = await AppDataSource.getRepository(TextContent).findOneBy({
-      category: TextContentCategory.FAQ,
-      id: requestTextContent.id,
-    });
-    if (!faq) {
-      ctx.throw(http.bad_request);
-    } else {
-      faq.title = requestTextContent.title;
-      faq.content = requestTextContent.content;
-      await AppDataSource.getRepository(TextContent).save(faq);
-      ctx.status = http.no_content;
-    }
-  } else if (requestTextContent.category == TextContentCategory.FAQ) {
-    const faq = new TextContent();
-    faq.active = true;
-    faq.category = TextContentCategory.FAQ;
-    faq.typ = TextContentTyp.MD;
-    faq.title = requestTextContent.title;
-    faq.content = requestTextContent.content;
-    await AppDataSource.getRepository(TextContent).save(faq);
-    ctx.status = http.created;
-  } else {
-    ctx.status = http.bad_request;
+  switch (requestTextContent.category) {
+    case TextContentCategory.IMPRINT:
+    case TextContentCategory.PRIVACY_NOTICE:
+    case TextContentCategory.MAINTENANCE_MESSAGE:
+    case TextContentCategory.FAQ:
+      await updateTextContent(
+        ctx,
+        requestTextContent.category,
+        requestTextContent.content,
+        requestTextContent.id,
+        requestTextContent.title,
+      );
+      break;
+    default:
+      ctx.status = http.bad_request;
   }
+};
+
+const updateTextContent = async (
+  ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
+  category: TextContentCategory,
+  content: string,
+  id?: number,
+  title?: string,
+) => {
+  const repository = AppDataSource.getRepository(TextContent);
+  const isStaticEntry = category != TextContentCategory.FAQ;
+  const create = !id && !isStaticEntry;
+
+  let textContent: TextContent | null;
+  if (create) {
+    textContent = new TextContent();
+    textContent.typ = TextContentTyp.MD;
+    textContent.category = category;
+  } else {
+    const query = id ? { category, id } : { category };
+    textContent = await repository.findOneBy(query);
+    if (!textContent) {
+      ctx.throw(http.bad_request);
+    }
+  }
+
+  if (title && !isStaticEntry) {
+    textContent.title = title;
+  }
+  textContent.content = content;
+
+  await repository.save(textContent);
+  ctx.status = create ? http.created : http.no_content;
 };
