@@ -55,3 +55,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #130 Erkennung, dass der Server nicht verfügbar war und Hinweis auf notwendige Aktualisierung.
 
 # NEW
+
+#132 Admins können Wartungshinweistext konfigurieren (unter Menü -> Text)
