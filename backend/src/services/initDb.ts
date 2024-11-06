@@ -89,9 +89,6 @@ const ensureTextContent = async ({
   if (textContentCount > 0) {
     return;
   }
-
-  console.log("no text content found for " + category);
-
   const textContent = new TextContent();
   textContent.active = true;
   textContent.typ = TextContentTyp.MD;
