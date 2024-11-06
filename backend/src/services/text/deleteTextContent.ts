@@ -35,11 +35,15 @@ export const deleteTextContent = async (
   }
   const id = parseInt(requestId);
   if (id) {
-    await AppDataSource.getRepository(TextContent).delete({
+    const result = await AppDataSource.getRepository(TextContent).delete({
       category: TextContentCategory.FAQ,
       id: id,
     });
-    ctx.status = http.no_content;
+    if (result.affected) {
+      ctx.status = http.no_content;
+    } else {
+      ctx.status = http.bad_request;
+    }
   } else {
     ctx.status = http.bad_request;
   }

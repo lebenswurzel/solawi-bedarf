@@ -14,17 +14,18 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { getUserFromContext } from "../getUserFromContext";
 import Koa from "koa";
 import Router from "koa-router";
+import {
+  TextContentCategory,
+  TextContentTyp,
+  UserRole,
+} from "../../../../shared/src/enum";
+import { SaveTextContentRequest } from "../../../../shared/src/types";
 import { http } from "../../consts/http";
 import { AppDataSource } from "../../database/database";
 import { TextContent } from "../../database/TextContent";
-import {
-  UserRole,
-  TextContentCategory,
-  TextContentTyp,
-} from "../../../../shared/src/enum";
+import { getUserFromContext } from "../getUserFromContext";
 
 export const saveTextContent = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -33,12 +34,8 @@ export const saveTextContent = async (
   if (role != UserRole.ADMIN) {
     ctx.throw(http.forbidden);
   }
-  const requestTextContent = ctx.request.body as {
-    id?: number;
-    title: string;
-    category: TextContentCategory;
-    content: string;
-  };
+  const requestTextContent = ctx.request.body as SaveTextContentRequest;
+
   if (requestTextContent.category == TextContentCategory.IMPRINT) {
     const imprint = await AppDataSource.getRepository(TextContent).findOneBy({
       category: TextContentCategory.IMPRINT,

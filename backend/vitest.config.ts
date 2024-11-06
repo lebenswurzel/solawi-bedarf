@@ -23,7 +23,14 @@ export default defineConfig({
     coverage: {
       reporter: ["text", "json-summary", "json", "html"],
       reportOnFailure: true,
-      include: ["**/config", "**/bi", "**/order", "**/product"],
+      include: [
+        "**/config",
+        "**/bi",
+        "**/order",
+        "**/product",
+        "**/text",
+        "**/user",
+      ],
     },
     fileParallelism: false, // tests cannot run in parallel because they use the same DB
   },

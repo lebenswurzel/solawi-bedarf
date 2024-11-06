@@ -141,6 +141,7 @@ export interface NewTextContent {
 }
 
 export type TextContent = NewTextContent & Id;
+export type SaveTextContentRequest = NewTextContent & OptionalId;
 
 export function isIdType(entity: any): entity is Id {
   return entity.id !== undefined;
