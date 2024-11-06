@@ -41,6 +41,7 @@ import { MultiSeason1727640942892 } from "../migrations/1727640942892-multi-seas
 import { MultiSeasonForShipmentAndOrder1727966567905 } from "../migrations/1727966567905-multi-season-for-shipment-and-order";
 import { NonUniqueProductNames1728134733135 } from "../migrations/1728134733135-non-unique-product-names";
 import { ConfigPublicFlag1728677345133 } from "../migrations/1728677345133-config-public-flag";
+import { AddMaintenanceMsgText1730887882789 } from "../migrations/1730887882789-add-maintenance-msg-text";
 
 const entities = [
   User,
@@ -73,6 +74,7 @@ const migrations = [
   MultiSeasonForShipmentAndOrder1727966567905,
   NonUniqueProductNames1728134733135,
   ConfigPublicFlag1728677345133,
+  AddMaintenanceMsgText1730887882789,
 ];
 
 const configuredPort = config.testing.isTesting

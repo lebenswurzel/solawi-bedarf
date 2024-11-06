@@ -43,6 +43,7 @@ export enum TextContentCategory {
   PRIVACY_NOTICE = "PRIVACY_NOTICE",
   FAQ = "FAQ",
   TAC = "TAC",
+  MAINTENANCE_MESSAGE = "MAINTENANCE_MESSAGE",
 }
 
 export enum TextContentTyp {

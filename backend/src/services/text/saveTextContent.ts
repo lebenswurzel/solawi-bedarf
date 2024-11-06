@@ -58,6 +58,17 @@ export const saveTextContent = async (
     await AppDataSource.getRepository(TextContent).save(privacyNotice!);
     ctx.status = http.no_content;
   } else if (
+    requestTextContent.category == TextContentCategory.MAINTENANCE_MESSAGE
+  ) {
+    const maintenanceMessage = await AppDataSource.getRepository(
+      TextContent,
+    ).findOneBy({
+      category: TextContentCategory.MAINTENANCE_MESSAGE,
+    });
+    maintenanceMessage!.content = requestTextContent.content;
+    await AppDataSource.getRepository(TextContent).save(maintenanceMessage!);
+    ctx.status = http.no_content;
+  } else if (
     requestTextContent.category == TextContentCategory.FAQ &&
     requestTextContent.id
   ) {

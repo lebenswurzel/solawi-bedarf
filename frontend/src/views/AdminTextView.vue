@@ -21,6 +21,7 @@ import { computed, provide, ref } from "vue";
 import TextContentDialog from "../components/TextContentDialog.vue";
 import { NewTextContent, TextContent } from "../../../shared/src/types";
 import { TextContentCategory } from "../../../shared/src/enum";
+import { language } from "../lang/lang";
 
 const defaultTextContent: NewTextContent = {
   title: "Beispieltitel",
@@ -33,6 +34,20 @@ const { textContent } = storeToRefs(appConfigStore);
 const faqs = computed(() =>
   textContent.value.filter((c) => c.category == TextContentCategory.FAQ),
 );
+const maintenanceMessage = computed(() => {
+  const i = textContent.value.filter(
+    (c) => c.category == TextContentCategory.MAINTENANCE_MESSAGE,
+  );
+  if (i.length > 0) {
+    return i[0];
+  } else {
+    return {
+      title: language.pages.content.maintenanceMessage.title,
+      content: "",
+      category: TextContentCategory.MAINTENANCE_MESSAGE,
+    };
+  }
+});
 const imprint = computed(() => {
   const i = textContent.value.filter(
     (c) => c.category == TextContentCategory.IMPRINT,
@@ -41,7 +56,7 @@ const imprint = computed(() => {
     return i[0];
   } else {
     return {
-      title: "Impressum",
+      title: language.pages.content.imprint,
       content: "",
       category: TextContentCategory.IMPRINT,
     };
@@ -55,7 +70,7 @@ const privacyNotice = computed(() => {
     return i[0];
   } else {
     return {
-      title: "Datenschutzerklärung",
+      title: language.pages.content.privacyNotice,
       content: "",
       category: TextContentCategory.PRIVACY_NOTICE,
     };
@@ -87,6 +102,20 @@ const onClose = async () => {
   <v-card class="ma-4">
     <v-card-title>Admin Text</v-card-title>
     <v-card-text>
+      <v-list-item @click="() => onEditTextContent(maintenanceMessage)">
+        {{ maintenanceMessage.title }}
+        <v-list-item-subtitle>
+          <v-icon v-if="!!maintenanceMessage.content" color="orange"
+            >mdi-alert</v-icon
+          >
+          {{
+            !!maintenanceMessage.content
+              ? language.pages.content.maintenanceMessage.enabled + " - "
+              : ""
+          }}
+          {{ language.pages.content.maintenanceMessage.description }}
+        </v-list-item-subtitle>
+      </v-list-item>
       <v-list-item @click="() => onEditTextContent(imprint)">
         {{ imprint.title }}
         <v-list-item-subtitle> Impressum </v-list-item-subtitle>

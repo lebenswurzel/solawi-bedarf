@@ -49,6 +49,8 @@ const html = computed(() => {
 
 const titleDisabled = computed(() => {
   return (
+    dialogTextContent.value.category ==
+      TextContentCategory.MAINTENANCE_MESSAGE ||
     dialogTextContent.value.category == TextContentCategory.IMPRINT ||
     dialogTextContent.value.category == TextContentCategory.PRIVACY_NOTICE
   );

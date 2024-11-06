@@ -5,9 +5,18 @@ by executing `./apply_license_headers.bash` in the project root (requires python
 
 ## Generate migrations
 
+If database tables are changed or added, typeorm can automatically generate migration scripts
+
+1. Make desired adjustments to the tables in `backend/src/database/TABLENAME.ts`
+2. Generate migration script (naming scheme: `use-dashes-as-separator`)
+
 ```
 npm run typeorm -- migration:generate -d ./src/database/database.ts ./src/migrations/<migrationname>
 ```
+
+3. Verify the newly generated script and make manual adjustments for data updates, if necessary
+4. Add the new migration script to the `migrations` array in `backend/src/database/database.ts`
+5. Restart the backend server
 
 ## Pre commit hook
 

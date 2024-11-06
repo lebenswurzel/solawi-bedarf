@@ -56,25 +56,24 @@ export const initDb = async () => {
     await AppDataSource.getRepository(RequisitionConfig).save(config);
     console.log("initial config created.");
   }
-  const textContentCount =
-    await AppDataSource.getRepository(TextContent).count();
-  if (textContentCount == 0) {
-    console.log("no text content found creating initial ones.");
-    insertTextContent({
-      category: TextContentCategory.IMPRINT,
-      title: "Impressum",
-      content: "# Impressum",
-    });
-    insertTextContent({
-      category: TextContentCategory.PRIVACY_NOTICE,
-      title: "Datenschutzerklärung",
-      content: "# Datenschutzerklärung",
-    });
-    console.log("initial text content created.");
-  }
+  ensureTextContent({
+    category: TextContentCategory.IMPRINT,
+    title: "Impressum",
+    content: "# Impressum",
+  });
+  ensureTextContent({
+    category: TextContentCategory.PRIVACY_NOTICE,
+    title: "Datenschutzerklärung",
+    content: "# Datenschutzerklärung",
+  });
+  ensureTextContent({
+    category: TextContentCategory.MAINTENANCE_MESSAGE,
+    title: "Wartungshinweis",
+    content: "",
+  });
 };
 
-const insertTextContent = async ({
+const ensureTextContent = async ({
   category,
   title,
   content,
@@ -83,6 +82,16 @@ const insertTextContent = async ({
   title: string;
   content: string;
 }) => {
+  const textContentCount = await AppDataSource.getRepository(TextContent).count(
+    { where: { category } },
+  );
+
+  if (textContentCount > 0) {
+    return;
+  }
+
+  console.log("no text content found for " + category);
+
   const textContent = new TextContent();
   textContent.active = true;
   textContent.typ = TextContentTyp.MD;
@@ -90,6 +99,7 @@ const insertTextContent = async ({
   textContent.content = content;
   textContent.category = category;
   await AppDataSource.getRepository(TextContent).save(textContent);
+  console.log("initial text content created for " + category);
 };
 
 /*

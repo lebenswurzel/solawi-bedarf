@@ -347,6 +347,13 @@ export const language = {
       navigation: {
         subtitle: "Admin",
       },
+      maintenanceMessage: {
+        title: "Wartungshinweis",
+        description:
+          "Ein hier festgelegter Text wird allen Benutzern angezeigt",
+        enabled: "Wartungshinweis aktiv!",
+        disabled: "Aktuell kein Wartungshinweis aktiv",
+      },
       imprint: "Impressum",
       privacyNotice: "Datenschutzerklärung",
       faq: "Fragen & Antworten",
