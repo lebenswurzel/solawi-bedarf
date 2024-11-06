@@ -18,11 +18,26 @@ import Koa from "koa";
 import Router from "koa-router";
 import { buildInfo } from "../../../shared/src/buildInfo";
 import { VersionInfo } from "../../../shared/src/types";
+import { AppDataSource } from "../database/database";
+import { TextContent } from "../database/TextContent";
+import { TextContentCategory } from "../../../shared/src/enum";
 
 export const getVersion = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
 ) => {
-  ctx.body = {
-    buildInfo,
-  } as VersionInfo;
+  const maintenanceMessage: TextContent | null =
+    await AppDataSource.getRepository(TextContent).findOne({
+      where: { category: TextContentCategory.MAINTENANCE_MESSAGE },
+    });
+
+  const response: VersionInfo = {
+    buildInfo: {
+      ...buildInfo,
+      maintenance: {
+        enabled: !!maintenanceMessage?.content,
+        message: maintenanceMessage?.content || "",
+      },
+    },
+  };
+  ctx.body = response as VersionInfo;
 };

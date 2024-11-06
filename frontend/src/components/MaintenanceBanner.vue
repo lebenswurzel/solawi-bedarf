@@ -23,6 +23,7 @@ import { language } from "../lang/lang";
 import { useUiFeedback } from "../store/uiFeedbackStore";
 import { interpolate } from "../lang/template";
 import { useUserStore } from "../store/userStore";
+import { marked } from "marked";
 
 const serverVersionInfo = ref<VersionInfo | undefined>();
 const serverError = ref<string>("");
@@ -61,18 +62,19 @@ const showMaintenanceBanner = computed(() => {
   return serverVersionInfo.value?.buildInfo.maintenance?.enabled ?? false;
 });
 
+const maintenanceMessageHtml = computed(() => {
+  return marked.parse(
+    serverVersionInfo.value?.buildInfo.maintenance?.message || "",
+  );
+});
+
 const reload = () => {
   location.reload();
 };
 </script>
 <template>
   <div v-if="showMaintenanceBanner" class="maintenance banner">
-    <p class="bg-yellow message">
-      {{
-        serverVersionInfo?.buildInfo.maintenance?.message ||
-        language.app.maintenance.defaultMessage
-      }}
-    </p>
+    <p class="bg-yellow message" v-html="maintenanceMessageHtml"></p>
   </div>
   <div v-if="showVersionInfo" class="version banner">
     <p class="bg-yellow message">
