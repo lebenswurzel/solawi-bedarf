@@ -54,6 +54,8 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #130 Versionsabgleich zwischen Server und Client und Nutzerhinweis, dass eine Aktualisierung notwendig.
 #130 Erkennung, dass der Server nicht verfügbar war und Hinweis auf notwendige Aktualisierung.
 
-# NEW
+# v0.4.2 - 2024-11-06 - Wartungshinweis konfigurierbar
 
 #132 Admins können Wartungshinweistext konfigurieren (unter Menü -> Text)
+
+# NEW
