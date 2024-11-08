@@ -189,6 +189,7 @@ export const bi = async (configId: number) => {
       productCategory.products.map((product) => ({
         ...product,
         active: productCategory.active && product.active,
+        productCategoryTyp: productCategory.typ,
       })),
     )
     .flat()

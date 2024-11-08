@@ -149,8 +149,8 @@ export const language = {
             "Herzlich willkommen zur Bedarfsanmeldung des Solawi-Projektes!",
           subtitle:
             'Hier kannst Du Deine <a href="/#/shop">Bedarfsanmeldung</a> abgeben.',
-          offers: "{offers} € verfügbare monatliche Beiträge`",
-          food: "{food} % verteilte Nahrungsmittel",
+          offers: "{offers} € erreichtes monatliches Budget",
+          food: "{food} % verteilte Nahrungsmittel aus Selbstanbau",
           action: "Zur Bedarfsmeldung",
         },
         list: {
