@@ -155,27 +155,34 @@ const topProducts = computed(() => {
           </v-row>
         </v-col>
       </v-row>
-      <p class="mb-4 mt-4">
-        In Bedarfsanmeldungen enthaltene Produkte mit durchschnittlichem
-        Monatsumsatz in Klammern:
-      </p>
-      <v-row>
-        <v-col cols="12" sm="6" md="4" v-for="item in topProducts">
-          <v-progress-circular
-            :model-value="item.percentageSold"
-            height="30"
-            :color="item.percentageSold > 90 ? 'green' : 'blue-grey'"
-          >
-            <template v-slot:default="{ value }">{{
-              Math.ceil(value)
-            }}</template>
-          </v-progress-circular>
-          &nbsp;
-          <span class="text-medium-emphasis">
-            {{ item.name }} ({{ item.money }}€)
-          </span>
-        </v-col>
-      </v-row>
+      <v-expansion-panels class="mt-4">
+        <v-expansion-panel>
+          <v-expansion-panel-title>Weitere Statistiken</v-expansion-panel-title>
+          <v-expansion-panel-text>
+            <p class="mb-4 mt-4">
+              In Bedarfsanmeldungen enthaltene Produkte mit durchschnittlichem
+              Monatsumsatz in Klammern:
+            </p>
+            <v-row>
+              <v-col cols="12" sm="6" md="4" v-for="item in topProducts">
+                <v-progress-circular
+                  :model-value="item.percentageSold"
+                  height="30"
+                  :color="item.percentageSold > 90 ? 'green' : 'blue-grey'"
+                >
+                  <template v-slot:default="{ value }">{{
+                    Math.ceil(value)
+                  }}</template>
+                </v-progress-circular>
+                &nbsp;
+                <span class="text-medium-emphasis">
+                  {{ item.name }} ({{ item.money }}€)
+                </span>
+              </v-col>
+            </v-row>
+          </v-expansion-panel-text>
+        </v-expansion-panel>
+      </v-expansion-panels>
     </v-card-text>
   </v-card>
 </template>
