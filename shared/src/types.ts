@@ -63,8 +63,13 @@ export interface NewProduct {
 
 export type Product = Required<NewProduct> & Id;
 
+export type ProductWithProductCategoryTyp = Required<NewProduct> &
+  Id & {
+    productCategoryTyp: ProductCategoryTyp;
+  };
+
 export type ProductsById = {
-  [key: number]: Product;
+  [key: number]: ProductWithProductCategoryTyp;
 };
 
 export interface NewProductCategory {
