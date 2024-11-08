@@ -35,6 +35,7 @@ import {
 } from "../../../shared/src/validation/reason.ts";
 import SeasonText from "./styled/SeasonText.vue";
 import { useUiFeedback } from "../store/uiFeedbackStore.ts";
+import { UserCategory } from "../../../shared/src/enum.ts";
 
 defineProps(["open"]);
 const emit = defineEmits(["close"]);
@@ -60,6 +61,7 @@ const {
 } = storeToRefs(orderStore);
 
 const confirmGTC = ref(false);
+const confirmContribution = ref(false);
 const openFAQ = ref(false);
 const loading = ref(false);
 const model = ref<string>();
@@ -143,8 +145,13 @@ const disableSubmit = computed(() => {
     !depotId.value ||
     needsHigherOffer.value ||
     offerReasonHint.value ||
-    categoryReasonHint.value
+    categoryReasonHint.value ||
+    (requireConfirmContribution.value && !confirmContribution.value)
   );
+});
+
+const requireConfirmContribution = computed(() => {
+  return category.value != UserCategory.CAT130;
 });
 
 watch(offer, () => {
@@ -321,6 +328,20 @@ const onSave = () => {
           :label="
             interpolate(t.confirm.label, { season: config?.name ?? 'SAISON?' })
           "
+        />
+        <div class="mb-3" v-if="requireConfirmContribution">
+          {{
+            interpolate(t.confirmContribution.title, {
+              model:
+                categoryOptions.find((co) => co.value == category)?.title ||
+                "???",
+            })
+          }}
+        </div>
+        <v-checkbox
+          v-model="confirmContribution"
+          :label="t.confirmContribution.label"
+          v-if="requireConfirmContribution"
         />
       </v-card-text>
       <v-card-actions class="justify-center">

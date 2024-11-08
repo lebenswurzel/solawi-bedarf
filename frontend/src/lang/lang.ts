@@ -224,6 +224,11 @@ export const language = {
           label:
             "Ich habe die »Fragen & Antworten« (F&A) gelesen. Mir ist bewusst, dass meine Bedarfsanmeldung im gesamten Zeitraum vor Ablauf der Anmeldefrist unverbindlich bleibt und jederzeit änderbar ist. Erst mit Ablauf der Anmeldefrist werden meine zuletzt ausgewählten Nahrungsmittel und -mengen sowie mein Solawi-Beitrag verbindlich. Ich verpflichte mich, mit meinem verbindlichen Solawi-Beitrag für die gesamte {season} (12 Monate) das Solawi-Projekt mitzufinanzieren.",
         },
+        confirmContribution: {
+          title: "Bestätigung deines Mitgliedschaftsmodells als {model}",
+          label:
+            "Ich habe zur Kenntnis genommen, dass es für eine gut funktionierende Solawi essentiell ist meine angegebenen Mitarbeitsstunden zu erfüllen.",
+        },
         action: {
           faq: "F&A",
         },
