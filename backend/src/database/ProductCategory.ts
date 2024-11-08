@@ -24,6 +24,7 @@ import {
 import { Product } from "./Product";
 import { BaseEntity } from "./BaseEntity";
 import { RequisitionConfig } from "./RequisitionConfig";
+import { ProductCategoryTyp } from "../../../shared/src/enum";
 
 @Entity()
 export class ProductCategory extends BaseEntity {
@@ -48,4 +49,11 @@ export class ProductCategory extends BaseEntity {
     { nullable: false },
   )
   requisitionConfig: RequisitionConfig;
+
+  @Column({
+    type: "enum",
+    enum: ProductCategoryTyp,
+    nullable: false,
+  })
+  typ: ProductCategoryTyp;
 }

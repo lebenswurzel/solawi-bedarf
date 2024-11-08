@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { Unit } from "../../shared/src/enum";
+import { ProductCategoryTyp, Unit } from "../../shared/src/enum";
 import { Depot } from "../src/database/Depot";
 import { Order } from "../src/database/Order";
 import { OrderItem } from "../src/database/OrderItem";
@@ -58,6 +58,7 @@ export const createTestProductCategory = async (name: string) => {
     name,
     active: true,
     requisitionConfig,
+    typ: ProductCategoryTyp.SELFGROWN,
   });
   return pcEntity;
 };

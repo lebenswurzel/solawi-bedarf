@@ -30,6 +30,7 @@ import { useConfigStore } from "../../store/configStore";
 import { useProductStore } from "../../store/productStore";
 import { sanitizeFileName } from "../../../../shared/src/util/fileHelper";
 import { objectToCsv } from "../../lib/overview";
+import { ProductCategoryTyp } from "../../../../shared/src/enum";
 const t = language.pages.product;
 
 const props = defineProps<{
@@ -88,6 +89,17 @@ const onCloseProductCategory = async () => {
 <template>
   <v-row no-gutters>
     <v-col cols="10">
+      {{
+        language.app.options.productCategoryTyps[
+          props.productCategoryWithProducts.typ
+        ].title
+      }}
+      <v-icon>{{
+        props.productCategoryWithProducts.typ == ProductCategoryTyp.COOPERATION
+          ? "mdi-truck-delivery"
+          : "mdi-sprout"
+      }}</v-icon>
+      -
       {{
         interpolate(t.item.subtitle, {
           msrp: Math.round(
