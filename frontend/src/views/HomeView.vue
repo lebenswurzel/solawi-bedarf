@@ -37,7 +37,11 @@ const percentageBudget = computed(() => {
 });
 
 const percentageSold = computed(() => {
-  const stock = Object.entries(biStore.soldByProductId);
+  const products = biStore.productsById;
+  const stock = Object.entries(biStore.soldByProductId).filter(
+    ([productId]) => products[parseInt(productId)].productCategoryId != 1,
+  );
+  console.log(stock, products);
   if (stock.length) {
     return Math.round(
       (stock
