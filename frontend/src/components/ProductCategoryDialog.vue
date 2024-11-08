@@ -26,6 +26,7 @@ import { useUiFeedback } from "../store/uiFeedbackStore.ts";
 import { ref, watch } from "vue";
 import { useConfigStore } from "../store/configStore.ts";
 import { useProductStore } from "../store/productStore.ts";
+import { ProductCategoryTyp } from "../../../shared/src/enum.ts";
 const t = language.pages.product.dialog;
 
 const uiFeedback = useUiFeedback();
@@ -40,6 +41,17 @@ const props = defineProps<{
 const editedProductCategory = ref<NewProductCategory | ProductCategory>({
   ...props.productCategory,
 });
+
+const productCategoryTypOptions = [
+  {
+    title: language.app.options.productCategoryTyps.SELFGROWN.title,
+    value: ProductCategoryTyp.SELFGROWN,
+  },
+  {
+    title: language.app.options.productCategoryTyps.COOPERATION.title,
+    value: ProductCategoryTyp.COOPERATION,
+  },
+];
 
 watch(
   () => props.open,
@@ -99,6 +111,11 @@ const onSave = async () => {
           }`"
           color="primary"
         ></v-switch>
+        <v-select
+          v-model="editedProductCategory.typ"
+          :label="t.productCategoryTyp"
+          :items="productCategoryTypOptions"
+        ></v-select>
       </v-card-text>
       <v-card-actions>
         <v-btn @click="onClose">

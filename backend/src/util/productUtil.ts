@@ -39,6 +39,7 @@ export const copyProductCategories = async (
         name: category.name,
         active: category.active,
         requisitionConfigId: toConfigId,
+        typ: category.typ,
       };
       const savedCategory = await entityManager.save(
         ProductCategory,

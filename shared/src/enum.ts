@@ -49,3 +49,8 @@ export enum TextContentCategory {
 export enum TextContentTyp {
   MD = "MD",
 }
+
+export enum ProductCategoryTyp {
+  SELFGROWN = "SELFGROWN",
+  COOPERATION = "COOPERATION",
+}

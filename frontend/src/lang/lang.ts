@@ -14,7 +14,11 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { UserCategory, UserRole } from "../../../shared/src/enum.ts";
+import {
+  ProductCategoryTyp,
+  UserCategory,
+  UserRole,
+} from "../../../shared/src/enum.ts";
 
 // info i: 24D8
 // black truck: 26DF
@@ -95,6 +99,17 @@ export const language = {
           title: "engagiertes Solawi-Mitglied",
           subtitle:
             "Mitarbeit mind. 10 h/Monat, z. B. Aufgaben übernehmen in AGs, regelmäßiges Mitgärtnern (Orientierungswert mit ca. 23 % Ermäßigung)",
+        },
+      },
+      productCategoryTyps: {
+        [ProductCategoryTyp.SELFGROWN]: {
+          title: "Selbstanbauprodukte",
+          subtitle: "Die Produkte werden in {name} angebaut",
+        },
+        [ProductCategoryTyp.COOPERATION]: {
+          title: "Kooperationsprodukte",
+          subtitle:
+            "Die Produkte werden durch Kooperationspartner bereitgestellt",
         },
       },
     },
@@ -277,6 +292,7 @@ export const language = {
         product: "Produkt",
         name: "Name",
         active: "Aktiv",
+        productCategoryTyp: "Art der enthaltenen Produkte",
         sold: "Verkauft [{unit}]",
         delivered: "Geliefert",
         deliveries: "Lieferungen an Depots",
