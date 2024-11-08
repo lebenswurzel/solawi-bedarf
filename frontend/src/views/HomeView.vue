@@ -24,6 +24,7 @@ import { useBIStore } from "../store/biStore";
 import ShipmentCard from "../components/ShipmentCard.vue";
 import { useUserStore } from "../store/userStore.ts";
 import { ProductCategoryTyp } from "../../../shared/src/enum.ts";
+import SeasonText from "../components/styled/SeasonText.vue";
 
 const t = language.pages.home;
 const configStore = useConfigStore();
@@ -90,6 +91,12 @@ onMounted(async () => {
         Zur Bedarfsanmeldung
       </v-btn>
     </router-link>
+  </v-card>
+  <ShipmentCard />
+  <v-card class="ma-4">
+    <v-card-title style="white-space: normal">
+      Budget und Stand der Bedarfsanmeldung für <SeasonText plain />
+    </v-card-title>
     <v-card-text>
       <v-row dense>
         <v-col cols="12" sm="6">
@@ -163,5 +170,4 @@ onMounted(async () => {
       </v-row>
     </v-card-text>
   </v-card>
-  <ShipmentCard />
 </template>
