@@ -50,17 +50,29 @@ const topProducts = computed(() => {
     }))
     .sort((a, b) => b.money - a.money);
 });
+
+const selfGrownProductSum = computed(() => {
+  return selfGrownProducts.value
+    .map(
+      (value) =>
+        ((convertToBigUnit(value.sold.sold, value.product.unit).value || 0) *
+          value.product.msrp) /
+        1200,
+    )
+    .reduce((acc, value) => acc + value, 0);
+});
 </script>
 
 <template>
   <v-card class="ma-4">
     <v-card-title style="white-space: normal">
-      {{ t.productsCard.title }}</v-card-title
-    >
+      {{ t.productsCard.title }}
+    </v-card-title>
     <v-card-text>
-      <p class="mb-4 mt-4">
+      <p class="mb-4">
         {{ t.productsCard.text }}
       </p>
+      <p class="mb-4">Summe: {{ Math.ceil(selfGrownProductSum) }}€</p>
       <v-row>
         <v-col cols="12" sm="6" md="4" v-for="item in topProducts">
           <v-progress-circular
