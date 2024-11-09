@@ -102,19 +102,22 @@ export const saveApplicant = async (
   });
 
   // send email to applicant
-  const title = "Registrierung bestätigt";
-  const paragraphs = [
-    `Hallo ${request.address.firstname},`,
-    `danke, dass du dich beim ${appConfig.address.name} registriert hast. Wir werden deine Anmeldung zeitnah bearbeiten und du erhältst eine weitere Bestätigungsmail mit deinem Benutzernamen.`,
-    "Viele Grüße",
-    "Die ehrenamtlichen Mitglieder der Solawi Gemüseanbau in Graupa",
-  ];
-  sendEmail({
-    sender: config.email.sender,
-    receiver: request.address.email,
-    subject: title,
-    paragraphs,
-  });
+  if (config.email.sendConfirmation) {
+    const title = "Registrierung bestätigt";
+    const paragraphs = [
+      `Hallo,`,
+      `danke, dass du dich beim ${appConfig.address.name} registriert hast. ` +
+        "Wir werden deine Anmeldung zeitnah bearbeiten und du erhältst eine weitere Bestätigungsmail mit deinem Benutzernamen.",
+      "Viele Grüße",
+      `Die ehrenamtlichen Mitglieder vom ${appConfig.address.name}`,
+    ];
+    sendEmail({
+      sender: config.email.sender,
+      receiver: request.address.email,
+      subject: title,
+      paragraphs,
+    });
+  }
 
   ctx.status = http.created;
 };
