@@ -59,3 +59,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #132 Admins können Wartungshinweistext konfigurieren (unter Menü -> Text)
 
 # NEW
+
+#140 Nutzer erhalten Bestätigungsmail bei Registrierung (benötigt EMAIL_SEND_CONFIRMATION=true in env-be-prod.env)
