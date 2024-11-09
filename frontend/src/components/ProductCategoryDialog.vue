@@ -113,7 +113,7 @@ const onSave = async () => {
         ></v-switch>
         <v-select
           v-model="editedProductCategory.typ"
-          :label="t.productCategoryTyp"
+          :label="t.productCategoryType"
           :items="productCategoryTypOptions"
         ></v-select>
       </v-card-text>

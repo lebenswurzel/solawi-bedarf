@@ -28,7 +28,7 @@ const selfGrownProducts = computed(() => {
   return Object.entries(biStore.soldByProductId)
     .filter(
       ([productId]) =>
-        biStore.productsById[parseInt(productId)].productCategoryTyp ==
+        biStore.productsById[parseInt(productId)].productCategoryType ==
         ProductCategoryType.SELFGROWN,
     )
     .map(([productId, value]) => ({
