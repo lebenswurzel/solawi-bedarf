@@ -392,6 +392,16 @@ export const language = {
         },
       },
     },
+    statistics: {
+      title: "Statistiken",
+      navigation: {
+        subtitle: "Admin",
+      },
+      productsCard: {
+        title: "Produkte nach monatlichem Umsatz",
+        text: "In Bedarfsanmeldungen enthaltene Produkte mit durchschnittlichem Monatsumsatz in Klammern:",
+      },
+    },
   },
   components: {
     seasonSelector: {

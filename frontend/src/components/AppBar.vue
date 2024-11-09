@@ -180,5 +180,13 @@ const onToggleTheme = () => {
         language.pages.overview.navigation.subtitle
       }}</v-list-item-subtitle>
     </v-list-item>
+    <v-list-item to="/statistics" v-if="currentUser?.role == UserRole.ADMIN">
+      <v-list-item-title>
+        {{ language.pages.statistics.title }}</v-list-item-title
+      >
+      <v-list-item-subtitle>{{
+        language.pages.statistics.navigation.subtitle
+      }}</v-list-item-subtitle>
+    </v-list-item>
   </v-navigation-drawer>
 </template>
