@@ -62,3 +62,4 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 
 #140 Nutzer erhalten Bestätigungsmail bei Registrierung (benötigt EMAIL_SEND_CONFIRMATION=true in env-be-prod.env).
 #135 Kreisdiagramme auf Home-Seite zeigt nur noch Verteilung der Selbstanbauprodukte.
+#137 Bedarfsanmeldung: zusätzliche Abfrage zur Bestätigung des aktiven/engagierten Mitgliedschaftsmodells.
