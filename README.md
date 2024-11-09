@@ -40,19 +40,22 @@ It is advised to schedule regular database backups, e.g., using cron:
 
 `0 3 * * * /path/to/repo/dev/backup/database-backup.bash`
 
+This will create backups in the folder `./database/backups` which is mounted into the database container.
+
 Also make sure to have backups of your custom .env files, especially the SECRETs.
 
 ### Updating
 
-This should be done during a time with low expected user activity.
+This should be done during a time with low expected user activity. You may consider notifying the user about
+planned downtimes by setting a maintenance message (Wartungshinweis) under the **Text** menu entry.
 
 On the production server:
 
 1. Check out the desired branch or tag
+   - `git pull`
+   - `git switch BRANCHNAME` or `git checkout v1.2.3`
 2. Run `./dev/build/build-and-deploy.bash update` from the project root to build up-to-date containers locally
-   - This will also trigger a database backup to the /backups folder in the container. Make sure a host
-     folder with permissions 0777 is mounted from the host so that user 'postgres' in the container
-     can write to it!
+   - This will also trigger a database backup to the /backups folder in the container.
 3. Run `docker compose up -d` to start
 
 ## Development
