@@ -58,8 +58,10 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 
 #132 Admins können Wartungshinweistext konfigurieren (unter Menü -> Text)
 
-# NEW
+# v0.4.3 - 2024-11-09 - Bestätigungsmail und Diagramme
 
 #140 Nutzer erhalten Bestätigungsmail bei Registrierung (benötigt EMAIL_SEND_CONFIRMATION=true in env-be-prod.env).
 #135 Kreisdiagramme auf Home-Seite zeigt nur noch Verteilung der Selbstanbauprodukte.
 #137 Bedarfsanmeldung: zusätzliche Abfrage zur Bestätigung des aktiven/engagierten Mitgliedschaftsmodells.
+
+# NEW
