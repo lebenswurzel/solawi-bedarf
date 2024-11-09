@@ -17,6 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import nodemailer from "nodemailer";
 import { config } from "../../config";
 import { appConfig } from "../../../../shared/src/config";
+import { escapeHtmlEntities } from "../../../../shared/src/util/stringHelper";
 
 let emailEnabled = false;
 
@@ -62,7 +63,9 @@ export const sendEmail = async ({
 }) => {
   if (emailEnabled) {
     if (html === undefined) {
-      const content = paragraphs.join("</p><p>");
+      const content = paragraphs
+        .map((v) => escapeHtmlEntities(v))
+        .join("</p><p>");
       html =
         '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">' +
         '<meta name="viewport" content="width=device-width, initial-scale=1.0">' +
