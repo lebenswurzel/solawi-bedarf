@@ -15,27 +15,27 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { MigrationInterface, QueryRunner } from "typeorm";
-import { ProductCategoryTyp } from "../../../shared/src/enum";
+import { ProductCategoryType } from "../../../shared/src/enum";
 
 export class AddProductCategoryType1731067417340 implements MigrationInterface {
   name = "AddProductCategoryType1731067417340";
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
-      `CREATE TYPE "public"."product_category_typ_enum" AS ENUM('SELFGROWN', 'COOPERATION')`,
+      `CREATE TYPE "public"."product_category_type_enum" AS ENUM('SELFGROWN', 'COOPERATION')`,
     );
     await queryRunner.query(
-      `ALTER TABLE "product_category" ADD "typ" "public"."product_category_typ_enum"`,
+      `ALTER TABLE "product_category" ADD "typ" "public"."product_category_type_enum"`,
     );
 
     // set sane defaults
     await queryRunner.query(
       `UPDATE "product_category" SET "typ"=$1 WHERE "id"=1`,
-      [ProductCategoryTyp.SELFGROWN],
+      [ProductCategoryType.SELFGROWN],
     );
     await queryRunner.query(
       `UPDATE "product_category" SET "typ"=$1 WHERE "id"!=1`,
-      [ProductCategoryTyp.COOPERATION],
+      [ProductCategoryType.COOPERATION],
     );
 
     // set NOT NULL constraint
@@ -46,6 +46,6 @@ export class AddProductCategoryType1731067417340 implements MigrationInterface {
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`ALTER TABLE "product_category" DROP COLUMN "typ"`);
-    await queryRunner.query(`DROP TYPE "public"."product_category_typ_enum"`);
+    await queryRunner.query(`DROP TYPE "public"."product_category_type_enum"`);
   }
 }
