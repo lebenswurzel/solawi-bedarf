@@ -50,7 +50,7 @@ export enum TextContentTyp {
   MD = "MD",
 }
 
-export enum ProductCategoryTyp {
+export enum ProductCategoryType {
   SELFGROWN = "SELFGROWN",
   COOPERATION = "COOPERATION",
 }

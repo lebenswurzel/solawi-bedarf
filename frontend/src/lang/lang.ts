@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import {
-  ProductCategoryTyp,
+  ProductCategoryType,
   UserCategory,
   UserRole,
 } from "../../../shared/src/enum.ts";
@@ -102,11 +102,11 @@ export const language = {
         },
       },
       productCategoryTyps: {
-        [ProductCategoryTyp.SELFGROWN]: {
+        [ProductCategoryType.SELFGROWN]: {
           title: "Selbstanbauprodukte",
           subtitle: "Die Produkte werden in {name} angebaut",
         },
-        [ProductCategoryTyp.COOPERATION]: {
+        [ProductCategoryType.COOPERATION]: {
           title: "Kooperationsprodukte",
           subtitle:
             "Die Produkte werden durch Kooperationspartner bereitgestellt",

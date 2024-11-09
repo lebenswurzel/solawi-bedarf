@@ -26,7 +26,7 @@ import { useUiFeedback } from "../store/uiFeedbackStore.ts";
 import { ref, watch } from "vue";
 import { useConfigStore } from "../store/configStore.ts";
 import { useProductStore } from "../store/productStore.ts";
-import { ProductCategoryTyp } from "../../../shared/src/enum.ts";
+import { ProductCategoryType } from "../../../shared/src/enum.ts";
 const t = language.pages.product.dialog;
 
 const uiFeedback = useUiFeedback();
@@ -45,11 +45,11 @@ const editedProductCategory = ref<NewProductCategory | ProductCategory>({
 const productCategoryTypOptions = [
   {
     title: language.app.options.productCategoryTyps.SELFGROWN.title,
-    value: ProductCategoryTyp.SELFGROWN,
+    value: ProductCategoryType.SELFGROWN,
   },
   {
     title: language.app.options.productCategoryTyps.COOPERATION.title,
-    value: ProductCategoryTyp.COOPERATION,
+    value: ProductCategoryType.COOPERATION,
   },
 ];
 
