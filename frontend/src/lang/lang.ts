@@ -297,7 +297,7 @@ export const language = {
         product: "Produkt",
         name: "Name",
         active: "Aktiv",
-        productCategoryTyp: "Art der enthaltenen Produkte",
+        productCategoryType: "Art der enthaltenen Produkte",
         sold: "Verkauft [{unit}]",
         delivered: "Geliefert",
         deliveries: "Lieferungen an Depots",
