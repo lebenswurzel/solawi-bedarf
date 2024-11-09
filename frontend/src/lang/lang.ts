@@ -399,7 +399,7 @@ export const language = {
       },
       productsCard: {
         title: "Produkte nach monatlichem Umsatz",
-        text: "In Bedarfsanmeldungen enthaltene Produkte mit durchschnittlichem Monatsumsatz in Klammern:",
+        text: "In Bedarfsanmeldungen enthaltene Produkte mit durchschnittlichem Monatsumsatz in Klammern.",
       },
     },
   },
