@@ -65,7 +65,7 @@ export type Product = Required<NewProduct> & Id;
 
 export type ProductWithProductCategoryTyp = Required<NewProduct> &
   Id & {
-    productCategoryTyp: ProductCategoryType;
+    productCategoryType: ProductCategoryType;
   };
 
 export type ProductsById = {
