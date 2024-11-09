@@ -40,7 +40,8 @@ export const config = {
     port: process.env.PHP_PORT || 8180,
   },
   email: {
-    enabled: process.env.EMAIL_ENABLED || false,
+    enabled: process.env.EMAIL_ENABLED === "true",
+    sendConfirmation: process.env.EMAIL_SEND_CONFIRMATION === "true",
     host: process.env.EMAIL_HOST || "smtp.solawi.biz",
     port: process.env.EMAIL_PORT || 587,
     username: process.env.EMAIL_USERNAME || "email",
