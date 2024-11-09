@@ -30,7 +30,7 @@ import { useConfigStore } from "../../store/configStore";
 import { useProductStore } from "../../store/productStore";
 import { sanitizeFileName } from "../../../../shared/src/util/fileHelper";
 import { objectToCsv } from "../../lib/overview";
-import { ProductCategoryTyp } from "../../../../shared/src/enum";
+import { ProductCategoryType } from "../../../../shared/src/enum";
 const t = language.pages.product;
 
 const props = defineProps<{
@@ -95,7 +95,7 @@ const onCloseProductCategory = async () => {
         ].title
       }}
       <v-icon>{{
-        props.productCategoryWithProducts.typ == ProductCategoryTyp.COOPERATION
+        props.productCategoryWithProducts.typ == ProductCategoryType.COOPERATION
           ? "mdi-truck-delivery"
           : "mdi-sprout"
       }}</v-icon>

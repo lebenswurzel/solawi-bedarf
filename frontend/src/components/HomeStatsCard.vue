@@ -20,7 +20,7 @@ import { language } from "../lang/lang.ts";
 import { interpolate } from "../lang/template.ts";
 import { computed } from "vue";
 import { useBIStore } from "../store/biStore";
-import { ProductCategoryTyp } from "../../../shared/src/enum.ts";
+import { ProductCategoryType } from "../../../shared/src/enum.ts";
 import SeasonText from "../components/styled/SeasonText.vue";
 
 const t = language.pages.home;
@@ -39,7 +39,7 @@ const selfGrownProducts = computed(() => {
     .filter(
       ([productId]) =>
         biStore.productsById[parseInt(productId)].productCategoryTyp ==
-        ProductCategoryTyp.SELFGROWN,
+        ProductCategoryType.SELFGROWN,
     )
     .map(([productId, value]) => ({
       sold: value,

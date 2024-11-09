@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import {
-  ProductCategoryTyp,
+  ProductCategoryType,
   TextContentCategory,
   Unit,
   UserCategory,
@@ -65,7 +65,7 @@ export type Product = Required<NewProduct> & Id;
 
 export type ProductWithProductCategoryTyp = Required<NewProduct> &
   Id & {
-    productCategoryTyp: ProductCategoryTyp;
+    productCategoryTyp: ProductCategoryType;
   };
 
 export type ProductsById = {
@@ -76,7 +76,7 @@ export interface NewProductCategory {
   name?: string;
   active: boolean;
   requisitionConfigId: number;
-  typ: ProductCategoryTyp;
+  typ: ProductCategoryType;
 }
 
 export type ProductCategory = Required<NewProductCategory> & Id;

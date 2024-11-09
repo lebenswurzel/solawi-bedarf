@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
 import { computed } from "vue";
-import { ProductCategoryTyp } from "../../../../shared/src/enum.ts";
+import { ProductCategoryType } from "../../../../shared/src/enum.ts";
 import { language } from "../../lang/lang.ts";
 import { convertToBigUnit } from "../../lang/template.ts";
 import { useBIStore } from "../../store/biStore";
@@ -29,7 +29,7 @@ const selfGrownProducts = computed(() => {
     .filter(
       ([productId]) =>
         biStore.productsById[parseInt(productId)].productCategoryTyp ==
-        ProductCategoryTyp.SELFGROWN,
+        ProductCategoryType.SELFGROWN,
     )
     .map(([productId, value]) => ({
       sold: value,

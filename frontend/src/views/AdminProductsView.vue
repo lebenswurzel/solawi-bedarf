@@ -26,13 +26,13 @@ import { useBIStore } from "../store/biStore";
 import { useConfigStore } from "../store/configStore.ts";
 import { storeToRefs } from "pinia";
 import ProductCategoryConfig from "../components/products/ProductCategoryConfig.vue";
-import { ProductCategoryTyp } from "../../../shared/src/enum.ts";
+import { ProductCategoryType } from "../../../shared/src/enum.ts";
 const t = language.pages.product;
 
 const defaultProductCategory: NewProductCategory = {
   active: false,
   requisitionConfigId: -1,
-  typ: ProductCategoryTyp.SELFGROWN,
+  typ: ProductCategoryType.SELFGROWN,
 };
 
 const configStore = useConfigStore();
@@ -96,7 +96,7 @@ const onCloseProductCategory = async () => {
             >{{ productCategory.name }}
             &nbsp;
             <v-icon>{{
-              productCategory.typ == ProductCategoryTyp.COOPERATION
+              productCategory.typ == ProductCategoryType.COOPERATION
                 ? "mdi-truck-delivery"
                 : "mdi-sprout"
             }}</v-icon>
