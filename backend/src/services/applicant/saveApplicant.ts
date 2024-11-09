@@ -23,6 +23,7 @@ import { Applicant } from "../../database/Applicant";
 import { UserAddress } from "../../database/UserAddress";
 import { sendEmail } from "../email/email";
 import { config } from "../../config";
+import { appConfig } from "../../../../shared/src/config";
 
 export const saveApplicant = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -91,12 +92,29 @@ export const saveApplicant = async (
   applicant.address = address;
 
   await AppDataSource.getRepository(Applicant).save(applicant);
+
+  // send email to ourselves
   sendEmail({
     sender: config.email.sender,
     receiver: config.email.receiver,
-    subject: "Neuer Interresent",
-    text: "Ein neuer Interresent hat sich gemeldet.",
-    html: '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Neuer Interresent</title></head><body><p>Ein neuer Interresent hat sich gemeldet.</p></body></html>',
+    subject: "Neuer Interessent",
+    paragraphs: ["Ein neuer Interessent hat sich gemeldet."],
   });
+
+  // send email to applicant
+  const title = "Registrierung bestätigt";
+  const paragraphs = [
+    `Hallo ${request.address.firstname},`,
+    `danke, dass du dich beim ${appConfig.address.name} registriert hast. Wir werden deine Anmeldung zeitnah bearbeiten und du erhältst eine weitere Bestätigungsmail mit deinem Benutzernamen.`,
+    "Viele Grüße",
+    "Die ehrenamtlichen Mitglieder der Solawi Gemüseanbau in Graupa",
+  ];
+  sendEmail({
+    sender: config.email.sender,
+    receiver: request.address.email,
+    subject: title,
+    paragraphs,
+  });
+
   ctx.status = http.created;
 };
