@@ -16,6 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import nodemailer from "nodemailer";
 import { config } from "../../config";
+import { appConfig } from "../../../../shared/src/config";
 
 let emailEnabled = false;
 
@@ -50,22 +51,30 @@ export const sendEmail = async ({
   sender,
   receiver,
   subject,
-  text,
+  paragraphs,
   html,
 }: {
   sender: string;
   receiver: string;
   subject: string;
-  text: string;
-  html: string;
+  paragraphs: string[];
+  html?: string;
 }) => {
   if (emailEnabled) {
-    const senderName = "Plantage";
+    if (html === undefined) {
+      const content = paragraphs.join("</p><p>");
+      html =
+        '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">' +
+        '<meta name="viewport" content="width=device-width, initial-scale=1.0">' +
+        `<title>${subject}</title></head><body><p>${content}</p></body></html>`;
+    }
+
+    const senderName = appConfig.address.name;
     const info = await transporter.sendMail({
       from: `"${senderName}" <${sender}>`,
       to: receiver,
       subject: subject,
-      text: text,
+      text: paragraphs.join("\n\n"),
       html: html,
       // headers: { "x-myheader": "test header" },
     });
