@@ -24,6 +24,8 @@ import { getUserFromContext } from "../getUserFromContext";
 import { AvailableConfig } from "../../../../shared/src/types";
 import { getNumericQueryParameter } from "../../util/requestUtil";
 import { UserRole } from "../../../../shared/src/enum";
+import { User } from "../../database/User";
+import { Order } from "../../database/Order";
 
 export const getConfig = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -39,14 +41,27 @@ export const getConfig = async (
     where = { public: true };
   }
 
-  let requisitionConfig: RequisitionConfig | null;
+  let requisitionConfig: RequisitionConfig | null = null;
   const requestId = getNumericQueryParameter(ctx.request.query, "configId");
   if (requestId < 0) {
-    // find any existing config to retain previous behavior
-    // ... maybe specify some condition?
-    requisitionConfig = await AppDataSource.getRepository(
-      RequisitionConfig,
-    ).findOne({ where });
+    // select a default season based on the current user
+    // * Users with an order in the current season: current season
+    // * Users without an order in the current season: the next season
+    const configs = await AppDataSource.getRepository(RequisitionConfig).find({
+      where,
+      order: {
+        validFrom: "ASC",
+      },
+    });
+
+    if (configs.length == 1) {
+      requisitionConfig = configs[0];
+    } else if (configs.length > 1) {
+      requisitionConfig = await getFirstConfigWithActiveOrderOrLast(
+        user.id,
+        configs,
+      );
+    }
   } else {
     requisitionConfig = await AppDataSource.getRepository(
       RequisitionConfig,
@@ -78,4 +93,21 @@ export const getConfig = async (
     config: requisitionConfig,
     availableConfigs,
   };
+};
+
+const getFirstConfigWithActiveOrderOrLast = async (
+  userId: number,
+  configs: RequisitionConfig[],
+): Promise<RequisitionConfig | null> => {
+  for (let config of configs) {
+    const foundOrders = await AppDataSource.getRepository(Order).find({
+      where: { userId, requisitionConfigId: config.id },
+    });
+
+    if (foundOrders.length > 0) {
+      return config;
+    }
+  }
+  // if no order exists, return the last avaiable config
+  return configs[configs.length - 1];
 };
