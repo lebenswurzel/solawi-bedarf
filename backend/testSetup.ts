@@ -151,6 +151,15 @@ export interface TestUserData {
   };
 }
 
+export interface TestAdminAndUserData {
+  userData: {
+    adminToken: string;
+    adminId: number;
+    userToken: string;
+    userId: number;
+  };
+}
+
 /**
  * test fixture for tests that require a logged in admin
  */
@@ -159,6 +168,16 @@ export const testAsAdmin = test.extend<TestUserData>({
     const token = await loginUser("admin", "admin");
     const userId = await getUserId("admin");
     await use({ token, userId });
+  },
+});
+
+export const testAsAdminAndUser = test.extend<TestAdminAndUserData>({
+  userData: async ({}, use) => {
+    const adminToken = await loginUser("admin", "admin");
+    const adminId = await getUserId("admin");
+    const userToken = await loginUser("user1", "123456");
+    const userId = await getUserId("user1");
+    await use({ adminToken, adminId, userToken, userId });
   },
 });
 
