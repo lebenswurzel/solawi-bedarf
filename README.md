@@ -44,6 +44,12 @@ This will create backups in the folder `./database/backups` which is mounted int
 
 Also make sure to have backups of your custom .env files, especially the SECRETs.
 
+For managing backup retention, a helper script can be found in `./dev/backup/cleanup_backups_script.sh`.
+
+You may set up a crontab rule to daily execute this script in the database container:
+
+`10 3 * * * /path/to/repo/dev/backup/database-clean-backups.bash`
+
 ### Updating
 
 This should be done during a time with low expected user activity. You may consider notifying the user about
