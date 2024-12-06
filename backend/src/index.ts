@@ -50,6 +50,7 @@ import { createConfig } from "./services/config/createConfig";
 import { deleteProductCategory } from "./services/product/deleteProductCategory";
 import { deleteProduct } from "./services/product/deleteProduct";
 import { getVersion } from "./services/getVersion";
+import { updateUser } from "./services/user/updateUser";
 
 const port = config.server.serverPort;
 const app = new Koa();
@@ -96,6 +97,7 @@ router.get("/user/token", login);
 router.delete("/user/token", logout);
 router.get("/user/data", getOrder);
 router.post("/user", saveUser);
+router.put("/user", updateUser);
 
 router.post("/applicant", saveApplicant);
 router.get("/applicant", getApplicant);
