@@ -64,7 +64,9 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #135 Kreisdiagramme auf Home-Seite zeigt nur noch Verteilung der Selbstanbauprodukte.
 #137 Bedarfsanmeldung: zusätzliche Abfrage zur Bestätigung des aktiven/engagierten Mitgliedschaftsmodells.
 
-# NEW
+# v0.4.4 - 2024-12-06 - Saisonschalter-Hinweis und Multiedit für Benutzer
 
 #152 Hinweis auf Saison-Umschalter sobald die neue Saison verfügbar ist.
 #155 Admin: Benutzertabelle ermöglicht das Aktivieren/Deaktivieren von mehreren Benutzern gleichzeitig.
+
+# NEW
