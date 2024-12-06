@@ -122,11 +122,11 @@ watch(selectedUsers, () => {
     <v-card-text>
       <v-container fluid>
         <v-row no-gutters>
-          <v-col cols="10" sm="7">
+          <v-col cols="11" sm="7">
             <div class="d-flex align-center" v-if="selectedUsers.length > 0">
               <v-tooltip :text="selectedUserNames" location="top">
                 <template v-slot:activator="{ props }">
-                  <span v-bind="props">
+                  <span v-bind="props" class="mb-5">
                     Aktion für {{ selectedUsers.length }} gewählt Nutzer:
                   </span>
                 </template>
@@ -135,21 +135,22 @@ watch(selectedUsers, () => {
                 variant="outlined"
                 density="compact"
                 :items="selectedUserActions"
-                hide-details
                 v-model="selectedAction"
-                class="ma-1"
+                class="ma-1 mb-7"
+                hide-details
               ></v-select>
               <v-btn
                 rounded="3"
                 @click="applySelectedAction"
-                class="ma-1"
+                class="ma-1 mb-7"
                 :disabled="isProcessing"
                 >OK</v-btn
               >
             </div>
           </v-col>
-          <v-col cols="2" sm="1" class="d-flex align-center">
+          <v-col cols="1" class="d-flex align-center">
             <v-progress-circular
+              class="mb-6"
               v-if="actionProgress == 100 || isProcessing"
               :color="actionProgress == 100 ? 'green' : 'grey'"
               :model-value="actionProgress"
