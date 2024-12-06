@@ -16,6 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import {
   SaveUserRequest,
+  UpdateUserRequest,
   UserWithLastOrderChange,
 } from "../../../shared/src/types.ts";
 import { getUrl, verifyResponse } from "./requests.ts";
@@ -34,6 +35,18 @@ export const getUser = async (): Promise<{
 export const saveUser = async (user: SaveUserRequest) => {
   const response = await fetch(getUrl("/user"), {
     method: "POST",
+    body: JSON.stringify(user),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  await verifyResponse(response);
+};
+
+export const updateUser = async (user: UpdateUserRequest) => {
+  const response = await fetch(getUrl("/user"), {
+    method: "PUT",
     body: JSON.stringify(user),
     headers: {
       "Content-Type": "application/json",

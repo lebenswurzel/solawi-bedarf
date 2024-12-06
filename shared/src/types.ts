@@ -47,6 +47,10 @@ export type UserWithLastOrderChange = Required<User> & {
   lastOrderChange: Date;
 };
 
+export type UpdateUserRequest = Id & {
+  active?: boolean;
+};
+
 export interface NewProduct {
   description?: string | null;
   name?: string;
