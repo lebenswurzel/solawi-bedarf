@@ -20,6 +20,7 @@ import App from "./App.vue";
 
 import "@mdi/font/css/materialdesignicons.css";
 import "vuetify/styles";
+import "./styles/animation.css";
 import { createVuetify } from "vuetify";
 import { md3 } from "vuetify/blueprints";
 import { router } from "./routes";

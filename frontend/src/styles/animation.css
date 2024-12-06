@@ -1,0 +1,30 @@
+.shake-animation {
+  animation: shake 2s cubic-bezier(0.36, 0.07, 0.19, 0.97) infinite;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+@keyframes shake {
+  0%,
+  30% {
+    transform: translate3d(0, 0, 0);
+  }
+  3%,
+  27% {
+    transform: translate3d(-1px, 0, 0);
+  }
+  6%,
+  24% {
+    transform: translate3d(2px, 0, 0);
+  }
+  9%,
+  15%,
+  21% {
+    transform: translate3d(-4px, 0, 0);
+  }
+  12%,
+  18% {
+    transform: translate3d(4px, 0, 0);
+  }
+}
