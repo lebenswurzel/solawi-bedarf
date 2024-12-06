@@ -21,6 +21,8 @@ import { language } from "../lang/lang.ts";
 import { useConfigStore } from "../store/configStore.ts";
 
 const open = ref(false);
+const buttonRef = ref<Element>();
+const newSeasonHintConfirmed = ref(false);
 const loading = ref(false);
 const t = language.components.seasonSelector;
 const configStore = useConfigStore();
@@ -64,23 +66,61 @@ const onCancel = () => {
 const openDialog = () => {
   open.value = true;
 };
+
+const onConfirmTooltip = () => {
+  newSeasonHintConfirmed.value = true;
+};
+
+const showNewSeasonHint = computed(() => {
+  return !newSeasonHintConfirmed.value;
+});
 </script>
 
 <template>
   <v-btn
+    ref="buttonRef"
     class="pa-2 season-indicator rounded-lg"
-    :class="seasonColorClass"
+    :class="[seasonColorClass, { 'shake-animation': showNewSeasonHint }]"
     @click="openDialog"
     :prepend-icon="config?.public ? '' : 'mdi-eye-off-outline'"
-    >{{ config?.name || "Saison ?" }}</v-btn
   >
+    {{ config?.name || "Saison ?" }}
+  </v-btn>
+
+  <v-overlay
+    v-bind:modelValue="showNewSeasonHint"
+    :activator="buttonRef"
+    location-strategy="connected"
+    location="bottom"
+    scroll-strategy="block"
+    persistent
+    :openOnClick="false"
+  >
+    <v-card
+      variant="elevated"
+      color="info"
+      max-width="300"
+      prepend-icon="mdi-information"
+      title="Hinweis"
+    >
+      <v-card-text>
+        Über diesen Schalter kann die Ansicht zwischen der aktuellen und der
+        nächsten Saison umgeschaltet werden.
+      </v-card-text>
+      <v-card-actions class="justify-center">
+        <v-btn variant="elevated" color="primary" @click="onConfirmTooltip"
+          >Verstanden</v-btn
+        >
+      </v-card-actions>
+    </v-card>
+  </v-overlay>
 
   <v-dialog
     :model-value="open"
     @update:model-value="onCancel"
     style="max-width: 800px"
   >
-    <v-card>
+    <v-card variant="elevated">
       <v-card-title class="text-center">{{
         language.components.seasonSelector.label
       }}</v-card-title>
