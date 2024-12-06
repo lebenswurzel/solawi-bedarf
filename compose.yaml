@@ -10,7 +10,7 @@ services:
     volumes:
       - ./database/pgdata:/var/lib/postgresql/data/pgdata
       - ./database/backups:/backups
-      - ./dev/backup/cleanup_backups_script.sh:/cleanup_backups_script.sh
+      - ./dev/backup:/backup_scripts
   be:
     build:
       context: ./

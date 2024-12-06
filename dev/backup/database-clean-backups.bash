@@ -6,7 +6,7 @@ BACKUPS_DIR=/backups
 
 echo "Cleaning up old backups in $CONTAINER"
 
-docker exec -t $CONTAINER sh -c "/cleanup_backups_script.sh $BACKUPS_DIR"
+docker exec -t $CONTAINER sh -c "/backup_scripts/cleanup_backups_script.sh $BACKUPS_DIR"
 if [ $? -ne 0 ]; then
   echo "Error cleaning backups in $BACKUPS_DIR in the container"
   exit 1
