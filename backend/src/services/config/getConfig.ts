@@ -21,7 +21,7 @@ import { Depot } from "../../database/Depot";
 import { RequisitionConfig } from "../../database/RequisitionConfig";
 import { AppDataSource } from "../../database/database";
 import { getUserFromContext } from "../getUserFromContext";
-import { AvailableConfig } from "../../../../shared/src/types";
+import { AvailableConfig, ConfigResponse } from "../../../../shared/src/types";
 import { getNumericQueryParameter } from "../../util/requestUtil";
 import { UserRole } from "../../../../shared/src/enum";
 import { User } from "../../database/User";
@@ -88,11 +88,17 @@ export const getConfig = async (
     };
   });
 
+  // show hint, if the currently selected season is not the same as the newest season
+  const showSeasonSelectorHint =
+    availableConfigs.length > 1 &&
+    availableConfigs[availableConfigs.length - 1].id != requisitionConfig.id;
+
   ctx.body = {
     depots,
     config: requisitionConfig,
     availableConfigs,
-  };
+    showSeasonSelectorHint,
+  } satisfies ConfigResponse;
 };
 
 const getFirstConfigWithActiveOrderOrLast = async (

@@ -47,6 +47,7 @@ export const getConfig = async (
       public: raw.config.public,
     },
     availableConfigs: raw.availableConfigs,
+    showSeasonSelectorHint: raw.showSeasonSelectorHint,
   };
 };
 

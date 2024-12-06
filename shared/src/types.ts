@@ -188,6 +188,7 @@ export interface ConfigResponse {
   depots: Depot[];
   config: RequisitionConfig & Id;
   availableConfigs: AvailableConfig[];
+  showSeasonSelectorHint: boolean;
 }
 
 export type SoldByProductId = {

@@ -105,12 +105,14 @@ testAsAdminAndUser(
       originalConfig.id,
     );
 
+    // test as user
     const ctxNoId = createBasicTestCtx(undefined, userData.userToken);
     await getConfig(ctxNoId);
     const response = ctxNoId.body as ConfigResponse;
 
     // no order was placed --> return the latest season
     expect(response.config).toMatchObject(season2);
+    expect(response.showSeasonSelectorHint).toEqual(false);
 
     // create an order in season1
     await _createOrder(userData.userToken, userData.userId, season1.id);
@@ -119,6 +121,14 @@ testAsAdminAndUser(
     const ctxNoId2 = createBasicTestCtx(undefined, userData.userToken);
     await getConfig(ctxNoId2);
     expect(ctxNoId2.body.config).toMatchObject(season1);
+    expect(ctxNoId2.body.showSeasonSelectorHint).toEqual(true);
+
+    // test as admin
+    // return hidden season (which is the latest season and because admin has no orders)
+    const ctxNoIdAdmin = createBasicTestCtx(undefined, userData.adminToken);
+    await getConfig(ctxNoIdAdmin);
+    expect(ctxNoIdAdmin.body.config).toMatchObject(originalConfig);
+    expect(ctxNoIdAdmin.body.showSeasonSelectorHint).toEqual(false);
   },
 );
 
