@@ -66,4 +66,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 
 # NEW
 
-#152 Hinweis auf Saison-Umschalter sobald die neue Saison verfügbar ist
+#152 Hinweis auf Saison-Umschalter sobald die neue Saison verfügbar ist.
+#155 Admin: Benutzertabelle ermöglicht das Aktivieren/Deaktivieren von mehreren Benutzern gleichzeitig.
