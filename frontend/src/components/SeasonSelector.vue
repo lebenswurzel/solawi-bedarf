@@ -22,13 +22,20 @@ import { useConfigStore } from "../store/configStore.ts";
 
 const open = ref(false);
 const buttonRef = ref<Element>();
-const newSeasonHintConfirmed = ref(false);
+const newSeasonHintConfirmed = ref<boolean>(
+  localStorage.getItem("newSeasonHintConfirmed") === "true",
+);
 const loading = ref(false);
 const t = language.components.seasonSelector;
 const configStore = useConfigStore();
 
-const { availableConfigs, config, seasonColorClass, activeConfigId } =
-  storeToRefs(configStore);
+const {
+  availableConfigs,
+  config,
+  seasonColorClass,
+  activeConfigId,
+  showSeasonSelectorHint,
+} = storeToRefs(configStore);
 
 const selectedConfig = ref<number | undefined>(activeConfigId.value);
 
@@ -69,10 +76,11 @@ const openDialog = () => {
 
 const onConfirmTooltip = () => {
   newSeasonHintConfirmed.value = true;
+  localStorage.setItem("newSeasonHintConfirmed", "true");
 };
 
 const showNewSeasonHint = computed(() => {
-  return !newSeasonHintConfirmed.value;
+  return !newSeasonHintConfirmed.value && showSeasonSelectorHint.value;
 });
 </script>
 

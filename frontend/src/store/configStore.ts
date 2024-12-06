@@ -38,6 +38,7 @@ export const useConfigStore = defineStore("config", () => {
   const config = ref<ExistingConfig>();
   const activeConfigId = ref<number>(-1);
   const availableConfigs = ref<AvailableConfig[]>([]);
+  const showSeasonSelectorHint = ref<boolean>(false);
   const externalAuthProvider = ref<boolean>(appConfig.externalAuthProvider);
   const seasonColorClass = ref<string>(seasonColorClasses[0]);
 
@@ -71,6 +72,7 @@ export const useConfigStore = defineStore("config", () => {
       depots: requestDepots,
       config: requestConfig,
       availableConfigs: requestAvailableConfigs,
+      showSeasonSelectorHint: requestShowSeasonSelectorHint,
     } = await getConfigOrDefaultConfig(requestedConfigId);
 
     depots.value = requestDepots;
@@ -79,6 +81,7 @@ export const useConfigStore = defineStore("config", () => {
     seasonColorClass.value =
       seasonColorClasses[(config.value.id || 0) % seasonColorClasses.length];
     availableConfigs.value = requestAvailableConfigs;
+    showSeasonSelectorHint.value = requestShowSeasonSelectorHint;
     localStorage.setItem("activeConfigId", "" + activeConfigId.value);
   };
 
@@ -89,6 +92,7 @@ export const useConfigStore = defineStore("config", () => {
     activeConfigId,
     availableConfigs,
     seasonColorClass,
+    showSeasonSelectorHint,
     update,
     clear,
   };
