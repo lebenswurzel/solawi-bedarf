@@ -65,3 +65,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #137 Bedarfsanmeldung: zusätzliche Abfrage zur Bestätigung des aktiven/engagierten Mitgliedschaftsmodells.
 
 # NEW
+
+#152 Hinweis auf Saison-Umschalter sobald die neue Saison verfügbar ist
