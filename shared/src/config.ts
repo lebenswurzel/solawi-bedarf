@@ -22,6 +22,8 @@ export const appConfig = {
     street: "Lindengrundstrasse 20",
     postalcode: "01796",
     city: "Pirna OT Graupa",
+    email: "solawi@lebenswurzel.org",
+    forumContact: "@rike",
   },
   msrp: {
     [UserCategory.CAT100]: {
@@ -56,6 +58,6 @@ export const appConfig = {
     },
   },
   meta: {
-    sourceCodeUrl: "https://github.com/lebenswurzel/solawi-bedarf"
-  }
+    sourceCodeUrl: "https://github.com/lebenswurzel/solawi-bedarf",
+  },
 };

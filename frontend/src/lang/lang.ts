@@ -88,17 +88,17 @@ export const language = {
       orderUserCategories: {
         [UserCategory.CAT130]: {
           title: "stilles Solawi-Mitglied",
-          subtitle: "keine Mitarbeit",
+          subtitle:
+            "keine Mitarbeit, (Orientierungswert mit ca. 15% Aufschlag als Ausgleich für fehlende Beteiligung)",
         },
         [UserCategory.CAT115]: {
-          title: "aktives Solawi-Mitglied",
-          subtitle:
-            "Mitarbeit ca. 5 h/Monat, z. B. Depotkoordination, regelmäßiges Mitgärtnern (Orientierungswert mit ca. 11 % Ermäßigung)",
+          title: "aktives Mitglied",
+          subtitle: "Mitarbeit mindestens 5 h/Monat",
         },
         [UserCategory.CAT100]: {
-          title: "engagiertes Solawi-Mitglied",
+          title: "engagiertes Mitglied",
           subtitle:
-            "Mitarbeit mind. 10 h/Monat, z. B. Aufgaben übernehmen in AGs, regelmäßiges Mitgärtnern (Orientierungswert mit ca. 23 % Ermäßigung)",
+            "Mitarbeit mindestens 10 h/Monat, (Orientierungswert mit ca. 15% Ermäßigung als Wertschätzung für zusätzliches Engagement)",
         },
       },
       productCategoryTyps: {
@@ -222,15 +222,24 @@ export const language = {
         confirm: {
           title: "Deine Zustimmung zu den Bedingungen",
           label:
-            "Ich habe die »Informationen & Grundlagen« gelesen. Mir ist bewusst, dass meine Bedarfsanmeldung im gesamten Zeitraum vor Ablauf der Anmeldefrist unverbindlich bleibt und jederzeit änderbar ist. Erst mit Ablauf der Anmeldefrist werden meine zuletzt ausgewählten Nahrungsmittel und -mengen sowie mein Solawi-Beitrag verbindlich. Ich verpflichte mich, mit meinem verbindlichen Solawi-Beitrag für die gesamte {season} (12 Monate) das Solawi-Projekt mitzufinanzieren.",
+            "Ich haben die »Informationen und Grundlagen« unseres „{solawiName}“ gelesen. Mir ist bewusst, dass meine Bedarfsanmeldung im gesamten Zeitraum vor Ablauf der Anmeldefrist unverbindlich bleibt und jederzeit änderbar ist. Erst mit Ablauf der Anmeldefrist werden meine zuletzt ausgewählten Nahrungsmittel und -mengen, sowie mein Solawi-Beitrag verbindlich. Ich verpflichte mich, mit meinem verbindlichen Solawi-Beitrag für die gesamte {season} (12 Monate) das Solawi-Projekt mitzufinanzieren.",
         },
         confirmContribution: {
           title: "Bestätigung deines Mitgliedschaftsmodells als {model}",
           label:
-            "Ich habe zur Kenntnis genommen, dass es für eine gut funktionierende Solawi essentiell ist meine angegebenen Mitarbeitsstunden zu erfüllen.",
+            "Ich habe zur Kenntnis genommen, dass es für eine gut funktionierende Solawi essentiell ist, die mit meiner Mitgliedschaft verbundenen Mitarbeitsstunden zu erfüllen und dies zu dokumentieren. Die Bedingungen der Beteiligung und Konsequenzen bei fehlender Beteiligung und Dokumentation sind mir bewusst.",
+        },
+        depotNote: {
+          title: "Hinweis zu Depots mit (*)",
+          show: "Anzeigen",
+          paragraphs: [
+            "Depots, die mit einem Sternchen (*) gekennzeichnet sind, befinden sich aktuell noch in der Planungs- und Abstimmungsphase. Es kann daher sein, dass diese Depots zu Beginn der Saison noch nicht verfügbar sind.",
+            "Solltest Du eines dieser Depots wählen, könnte es notwendig sein, dass Du Dein Gemüse doch in einem anderen Depot abholen musst. Wir informieren Dich rechtzeitig und geben unser Bestes, die Planung so schnell wie möglich abzuschließen, damit alle gelisteten Depots nutzbar werden. Bitte gib daher ein zweites Wunschdepot an, welches kein Sternchen hat.",
+            "Wenn du die Depotkoordination in deinem Wunschdepot unterstützen möchtest, leistest du einen wertvollen Beitrag zur Sicherstellung des Depots. Melde dich hierfür gern im Forum bei {forumContact} oder bei der Mitgliederbetreuung unter {email}.",
+          ],
         },
         action: {
-          faq: "Informationen",
+          faq: "Informationen & Grundlagen",
         },
       },
     },

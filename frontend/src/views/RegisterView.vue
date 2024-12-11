@@ -31,6 +31,7 @@ import {
   cityRules,
 } from "../lib/validation";
 import { Address } from "../../../shared/src/types";
+import { appConfig } from "../../../shared/src/config.js";
 
 const valid = ref(false);
 const confirmGDPR = ref(false);
@@ -216,7 +217,7 @@ const click = async () => {
         <v-card-text class="text-center">
           Bitte registriere Dich noch einmal zu einem späteren Zeitpunkt. Wenn
           dieser Fehler wiederholt auftritt, wende Dich bitte an
-          solawi@lebenswurzel.org. Danke für Dein Verständnis.
+          {{ appConfig.address.email }}. Danke für Dein Verständnis.
         </v-card-text>
       </v-card>
     </div>

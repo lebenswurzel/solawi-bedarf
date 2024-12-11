@@ -36,6 +36,7 @@ import {
 import SeasonText from "./styled/SeasonText.vue";
 import { useUiFeedback } from "../store/uiFeedbackStore.ts";
 import { UserCategory } from "../../../shared/src/enum.ts";
+import { appConfig } from "../../../shared/src/config.ts";
 
 defineProps(["open"]);
 const emit = defineEmits(["close"]);
@@ -65,6 +66,7 @@ const confirmContribution = ref(false);
 const openFAQ = ref(false);
 const loading = ref(false);
 const model = ref<string>();
+const showDepotNote = ref(false);
 
 const requestUserId = inject<Ref<number>>("requestUserId") as Ref<number>;
 const categoryOptions = computed(() => {
@@ -243,7 +245,7 @@ const onSave = () => {
           :title="t.alert.title"
           variant="outlined"
         >
-          <div v-html="t.alert.text"></div>
+          <div class="text-body-2" v-html="t.alert.text"></div>
         </v-alert>
         <div class="mb-5">
           {{
@@ -304,6 +306,31 @@ const onSave = () => {
           persistent-hint
           :label="t.alternateDepot.label"
         />
+        <v-alert class="mb-5" color="info" density="compact" variant="outlined">
+          {{ t.depotNote.title }}
+          <v-btn
+            variant="text"
+            color="info"
+            v-if="!showDepotNote"
+            @click="showDepotNote = true"
+            >{{ t.depotNote.show }}</v-btn
+          >
+          <v-expand-transition>
+            <div v-if="showDepotNote">
+              <p
+                class="text-body-2"
+                v-for="paragraph in t.depotNote.paragraphs"
+              >
+                {{
+                  interpolate(paragraph, {
+                    email: appConfig.address.email,
+                    forumContact: appConfig.address.forumContact,
+                  })
+                }}
+              </p>
+            </div>
+          </v-expand-transition>
+        </v-alert>
         <v-select
           class="mb-5"
           v-model="category"
@@ -326,7 +353,10 @@ const onSave = () => {
         <v-checkbox
           v-model="confirmGTC"
           :label="
-            interpolate(t.confirm.label, { season: config?.name ?? 'SAISON?' })
+            interpolate(t.confirm.label, {
+              season: config?.name ?? 'SAISON?',
+              solawiName: appConfig.address.name,
+            })
           "
         />
         <div class="mb-3" v-if="requireConfirmContribution">
