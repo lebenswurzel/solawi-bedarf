@@ -70,3 +70,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #155 Admin: Benutzertabelle ermöglicht das Aktivieren/Deaktivieren von mehreren Benutzern gleichzeitig.
 
 # NEW
+
+#157 "Fragen & Antworten" in "Informationen & Grundlagen" umbenannt. Formulierungen bei der Bedarfsanmeldung verbessert.
