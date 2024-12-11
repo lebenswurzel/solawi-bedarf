@@ -69,6 +69,8 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #152 Hinweis auf Saison-Umschalter sobald die neue Saison verfügbar ist.
 #155 Admin: Benutzertabelle ermöglicht das Aktivieren/Deaktivieren von mehreren Benutzern gleichzeitig.
 
-# NEW
+# v0.4.5 - 2024-12-11 - Formulierungen verbessert und FAQ umbenannt
 
 #157 "Fragen & Antworten" in "Informationen & Grundlagen" umbenannt. Formulierungen bei der Bedarfsanmeldung verbessert.
+
+# NEW
