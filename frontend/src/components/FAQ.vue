@@ -15,13 +15,14 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
+import { language } from "../lang/lang";
 import { useTextContentStore } from "../store/textContentStore";
 
 const textContentStore = useTextContentStore();
 </script>
 
 <template>
-  <v-card-title> Fragen & Antworten </v-card-title>
+  <v-card-title>{{ language.pages.faq.title }} </v-card-title>
   <v-card-text>
     <v-expansion-panels class="pa-0">
       <v-expansion-panel v-for="faq in textContentStore.faqs">

@@ -175,7 +175,7 @@ export const language = {
           openingHours: "Abholzeiten:",
           explaination:
             "Bitte wähle in den entsprechenden Kategorien das Gemüse bzw. die Nahrungsmittel aus, die Du in der {season} im Rahmen des Solawi-Projektes beziehen möchtest. Lege dafür Deine entsprechende Menge je geplanter Verteilung \u26DF fest. Bitte beachte die zusätzlichen Infor­matio­nen für manche Nahrungs­mittel (abrufbar über das Information-Symbol \u24D8 hinter dem Namen des Nahrungsmittels) sowie die",
-          faq: "Fragen & Antworten (F&A)",
+          faq: "Informationen und Grundlagen",
         },
         products: {
           title: "Bedarfsanmeldung",
@@ -222,7 +222,7 @@ export const language = {
         confirm: {
           title: "Deine Zustimmung zu den Bedingungen",
           label:
-            "Ich habe die »Fragen & Antworten« (F&A) gelesen. Mir ist bewusst, dass meine Bedarfsanmeldung im gesamten Zeitraum vor Ablauf der Anmeldefrist unverbindlich bleibt und jederzeit änderbar ist. Erst mit Ablauf der Anmeldefrist werden meine zuletzt ausgewählten Nahrungsmittel und -mengen sowie mein Solawi-Beitrag verbindlich. Ich verpflichte mich, mit meinem verbindlichen Solawi-Beitrag für die gesamte {season} (12 Monate) das Solawi-Projekt mitzufinanzieren.",
+            "Ich habe die »Informationen & Grundlagen« gelesen. Mir ist bewusst, dass meine Bedarfsanmeldung im gesamten Zeitraum vor Ablauf der Anmeldefrist unverbindlich bleibt und jederzeit änderbar ist. Erst mit Ablauf der Anmeldefrist werden meine zuletzt ausgewählten Nahrungsmittel und -mengen sowie mein Solawi-Beitrag verbindlich. Ich verpflichte mich, mit meinem verbindlichen Solawi-Beitrag für die gesamte {season} (12 Monate) das Solawi-Projekt mitzufinanzieren.",
         },
         confirmContribution: {
           title: "Bestätigung deines Mitgliedschaftsmodells als {model}",
@@ -230,14 +230,14 @@ export const language = {
             "Ich habe zur Kenntnis genommen, dass es für eine gut funktionierende Solawi essentiell ist meine angegebenen Mitarbeitsstunden zu erfüllen.",
         },
         action: {
-          faq: "F&A",
+          faq: "Informationen",
         },
       },
     },
     faq: {
-      title: "Fragen & Antworten",
+      title: "Informationen und Grundlagen",
       navigation: {
-        title: "Fragen & Antworten (F&A)",
+        title: "Informationen & Grundlagen",
       },
     },
     user: {
@@ -377,8 +377,8 @@ export const language = {
       },
       imprint: "Impressum",
       privacyNotice: "Datenschutzerklärung",
-      faq: "Fragen & Antworten",
-      action: "FAQ erstellen",
+      faq: "Informationen & Grundlagen",
+      action: "Textbaustein hinzufügen",
       dialog: {},
     },
     overview: {
