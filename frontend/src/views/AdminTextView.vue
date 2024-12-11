@@ -127,14 +127,16 @@ const onClose = async () => {
       <v-list>
         <v-list-item v-for="faq in faqs" @click="() => onEditTextContent(faq)">
           {{ faq.title }}
-          <v-list-item-subtitle> Fragen & Antworten </v-list-item-subtitle>
+          <v-list-item-subtitle>{{
+            language.pages.content.faq
+          }}</v-list-item-subtitle>
         </v-list-item>
       </v-list>
     </v-card-text>
     <v-card-actions>
-      <v-btn @click="onCreateFAQ" prepend-icon="mdi-playlist-plus"
-        >FAQ erstellen</v-btn
-      >
+      <v-btn @click="onCreateFAQ" prepend-icon="mdi-playlist-plus">{{
+        language.pages.content.action
+      }}</v-btn>
     </v-card-actions>
   </v-card>
   <TextContentDialog :open="open" @close="onClose" />
