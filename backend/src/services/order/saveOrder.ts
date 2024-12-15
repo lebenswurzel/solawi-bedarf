@@ -42,6 +42,12 @@ import {
   isOrderItemValid,
 } from "../../../../shared/src/validation/capacity";
 import { LessThan } from "typeorm";
+import { sendEmail } from "../email/email";
+import { buildOrderEmail } from "../email/emailHelper";
+import { User } from "../../database/User";
+import { config } from "../../config";
+import { Applicant } from "../../database/Applicant";
+import { EncryptedUserAddress } from "../../consts/types";
 
 export const saveOrder = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -50,6 +56,7 @@ export const saveOrder = async (
   const { role, active, id } = await getUserFromContext(ctx);
   const requestUserId = await getRequestUserId(ctx);
   const body = ctx.request.body as ConfirmedOrder;
+  const sendConfirmationEmail = body.sendConfirmationEmail || false;
 
   const configId = body.requisitionConfigId;
   if (configId < 1) {
@@ -166,6 +173,44 @@ export const saveOrder = async (
   }
   // cleanup of useless items
   await AppDataSource.getRepository(OrderItem).delete({ value: LessThan(1) });
+
+  if (sendConfirmationEmail) {
+    const orderUser = await AppDataSource.getRepository(User).findOneOrFail({
+      where: { id: requestUserId },
+    });
+    let changingUser = orderUser;
+    if (requestUserId !== id) {
+      changingUser = await AppDataSource.getRepository(User).findOneOrFail({
+        where: { id },
+      });
+    }
+
+    const { html, subject } = await buildOrderEmail(
+      order.id,
+      msrp,
+      orderUser,
+      requisitionConfig,
+      changingUser,
+    );
+
+    const applicant = await AppDataSource.getRepository(
+      Applicant,
+    ).findOneOrFail({
+      where: { userId: requestUserId },
+      select: { address: { address: true } },
+      relations: { address: true },
+    });
+    const address = JSON.parse(
+      applicant.address.address,
+    ) as EncryptedUserAddress;
+
+    sendEmail({
+      sender: config.email.sender,
+      receiver: address.email,
+      subject,
+      html,
+    });
+  }
 
   ctx.status = http.no_content;
 };
