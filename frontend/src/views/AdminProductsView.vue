@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <script setup lang="ts">
 import { ref, watch } from "vue";
 import ProductCategoryDialog from "../components/ProductCategoryDialog.vue";
-import { language } from "../lang/lang.ts";
+import { language } from "../../../shared/src/lang/lang.ts";
 import { interpolate } from "../lang/template.ts";
 import { onMounted } from "vue";
 import { useProductStore } from "../store/productStore.ts";

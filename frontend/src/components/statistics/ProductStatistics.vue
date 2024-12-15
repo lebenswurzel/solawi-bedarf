@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <script setup lang="ts">
 import { computed } from "vue";
 import { ProductCategoryType } from "../../../../shared/src/enum.ts";
-import { language } from "../../lang/lang.ts";
+import { language } from "../../../../shared/src/lang/lang.ts";
 import { useBIStore } from "../../store/biStore";
 import { convertToBigUnit } from "../../../../shared/src/util/unitHelper.ts";
 

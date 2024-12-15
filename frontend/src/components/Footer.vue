@@ -19,7 +19,7 @@ import { ref } from "vue";
 import ImprintDialog from "./ImprintDialog.vue";
 import PrivacyNoticeDialog from "./PrivacyNoticeDialog.vue";
 import { appConfig } from "../../../shared/src/config";
-import { language } from "../lang/lang";
+import { language } from "../../../shared/src/lang/lang";
 import { buildInfo } from "../../../shared/src/buildInfo";
 
 const imprint = ref(false);

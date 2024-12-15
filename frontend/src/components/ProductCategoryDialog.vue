@@ -21,7 +21,7 @@ import {
   OptionalId,
   ProductCategory,
 } from "../../../shared/src/types.ts";
-import { language } from "../lang/lang.ts";
+import { language } from "../../../shared/src/lang/lang.ts";
 import { useUiFeedback } from "../store/uiFeedbackStore.ts";
 import { ref, watch } from "vue";
 import { useConfigStore } from "../store/configStore.ts";

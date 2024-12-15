@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <script setup lang="ts">
 import { onMounted, provide, ref, watch } from "vue";
 import UserDialog from "../components/UserDialog.vue";
-import { language } from "../lang/lang.ts";
+import { language } from "../../../shared/src/lang/lang.ts";
 import { useUserStore } from "../store/userStore.ts";
 import { storeToRefs } from "pinia";
 import { useConfigStore } from "../store/configStore";

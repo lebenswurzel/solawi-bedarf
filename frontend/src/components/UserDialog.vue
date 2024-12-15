@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <script setup lang="ts">
 import { saveUser } from "../requests/user.ts";
 import { inject, Ref, ref, watchEffect } from "vue";
-import { language } from "../lang/lang.ts";
+import { language } from "../../../shared/src/lang/lang.ts";
 import { isIdType, NewUser, User } from "../../../shared/src/types.ts";
 import { UserRole } from "../../../shared/src/enum.ts";
 import { storeToRefs } from "pinia";

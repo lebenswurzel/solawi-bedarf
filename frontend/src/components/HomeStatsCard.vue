@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
 import { useConfigStore } from "../store/configStore.ts";
-import { language } from "../lang/lang.ts";
+import { language } from "../../../shared/src/lang/lang.ts";
 import { interpolate } from "../lang/template.ts";
 import { computed } from "vue";
 import { useBIStore } from "../store/biStore";
