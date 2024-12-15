@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { Unit, UserCategory } from "../../../shared/src/enum";
 import { ProductCategoryWithProducts } from "../../../shared/src/types";
-import { interpolate } from "../lang/template";
+import { interpolate } from "../../../shared/src/lang/template.ts";
 import { PdfSpec, PdfTable } from "./pdf/pdf.ts";
 import {
   byKey,

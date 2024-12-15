@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { ref, watch } from "vue";
 import ProductCategoryDialog from "../components/ProductCategoryDialog.vue";
 import { language } from "../../../shared/src/lang/lang.ts";
-import { interpolate } from "../lang/template.ts";
+import { interpolate } from "../../../shared/src/lang/template.ts";
 import { onMounted } from "vue";
 import { useProductStore } from "../store/productStore.ts";
 import { NewProductCategory } from "../../../shared/src/types";
