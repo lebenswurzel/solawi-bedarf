@@ -108,6 +108,7 @@ export interface Order {
 
 export interface ConfirmedOrder extends Order {
   confirmGTC: boolean;
+  sendConfirmationEmail?: boolean;
 }
 
 export interface Address {

@@ -67,6 +67,7 @@ const openFAQ = ref(false);
 const loading = ref(false);
 const model = ref<string>();
 const showDepotNote = ref(false);
+const sendConfirmationEmail = ref(false);
 
 const requestUserId = inject<Ref<number>>("requestUserId") as Ref<number>;
 const categoryOptions = computed(() => {
@@ -214,6 +215,7 @@ const onSave = () => {
     confirmGTC: confirmGTC.value,
     validFrom: validFrom.value,
     requisitionConfigId: activeConfigId.value,
+    sendConfirmationEmail: sendConfirmationEmail.value,
   })
     .then(async () => {
       await biStore.update(activeConfigId.value);
@@ -373,6 +375,11 @@ const onSave = () => {
           :label="t.confirmContribution.label"
           v-if="requireConfirmContribution"
         />
+        <v-switch
+          v-model="sendConfirmationEmail"
+          :label="`${t.sendConfirmationEmail.title}`"
+          :color="sendConfirmationEmail ? 'primary' : 'secondary'"
+        ></v-switch>
       </v-card-text>
       <v-card-actions class="justify-center">
         <v-btn class="text-error" @click="onClose" variant="outlined">

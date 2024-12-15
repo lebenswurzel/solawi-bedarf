@@ -58,11 +58,14 @@ export const sendEmail = async ({
   sender: string;
   receiver: string;
   subject: string;
-  paragraphs: string[];
+  paragraphs?: string[];
   html?: string;
 }) => {
   if (emailEnabled) {
-    if (html === undefined) {
+    if (!html && !paragraphs) {
+      throw new Error("Must either specify 'html' or 'paragraphs'!");
+    }
+    if (html === undefined && paragraphs) {
       const content = paragraphs
         .map((v) => escapeHtmlEntities(v))
         .join("</p><p>");
@@ -77,7 +80,7 @@ export const sendEmail = async ({
       from: `"${senderName}" <${sender}>`,
       to: receiver,
       subject: subject,
-      text: paragraphs.join("\n\n"),
+      text: paragraphs ? paragraphs.join("\n\n") : undefined,
       html: html,
       // headers: { "x-myheader": "test header" },
     });

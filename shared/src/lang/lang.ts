@@ -234,6 +234,10 @@ export const language = {
             "Wenn du die Depotkoordination in deinem Wunschdepot unterstützen möchtest, leistest du einen wertvollen Beitrag zur Sicherstellung des Depots. Melde dich hierfür gern im Forum bei {forumContact} oder bei der Mitgliederbetreuung unter {email}.",
           ],
         },
+        sendConfirmationEmail: {
+          title:
+            "Eine Kopie der Bedarfsanmeldung an meine hinterlegte E-Mail-Adresse schicken.",
+        },
         action: {
           faq: "Informationen & Grundlagen",
         },
@@ -420,6 +424,13 @@ export const language = {
         "Hier kannst du festlegen, für welche Saison du deinen Bedarf anmelden und Einstellungen vornehmen möchtest.",
       notYetAvailable:
         "Hier kann die nächste Saison für die Bedarfsanmeldung ausgewählt werden, sobald diese freigeschaltet wurde.",
+    },
+  },
+  email: {
+    orderConfirmation: {
+      subject: "Bedarfsanmeldung {username} {season}",
+      changingUserNote: "Hinweis: Änderung wurde vorgenommen durch {username}",
+      disclaimer: "Diese E-Mail wurde automatisiert erstellt",
     },
   },
 };

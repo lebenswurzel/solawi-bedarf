@@ -14,6 +14,8 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+import { format } from "date-fns/format";
+
 export function escapeHtmlEntities(html: string) {
   return html.replace(/[&<>"']/g, (char) => {
     switch (char) {
@@ -31,4 +33,16 @@ export function escapeHtmlEntities(html: string) {
         return char;
     }
   });
+}
+
+export function prettyDate(date: Date): string {
+  return format(date, "dd.MM.yyyy");
+}
+
+export function prettyTime(date: Date): string {
+  return format(date, "HH:mm:ss") + " Uhr";
+}
+
+export function prettyDateTime(date: Date): string {
+  return format(date, "dd.MM.yyyy, HH:mm:ss") + " Uhr";
 }
