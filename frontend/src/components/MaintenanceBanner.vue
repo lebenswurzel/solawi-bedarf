@@ -21,7 +21,7 @@ import { getVersionInfo } from "../requests/versionInfo";
 import { VersionInfo } from "../../../shared/src/types";
 import { language } from "../../../shared/src/lang/lang";
 import { useUiFeedback } from "../store/uiFeedbackStore";
-import { interpolate } from "../lang/template";
+import { interpolate } from "../../../shared/src/lang/template";
 import { useUserStore } from "../store/userStore";
 import { marked } from "marked";
 

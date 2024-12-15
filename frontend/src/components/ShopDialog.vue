@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <script setup lang="ts">
 import { computed, inject, onMounted, ref, Ref } from "vue";
 import { language } from "../../../shared/src/lang/lang.ts";
-import { interpolate } from "../lang/template.ts";
+import { interpolate } from "../../../shared/src/lang/template.ts";
 import { useConfigStore } from "../store/configStore.ts";
 import { saveOrder } from "../requests/shop.ts";
 import { useOrderStore } from "../store/orderStore.ts";

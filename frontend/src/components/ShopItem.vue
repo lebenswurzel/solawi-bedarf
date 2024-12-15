@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
 import { language } from "../../../shared/src/lang/lang.ts";
-import { interpolate } from "../lang/template.ts";
+import { interpolate } from "../../../shared/src/lang/template.ts";
 import { useOrderStore } from "../store/orderStore.ts";
 import { computed, onMounted, ref, watch } from "vue";
 import { storeToRefs } from "pinia";

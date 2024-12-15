@@ -22,7 +22,7 @@ import {
   ProductCategoryWithProducts,
 } from "../../../../shared/src/types";
 import { language } from "../../../../shared/src/lang/lang";
-import { interpolate } from "../../lang/template";
+import { interpolate } from "../../../../shared/src/lang/template";
 import ProductDialog from "../ProductDialog.vue";
 import { useConfigStore } from "../../store/configStore";
 import { useProductStore } from "../../store/productStore";
