@@ -14,11 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import {
-  ProductCategoryType,
-  UserCategory,
-  UserRole,
-} from "../../../shared/src/enum.ts";
+import { ProductCategoryType, UserCategory, UserRole } from "../enum";
 
 // info i: 24D8
 // black truck: 26DF

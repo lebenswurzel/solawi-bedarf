@@ -28,7 +28,7 @@ import {
   inLocaleOrder,
 } from "./utils.ts";
 import { format } from "date-fns/format";
-import { language } from "../lang/lang.ts";
+import { language } from "../../../shared/src/lang/lang.ts";
 import { getLangUnit } from "../../../shared/src/util/unitHelper.ts";
 
 const t = language.pages.overview;

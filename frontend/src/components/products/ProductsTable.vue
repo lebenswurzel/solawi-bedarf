@@ -21,7 +21,7 @@ import {
   Product,
   ProductCategoryWithProducts,
 } from "../../../../shared/src/types";
-import { language } from "../../lang/lang";
+import { language } from "../../../../shared/src/lang/lang";
 import { interpolate } from "../../lang/template";
 import ProductDialog from "../ProductDialog.vue";
 import { useConfigStore } from "../../store/configStore";

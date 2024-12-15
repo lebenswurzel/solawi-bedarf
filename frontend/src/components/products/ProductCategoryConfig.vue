@@ -20,7 +20,7 @@ import {
   ProductCategory,
   ProductCategoryWithProducts,
 } from "../../../../shared/src/types";
-import { language } from "../../lang/lang";
+import { language } from "../../../../shared/src/lang/lang";
 import { interpolate } from "../../lang/template";
 import ProductCategoryDialog from "../ProductCategoryDialog.vue";
 import ProductsTable from "./ProductsTable.vue";

@@ -24,7 +24,7 @@ import {
   OptionalId,
   Shipment,
 } from "../../../shared/src/types.ts";
-import { language } from "../lang/lang.ts";
+import { language } from "../../../shared/src/lang/lang.ts";
 import { dateToString, stringToDate } from "../lib/convert.ts";
 import { createShipmentOverviewPdf } from "../lib/shipment/shipmentOverviewPdf.ts";
 import { createShipmentPackagingPdfs } from "../lib/shipment/shipmentPackagingPdf.ts";

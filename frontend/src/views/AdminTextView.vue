@@ -21,7 +21,7 @@ import { computed, provide, ref } from "vue";
 import TextContentDialog from "../components/TextContentDialog.vue";
 import { NewTextContent, TextContent } from "../../../shared/src/types";
 import { TextContentCategory } from "../../../shared/src/enum";
-import { language } from "../lang/lang";
+import { language } from "../../../shared/src/lang/lang";
 
 const defaultTextContent: NewTextContent = {
   title: "Beispieltitel",

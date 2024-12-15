@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
 import { onMounted, provide, ref, watch } from "vue";
-import { language } from "../lang/lang.ts";
+import { language } from "../../../shared/src/lang/lang.ts";
 import { useBIStore } from "../store/biStore.ts";
 import ShipmentDialog from "../components/ShipmentDialog.vue";
 import { useConfigStore } from "../store/configStore.ts";

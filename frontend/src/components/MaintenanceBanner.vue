@@ -19,7 +19,7 @@ import { computed, onMounted, ref } from "vue";
 import { buildInfo } from "../../../shared/src/buildInfo";
 import { getVersionInfo } from "../requests/versionInfo";
 import { VersionInfo } from "../../../shared/src/types";
-import { language } from "../lang/lang";
+import { language } from "../../../shared/src/lang/lang";
 import { useUiFeedback } from "../store/uiFeedbackStore";
 import { interpolate } from "../lang/template";
 import { useUserStore } from "../store/userStore";

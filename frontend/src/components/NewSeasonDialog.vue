@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from "vue";
 import { useConfigStore } from "../store/configStore";
-import { language } from "../lang/lang";
+import { language } from "../../../shared/src/lang/lang";
 import { dateToString, stringToDate } from "../lib/convert";
 import { createConfig } from "../requests/config";
 import { NewConfig } from "../../../shared/src/types";

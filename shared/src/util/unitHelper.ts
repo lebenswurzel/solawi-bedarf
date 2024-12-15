@@ -15,18 +15,18 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { Unit } from "../../../shared/src/enum";
-import { sharedLanguage } from "../language/sharedLang";
+import { language } from "../lang/lang";
 
 export const getLangUnit = (unit?: Unit, useBigUnit?: boolean) => {
   switch (unit) {
     case Unit.WEIGHT:
-      return useBigUnit ? sharedLanguage.units.kg : sharedLanguage.units.g;
+      return useBigUnit ? language.app.units.kg : language.app.units.g;
     case Unit.PIECE:
-      return sharedLanguage.units.pcs;
+      return language.app.units.pcs;
     case Unit.VOLUME:
-      return useBigUnit ? sharedLanguage.units.l : sharedLanguage.units.ml;
+      return useBigUnit ? language.app.units.l : language.app.units.ml;
     default:
-      return sharedLanguage.units.unit;
+      return language.app.units.unit;
   }
 };
 
@@ -36,10 +36,10 @@ export const convertToBigUnit = (
 ): { label: string; value?: number } => {
   switch (unit) {
     case Unit.WEIGHT:
-      return { label: sharedLanguage.units.kg, value: value / 1000 };
+      return { label: language.app.units.kg, value: value / 1000 };
     case Unit.PIECE:
-      return { label: sharedLanguage.units.pcs, value };
+      return { label: language.app.units.pcs, value };
     case Unit.VOLUME:
-      return { label: sharedLanguage.units.l, value: value / 1000 };
+      return { label: language.app.units.l, value: value / 1000 };
   }
 };

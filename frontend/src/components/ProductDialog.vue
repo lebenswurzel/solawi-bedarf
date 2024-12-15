@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <script setup lang="ts">
 import { inject, Ref, ref } from "vue";
 import { saveProduct } from "../requests/product.ts";
-import { language } from "../lang/lang.ts";
+import { language } from "../../../shared/src/lang/lang.ts";
 import { interpolate } from "../lang/template.ts";
 import { useProductStore } from "../store/productStore.ts";
 import { computed } from "@vue/reactivity";

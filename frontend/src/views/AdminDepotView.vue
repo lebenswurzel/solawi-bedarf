@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
 import { onMounted, provide, ref } from "vue";
-import { language } from "../lang/lang.ts";
+import { language } from "../../../shared/src/lang/lang.ts";
 import { getDepots, updateDepot } from "../requests/depot";
 import DepotDialog from "../components/DepotDialog.vue";
 import { NewDepot, Depot, UpdateDepot } from "../../../shared/src/types";
