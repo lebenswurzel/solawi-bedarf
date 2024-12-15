@@ -18,14 +18,12 @@ import { marked } from "marked";
 import { AppDataSource } from "../../database/database";
 import { Order } from "../../database/Order";
 import { User } from "../../database/User";
-import {
-  escapeHtmlEntities,
-  prettyDateTime,
-} from "../../../../shared/src/util/stringHelper";
+import { escapeHtmlEntities } from "../../../../shared/src/util/stringHelper";
 import { getLangUnit } from "../../../../shared/src/util/unitHelper";
 import { language } from "../../../../shared/src/lang/lang";
 import { RequisitionConfig } from "../../database/RequisitionConfig";
 import { interpolate } from "../../../../shared/src/lang/template";
+import { format } from "date-fns";
 
 const emailHtmlTemplate = `<html>
   <head>
@@ -52,6 +50,10 @@ const emailHtmlTemplate = `<html>
     {bodyContent}
   </body>
 </html>`;
+
+function prettyDateTime(date: Date): string {
+  return format(date, "dd.MM.yyyy, HH:mm:ss") + " Uhr";
+}
 
 const escapeMdTableCell = (value: string): string => {
   return value.replace("|", "\\|");
