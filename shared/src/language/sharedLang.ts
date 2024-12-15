@@ -14,18 +14,18 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-
-export const interpolate = (
-  template: string,
-  variables: { [key: string]: string },
-) => {
-  let result = template;
-  for (const key in variables) {
-    if (variables.hasOwnProperty(key)) {
-      const value = variables[key];
-      result = result.replace(new RegExp(`{${key}}`, "g"), value);
-    }
-  }
-
-  return result;
+export const sharedLanguage = {
+  units: {
+    weight: "Gewicht",
+    piece: "Stück",
+    volume: "Volumen",
+    kg: "kg",
+    g: "g",
+    l: "l",
+    ml: "ml",
+    pcs: "Stk.",
+    ct: "ct",
+    euro: "€",
+    unit: "Einheit",
+  },
 };

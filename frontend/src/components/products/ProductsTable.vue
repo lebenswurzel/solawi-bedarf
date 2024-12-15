@@ -22,11 +22,7 @@ import {
   ProductCategoryWithProducts,
 } from "../../../../shared/src/types";
 import { language } from "../../lang/lang";
-import {
-  convertToBigUnit,
-  getLangUnit,
-  interpolate,
-} from "../../lang/template";
+import { interpolate } from "../../lang/template";
 import ProductDialog from "../ProductDialog.vue";
 import { useConfigStore } from "../../store/configStore";
 import { useProductStore } from "../../store/productStore";
@@ -34,6 +30,10 @@ import { storeToRefs } from "pinia";
 import { useBIStore } from "../../store/biStore";
 import { deleteProduct } from "../../requests/product";
 import { useUiFeedback } from "../../store/uiFeedbackStore";
+import {
+  convertToBigUnit,
+  getLangUnit,
+} from "../../../../shared/src/util/unitHelper";
 const t = language.pages.product.dialog;
 
 const props = defineProps<{

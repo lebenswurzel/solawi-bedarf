@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
 import { language } from "../lang/lang.ts";
-import { getLangUnit, interpolate } from "../lang/template.ts";
+import { interpolate } from "../lang/template.ts";
 import { useOrderStore } from "../store/orderStore.ts";
 import { computed, onMounted, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
@@ -29,6 +29,7 @@ import {
 import { useUserStore } from "../store/userStore.ts";
 import { useConfigStore } from "../store/configStore.ts";
 import { isIncreaseOnly } from "../../../shared/src/validation/requisition";
+import { getLangUnit } from "../../../shared/src/util/unitHelper.ts";
 
 const t = language.pages.shop.cards.products.item;
 

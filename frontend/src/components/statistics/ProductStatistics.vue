@@ -18,8 +18,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { computed } from "vue";
 import { ProductCategoryType } from "../../../../shared/src/enum.ts";
 import { language } from "../../lang/lang.ts";
-import { convertToBigUnit } from "../../lang/template.ts";
 import { useBIStore } from "../../store/biStore";
+import { convertToBigUnit } from "../../../../shared/src/util/unitHelper.ts";
 
 const t = language.pages.statistics;
 const biStore = useBIStore();

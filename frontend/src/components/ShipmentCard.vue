@@ -27,9 +27,9 @@ import { storeToRefs } from "pinia";
 import { Unit } from "../../../shared/src/enum.ts";
 import { useBIStore } from "../store/biStore.ts";
 import { valueToDelivered } from "../lib/convert.ts";
-import { getLangUnit } from "../lang/template.ts";
 import { useConfigStore } from "../store/configStore.ts";
 import SeasonText from "./styled/SeasonText.vue";
+import { getLangUnit } from "../../../shared/src/util/unitHelper.ts";
 
 const t = language.pages.home;
 

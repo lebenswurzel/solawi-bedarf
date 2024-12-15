@@ -22,10 +22,10 @@ import {
   ProductsById,
   Shipment,
 } from "../../../../shared/src/types";
-import { getLangUnit } from "../../lang/template";
 import { generateOverviewPdf, HeaderSortKeys } from "../pdf/pdf";
 import { sanitizeFileName } from "../../../../shared/src/util/fileHelper";
 import { format } from "date-fns/format";
+import { getLangUnit } from "../../../../shared/src/util/unitHelper";
 
 type DepotKey = string;
 type ProductCategoryKey = string;
