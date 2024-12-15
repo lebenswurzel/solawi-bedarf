@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { Unit, UserCategory } from "../../../shared/src/enum";
 import { ProductCategoryWithProducts } from "../../../shared/src/types";
-import { getLangUnit, interpolate } from "../lang/template";
+import { interpolate } from "../lang/template";
 import { PdfSpec, PdfTable } from "./pdf/pdf.ts";
 import {
   byKey,
@@ -29,6 +29,7 @@ import {
 } from "./utils.ts";
 import { format } from "date-fns/format";
 import { language } from "../lang/lang.ts";
+import { getLangUnit } from "../../../shared/src/util/unitHelper.ts";
 
 const t = language.pages.overview;
 

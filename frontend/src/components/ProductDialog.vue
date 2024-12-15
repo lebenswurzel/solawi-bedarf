@@ -18,11 +18,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { inject, Ref, ref } from "vue";
 import { saveProduct } from "../requests/product.ts";
 import { language } from "../lang/lang.ts";
-import { interpolate, getLangUnit } from "../lang/template.ts";
+import { interpolate } from "../lang/template.ts";
 import { useProductStore } from "../store/productStore.ts";
 import { computed } from "@vue/reactivity";
 import { NewProduct, OptionalId, Product } from "../../../shared/src/types.ts";
 import { Unit } from "../../../shared/src/enum.ts";
+import { getLangUnit } from "../../../shared/src/util/unitHelper.ts";
 const t = language.pages.product.dialog;
 
 defineProps<{ open: boolean }>();

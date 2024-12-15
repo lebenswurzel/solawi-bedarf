@@ -23,7 +23,6 @@ import {
   Shipment,
   ShipmentItem,
 } from "../../../../shared/src/types";
-import { getLangUnit } from "../../lang/template";
 import { multiplicatorOptions } from "../options";
 import { format } from "date-fns";
 import { createDefaultPdf, PdfSpec, PdfTable } from "../pdf/pdf";
@@ -35,6 +34,7 @@ import {
   getOrCompute,
   inLocaleOrder,
 } from "../utils.ts";
+import { getLangUnit } from "../../../../shared/src/util/unitHelper.ts";
 
 type ProductRow = [string, string, string];
 type GroupedProducts = Map<string, ProductRow[]>;

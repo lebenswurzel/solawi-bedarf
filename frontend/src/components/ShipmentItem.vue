@@ -21,8 +21,8 @@ import { useConfigStore } from "../store/configStore";
 import { useBIStore } from "../store/biStore";
 import { storeToRefs } from "pinia";
 import { valueToDelivered } from "../lib/convert";
-import { getLangUnit } from "../lang/template";
 import { unitDict, multiplicatorOptions } from "../lib/options";
+import { getLangUnit } from "../../../shared/src/util/unitHelper";
 
 const props = defineProps<{
   shipmentItem: EditShipmentItem;
