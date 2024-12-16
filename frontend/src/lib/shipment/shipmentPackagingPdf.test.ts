@@ -31,12 +31,12 @@ import {
   createShipmentPackagingPdfSpecs,
   formatQuantityChange,
 } from "./shipmentPackagingPdf.ts";
-import { grouping } from "../utils.ts";
 import {
   ProductCategoryWithProducts,
   ProductsById,
 } from "../../../../shared/src/types.ts";
 import { Unit } from "../../../../shared/src/enum.ts";
+import { grouping } from "../../../../shared/src/util/utils.ts";
 
 function getProductsById(
   productCategories: ProductCategoryWithProducts[],
