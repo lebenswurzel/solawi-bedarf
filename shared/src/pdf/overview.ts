@@ -14,10 +14,10 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { Unit, UserCategory } from "../../../shared/src/enum";
-import { ProductCategoryWithProducts } from "../../../shared/src/types";
-import { interpolate } from "../../../shared/src/lang/template.ts";
-import { PdfSpec, PdfTable } from "./pdf/pdf.ts";
+import { Unit, UserCategory } from "../enum";
+import { ProductCategoryWithProducts } from "../types";
+import { interpolate } from "../lang/template";
+import { PdfSpec, PdfTable } from "./pdf";
 import {
   byKey,
   collect,
@@ -26,10 +26,10 @@ import {
   grouping,
   groupingBy,
   inLocaleOrder,
-} from "./utils.ts";
+} from "../util/utils";
+import { language } from "../lang/lang";
+import { getLangUnit } from "../util/unitHelper";
 import { format } from "date-fns/format";
-import { language } from "../../../shared/src/lang/lang.ts";
-import { getLangUnit } from "../../../shared/src/util/unitHelper.ts";
 
 const t = language.pages.overview;
 
@@ -58,7 +58,7 @@ const unitPostifx = {
 
 export const generateOverviewCsv = (
   overview: OverviewItem[],
-  productCategories: ProductCategoryWithProducts[],
+  productCategories: ProductCategoryWithProducts[]
 ) => {
   const fixedHeader = [
     "name",
@@ -120,7 +120,7 @@ export const generateOverviewCsv = (
         prices[key].value += cur.value;
         return acc;
       },
-      {} as { [key: string]: number },
+      {} as { [key: string]: number }
     ),
   }));
 
@@ -150,38 +150,36 @@ export const generateOverviewCsv = (
 
   const csvMsrp = header
     .map((headerItem) =>
-      headerItem == "name" ? "msrp" : prices[headerItem]?.msrp || "",
+      headerItem == "name" ? "msrp" : prices[headerItem]?.msrp || ""
     )
     .join(",");
   const csvOffer = header
     .map((headerItem) =>
-      headerItem == "name" ? "offer" : prices[headerItem]?.offer || "",
+      headerItem == "name" ? "offer" : prices[headerItem]?.offer || ""
     )
     .join(",");
   const csvRawMsrp = header
     .map((headerItem) =>
-      headerItem == "name" ? "rawMsrp" : prices[headerItem]?.rawMsrp || "",
+      headerItem == "name" ? "rawMsrp" : prices[headerItem]?.rawMsrp || ""
     )
     .join(",");
   const csvRawFreq = header
     .map((headerItem) =>
       headerItem == "name"
         ? "rawFrequency"
-        : prices[headerItem]?.rawFrequency || "",
+        : prices[headerItem]?.rawFrequency || ""
     )
     .join(",");
   const csvRawConversion = header
     .map((headerItem) =>
       headerItem == "name"
         ? "rawConversion"
-        : prices[headerItem]?.rawConversion || "",
+        : prices[headerItem]?.rawConversion || ""
     )
     .join(",");
   const csvConversion = header
     .map((headerItem) =>
-      headerItem == "name"
-        ? "conversion"
-        : prices[headerItem]?.conversion || "",
+      headerItem == "name" ? "conversion" : prices[headerItem]?.conversion || ""
     )
     .join(",");
 
@@ -207,14 +205,14 @@ export const generateOverviewCsv = (
 export function generateUserData(
   overview: OverviewItem[],
   productCategories: ProductCategoryWithProducts[],
-  seasonName: string,
+  seasonName: string
 ): PdfSpec[] {
   const categories = productCategories.reduce(
     grouping(
       (item) => item.id,
-      (item) => item,
+      (item) => item
     ),
-    new Map(),
+    new Map()
   );
 
   const grouped = overview
@@ -227,14 +225,14 @@ export function generateUserData(
           name: item.name,
           category: categories.get(item.category)!,
           value: item.value,
-        })),
+        }))
     )
     .reduce(
       groupingBy(
         (item) => item.group,
-        collectMap((item) => item.category.name, collectArray()),
+        collectMap((item) => item.category.name, collectArray())
       ),
-      new Map(),
+      new Map()
     );
 
   const prettyDate = format(new Date(), "dd.MM.yyyy");
@@ -257,7 +255,7 @@ export function generateUserData(
               widths: ["70%", "10%", "20%"],
               rows: Array.from(products.values(), (item) => {
                 const product = item.category.products.find(
-                  (p) => p.name === item.name,
+                  (p) => p.name === item.name
                 )!;
                 return [
                   item.name,
@@ -265,16 +263,16 @@ export function generateUserData(
                   `${product.frequency} x`,
                 ];
               }).sort(byKey((row) => row[0], inLocaleOrder)),
-            }) as PdfTable,
+            }) as PdfTable
         ).sort(byKey((table) => table.name, inLocaleOrder)),
-      }) as PdfSpec,
+      }) as PdfSpec
   ).sort(byKey((pdf) => pdf.receiver, inLocaleOrder));
 }
 
 export function generateDepotData(
   overview: OverviewItem[],
   productCategories: ProductCategoryWithProducts[],
-  seasonName: string,
+  seasonName: string
 ): PdfSpec[] {
   type Value = {
     depot: string;
@@ -288,9 +286,9 @@ export function generateDepotData(
   const categories = productCategories.reduce(
     grouping(
       (item) => item.id,
-      (item) => item,
+      (item) => item
     ),
-    new Map(),
+    new Map()
   );
 
   const dataByDepotAndProduct = overview
@@ -302,7 +300,7 @@ export function generateDepotData(
           name: item.name,
           category: categories.get(item.category)!,
           value: item.value,
-        })),
+        }))
     )
     .reduce(
       groupingBy(
@@ -314,7 +312,7 @@ export function generateDepotData(
             collect(
               (name, first) => {
                 const product = first.category.products.find(
-                  (p) => p.name == name,
+                  (p) => p.name == name
                 )!;
                 return {
                   depot: first.depot,
@@ -327,12 +325,12 @@ export function generateDepotData(
               },
               (acc, item) => {
                 acc.quantity += item.value;
-              },
-            ),
-          ),
-        ),
+              }
+            )
+          )
+        )
       ),
-      new Map(),
+      new Map()
     );
 
   const prettyDate = format(new Date(), "dd.MM.yyyy");
@@ -358,9 +356,9 @@ export function generateDepotData(
                 `${item.quantity} ${getLangUnit(item.unit)}`,
                 `${item.frequency} x`,
               ]).sort(byKey((row) => row[0], inLocaleOrder)),
-            }) as PdfTable,
+            }) as PdfTable
         ).sort(byKey((table) => table.name, inLocaleOrder)),
-      }) as PdfSpec,
+      }) as PdfSpec
   ).sort(byKey((pdf) => pdf.receiver, inLocaleOrder));
 }
 
@@ -374,7 +372,7 @@ export function objectToCsv(data: any[]): string {
     ...data.map((obj) =>
       headers
         .map((header) => `"${String(obj[header] || "").replace(/"/g, '""')}"`)
-        .join(","),
+        .join(",")
     ),
   ];
   return rows.join("\n");

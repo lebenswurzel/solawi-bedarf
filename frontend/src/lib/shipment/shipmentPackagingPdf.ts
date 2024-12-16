@@ -25,16 +25,20 @@ import {
 } from "../../../../shared/src/types";
 import { multiplicatorOptions } from "../options";
 import { format } from "date-fns";
-import { createDefaultPdf, PdfSpec, PdfTable } from "../pdf/pdf";
 import { sanitizeFileName } from "../../../../shared/src/util/fileHelper";
-import { Zip } from "../pdf/zip";
 import {
   byKey,
   findDepotNameById,
   getOrCompute,
   inLocaleOrder,
-} from "../utils.ts";
+} from "../../../../shared/src/util/utils.ts";
 import { getLangUnit } from "../../../../shared/src/util/unitHelper.ts";
+import {
+  createDefaultPdf,
+  PdfSpec,
+  PdfTable,
+} from "../../../../shared/src/pdf/pdf.ts";
+import { Zip } from "../../../../shared/src/pdf/zip.ts";
 
 type ProductRow = [string, string, string];
 type GroupedProducts = Map<string, ProductRow[]>;

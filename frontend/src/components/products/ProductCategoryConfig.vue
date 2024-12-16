@@ -29,7 +29,7 @@ import { useUiFeedback } from "../../store/uiFeedbackStore";
 import { useConfigStore } from "../../store/configStore";
 import { useProductStore } from "../../store/productStore";
 import { sanitizeFileName } from "../../../../shared/src/util/fileHelper";
-import { objectToCsv } from "../../lib/overview";
+import { objectToCsv } from "../../../../shared/src/pdf/overview";
 import { ProductCategoryType } from "../../../../shared/src/enum";
 const t = language.pages.product;
 

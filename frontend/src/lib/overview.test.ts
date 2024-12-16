@@ -20,9 +20,9 @@ import {
   generateDepotData,
   generateUserData,
   OverviewItem,
-} from "./overview.ts";
-import { Product } from "../../../shared/src/types.ts";
-import { UserCategory } from "../../../shared/src/enum.ts";
+} from "../../../shared/src/pdf/overview.js";
+import { Product } from "../../../shared/src/types.js";
+import { UserCategory } from "../../../shared/src/enum.js";
 import {
   CUCUMBER,
   genProduct,
@@ -31,7 +31,7 @@ import {
   MILK_PRODUCTS,
   TOMATO,
   VEGETABLES,
-} from "../../../shared/testSetup.ts";
+} from "../../../shared/testSetup.js";
 
 function genOrder(overwrite: Partial<OverviewItem> = {}): OverviewItem {
   const base: OverviewItem = {
