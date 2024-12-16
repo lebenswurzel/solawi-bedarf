@@ -27,7 +27,7 @@ import {
   TOMATO,
   VEGETABLES,
 } from "../../../../shared/testSetup.ts";
-import { grouping } from "../utils.ts";
+import { grouping } from "../../../../shared/src/util/utils.ts";
 import {
   ProductCategoryWithProducts,
   ProductsById,
