@@ -98,28 +98,15 @@ export const buildOrderEmail = async (
       ? interpolate(el.changingUserNote, { userName: changingUser.name })
       : "";
 
-  const paragraphs = [
-    `### Stand der Bedarfsanmeldung vom ${prettyDateTime(order.updatedAt)}`,
-    `Mitglied: ${orderUser.name}`,
-    `Beitrag: ${order.offer}€ (Berechneter Orientierungswert: ${msrp}€)`,
-    `Mitgliedschaftsmodell als ${language.app.options.orderUserCategories[order.category].title}: ` +
-      escapeHtmlEntities(
-        language.app.options.orderUserCategories[order.category].subtitle,
-      ),
-    "#### Übersicht der bestellten Produkte",
-    markdownTable,
-    `<small>Order-ID: ${order.id}, erstmalig erstellt ${prettyDateTime(order.createdAt)}</small>`,
-    changingUserNote,
-    `*${el.disclaimer}*`,
-  ];
-
-  const markdownContent = interpolate(el.body.join("\n\n"), {
+  const emailBody = interpolate(el.body.join("\n\n"), {
     userName,
     senderName,
     email,
   });
 
-  const html = await marked.parse(markdownContent);
+  const paragraphs = [emailBody, changingUserNote];
+
+  const html = await marked.parse(paragraphs.join("\n\n"));
 
   return {
     html: emailHtmlTemplate.replace("{bodyContent}", html),
