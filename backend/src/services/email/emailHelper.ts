@@ -65,6 +65,9 @@ export const buildOrderEmail = async (
   orderUser: User,
   config: RequisitionConfig,
   changingUser: User,
+  userName: string,
+  senderName: string,
+  email: string,
 ): Promise<{ html: string; subject: string }> => {
   const el = language.email.orderConfirmation;
   const order = await AppDataSource.getRepository(Order).findOne({
@@ -92,7 +95,7 @@ export const buildOrderEmail = async (
 
   const changingUserNote =
     orderUser.id !== changingUser.id
-      ? interpolate(el.changingUserNote, { username: changingUser.name })
+      ? interpolate(el.changingUserNote, { userName: changingUser.name })
       : "";
 
   const paragraphs = [
@@ -110,14 +113,18 @@ export const buildOrderEmail = async (
     `*${el.disclaimer}*`,
   ];
 
-  const markdownContent = paragraphs.join("\n\n");
+  const markdownContent = interpolate(el.body.join("\n\n"), {
+    userName,
+    senderName,
+    email,
+  });
 
   const html = await marked.parse(markdownContent);
 
   return {
     html: emailHtmlTemplate.replace("{bodyContent}", html),
     subject: interpolate(el.subject, {
-      username: orderUser.name,
+      now: prettyDateTime(new Date()),
       season: config.name,
     }),
   };
