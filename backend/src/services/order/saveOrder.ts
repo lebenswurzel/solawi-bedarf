@@ -228,7 +228,7 @@ export const saveOrder = async (
     if (dataByUserAndProductCategory.length > 0) {
       const pdf = createDefaultPdf(dataByUserAndProductCategory[0]);
       pdfBlob = await new Promise((resolve, _) => {
-        pdf.getBlob((blob) => resolve(blob));
+        pdf.getBlob((blob: Blob) => resolve(blob));
       });
     }
 
