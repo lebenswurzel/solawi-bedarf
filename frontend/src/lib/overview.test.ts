@@ -19,9 +19,8 @@ import { describe, expect, test } from "vitest";
 import {
   generateDepotData,
   generateUserData,
-  OverviewItem,
 } from "../../../shared/src/pdf/overviewPdfs.ts";
-import { Product } from "../../../shared/src/types.ts";
+import { OrderOverviewItem, Product } from "../../../shared/src/types.ts";
 import { UserCategory } from "../../../shared/src/enum.ts";
 import {
   CUCUMBER,
@@ -33,8 +32,10 @@ import {
   VEGETABLES,
 } from "../../../shared/testSetup.js";
 
-function genOrder(overwrite: Partial<OverviewItem> = {}): OverviewItem {
-  const base: OverviewItem = {
+function genOrder(
+  overwrite: Partial<OrderOverviewItem> = {},
+): OrderOverviewItem {
+  const base: OrderOverviewItem = {
     name: "Order",
     depot: "Main depot",
     alternateDepot: "Alt depot",

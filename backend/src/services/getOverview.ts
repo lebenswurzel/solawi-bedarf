@@ -28,6 +28,7 @@ import {
   getConfigIdFromQuery,
   getNumericQueryParameter,
 } from "../util/requestUtil";
+import { OrderOverviewItem } from "../../../shared/src/types";
 
 export const getOverview = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -37,7 +38,14 @@ export const getOverview = async (
     ctx.throw(http.forbidden);
   }
   const configId = getConfigIdFromQuery(ctx);
+  const overview = await getUserOrderOverview(configId);
+  ctx.body = { overview };
+};
 
+export const getUserOrderOverview = async (
+  configId: number,
+  userId?: number,
+): Promise<OrderOverviewItem[]> => {
   const { productsById } = await bi(configId);
   const orders = await AppDataSource.getRepository(Order).find({
     relations: {
@@ -73,7 +81,7 @@ export const getOverview = async (
     },
   });
 
-  const overview = orders.map((order) => {
+  return orders.map((order) => {
     const msrp = getMsrp(order.category, order.orderItems, productsById);
 
     return {
@@ -82,9 +90,9 @@ export const getOverview = async (
       alternateDepot: order.alternateDepot?.name,
       msrp: msrp,
       offer: order.offer,
-      offerReason: order.offerReason,
+      offerReason: order.offerReason || "",
       category: order.category,
-      categoryReason: order.categoryReason,
+      categoryReason: order.categoryReason || "",
       items: order.orderItems.map((orderItem) => ({
         name: orderItem.product.name,
         value: orderItem.value,
@@ -93,6 +101,4 @@ export const getOverview = async (
       })),
     };
   });
-
-  ctx.body = { overview };
 };

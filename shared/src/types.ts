@@ -296,3 +296,20 @@ export interface BuildInfo {
 export interface VersionInfo {
   buildInfo: BuildInfo;
 }
+
+export interface OrderOverviewItem {
+  name: string;
+  depot: string;
+  alternateDepot?: string;
+  msrp: number;
+  offer: number;
+  offerReason: string;
+  category: UserCategory;
+  categoryReason: string;
+  items: {
+    name: string;
+    value: number;
+    unit: Unit;
+    category: number;
+  }[];
+}
