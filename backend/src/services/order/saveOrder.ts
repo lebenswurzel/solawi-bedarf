@@ -48,6 +48,11 @@ import { User } from "../../database/User";
 import { config } from "../../config";
 import { Applicant } from "../../database/Applicant";
 import { EncryptedUserAddress } from "../../consts/types";
+import { getUserOrderOverview } from "../getOverview";
+import { generateUserData } from "../../../../shared/src/pdf/overviewPdfs";
+import { getProductCategories } from "../product/getProductCategory";
+import { createDefaultPdf } from "../../../../shared/src/pdf/pdf";
+import { resolve } from "path";
 
 export const saveOrder = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -204,11 +209,34 @@ export const saveOrder = async (
       applicant.address.address,
     ) as EncryptedUserAddress;
 
+    // create overview pdf
+    const overview = await getUserOrderOverview(
+      requisitionConfig.id,
+      requestUserId,
+    );
+    const productCategories = await getProductCategories(requisitionConfig.id);
+    const dataByUserAndProductCategory = generateUserData(
+      overview,
+      productCategories,
+      requisitionConfig.name,
+    );
+
+    let pdfBlob: Blob | null = null;
+    if (dataByUserAndProductCategory.length > 0) {
+      const pdf = createDefaultPdf(dataByUserAndProductCategory[0]);
+      pdfBlob = await new Promise((resolve, _) => {
+        pdf.getBlob((blob) => resolve(blob));
+      });
+    }
+
     sendEmail({
       sender: config.email.sender,
       receiver: address.email,
       subject,
       html,
+      attachments: pdfBlob
+        ? [{ filename: "Bedarfsanmeldung.pdf", data: pdfBlob }]
+        : undefined,
     });
   }
 

@@ -24,10 +24,7 @@ import { MoreThan } from "typeorm";
 import { UserRole } from "../../../shared/src/enum";
 import { getMsrp } from "../../../shared/src/msrp";
 import { bi } from "./bi/bi";
-import {
-  getConfigIdFromQuery,
-  getNumericQueryParameter,
-} from "../util/requestUtil";
+import { getConfigIdFromQuery } from "../util/requestUtil";
 import { OrderOverviewItem } from "../../../shared/src/types";
 
 export const getOverview = async (
@@ -59,6 +56,7 @@ export const getUserOrderOverview = async (
     where: {
       offer: MoreThan(0),
       requisitionConfigId: configId,
+      userId,
     },
     select: {
       offer: true,

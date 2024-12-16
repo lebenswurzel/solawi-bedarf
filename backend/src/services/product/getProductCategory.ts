@@ -27,12 +27,15 @@ export const getProductCategory = async (
   await getUserFromContext(ctx);
   const configId = getConfigIdFromQuery(ctx);
 
-  const productCategories = await AppDataSource.getRepository(
-    ProductCategory,
-  ).find({
+  ctx.body = { productCategories: await getProductCategories(configId) };
+};
+
+export const getProductCategories = async (
+  configId: number,
+): Promise<ProductCategory[]> => {
+  return await AppDataSource.getRepository(ProductCategory).find({
     relations: { products: true },
     order: { name: "ASC", products: { name: "ASC" } },
     where: { requisitionConfigId: configId },
   });
-  ctx.body = { productCategories };
 };
