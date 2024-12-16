@@ -20,9 +20,9 @@ import {
   generateDepotData,
   generateUserData,
   OverviewItem,
-} from "../../../shared/src/pdf/overview.js";
-import { Product } from "../../../shared/src/types.js";
-import { UserCategory } from "../../../shared/src/enum.js";
+} from "../../../shared/src/pdf/overviewPdfs.ts";
+import { Product } from "../../../shared/src/types.ts";
+import { UserCategory } from "../../../shared/src/enum.ts";
 import {
   CUCUMBER,
   genProduct,
