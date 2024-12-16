@@ -190,14 +190,6 @@ export const saveOrder = async (
       });
     }
 
-    const { html, subject } = await buildOrderEmail(
-      order.id,
-      msrp,
-      orderUser,
-      requisitionConfig,
-      changingUser,
-    );
-
     const applicant = await AppDataSource.getRepository(
       Applicant,
     ).findOneOrFail({
@@ -208,6 +200,17 @@ export const saveOrder = async (
     const address = JSON.parse(
       applicant.address.address,
     ) as EncryptedUserAddress;
+
+    const { html, subject } = await buildOrderEmail(
+      order.id,
+      msrp,
+      orderUser,
+      requisitionConfig,
+      changingUser,
+      address.firstname,
+      appConfig.address.name,
+      appConfig.address.email,
+    );
 
     // create overview pdf
     const overview = await getUserOrderOverview(
