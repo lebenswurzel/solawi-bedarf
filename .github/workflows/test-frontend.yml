@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install shared dependencies
         run: npm ci
-        working-directory: ../shared
+        working-directory: shared
       - name: Install frontend dependencies
         run: npm ci
       - name: Check TypeScript consistency
