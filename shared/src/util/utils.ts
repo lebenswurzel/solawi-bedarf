@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { Depot } from "../../../shared/src/types.ts";
+import { Depot } from "../types.js";
 
 export interface Collector<K, V, Acc> {
   init(key: K, first: V): Acc;
@@ -24,7 +24,7 @@ export interface Collector<K, V, Acc> {
 
 export function collect<K, V, Acc>(
   init: (key: K, first: V) => Acc,
-  add: (acc: Acc, value: V) => void,
+  add: (acc: Acc, value: V) => void
 ): Collector<K, V, Acc> {
   return {
     init,
@@ -45,7 +45,7 @@ export function collectArray<V>(): Collector<any, V, V[]> {
 
 export function collectMap<K2, V, Acc>(
   keyFn: (value: V) => K2,
-  agg: Collector<K2, V, Acc>,
+  agg: Collector<K2, V, Acc>
 ): Collector<any, V, Map<K2, Acc>> {
   return {
     init(): Map<K2, Acc> {
@@ -57,7 +57,7 @@ export function collectMap<K2, V, Acc>(
 
 export function groupingBy<K, V, Agg>(
   keyFn: (value: V) => K,
-  agg: Collector<K, V, Agg>,
+  agg: Collector<K, V, Agg>
 ): (acc: Map<K, Agg>, val: V) => Map<K, Agg> {
   return (acc: Map<K, Agg>, val: V) => {
     const key = keyFn(val);
@@ -75,7 +75,7 @@ export function groupingBy<K, V, Agg>(
 
 export function grouping<K, V, U>(
   keyFn: (value: V) => K,
-  valueFn: (value: V) => U,
+  valueFn: (value: V) => U
 ): (acc: Map<K, U>, val: V) => Map<K, U> {
   return (acc: Map<K, U>, val: V) => {
     const key = keyFn(val);
@@ -93,7 +93,7 @@ export type Comparator<T> = (a: T, b: T) => number;
 
 export function byKey<V, K>(
   keyExtractor: (value: V) => K,
-  keyComparator: Comparator<K>,
+  keyComparator: Comparator<K>
 ): Comparator<V> {
   return (a, b) => keyComparator(keyExtractor(a), keyExtractor(b));
 }
@@ -104,7 +104,7 @@ export const inNaturalOrder: Comparator<any> = (a, b) => a - b;
 export function getOrCompute<V>(
   obj: Map<string, V>,
   key: string,
-  fn: (k: string) => V,
+  fn: (k: string) => V
 ): V {
   const value = obj.get(key);
   if (value === undefined) {
@@ -118,7 +118,7 @@ export function getOrCompute<V>(
 
 export function findDepotById(
   depots: Depot[],
-  depotId: number,
+  depotId: number
 ): Depot | undefined {
   return depots.find((d) => d.id == depotId);
 }

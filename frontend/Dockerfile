@@ -10,6 +10,13 @@ COPY frontend/vite.config.ts ./frontend/
 
 RUN cd frontend && npm ci && cd ..
 
+# Install shared dependencies
+COPY shared/package.json ./shared/
+COPY shared/package-lock.json ./shared/
+COPY shared/tsconfig.json ./shared/
+RUN cd shared && npm ci && cd ..
+
+# Copy code
 COPY frontend/public ./frontend/public
 COPY frontend/src ./frontend/src
 COPY shared/src ./shared/src

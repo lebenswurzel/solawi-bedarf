@@ -15,14 +15,14 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import pdfMake, { createPdf, TCreatedPdf } from "pdfmake/build/pdfmake";
-import { pdfFonts } from "../../assets/vfs_fonts";
+import { pdfFonts } from "../assets/vfs_fonts";
 import {
   Content,
   DynamicContent,
   TDocumentDefinitions,
 } from "pdfmake/interfaces";
-import { appConfig } from "../../../../shared/src/config";
-import { logo } from "../../../../shared/src/logo";
+import { appConfig } from "../config";
+import { logo } from "../logo";
 
 (<any>pdfMake).vfs = pdfFonts.vfs;
 
@@ -30,7 +30,7 @@ export type HeaderSortKeys = { [key: string]: number };
 
 const jsonToTableData = (
   data: { [key: string]: string | number }[],
-  headerSortKeys?: HeaderSortKeys,
+  headerSortKeys?: HeaderSortKeys
 ) => {
   let headers: string[] = [];
   for (let item of data) {
@@ -169,7 +169,7 @@ export function createDefaultPdf(pdf: PdfSpec): TCreatedPdf {
 const createOverviewPdf = (
   data: { [key: string]: { [key: string]: number } },
   description: string,
-  headerSortKeys?: HeaderSortKeys,
+  headerSortKeys?: HeaderSortKeys
 ): TDocumentDefinitions => {
   const content: Content = [
     {
@@ -179,7 +179,7 @@ const createOverviewPdf = (
   ];
   const tableData = jsonToTableData(
     Object.entries(data).map(([k, v]) => ({ Bezeichnung: k, ...v })),
-    headerSortKeys,
+    headerSortKeys
   );
   content.push({
     table: {
@@ -203,7 +203,7 @@ const createOverviewPdf = (
 export const generateOverviewPdf = (
   data: { [key: string]: { [key: string]: number } },
   description: string,
-  headerSortKeys?: HeaderSortKeys,
+  headerSortKeys?: HeaderSortKeys
 ) => {
   const pdfDefinition = createOverviewPdf(data, description, headerSortKeys);
   return pdfMake.createPdf(pdfDefinition);

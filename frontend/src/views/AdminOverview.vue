@@ -22,12 +22,12 @@ import {
   generateDepotData,
   generateOverviewCsv,
   generateUserData,
-} from "../lib/overview";
+} from "../../../shared/src/pdf/overview.ts";
 import { sanitizeFileName } from "../../../shared/src/util/fileHelper";
-import { Zip } from "../lib/pdf/zip.ts";
-import { createDefaultPdf } from "../lib/pdf/pdf.ts";
 import { useConfigStore } from "../store/configStore.ts";
 import { useUiFeedback } from "../store/uiFeedbackStore.ts";
+import { Zip } from "../../../shared/src/pdf/zip.ts";
+import { createDefaultPdf } from "../../../shared/src/pdf/pdf.ts";
 
 const loading = ref(false);
 

@@ -4,14 +4,19 @@
   "description": "",
   "scripts": {
     "lint": "eslint --ext .js,.vue --ignore-path .gitignore --fix src",
+    "tsc": "tsc",
     "format": "prettier .  --write"
   },
   "author": "",
   "license": "AGPL-3.0-only",
   "dependencies": {
+    "@types/pdfmake": "^0.2.9",
+    "date-fns": "^4.1.0",
     "eslint": "^8.49.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-vue": "^9.17.0",
+    "jszip": "^3.10.1",
+    "pdfmake": "^0.2.16",
     "prettier": "^3.0.3",
     "typescript": "^5.2.2"
   },

@@ -14,13 +14,12 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { Unit, UserCategory } from "./src/enum";
+import { ProductCategoryType, Unit, UserCategory } from "./src/enum";
 import {
   ConfirmedOrder,
   Depot,
   NewDepot,
   NewProduct,
-  Order,
   OrderItem,
   Product,
   ProductCategoryWithProducts,
@@ -103,6 +102,7 @@ export function genProductGroupWithProducts(
     name: "Product Group " + id,
     active: true,
     products: [],
+    typ: ProductCategoryType.SELFGROWN,
     requisitionConfigId: CONFIG_1_ID,
   };
   const result = { ...base, ...overwrite };
@@ -179,7 +179,7 @@ export function genShipmentItem(
 export function genOrder(
   orderItems: OrderItem[],
   depotId: number,
-  requisitionConfigId,
+  requisitionConfigId: number,
   overwrite: Partial<ConfirmedOrder> = {}
 ): ConfirmedOrder {
   const base: ConfirmedOrder = {
