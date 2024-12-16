@@ -18,8 +18,14 @@ import nodemailer from "nodemailer";
 import { config } from "../../config";
 import { appConfig } from "../../../../shared/src/config";
 import { escapeHtmlEntities } from "../../../../shared/src/util/stringHelper";
+import { Attachment } from "nodemailer/lib/mailer";
 
 let emailEnabled = false;
+
+export interface AttachedFile {
+  filename: string;
+  data: Blob;
+}
 
 const transporter = nodemailer.createTransport({
   host: config.email.host,
@@ -54,12 +60,14 @@ export const sendEmail = async ({
   subject,
   paragraphs,
   html,
+  attachments,
 }: {
   sender: string;
   receiver: string;
   subject: string;
   paragraphs?: string[];
   html?: string;
+  attachments?: AttachedFile[];
 }) => {
   if (emailEnabled) {
     if (!html && !paragraphs) {
@@ -75,6 +83,16 @@ export const sendEmail = async ({
         `<title>${subject}</title></head><body><p>${content}</p></body></html>`;
     }
 
+    const attachementList: Attachment[] = [];
+
+    for (const attachment of attachments || []) {
+      attachementList.push({
+        filename: attachment.filename,
+        content: Buffer.from(await attachment.data.arrayBuffer()),
+        encoding: "base64",
+      });
+    }
+
     const senderName = appConfig.address.name;
     const info = await transporter.sendMail({
       from: `"${senderName}" <${sender}>`,
@@ -82,6 +100,7 @@ export const sendEmail = async ({
       subject: subject,
       text: paragraphs ? paragraphs.join("\n\n") : undefined,
       html: html,
+      attachments: attachementList.length ? attachementList : undefined,
       // headers: { "x-myheader": "test header" },
     });
     console.log("sendEmail", info);
