@@ -14,29 +14,12 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { Unit, UserCategory } from "../../../shared/src/enum";
+import { OrderOverviewItem } from "../../../shared/src/types";
 import { getUrl, verifyResponse } from "./requests";
-
-export interface OverviewItem {
-  name: string;
-  depot: string;
-  alternateDepot?: string;
-  msrp: number;
-  offer: number;
-  offerReason: string;
-  category: UserCategory;
-  categoryReason: string;
-  items: {
-    name: string;
-    value: number;
-    unit: Unit;
-    category: number;
-  }[];
-}
 
 export const getOverview = async (
   configId: number,
-): Promise<OverviewItem[]> => {
+): Promise<OrderOverviewItem[]> => {
   const response = await fetch(getUrl(`/overview?configId=${configId}`), {});
 
   await verifyResponse(response);

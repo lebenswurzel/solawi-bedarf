@@ -14,8 +14,8 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { Unit, UserCategory } from "../enum";
-import { ProductCategoryWithProducts } from "../types";
+import { Unit } from "../enum";
+import { OrderOverviewItem, ProductCategoryWithProducts } from "../types";
 import { interpolate } from "../lang/template";
 import { PdfSpec, PdfTable } from "./pdf";
 import {
@@ -33,23 +33,6 @@ import { format } from "date-fns/format";
 
 const t = language.pages.overview;
 
-export interface OverviewItem {
-  name: string;
-  depot: string;
-  alternateDepot?: string;
-  msrp: number;
-  offer: number;
-  offerReason: string;
-  category: UserCategory;
-  categoryReason: string;
-  items: {
-    name: string;
-    value: number;
-    unit: Unit;
-    category: number;
-  }[];
-}
-
 const unitPostifx = {
   [Unit.PIECE]: "[Stk]",
   [Unit.WEIGHT]: "[g]",
@@ -57,7 +40,7 @@ const unitPostifx = {
 };
 
 export const generateOverviewCsv = (
-  overview: OverviewItem[],
+  overview: OrderOverviewItem[],
   productCategories: ProductCategoryWithProducts[]
 ) => {
   const fixedHeader = [
@@ -203,7 +186,7 @@ export const generateOverviewCsv = (
 };
 
 export function generateUserData(
-  overview: OverviewItem[],
+  overview: OrderOverviewItem[],
   productCategories: ProductCategoryWithProducts[],
   seasonName: string
 ): PdfSpec[] {
@@ -270,7 +253,7 @@ export function generateUserData(
 }
 
 export function generateDepotData(
-  overview: OverviewItem[],
+  overview: OrderOverviewItem[],
   productCategories: ProductCategoryWithProducts[],
   seasonName: string
 ): PdfSpec[] {
