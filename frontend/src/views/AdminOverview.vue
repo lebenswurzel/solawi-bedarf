@@ -22,7 +22,7 @@ import {
   generateDepotData,
   generateOverviewCsv,
   generateUserData,
-} from "../../../shared/src/pdf/overview.ts";
+} from "../../../shared/src/pdf/overviewPdfs.ts";
 import { sanitizeFileName } from "../../../shared/src/util/fileHelper";
 import { useConfigStore } from "../store/configStore.ts";
 import { useUiFeedback } from "../store/uiFeedbackStore.ts";
