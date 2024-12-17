@@ -28,6 +28,7 @@ import { useBIStore } from "../store/biStore";
 import { storeToRefs } from "pinia";
 import { useConfigStore } from "../store/configStore.ts";
 import SeasonText from "../components/styled/SeasonText.vue";
+import { UserWithLastOrderChange } from "../../../shared/src/types.ts";
 
 const t = language.pages.shop;
 
@@ -45,8 +46,11 @@ const { activeConfigId, config } = storeToRefs(configStore);
 const open = ref(false);
 const faqOpen = ref(false);
 const requestUserId = ref<number | undefined>(userStore.userId);
+const requestUser = ref<UserWithLastOrderChange | undefined>(
+  userStore.currentUser,
+);
 
-provide("requestUserId", requestUserId);
+provide("requestUser", requestUser);
 
 watch(userId, async () => {
   requestUserId.value = userId.value;
@@ -54,6 +58,9 @@ watch(userId, async () => {
 
 watch([requestUserId, configStore], async () => {
   await refresh();
+  requestUser.value = userStore.users.find(
+    (user) => user.id == requestUserId.value,
+  );
 });
 
 const onClose = async () => {
