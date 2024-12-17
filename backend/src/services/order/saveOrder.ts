@@ -182,6 +182,11 @@ export const saveOrder = async (
   if (sendConfirmationEmail) {
     const orderUser = await AppDataSource.getRepository(User).findOneOrFail({
       where: { id: requestUserId },
+      relations: {
+        applicant: {
+          address: true,
+        },
+      },
     });
     let changingUser = orderUser;
     if (requestUserId !== id) {
@@ -190,16 +195,17 @@ export const saveOrder = async (
       });
     }
 
-    const applicant = await AppDataSource.getRepository(
-      Applicant,
-    ).findOneOrFail({
-      where: { userId: requestUserId },
-      select: { address: { address: true } },
-      relations: { address: true },
-    });
+    if (!orderUser.applicant) {
+      throw Error(`User ${orderUser.id} is missing an applicant`);
+    }
+
     const address = JSON.parse(
-      applicant.address.address,
+      orderUser.applicant.address.address,
     ) as EncryptedUserAddress;
+
+    if (!address.email) {
+      throw Error(`User ${orderUser.id} is missing an email address`);
+    }
 
     const { html, subject } = await buildOrderEmail(
       order.id,

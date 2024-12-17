@@ -237,6 +237,8 @@ export const language = {
         sendConfirmationEmail: {
           title:
             "Eine Kopie der Bedarfsanmeldung an meine hinterlegte E-Mail-Adresse schicken.",
+          notAvailable:
+            "E-Mail-Versand nicht möglich, da für dein Konto keine E-Mail-Adresse hinterlegt ist.",
         },
         action: {
           faq: "Informationen & Grundlagen",

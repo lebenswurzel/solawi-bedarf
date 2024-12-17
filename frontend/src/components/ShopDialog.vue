@@ -37,6 +37,7 @@ import SeasonText from "./styled/SeasonText.vue";
 import { useUiFeedback } from "../store/uiFeedbackStore.ts";
 import { UserCategory } from "../../../shared/src/enum.ts";
 import { appConfig } from "../../../shared/src/config.ts";
+import { UserWithLastOrderChange } from "../../../shared/src/types.ts";
 
 defineProps(["open"]);
 const emit = defineEmits(["close"]);
@@ -67,9 +68,13 @@ const openFAQ = ref(false);
 const loading = ref(false);
 const model = ref<string>();
 const showDepotNote = ref(false);
+
+const requestUser = inject<Ref<UserWithLastOrderChange>>(
+  "requestUser",
+) as Ref<UserWithLastOrderChange>;
+
 const sendConfirmationEmail = ref(false);
 
-const requestUserId = inject<Ref<number>>("requestUserId") as Ref<number>;
 const categoryOptions = computed(() => {
   return Object.entries(language.app.options.orderUserCategories).map(
     ([key, values]) => ({ value: key, ...values }),
@@ -160,6 +165,9 @@ const requireConfirmContribution = computed(() => {
 watch(offer, () => {
   model.value = offer.value.toString() || "0";
 });
+watch(requestUser, () => {
+  sendConfirmationEmail.value = requestUser?.value.emailEnabled || false;
+});
 onMounted(() => {
   model.value = offer.value.toString() || "0";
 });
@@ -195,8 +203,8 @@ const onBlur = (blur: boolean) => {
 };
 
 const onClose = async () => {
-  requestUserId?.value &&
-    (await orderStore.update(requestUserId?.value, activeConfigId.value));
+  requestUser?.value.id &&
+    (await orderStore.update(requestUser?.value.id, activeConfigId.value));
   model.value = offer.value.toString() || "0";
   emit("close");
 };
@@ -204,7 +212,7 @@ const onClose = async () => {
 const onSave = () => {
   loading.value = true;
   saveOrder({
-    userId: requestUserId?.value!,
+    userId: requestUser?.value.id!,
     orderItems: orderItems.value,
     offer: parseInt(model.value || "0"),
     depotId: depotId.value.actual!,
@@ -219,8 +227,8 @@ const onSave = () => {
   })
     .then(async () => {
       await biStore.update(activeConfigId.value);
-      requestUserId?.value &&
-        (await orderStore.update(requestUserId.value, activeConfigId.value));
+      requestUser?.value.id &&
+        (await orderStore.update(requestUser.value.id, activeConfigId.value));
       loading.value = false;
       uiFeedback.setSuccess(language.app.uiFeedback.saving.success);
       emit("close");
@@ -379,7 +387,16 @@ const onSave = () => {
           v-model="sendConfirmationEmail"
           :label="`${t.sendConfirmationEmail.title}`"
           :color="sendConfirmationEmail ? 'primary' : 'secondary'"
+          :disabled="!requestUser.emailEnabled"
         ></v-switch>
+        <v-alert
+          color="warning"
+          variant="outlined"
+          density="compact"
+          class="text-body-2"
+          v-if="!requestUser.emailEnabled"
+          >{{ t.sendConfirmationEmail.notAvailable }}</v-alert
+        >
       </v-card-text>
       <v-card-actions class="justify-center">
         <v-btn class="text-error" @click="onClose" variant="outlined">
