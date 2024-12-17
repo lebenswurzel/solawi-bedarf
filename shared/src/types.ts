@@ -45,6 +45,11 @@ export type SaveUserRequest = Required<NewUser> &
 
 export type UserWithLastOrderChange = Required<User> & {
   lastOrderChange: Date;
+  emailEnabled: boolean;
+};
+export type GetUserResponse = {
+  userId: number;
+  users: UserWithLastOrderChange[];
 };
 
 export type UpdateUserRequest = Id & {

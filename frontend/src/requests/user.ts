@@ -15,16 +15,13 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import {
+  GetUserResponse,
   SaveUserRequest,
   UpdateUserRequest,
-  UserWithLastOrderChange,
 } from "../../../shared/src/types.ts";
 import { getUrl, verifyResponse } from "./requests.ts";
 
-export const getUser = async (): Promise<{
-  userId: number;
-  users: UserWithLastOrderChange[];
-}> => {
+export const getUser = async (): Promise<GetUserResponse> => {
   const response = await fetch(getUrl("/user"));
 
   await verifyResponse(response);

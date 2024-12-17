@@ -36,6 +36,9 @@ export class EncryptTransformer implements ValueTransformer {
   }
 
   from(value: string): string {
+    if (value === null) {
+      return "";
+    }
     const [iv, encryptedValue] = value.split(".");
     const decipher = crypto.createDecipheriv(
       algorithm,
