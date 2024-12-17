@@ -55,7 +55,7 @@ provide("dialogUser", dialogUser);
 const headers = [
   { title: "Name", key: "name" },
   { title: "Rolle", key: "role" },
-  { title: "Aktiv", key: "active" },
+  { title: "Status", key: "active" },
   { title: "Letzte Bedarfsänderung", key: "lastOrderChange" },
   { title: "ID", key: "id" },
   { title: "Bearbeiten", key: "edit" },
@@ -180,12 +180,42 @@ watch(selectedUsers, () => {
               v-model="selectedUsers"
             >
               <template v-slot:item.active="{ item }">
-                <v-icon v-if="item.active"
-                  >mdi-checkbox-marked-circle-outline</v-icon
-                >
-                <v-icon v-if="!item.active" class="opacity-40"
-                  >mdi-checkbox-blank-circle-outline</v-icon
-                >
+                <v-tooltip text="aktiviert">
+                  <template v-slot:activator="{ props }">
+                    <span v-bind="props">
+                      <v-icon v-if="item.active"
+                        >mdi-checkbox-marked-circle-outline</v-icon
+                      >
+                    </span>
+                  </template>
+                </v-tooltip>
+                <v-tooltip text="deaktiviert">
+                  <template v-slot:activator="{ props }">
+                    <span v-bind="props">
+                      <v-icon v-if="!item.active" class="opacity-40"
+                        >mdi-checkbox-blank-circle-outline</v-icon
+                      >
+                    </span>
+                  </template>
+                </v-tooltip>
+                <v-tooltip text="E-Mail-Adresse vorhanden">
+                  <template v-slot:activator="{ props }">
+                    <span v-bind="props">
+                      <v-icon v-if="item.emailEnabled"
+                        >mdi-email-check-outline</v-icon
+                      >
+                    </span></template
+                  >
+                </v-tooltip>
+                <v-tooltip text="Keine E-Mail-Adresse vorhanden">
+                  <template v-slot:activator="{ props }">
+                    <span v-bind="props">
+                      <v-icon v-if="!item.emailEnabled" class="opacity-40"
+                        >mdi-email-off-outline</v-icon
+                      >
+                    </span></template
+                  >
+                </v-tooltip>
               </template>
               <template v-slot:item.edit="{ item }">
                 <v-btn

@@ -21,7 +21,10 @@ import { getUserFromContext } from "../getUserFromContext";
 import Koa from "koa";
 import Router from "koa-router";
 import { UserRole } from "../../../../shared/src/enum";
-import { UserWithLastOrderChange } from "../../../../shared/src/types";
+import {
+  GetUserResponse,
+  UserWithLastOrderChange,
+} from "../../../../shared/src/types";
 
 export const getUser = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -40,14 +43,19 @@ export const getUser = async (
           },
           relations: {
             orders: true,
+            applicant: true,
           },
         }
       : {
           order: { name: "ASC" },
           select: { name: true, id: true, role: true, active: true },
           where: { id },
+          relations: {
+            applicant: true,
+          },
         };
   const users = await AppDataSource.getRepository(User).find(findOptions);
+
   ctx.body = {
     userId: id,
     users: users.map((u) => ({
@@ -56,6 +64,7 @@ export const getUser = async (
       role: u.role,
       active: u.active,
       lastOrderChange: u.orders?.map((o) => o.updatedAt).sort()[0],
-    })) as UserWithLastOrderChange[],
-  };
+      emailEnabled: !!u.applicant,
+    })),
+  } as GetUserResponse;
 };

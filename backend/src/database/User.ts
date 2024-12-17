@@ -14,11 +14,18 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from "typeorm";
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  OneToMany,
+  OneToOne,
+} from "typeorm";
 import { Token } from "./Token";
 import { Order } from "./Order";
 import { BaseEntity } from "./BaseEntity";
 import { UserRole } from "../../../shared/src/enum";
+import { Applicant } from "./Applicant";
 
 @Entity()
 export class User extends BaseEntity {
@@ -46,4 +53,7 @@ export class User extends BaseEntity {
 
   @OneToMany(() => Order, (order) => order.user)
   orders: Order[];
+
+  @OneToOne(() => Applicant, (applicant) => applicant.user, { nullable: true })
+  applicant: Applicant;
 }
