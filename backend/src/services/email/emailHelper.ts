@@ -109,6 +109,11 @@ export const buildOrderEmail = async (
     season: config.name,
     seasonStart: prettyDate(config.validFrom),
     seasonEnd: prettyDate(config.validTo),
+    msrp: `${msrp}€`,
+    contributionModel:
+      language.app.options.orderUserCategories[order.category].title,
+    contributionKind: order.categoryReason || "*keine Angabe*",
+    userId: orderUser.name,
   });
 
   const paragraphs = [emailBody, changingUserNote];
