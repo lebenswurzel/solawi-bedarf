@@ -74,3 +74,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #157 "Fragen & Antworten" in "Informationen & Grundlagen" umbenannt. Formulierungen bei der Bedarfsanmeldung verbessert.
 
 # NEW
+
+#159 Mitglieder erhalten optional eine E-Mail als Bestätigung der Bedarfsanmeldung
