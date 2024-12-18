@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 export function escapeHtmlEntities(html: string) {
-  return html.replace(/[&<>"']/g, (char) => {
+  return html.replace(/[&<>"'\[\]]/g, (char) => {
     switch (char) {
       case "&":
         return "&amp;";
@@ -28,6 +28,10 @@ export function escapeHtmlEntities(html: string) {
         return "&quot;";
       case "'":
         return "&#39;";
+      case "[":
+        return "&#91;";
+      case "]":
+        return "&#93;";
       default:
         return char;
     }
