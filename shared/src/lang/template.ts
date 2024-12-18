@@ -15,14 +15,20 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { escapeHtmlEntities } from "../util/stringHelper";
+
 export const interpolate = (
   template: string,
   variables: { [key: string]: string },
+  escapeHtml?: boolean
 ) => {
   let result = template;
   for (const key in variables) {
     if (variables.hasOwnProperty(key)) {
-      const value = variables[key];
+      let value = variables[key];
+      if (escapeHtml) {
+        value = escapeHtmlEntities(value);
+      }
       result = result.replace(new RegExp(`{${key}}`, "g"), value);
     }
   }

@@ -18,8 +18,6 @@ import { marked } from "marked";
 import { AppDataSource } from "../../database/database";
 import { Order } from "../../database/Order";
 import { User } from "../../database/User";
-import { escapeHtmlEntities } from "../../../../shared/src/util/stringHelper";
-import { getLangUnit } from "../../../../shared/src/util/unitHelper";
 import { language } from "../../../../shared/src/lang/lang";
 import { RequisitionConfig } from "../../database/RequisitionConfig";
 import { interpolate } from "../../../../shared/src/lang/template";
@@ -84,37 +82,29 @@ export const buildOrderEmail = async (
     throw new Error(`Order with ID ${orderId} not found.`);
   }
 
-  const markdownTableHeader =
-    "| Produkt | Häufigkeit | Menge |\n|--------------|-----------|-------|";
-
-  const markdownTableRows = order.orderItems
-    .map((item) => {
-      const { product, value } = item;
-      return `| ${escapeMdTableCell(product.name)} | ${product.frequency} | ${value} ${getLangUnit(product.unit)} |`;
-    })
-    .join("\n");
-
-  const markdownTable = `${markdownTableHeader}\n${markdownTableRows}`;
-
   const changingUserNote =
     orderUser.id !== changingUser.id
       ? interpolate(el.changingUserNote, { userName: changingUser.name })
       : "";
 
-  const emailBody = interpolate(el.body.join("\n\n"), {
-    userName,
-    solawiName: appConfig.address.name,
-    solawiEmail: appConfig.address.email,
-    appUrl: appConfig.appUrl,
-    season: config.name,
-    seasonStart: prettyDate(config.validFrom),
-    seasonEnd: prettyDate(config.validTo),
-    msrp: `${msrp}€`,
-    contributionModel:
-      language.app.options.orderUserCategories[order.category].title,
-    contributionKind: order.categoryReason || "*keine Angabe*",
-    userId: orderUser.name,
-  });
+  const emailBody = interpolate(
+    el.body.join("\n\n"),
+    {
+      userName,
+      solawiName: appConfig.address.name,
+      solawiEmail: appConfig.address.email,
+      appUrl: appConfig.appUrl,
+      season: config.name,
+      seasonStart: prettyDate(config.validFrom),
+      seasonEnd: prettyDate(config.validTo),
+      msrp: `${msrp}€`,
+      contributionModel:
+        language.app.options.orderUserCategories[order.category].title,
+      contributionKind: order.categoryReason || "*keine Angabe*",
+      userId: orderUser.name,
+    },
+    true,
+  );
 
   const paragraphs = [emailBody, changingUserNote];
 
