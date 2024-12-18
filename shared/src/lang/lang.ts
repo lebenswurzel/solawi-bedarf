@@ -469,11 +469,15 @@ export const language = {
 
         "Dir ist bewusst, dass bei mangelnder Beteiligung oder fehlendem Nachweis der im Rahmen Deiner Art der Mitgliedschaft zugesicherten Stunden, der entsprechende Ausgleich nachgezahlt werden muss. Diese Zahlung ist nach Aufforderung durch die Solawi entweder als Einmalzahlung zu erstatten, oder Du erteilst Deine Zustimmung für den Einzug des entsprechend höheren Monatsbeitrags für den Rest der Saison.",
 
+        "**Folgende Angaben sind auf Grundlage deiner Bedarfsanmeldung bei uns hinterlegt:**",
+
+        "* Benutzername: {userId}\n* Monatlicher Beitrag: {msrp}\n* Mitgliedschaftsmodell: {contributionModel}\n* Art der Mitarbeit: {contributionKind}\n* Bestellte Lebensmittel und Depot: siehe PDF im Anhang",
+
         "Vielen Dank für Deine Unterstützung der Solawi „Gemüseanbau in Graupa“ und das Engagement für eine nachhaltige und faire Landwirtschaft.",
 
         "Viele Grüße",
 
-        "{solawiName}",
+        "Dein {solawiName}",
       ],
     },
   },
