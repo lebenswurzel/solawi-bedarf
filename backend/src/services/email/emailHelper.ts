@@ -24,6 +24,7 @@ import { language } from "../../../../shared/src/lang/lang";
 import { RequisitionConfig } from "../../database/RequisitionConfig";
 import { interpolate } from "../../../../shared/src/lang/template";
 import { format } from "date-fns";
+import { appConfig } from "../../../../shared/src/config";
 
 const emailHtmlTemplate = `<html>
   <head>
@@ -55,6 +56,10 @@ function prettyDateTime(date: Date): string {
   return format(date, "dd.MM.yyyy, HH:mm:ss") + " Uhr";
 }
 
+function prettyDate(date: Date): string {
+  return format(date, "dd.MM.yyyy");
+}
+
 const escapeMdTableCell = (value: string): string => {
   return value.replace("|", "\\|");
 };
@@ -66,8 +71,6 @@ export const buildOrderEmail = async (
   config: RequisitionConfig,
   changingUser: User,
   userName: string,
-  senderName: string,
-  email: string,
 ): Promise<{ html: string; subject: string }> => {
   const el = language.email.orderConfirmation;
   const order = await AppDataSource.getRepository(Order).findOne({
@@ -100,8 +103,12 @@ export const buildOrderEmail = async (
 
   const emailBody = interpolate(el.body.join("\n\n"), {
     userName,
-    senderName,
-    email,
+    solawiName: appConfig.address.name,
+    solawiEmail: appConfig.address.email,
+    appUrl: appConfig.appUrl,
+    season: config.name,
+    seasonStart: prettyDate(config.validFrom),
+    seasonEnd: prettyDate(config.validTo),
   });
 
   const paragraphs = [emailBody, changingUserNote];
