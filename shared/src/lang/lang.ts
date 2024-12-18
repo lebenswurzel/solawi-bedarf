@@ -437,23 +437,23 @@ export const language = {
       body: [
         "Liebe(r) {userName},",
 
-        "vielen Dank für Deine Bedarfsanmeldung für die Saison 2025/2026 der Solawi „Gemüseanbau in Graupa“. Deine Angaben wurden erfolgreich gespeichert.",
+        "vielen Dank für Deine Bedarfsanmeldung für die {season} der Solawi „Gemüseanbau in Graupa“. Deine Angaben wurden erfolgreich gespeichert.",
 
-        "Im Anhang befindet sich ein PDF-Dokument mit einer Übersicht der von Dir angemeldeten Mengen für Gemüse und Kooperationsprodukte für die kommende Saison. Die Saison startet am 1. April 2025 und endet am 31. März 2026.",
+        "Im Anhang befindet sich ein PDF-Dokument mit einer Übersicht der von Dir angemeldeten Mengen für Gemüse und Kooperationsprodukte für die kommende Saison. Die Saison startet am {seasonStart} und endet am {seasonEnd}.",
 
-        "Beim Speichern der Bedarfsmeldung hast Du bestätigt, dass Du die „Grundlagen und Informationen“ 1 der Solawi gelesen und verstanden hast. Sollten dennoch Unklarheiten bestehen, kannst Du Dich bei Rückfragen jederzeit an die Mitgliederbetreuung unter {email} wenden.",
+        "Beim Speichern der Bedarfsmeldung hast Du bestätigt, dass Du die „[Grundlagen und Informationen]({appUrl}/#/faq)“ der Solawi gelesen und verstanden hast. Sollten dennoch Unklarheiten bestehen, kannst Du Dich bei Rückfragen jederzeit an die Mitgliederbetreuung unter {solawiEmail} wenden.",
 
-        "Besonders wichtig bei den „Grundlagen und Informationen“ 1 sind die Abschnitte zur Verbindlichkeit und den Bedingungen der Bedarfsmeldung:",
+        "Besonders wichtig bei den „[Grundlagen und Informationen]({appUrl}/#/faq)“ sind die Abschnitte zur Verbindlichkeit und den Bedingungen der Bedarfsmeldung:",
 
-        "Verbindlichkeit Deiner Bedarfsmeldung:",
+        "**Verbindlichkeit Deiner Bedarfsmeldung:**",
 
-        "Solange die Anmeldefrist für die laufende Bieterunde (auf der Home-Seite der Bedarfsanmeldung sichtbar) noch nicht verstrichen ist, bleiben Deine angemeldeten Bedarfsmengen unverbindlich. Das heißt, Du kannst diese jederzeit bis zum Ende der Anmeldefrist ändern, also sowohl Deine Nahrungsmittelmengen als auch Deinen Solawi-Beitrag nach oben oder unten justieren. In folgenden Bieterunden, mit verlängerten Anmeldefristen, kannst Du Deinen Solawi-Beitrag ausschließlich nach oben justieren.",
+        "Solange die Anmeldefrist für die laufende Bieterunde (auf der [Home-Seite der Bedarfsanmeldung]({appUrl}/) sichtbar) noch nicht verstrichen ist, bleiben Deine angemeldeten Bedarfsmengen unverbindlich. Das heißt, Du kannst diese jederzeit bis zum Ende der Anmeldefrist ändern, also sowohl Deine Nahrungsmittelmengen als auch Deinen Solawi-Beitrag nach oben oder unten justieren. In folgenden Bieterunden, mit verlängerten Anmeldefristen, kannst Du Deinen Solawi-Beitrag ausschließlich nach oben justieren.",
 
         "Mit Ablauf der Anmeldefrist wird der zuletzt von Dir gespeicherte Stand Deiner Bedarfsanmeldung verbindlich. In diesem Moment gehst Du automatisch eine rechtsverbindliche Zusage mit dem Träger des Solawi-Projektes ein, woran Du bis zum Ende der Solawi-Saison am 31.03. des Folgejahres gebunden bist.",
 
-        "Diese Bedingungen akzeptierst Du mit der Anmeldung Deines Bedarfs:",
+        "**Diese Bedingungen akzeptierst Du mit der Anmeldung Deines Bedarfs:**",
 
-        "Du trägst das Ernterisiko für die Solawi-Saison 2025/26 (vom 1.4.2025 bis zum 31.3.2026) gemeinsam mit allen anderen Solawi-Mitgliedern.",
+        "Du trägst das Ernterisiko für die Solawi-{season} (vom {seasonStart} bis zum {seasonEnd}) gemeinsam mit allen anderen Solawi-Mitgliedern.",
 
         "Dafür kannst Du die von Dir als Bedarf angemeldeten Nahrungsmittel in dem von Dir gewählten Depot abholen (8). Dir ist dabei bewusst, dass die Häufigkeit der Verteilung je Gemüse erntebedingt schwanken kann. Du trägst sowohl Überschüsse als auch Mindererträge mit.",
 
@@ -462,9 +462,10 @@ export const language = {
         "Du kannst darauf vertrauen, dass das angebaute Gemüse höhere Ansprüche erfüllt, als es die EU-Bio-Verordnung verlangt, das Gemüse zu Deiner nährstoff- sowie vitaminreichen Ernährung beiträgt und der genutzte Boden – gemäß dem Leitbild dieses Solawi-Projektes – ökologisch, naturnah, schonend bewirtschaftet und gepflegt wird. Die Pflege der organischen Bodensubstanz (wie Bodenlebewesen, Humus) und die Förderung der Artenvielfalt ist dabei wichtig.",
 
         "Für die Dauer der Solawi-Saison zahlst Du Deinen monatlichen Solawi-Beitrag, oder zahlst die Gesamtsumme aller Monatsbeiträge im Voraus zu Beginn der Saison.",
+
         "Du verpflichtest Dich, die mit der Wahl Deiner Art der Mitgliedschaft einhergehenden Bedingungen einzuhalten:",
 
-        "* stilles Mitglied | keine Mitarbeit\n* aktives Mitglied | Mitarbeit mindestens 5 h/Monat\n* engagiertes Mitglied | Mitarbeit mindestens 10 h/Monat",
+        "* **stilles Mitglied** | keine Mitarbeit\n* **aktives Mitglied** | Mitarbeit mindestens 5 h/Monat\n* **engagiertes Mitglied** | Mitarbeit mindestens 10 h/Monat",
 
         "Dir ist bewusst, dass bei mangelnder Beteiligung oder fehlendem Nachweis der im Rahmen Deiner Art der Mitgliedschaft zugesicherten Stunden, der entsprechende Ausgleich nachgezahlt werden muss. Diese Zahlung ist nach Aufforderung durch die Solawi entweder als Einmalzahlung zu erstatten, oder Du erteilst Deine Zustimmung für den Einzug des entsprechend höheren Monatsbeitrags für den Rest der Saison.",
 
@@ -472,7 +473,7 @@ export const language = {
 
         "Viele Grüße",
 
-        "{senderName}",
+        "{solawiName}",
       ],
     },
   },

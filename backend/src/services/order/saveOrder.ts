@@ -214,8 +214,6 @@ export const saveOrder = async (
       requisitionConfig,
       changingUser,
       address.firstname,
-      appConfig.address.name,
-      appConfig.address.email,
     );
 
     // create overview pdf

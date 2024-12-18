@@ -17,6 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { Unit, UserCategory } from "./enum";
 
 export const appConfig = {
+  appUrl: "https://bedarf.lebenswurzel.biz",
   address: {
     name: "Solawi-Projekt Gemüseanbau in Graupa",
     street: "Lindengrundstrasse 20",
