@@ -80,3 +80,4 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 # NEW
 
 #162 Optimierungen in der Bedarfsanmeldungs-E-Mail (Korrektur Beitragswert, Solawi-Name, Art der Mitarbeit ausblenden)
+#163 Benutzertabelle: Anzeige der letzten Bedarfsänderung der gewählten Saison
