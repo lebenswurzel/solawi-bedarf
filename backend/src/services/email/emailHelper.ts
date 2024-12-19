@@ -23,6 +23,7 @@ import { RequisitionConfig } from "../../database/RequisitionConfig";
 import { interpolate } from "../../../../shared/src/lang/template";
 import { format } from "date-fns";
 import { appConfig } from "../../../../shared/src/config";
+import { UserCategory } from "../../../../shared/src/enum";
 
 const emailHtmlTemplate = `<html>
   <head>
@@ -87,6 +88,13 @@ export const buildOrderEmail = async (
       ? interpolate(el.changingUserNote, { userName: changingUser.name })
       : "";
 
+  const contributionKindBulletPoint =
+    order.category !== UserCategory.CAT130
+      ? interpolate(el.contributionKindBulletPoint, {
+          contributionKind: order.categoryReason || "*keine Angabe*",
+        })
+      : "";
+
   const emailBody = interpolate(
     el.body.join("\n\n"),
     {
@@ -97,10 +105,10 @@ export const buildOrderEmail = async (
       season: config.name,
       seasonStart: prettyDate(config.validFrom),
       seasonEnd: prettyDate(config.validTo),
-      msrp: `${msrp}€`,
+      offer: `${order.offer}€`,
       contributionModel:
         language.app.options.orderUserCategories[order.category].title,
-      contributionKind: order.categoryReason || "*keine Angabe*",
+      contributionKindBulletPoint,
       userId: orderUser.name,
     },
     true,

@@ -437,7 +437,7 @@ export const language = {
       body: [
         "Liebe(r) {userName},",
 
-        "vielen Dank für Deine Bedarfsanmeldung für die {season} der Solawi „Gemüseanbau in Graupa“. Deine Angaben wurden erfolgreich gespeichert.",
+        "vielen Dank für Deine Bedarfsanmeldung für die {season} im {solawiName}. Deine Angaben wurden erfolgreich gespeichert.",
 
         "Im Anhang befindet sich ein PDF-Dokument mit einer Übersicht der von Dir angemeldeten Mengen für Gemüse und Kooperationsprodukte für die kommende Saison. Die Saison startet am {seasonStart} und endet am {seasonEnd}.",
 
@@ -471,14 +471,15 @@ export const language = {
 
         "**Folgende Angaben sind auf Grundlage deiner Bedarfsanmeldung bei uns hinterlegt:**",
 
-        "* Benutzername: {userId}\n* Monatlicher Beitrag: {msrp}\n* Mitgliedschaftsmodell: {contributionModel}\n* Art der Mitarbeit: {contributionKind}\n* Bestellte Lebensmittel und Depot: siehe PDF im Anhang",
+        "* Benutzername: {userId}\n* Monatlicher Beitrag: {offer}\n* Mitgliedschaftsmodell: {contributionModel}\n{contributionKindBulletPoint}* Bestellte Lebensmittel und Depot: siehe PDF im Anhang",
 
-        "Vielen Dank für Deine Unterstützung der Solawi „Gemüseanbau in Graupa“ und das Engagement für eine nachhaltige und faire Landwirtschaft.",
+        "Vielen Dank für Deine Unterstützung des {solawiName} und das Engagement für eine nachhaltige und faire Landwirtschaft.",
 
         "Viele Grüße",
 
         "Dein {solawiName}",
       ],
+      contributionKindBulletPoint: "* Art der Mitarbeit: {contributionKind}\n",
     },
   },
 };
