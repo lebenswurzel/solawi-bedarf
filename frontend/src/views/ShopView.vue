@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { onMounted, provide, ref, watch } from "vue";
+import { computed, onMounted, provide, ref, watch } from "vue";
 import { language } from "../../../shared/src/lang/lang.ts";
 import { interpolate } from "../../../shared/src/lang/template.ts";
 import ShopItem from "../components/ShopItem.vue";
@@ -29,6 +29,8 @@ import { storeToRefs } from "pinia";
 import { useConfigStore } from "../store/configStore.ts";
 import SeasonText from "../components/styled/SeasonText.vue";
 import { UserWithLastOrderChange } from "../../../shared/src/types.ts";
+import { useRoute } from "vue-router";
+import { router } from "../routes.ts";
 
 const t = language.pages.shop;
 
@@ -49,15 +51,38 @@ const requestUserId = ref<number | undefined>(userStore.userId);
 const requestUser = ref<UserWithLastOrderChange | undefined>(
   userStore.currentUser,
 );
+const canAdministerOtherUsers = computed(() => {
+  return userStore.userOptions.length > 1;
+});
+
+const route = useRoute();
 
 provide("requestUser", requestUser);
 
 watch(userId, async () => {
-  requestUserId.value = userId.value;
+  const paramUserId = parseUserIdParam();
+  requestUserId.value = paramUserId ?? userId.value;
 });
 
+watch(
+  () => route.params.userId,
+  async () => {
+    const newValue = parseUserIdParam();
+    if (newValue) {
+      requestUserId.value = newValue;
+    }
+  },
+);
+
 watch([requestUserId, configStore], async () => {
-  await refresh();
+  if (requestUserId.value) {
+    if (requestUserId.value !== userStore.currentUser?.id) {
+      router.push({ path: `/shop/${requestUserId.value}` });
+    } else {
+      router.push({ path: `/shop/` });
+    }
+  }
+  await refresh(true);
   requestUser.value = userStore.users.find(
     (user) => user.id == requestUserId.value,
   );
@@ -75,7 +100,23 @@ const onSave = () => {
   open.value = true;
 };
 
-const refresh = async () => {
+const parseUserIdParam = (): number | undefined => {
+  const value = route.params.userId;
+  if (canAdministerOtherUsers.value) {
+    if (typeof value === "string") {
+      const converted = parseInt(value);
+      if (!Number.isNaN(converted)) {
+        return converted;
+      }
+    }
+  }
+};
+
+const refresh = async (keepUserId?: boolean) => {
+  const userIdParam = parseUserIdParam();
+  if (userIdParam && !keepUserId) {
+    requestUserId.value = userIdParam;
+  }
   if (requestUserId.value && activeConfigId.value != -1) {
     productStore.update(configStore.activeConfigId);
     biStore.update(configStore.activeConfigId);
@@ -87,7 +128,7 @@ onMounted(refresh);
 
 <template>
   <v-card class="ma-4">
-    <v-card-title v-if="userStore.userOptions.length > 1">
+    <v-card-title v-if="canAdministerOtherUsers">
       <v-select
         v-model="requestUserId"
         :items="userStore.userOptions"

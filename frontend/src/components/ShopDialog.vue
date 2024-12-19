@@ -166,7 +166,7 @@ watch(offer, () => {
   model.value = offer.value.toString() || "0";
 });
 watch(requestUser, () => {
-  sendConfirmationEmail.value = requestUser?.value.emailEnabled || false;
+  sendConfirmationEmail.value = requestUser?.value?.emailEnabled || false;
 });
 onMounted(() => {
   model.value = offer.value.toString() || "0";
