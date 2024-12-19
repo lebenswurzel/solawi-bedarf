@@ -29,7 +29,7 @@ import AdminTextView from "./views/AdminTextView.vue";
 
 const routes = [
   { path: "/register", component: RegisterView },
-  { path: "/shop", component: ShopView },
+  { path: "/shop/:userId?", component: ShopView },
   { path: "/faq", component: FAQView },
   {
     path: "/employeeshipment",

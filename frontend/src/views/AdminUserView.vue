@@ -258,6 +258,11 @@ const prettyLastOrderChanged = (
               </template>
               <template v-slot:item.lastOrderChanges="{ item }">
                 {{ prettyLastOrderChanged(item.lastOrderChanges) }}
+                <v-btn
+                  icon="mdi-pencil"
+                  variant="plain"
+                  :to="{ path: `/shop/${item.id}` }"
+                ></v-btn>
               </template>
               <template v-slot:item.edit="{ item }">
                 <v-btn
