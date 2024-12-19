@@ -78,3 +78,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #159 Mitglieder erhalten optional eine E-Mail als Bestätigung der Bedarfsanmeldung
 
 # NEW
+
+#162 Optimierungen in der Bedarfsanmeldungs-E-Mail (Korrektur Beitragswert, Solawi-Name, Art der Mitarbeit ausblenden)
