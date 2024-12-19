@@ -77,7 +77,9 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 
 #159 Mitglieder erhalten optional eine E-Mail als Bestätigung der Bedarfsanmeldung
 
-# NEW
+# v0.4.7 - 2024-12-19 - Bessere Bedarfs-E-Mail und Benutzertabelle
 
 #162 Optimierungen in der Bedarfsanmeldungs-E-Mail (Korrektur Beitragswert, Solawi-Name, Art der Mitarbeit ausblenden)
 #163 Benutzertabelle: Anzeige der letzten Bedarfsänderung der gewählten Saison
+
+# NEW
