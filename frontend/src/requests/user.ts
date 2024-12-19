@@ -14,19 +14,44 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+import { parseISO } from "date-fns";
 import {
   GetUserResponse,
   SaveUserRequest,
   UpdateUserRequest,
+  UserWithLastOrderChange,
 } from "../../../shared/src/types.ts";
 import { getUrl, verifyResponse } from "./requests.ts";
+
+// auxiliary types that allow receiving the date as string for later conversion to a Date object
+export type SerializedLastOrderChange = {
+  date: string;
+  configId: number;
+};
+
+export type SerializedGetUserResponse = {
+  userId: number;
+  users: (Omit<UserWithLastOrderChange, "lastOrderChanges"> & {
+    lastOrderChanges: SerializedLastOrderChange[];
+  })[];
+};
 
 export const getUser = async (): Promise<GetUserResponse> => {
   const response = await fetch(getUrl("/user"));
 
   await verifyResponse(response);
 
-  return await response.json();
+  const result = (await response.json()) as SerializedGetUserResponse;
+  return {
+    ...result,
+    users: result.users.map((u) => ({
+      ...u,
+      lastOrderChanges: u.lastOrderChanges?.map((loc) => ({
+        ...loc,
+        date: parseISO(loc.date),
+      })),
+    })),
+  };
 };
 
 export const saveUser = async (user: SaveUserRequest) => {

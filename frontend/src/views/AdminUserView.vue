@@ -21,15 +21,22 @@ import { language } from "../../../shared/src/lang/lang.ts";
 import { useUserStore } from "../store/userStore.ts";
 import { storeToRefs } from "pinia";
 import { useConfigStore } from "../store/configStore";
-import { NewUser, User } from "../../../shared/src/types";
+import {
+  LastOrderChange,
+  NewUser,
+  User,
+  UserWithLastOrderChange,
+} from "../../../shared/src/types";
 import { UserRole } from "../../../shared/src/enum";
 import { computed } from "@vue/reactivity";
 import { updateUser } from "../requests/user.ts";
+import { format } from "date-fns";
+import { de } from "date-fns/locale";
 
 const t = language.pages.user;
 
 const configStore = useConfigStore();
-const { externalAuthProvider } = storeToRefs(configStore);
+const { externalAuthProvider, activeConfigId } = storeToRefs(configStore);
 
 const defaultUser: NewUser = {
   role: UserRole.USER,
@@ -56,7 +63,18 @@ const headers = [
   { title: "Name", key: "name" },
   { title: "Rolle", key: "role" },
   { title: "Status", key: "active" },
-  { title: "Letzte Bedarfsänderung", key: "lastOrderChange" },
+  {
+    title: "Letzte Bedarfsänderung",
+    key: "lastOrderChanges",
+    sortRaw(a: UserWithLastOrderChange, b: UserWithLastOrderChange) {
+      return (
+        (getCurrentSeasonLastOrderChangeDate(a.lastOrderChanges)?.getTime() ??
+          0) -
+        (getCurrentSeasonLastOrderChangeDate(b.lastOrderChanges)?.getTime() ??
+          0)
+      );
+    },
+  },
   { title: "ID", key: "id" },
   { title: "Bearbeiten", key: "edit" },
 ];
@@ -112,6 +130,27 @@ const actionProgress = computed(() => {
 watch(selectedUsers, () => {
   processedUsers.value = 0;
 });
+
+const getCurrentSeasonLastOrderChangeDate = (
+  lastOrderChanges?: LastOrderChange[],
+): Date | null => {
+  const thisSeason =
+    lastOrderChanges?.filter((o) => o.configId == activeConfigId.value) || [];
+  if (thisSeason.length > 0) {
+    return thisSeason[0].date;
+  }
+  return null;
+};
+
+const prettyLastOrderChanged = (
+  lastOrderChanges?: LastOrderChange[],
+): string => {
+  const date = getCurrentSeasonLastOrderChangeDate(lastOrderChanges);
+  if (date) {
+    return format(date, "PPp", { locale: de });
+  }
+  return "nie";
+};
 </script>
 
 <template>
@@ -216,6 +255,9 @@ watch(selectedUsers, () => {
                     </span></template
                   >
                 </v-tooltip>
+              </template>
+              <template v-slot:item.lastOrderChanges="{ item }">
+                {{ prettyLastOrderChanged(item.lastOrderChanges) }}
               </template>
               <template v-slot:item.edit="{ item }">
                 <v-btn
