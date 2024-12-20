@@ -91,7 +91,9 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #166 Fix: Beim Schließen des Bestelldialogs in der Bedarfsanmeldung gehen die eingetragenen Werte jetzt nicht mehr verloren.
 #136 Aufteilung des Orientierungswerts nach Selbstanbau- und Kooperationsprodukten
 
-# NEW
+# v0.4.10 - 2024-12-20 - E-Mail-Kopie bei Bedarsanmeldung an internes Postfach
 
 #170 Send a BCC to an internal address (specified by EMAIL_ORDER_UPDATED_BCC in env-be-prod.env) if a user updates an order
 #170 COMPAT: Renamed EMAIL_SEND_CONFIRMATION to EMAIL_SEND_REGISTER_CONFIRMATION in env-be-prod.env
+
+# NEW
