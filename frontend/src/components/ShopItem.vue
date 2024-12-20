@@ -39,7 +39,8 @@ const biStore = useBIStore();
 const userStore = useUserStore();
 const configStore = useConfigStore();
 
-const { savedOrderItemsByProductId } = storeToRefs(orderStore);
+const { actualOrderItemsByProductId, savedOrderItemsByProductId } =
+  storeToRefs(orderStore);
 const { soldByProductId, submit, productsById, now } = storeToRefs(biStore);
 const { currentUser } = storeToRefs(userStore);
 const { config } = storeToRefs(configStore);
@@ -132,7 +133,7 @@ watch([productsById, savedOrderItemsByProductId], () => {
 });
 onMounted(() => {
   model.value =
-    savedOrderItemsByProductId.value[props.productId]?.toString() || "0";
+    actualOrderItemsByProductId.value[props.productId]?.toString() || "0";
 });
 </script>
 
