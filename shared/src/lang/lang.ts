@@ -176,7 +176,7 @@ export const language = {
         },
         products: {
           title: "Bedarfsanmeldung",
-          msrp: "Dein Orientierungswert: {msrp} € pro Monat",
+          msrp: "Dein Orientierungswert: {total} € pro Monat (davon {selfgrown} € für selbst angebaute Produkte plus {cooperation} € für Kooperationsprodukte; Werte auf volle Euros gerundet)",
           msrpTooltip:
             "Der Orientierungswert errechnet sich aus den von Dir gewählten Nahrungsmitteln sowie Mengen und entspricht dem durchschnittlichen Solawi-Beitrag für Deine Auswahl.",
           offer: "Dein Beitrag: {offer} € pro Monat",

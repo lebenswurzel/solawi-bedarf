@@ -131,10 +131,10 @@ export const saveOrder = async (
     ctx.throw(http.bad_request, "order item invalid");
   }
   const msrp = getMsrp(body.category, body.orderItems, productsById);
-  if (!isOfferValid(body.offer, msrp)) {
+  if (!isOfferValid(body.offer, msrp.total)) {
     ctx.throw(http.bad_request, "bid too low");
   }
-  if (!isOfferReasonValid(body.offer, msrp, body.offerReason)) {
+  if (!isOfferReasonValid(body.offer, msrp.total, body.offerReason)) {
     ctx.throw(http.bad_request, "no offer reason");
   }
   const productCategories = await AppDataSource.getRepository(
@@ -209,7 +209,7 @@ export const saveOrder = async (
 
     const { html, subject } = await buildOrderEmail(
       order.id,
-      msrp,
+      msrp.total,
       orderUser,
       requisitionConfig,
       changingUser,

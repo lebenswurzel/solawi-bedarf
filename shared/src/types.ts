@@ -323,3 +323,9 @@ export interface OrderOverviewItem {
     category: number;
   }[];
 }
+
+export interface Msrp {
+  total: number;
+  selfgrown: number;
+  cooperation: number;
+}
