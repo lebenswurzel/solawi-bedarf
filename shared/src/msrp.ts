@@ -15,8 +15,8 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { appConfig } from "./config";
-import { Unit, UserCategory } from "./enum";
-import { OrderItem, Product } from "./types";
+import { ProductCategoryType, Unit, UserCategory } from "./enum";
+import { Msrp, OrderItem, Product, ProductsById } from "./types";
 
 export const getBaseMsrp = (orderItem: OrderItem, product: Product) => {
   if (product) {
@@ -41,12 +41,27 @@ export const adjustMsrp = (baseMsrp: number, category: UserCategory) => {
 export const getMsrp = (
   category: UserCategory,
   orderItems: OrderItem[],
-  productById: { [key: number]: Product },
-): number => {
+  productById: ProductsById
+): Msrp => {
   const baseMsrp = orderItems.reduce(
     (acc, orderItem) =>
       acc + getBaseMsrp(orderItem, productById[orderItem.productId]),
-    0,
+    0
   );
-  return adjustMsrp(baseMsrp, category);
+  const selfgrownMsrp = orderItems.reduce(
+    (acc, orderItem) =>
+      acc +
+      (productById[orderItem.productId]?.productCategoryType ==
+      ProductCategoryType.SELFGROWN
+        ? getBaseMsrp(orderItem, productById[orderItem.productId])
+        : 0),
+    0
+  );
+  const adjustedTotal = adjustMsrp(baseMsrp, category);
+  const adjustedSelfgrown = adjustMsrp(selfgrownMsrp, category);
+  return {
+    total: adjustedTotal,
+    selfgrown: adjustedSelfgrown,
+    cooperation: adjustedTotal - adjustedSelfgrown,
+  };
 };

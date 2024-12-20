@@ -165,7 +165,9 @@ onMounted(refresh);
     <v-card-subtitle class="text-wrap">
       {{
         interpolate(t.cards.products.msrp, {
-          msrp: msrp.toString(),
+          total: msrp.total.toString(),
+          selfgrown: msrp.selfgrown.toString(),
+          cooperation: msrp.cooperation.toString(),
         })
       }}
       <v-tooltip :text="t.cards.products.msrpTooltip">

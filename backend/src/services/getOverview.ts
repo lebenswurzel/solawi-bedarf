@@ -86,7 +86,7 @@ export const getUserOrderOverview = async (
       name: order.user.name,
       depot: order.depot.name,
       alternateDepot: order.alternateDepot?.name,
-      msrp: msrp,
+      msrp: msrp.total,
       offer: order.offer,
       offerReason: order.offerReason || "",
       category: order.category,

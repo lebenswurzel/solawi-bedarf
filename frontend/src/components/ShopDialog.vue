@@ -115,15 +115,16 @@ const alternateDepot = computed(() => {
 });
 
 const enableOfferReason = computed(() =>
-  needsOfferReason(modelInt.value, msrp.value),
+  needsOfferReason(modelInt.value, msrp.value.total),
 );
 
 const offerReasonHint = computed(
-  () => !isOfferReasonValid(modelInt.value, msrp.value, offerReason.value),
+  () =>
+    !isOfferReasonValid(modelInt.value, msrp.value.total, offerReason.value),
 );
 
 const needsHigherOffer = computed(
-  () => !isOfferValid(modelInt.value, msrp.value),
+  () => !isOfferValid(modelInt.value, msrp.value.total),
 );
 
 const enableCategoryReason = computed(() =>
@@ -258,7 +259,9 @@ const onSave = () => {
         <div class="mb-5">
           {{
             interpolate(p.msrp, {
-              msrp: msrp.toString(),
+              total: msrp.total.toString(),
+              selfgrown: msrp.selfgrown.toString(),
+              cooperation: msrp.cooperation.toString(),
             })
           }}
           <v-tooltip :text="p.msrpTooltip">
@@ -276,7 +279,7 @@ const onSave = () => {
           :hint="
             needsHigherOffer
               ? interpolate(t.offer.hint, {
-                  msrp: Math.ceil(minOffer(msrp)).toString(),
+                  msrp: Math.ceil(minOffer(msrp.total)).toString(),
                 })
               : undefined
           "
