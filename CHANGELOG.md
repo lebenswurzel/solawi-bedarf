@@ -82,6 +82,8 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #162 Optimierungen in der Bedarfsanmeldungs-E-Mail (Korrektur Beitragswert, Solawi-Name, Art der Mitarbeit ausblenden)
 #163 Benutzertabelle: Anzeige der letzten Bedarfsänderung der gewählten Saison
 
-# NEW
+# v0.4.8 - 2024-12-20 - Bugfix Bedarfsanmeldungsansicht
 
 #166 Fix: Beim Wechseln der Kategorien in der Bedarfsanmeldung gehen die eingetragenen Werte jetzt nicht mehr verloren.
+
+# NEW
