@@ -83,3 +83,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #163 Benutzertabelle: Anzeige der letzten Bedarfsänderung der gewählten Saison
 
 # NEW
+
+#166 Fix: Beim Wechseln der Kategorien in der Bedarfsanmeldung gehen die eingetragenen Werte jetzt nicht mehr verloren.
