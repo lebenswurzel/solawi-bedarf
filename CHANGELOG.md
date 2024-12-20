@@ -92,3 +92,6 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #136 Aufteilung des Orientierungswerts nach Selbstanbau- und Kooperationsprodukten
 
 # NEW
+
+#170 Send a BCC to an internal address (specified by EMAIL_ORDER_UPDATED_BCC in env-be-prod.env) if a user updates an order
+#170 COMPAT: Renamed EMAIL_SEND_CONFIRMATION to EMAIL_SEND_REGISTER_CONFIRMATION in env-be-prod.env

@@ -34,6 +34,18 @@ for the first time setup:
 5. Run `./dev/build/build-and-deploy.bash init` from the project root to build containers locally
 6. If everything looks fine, run `docker compose up d` to start
 
+### Configuration variables
+
+#### Backend: env-be-prod.env
+
+Optional configuration settings that may be set as environment variables for the backend:
+
+- `EMAIL_ENABLED=true`: Must be set in order to have emailing support. Make sure to fill out the other relevant
+  `EMAIL_*` variables
+- `EMAIL_SEND_REGISTER_CONFIRMATION=true`: Send an email to the user that just filled out the registration
+- `EMAIL_ORDER_UPDATED_BCC=internal@solawi.biz`: Email address that receives a BCC of the order confirmation
+  email whenever a user saves or updates an order
+
 ### Backups
 
 It is advised to schedule regular database backups, e.g., using cron:
