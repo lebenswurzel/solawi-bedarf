@@ -86,7 +86,9 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 
 #166 Fix: Beim Wechseln der Kategorien in der Bedarfsanmeldung gehen die eingetragenen Werte jetzt nicht mehr verloren.
 
-# NEW
+# v0.4.9 - 2024-12-20 - Separate Anzeige der Orientierungswerte
 
 #166 Fix: Beim Schließen des Bestelldialogs in der Bedarfsanmeldung gehen die eingetragenen Werte jetzt nicht mehr verloren.
 #136 Aufteilung des Orientierungswerts nach Selbstanbau- und Kooperationsprodukten
+
+# NEW
