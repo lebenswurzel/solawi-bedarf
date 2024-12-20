@@ -209,7 +209,7 @@ onMounted(refresh);
           class="text-error"
           variant="outlined"
         >
-          {{ language.app.actions.cancel }}
+          {{ language.app.actions.restore }}
         </v-btn>
         <v-btn
           @click="onSave"

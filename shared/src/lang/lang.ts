@@ -50,6 +50,7 @@ export const language = {
       apply: "Übernehmen",
       edit: "Bearbeiten",
       update: "Aktualisieren",
+      restore: "Änderungen verwerfen",
     },
     uiFeedback: {
       saving: {

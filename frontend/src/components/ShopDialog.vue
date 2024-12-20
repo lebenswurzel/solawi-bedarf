@@ -203,8 +203,6 @@ const onBlur = (blur: boolean) => {
 };
 
 const onClose = async () => {
-  requestUser?.value.id &&
-    (await orderStore.update(requestUser?.value.id, activeConfigId.value));
   model.value = offer.value.toString() || "0";
   emit("close");
 };
