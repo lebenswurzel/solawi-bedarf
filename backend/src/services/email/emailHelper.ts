@@ -65,11 +65,11 @@ const escapeMdTableCell = (value: string): string => {
 
 export const buildOrderEmail = async (
   orderId: number,
-  msrp: number,
   orderUser: User,
   config: RequisitionConfig,
   changingUser: User,
   userName: string,
+  updatedDate: Date,
 ): Promise<{ html: string; subject: string }> => {
   const el = language.email.orderConfirmation;
   const order = await AppDataSource.getRepository(Order).findOne({
@@ -121,7 +121,7 @@ export const buildOrderEmail = async (
   return {
     html: emailHtmlTemplate.replace("{bodyContent}", html),
     subject: interpolate(el.subject, {
-      now: prettyDateTime(new Date()),
+      now: prettyDateTime(updatedDate),
       season: config.name,
     }),
   };

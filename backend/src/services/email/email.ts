@@ -61,13 +61,15 @@ export const sendEmail = async ({
   paragraphs,
   html,
   attachments,
+  bcc,
 }: {
   sender: string;
-  receiver: string;
+  receiver?: string;
   subject: string;
   paragraphs?: string[];
   html?: string;
   attachments?: AttachedFile[];
+  bcc?: string;
 }) => {
   if (emailEnabled) {
     if (!html && !paragraphs) {
@@ -97,6 +99,7 @@ export const sendEmail = async ({
     const info = await transporter.sendMail({
       from: `"${senderName}" <${sender}>`,
       to: receiver,
+      bcc,
       subject: subject,
       text: paragraphs ? paragraphs.join("\n\n") : undefined,
       html: html,

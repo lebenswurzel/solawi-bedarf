@@ -41,13 +41,14 @@ export const config = {
   },
   email: {
     enabled: process.env.EMAIL_ENABLED === "true",
-    sendConfirmation: process.env.EMAIL_SEND_CONFIRMATION === "true",
+    sendConfirmation: process.env.EMAIL_SEND_REGISTER_CONFIRMATION === "true",
     host: process.env.EMAIL_HOST || "smtp.solawi.biz",
     port: process.env.EMAIL_PORT || 587,
     username: process.env.EMAIL_USERNAME || "email",
     password: process.env.EMAIL_PASSWORD || "email",
     sender: process.env.EMAIL_SENDER || "sender",
     receiver: process.env.EMAIL_RECEIVER || "receiver",
+    orderUpdatedBccReceiver: process.env.EMAIL_ORDER_UPDATED_BCC || undefined,
   },
   ldap: {
     enabled: process.env.LDAP_ENABLED || false,

@@ -53,6 +53,7 @@ import { generateUserData } from "../../../../shared/src/pdf/overviewPdfs";
 import { getProductCategories } from "../product/getProductCategory";
 import { createDefaultPdf } from "../../../../shared/src/pdf/pdf";
 import { resolve } from "path";
+import { format } from "date-fns";
 
 export const saveOrder = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -179,7 +180,8 @@ export const saveOrder = async (
   // cleanup of useless items
   await AppDataSource.getRepository(OrderItem).delete({ value: LessThan(1) });
 
-  if (sendConfirmationEmail) {
+  // Send confirmation email to user (if option is set) and always to the EMAIL_ORDERED_UPDATED_BCC (if set)
+  if (sendConfirmationEmail || config.email.orderUpdatedBccReceiver) {
     const orderUser = await AppDataSource.getRepository(User).findOneOrFail({
       where: { id: requestUserId },
       relations: {
@@ -195,25 +197,31 @@ export const saveOrder = async (
       });
     }
 
-    if (!orderUser.applicant) {
-      throw Error(`User ${orderUser.id} is missing an applicant`);
+    let orderUserEmail: string | undefined = undefined;
+    let orderUserFirstname: string = orderUser.name;
+    if (orderUser.applicant && sendConfirmationEmail) {
+      // can only send email to user if his email address is in the database
+      const address = JSON.parse(
+        orderUser.applicant.address.address,
+      ) as EncryptedUserAddress;
+
+      if (address.email) {
+        orderUserEmail = address.email;
+      }
+      if (address.firstname) {
+        orderUserFirstname = address.firstname;
+      }
     }
 
-    const address = JSON.parse(
-      orderUser.applicant.address.address,
-    ) as EncryptedUserAddress;
-
-    if (!address.email) {
-      throw Error(`User ${orderUser.id} is missing an email address`);
-    }
+    const currentDate = new Date();
 
     const { html, subject } = await buildOrderEmail(
       order.id,
-      msrp.total,
       orderUser,
       requisitionConfig,
       changingUser,
-      address.firstname,
+      orderUserFirstname,
+      currentDate,
     );
 
     // create overview pdf
@@ -238,11 +246,17 @@ export const saveOrder = async (
 
     sendEmail({
       sender: config.email.sender,
-      receiver: address.email,
+      receiver: orderUserEmail,
       subject,
       html,
+      bcc: config.email.orderUpdatedBccReceiver,
       attachments: pdfBlob
-        ? [{ filename: "Bedarfsanmeldung.pdf", data: pdfBlob }]
+        ? [
+            {
+              filename: `Bedarfsanmeldung ${orderUser.name} ${format(currentDate, "yyyy-MM-dd HH_mm_ss")}.pdf`,
+              data: pdfBlob,
+            },
+          ]
         : undefined,
     });
   }
