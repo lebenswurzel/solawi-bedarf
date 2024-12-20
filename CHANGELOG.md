@@ -87,3 +87,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #166 Fix: Beim Wechseln der Kategorien in der Bedarfsanmeldung gehen die eingetragenen Werte jetzt nicht mehr verloren.
 
 # NEW
+
+#166 Fix: Beim Schließen des Bestelldialogs in der Bedarfsanmeldung gehen die eingetragenen Werte jetzt nicht mehr verloren.
