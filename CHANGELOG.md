@@ -89,3 +89,4 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 # NEW
 
 #166 Fix: Beim Schließen des Bestelldialogs in der Bedarfsanmeldung gehen die eingetragenen Werte jetzt nicht mehr verloren.
+#136 Aufteilung des Orientierungswerts nach Selbstanbau- und Kooperationsprodukten
