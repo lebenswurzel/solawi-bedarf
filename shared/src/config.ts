@@ -15,8 +15,19 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { Unit, UserCategory } from "./enum";
+import { OrganizationInfo, OrganizationInfoKeys } from "./types";
 
-export const appConfig = {
+export const organizationInfoKeys: OrganizationInfoKeys[] = [
+  "appUrl",
+  "address.name",
+  "address.street",
+  "address.postalcode",
+  "address.city",
+  "address.email",
+  "address.forumContact",
+];
+
+export const basicOrganizationInfo: OrganizationInfo = {
   appUrl: "https://bedarf.lebenswurzel.biz",
   address: {
     name: "Solawi-Projekt Gemüseanbau in Graupa",
@@ -26,6 +37,9 @@ export const appConfig = {
     email: "solawi@lebenswurzel.org",
     forumContact: "@rike",
   },
+};
+
+export const appConfig = {
   msrp: {
     [UserCategory.CAT100]: {
       absolute: 0, // 50.0

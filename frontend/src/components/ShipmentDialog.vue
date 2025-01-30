@@ -35,6 +35,7 @@ import { useConfigStore } from "../store/configStore";
 import { useProductStore } from "../store/productStore";
 import AdditionalShipmentItem from "./AdditionalShipmentItem.vue";
 import ShipmentItem from "./ShipmentItem.vue";
+import { useTextContentStore } from "../store/textContentStore.ts";
 
 const t = language.pages.shipment.dialog;
 
@@ -49,10 +50,12 @@ const savedShipment = inject<Ref<Shipment & Id>>("savedShipment");
 const biStore = useBIStore();
 const configStore = useConfigStore();
 const productStore = useProductStore();
+const textContentStore = useTextContentStore();
 const { productsById, deliveredByProductIdDepotId, capacityByDepotId } =
   storeToRefs(biStore);
 const { depots } = storeToRefs(configStore);
 const { productCategories } = storeToRefs(productStore);
+const { organizationInfo } = storeToRefs(textContentStore);
 
 const loading = ref(false);
 const error = ref<string>();
@@ -172,6 +175,7 @@ const onShipmentPdfClick = async () => {
     depots.value,
     productsById.value,
     productCategories.value,
+    organizationInfo.value,
   ).then(() => {
     loading.value = false;
   });

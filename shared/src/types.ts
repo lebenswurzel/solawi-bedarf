@@ -161,10 +161,13 @@ export interface UpdateDepot extends Id {
   rankDown: boolean;
 }
 
-export interface NewTextContent {
+export interface SimpleTextContent {
   title: string;
-  category: TextContentCategory;
   content: string;
+}
+
+export interface NewTextContent extends SimpleTextContent {
+  category: TextContentCategory;
 }
 
 export type TextContent = NewTextContent & Id;
@@ -329,3 +332,25 @@ export interface Msrp {
   selfgrown: number;
   cooperation: number;
 }
+
+export interface OrganizationInfo {
+  appUrl: string;
+  address: {
+    name: string;
+    street: string;
+    postalcode: string;
+    city: string;
+    email: string;
+    forumContact: string;
+  };
+}
+
+type FlattenKeys<T, Prefix extends string = ""> = T extends object
+  ? {
+      [K in keyof T]:
+        | `${Prefix}${K & string}`
+        | FlattenKeys<T[K], `${Prefix}${K & string}.`>;
+    }[keyof T]
+  : never;
+
+export type OrganizationInfoKeys = FlattenKeys<OrganizationInfo>;

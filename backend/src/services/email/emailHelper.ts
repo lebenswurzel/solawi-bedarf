@@ -22,8 +22,8 @@ import { language } from "../../../../shared/src/lang/lang";
 import { RequisitionConfig } from "../../database/RequisitionConfig";
 import { interpolate } from "../../../../shared/src/lang/template";
 import { format } from "date-fns";
-import { appConfig } from "../../../../shared/src/config";
 import { UserCategory } from "../../../../shared/src/enum";
+import { OrganizationInfo } from "../../../../shared/src/types";
 
 const emailHtmlTemplate = `<html>
   <head>
@@ -70,6 +70,7 @@ export const buildOrderEmail = async (
   changingUser: User,
   userName: string,
   updatedDate: Date,
+  organizationInfo: OrganizationInfo,
 ): Promise<{ html: string; subject: string }> => {
   const el = language.email.orderConfirmation;
   const order = await AppDataSource.getRepository(Order).findOne({
@@ -99,9 +100,9 @@ export const buildOrderEmail = async (
     el.body.join("\n\n"),
     {
       userName,
-      solawiName: appConfig.address.name,
-      solawiEmail: appConfig.address.email,
-      appUrl: appConfig.appUrl,
+      solawiName: organizationInfo.address.name,
+      solawiEmail: organizationInfo.address.email,
+      appUrl: organizationInfo.appUrl,
       season: config.name,
       seasonStart: prettyDate(config.validFrom),
       seasonEnd: prettyDate(config.validTo),

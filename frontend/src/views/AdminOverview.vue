@@ -28,11 +28,15 @@ import { useConfigStore } from "../store/configStore.ts";
 import { useUiFeedback } from "../store/uiFeedbackStore.ts";
 import { Zip } from "../../../shared/src/pdf/zip.ts";
 import { createDefaultPdf } from "../../../shared/src/pdf/pdf.ts";
+import { useTextContentStore } from "../store/textContentStore.ts";
+import { storeToRefs } from "pinia";
 
 const loading = ref(false);
 
 const configStore = useConfigStore();
 const uiFeedbackStore = useUiFeedback();
+const textContentStore = useTextContentStore();
+const { organizationInfo } = storeToRefs(textContentStore);
 
 const onClick = async () => {
   loading.value = true;
@@ -74,7 +78,7 @@ const onDepotPdfClick = async () => {
     const zip = new Zip();
     for (const pdfSpec of dataByDepotAndProductCategory) {
       await zip.addPdf(
-        createDefaultPdf(pdfSpec),
+        createDefaultPdf(pdfSpec, organizationInfo.value),
         `${sanitizeFileName(pdfSpec.receiver)}.pdf`,
       );
     }
@@ -102,7 +106,7 @@ const onUserPdfClick = async () => {
     const zip = new Zip();
     for (const pdf of dataByUserAndProductCategory) {
       await zip.addPdf(
-        createDefaultPdf(pdf),
+        createDefaultPdf(pdf, organizationInfo.value),
         `${sanitizeFileName(pdf.receiver)}.pdf`,
       );
     }

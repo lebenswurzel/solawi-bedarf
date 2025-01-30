@@ -21,8 +21,8 @@ import {
   DynamicContent,
   TDocumentDefinitions,
 } from "pdfmake/interfaces";
-import { appConfig } from "../config";
 import { logo } from "../logo";
+import { OrganizationInfo } from "../types";
 
 (<any>pdfMake).vfs = pdfFonts.vfs;
 
@@ -75,7 +75,10 @@ export interface PdfSpec {
   tables: PdfTable[];
 }
 
-export function createDefaultPdf(pdf: PdfSpec): TCreatedPdf {
+export function createDefaultPdf(
+  pdf: PdfSpec,
+  organizationInfo: OrganizationInfo
+): TCreatedPdf {
   const content: Content[] = [];
   if (logo != null) {
     content.push({
@@ -95,7 +98,7 @@ export function createDefaultPdf(pdf: PdfSpec): TCreatedPdf {
             bold: true,
           },
           {
-            text: `${appConfig.address.name}\n${appConfig.address.street}\n${appConfig.address.postalcode} ${appConfig.address.city}`,
+            text: `${organizationInfo.address.name}\n${organizationInfo.address.street}\n${organizationInfo.address.postalcode} ${organizationInfo.address.city}`,
             bold: true,
           },
         ],

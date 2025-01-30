@@ -19,6 +19,7 @@ import { config } from "../../config";
 import { appConfig } from "../../../../shared/src/config";
 import { escapeHtmlEntities } from "../../../../shared/src/util/stringHelper";
 import { Attachment } from "nodemailer/lib/mailer";
+import { getOrganizationInfo } from "../text/getOrganizationInfo";
 
 let emailEnabled = false;
 
@@ -95,7 +96,8 @@ export const sendEmail = async ({
       });
     }
 
-    const senderName = appConfig.address.name;
+    const organizationInfo = await getOrganizationInfo();
+    const senderName = organizationInfo.address.name;
     const info = await transporter.sendMail({
       from: `"${senderName}" <${sender}>`,
       to: receiver,
