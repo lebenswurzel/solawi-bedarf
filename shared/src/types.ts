@@ -17,6 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import {
   ProductCategoryType,
   TextContentCategory,
+  TextContentTyp,
   Unit,
   UserCategory,
   UserRole,
@@ -168,6 +169,7 @@ export interface SimpleTextContent {
 
 export interface NewTextContent extends SimpleTextContent {
   category: TextContentCategory;
+  typ: TextContentTyp;
 }
 
 export type TextContent = NewTextContent & Id;

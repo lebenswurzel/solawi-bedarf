@@ -16,16 +16,20 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
 import { computed, inject, Ref, ref } from "vue";
-import { language } from "../../../shared/src/lang/lang.ts";
-import { deleteTextContent, saveTextContent } from "../requests/textcontent";
+import { language } from "../../../../shared/src/lang/lang.ts";
+import { deleteTextContent, saveTextContent } from "../../requests/textcontent";
 import {
   NewTextContent,
   OptionalId,
   TextContent,
   isIdType,
-} from "../../../shared/src/types";
+} from "../../../../shared/src/types";
 import { marked } from "marked";
-import { TextContentCategory } from "../../../shared/src/enum";
+import {
+  TextContentCategory,
+  TextContentTyp,
+} from "../../../../shared/src/enum";
+import { escapeHtmlEntities } from "../../../../shared/src/util/stringHelper.ts";
 
 defineProps(["open"]);
 const emit = defineEmits(["close"]);
@@ -38,22 +42,14 @@ const dialogTextContent = inject<Ref<NewTextContent | TextContent>>(
 ) as Ref<NewTextContent | TextContent>;
 
 const html = computed(() => {
-  const parsed = marked.parse(dialogTextContent!.value.content);
-  /*
-  const sanitized = DOMPurify.sanitize(parsed as string, {
-    USE_PROFILES: { html: true },
-  });
-  */
-  return parsed;
+  if (dialogTextContent.value.typ == TextContentTyp.MD) {
+    return marked.parse(dialogTextContent!.value.content);
+  }
+  return escapeHtmlEntities(dialogTextContent.value.content);
 });
 
 const titleDisabled = computed(() => {
-  return (
-    dialogTextContent.value.category ==
-      TextContentCategory.MAINTENANCE_MESSAGE ||
-    dialogTextContent.value.category == TextContentCategory.IMPRINT ||
-    dialogTextContent.value.category == TextContentCategory.PRIVACY_NOTICE
-  );
+  return dialogTextContent.value.category != TextContentCategory.FAQ;
 });
 
 const onClose = () => {
