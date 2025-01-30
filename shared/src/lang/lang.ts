@@ -381,6 +381,7 @@ export const language = {
       navigation: {
         subtitle: "Admin",
       },
+      pageTitle: "Textelemente",
       maintenanceMessage: {
         title: "Wartungshinweis",
         description:

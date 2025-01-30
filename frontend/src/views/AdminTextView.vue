@@ -116,7 +116,7 @@ const onClose = async () => {
 
 <template>
   <v-card class="ma-4">
-    <v-card-title>Admin Text</v-card-title>
+    <v-card-title>{{ language.pages.content.pageTitle }}</v-card-title>
     <v-tabs v-model="currentTab">
       <v-tab value="faq">{{ language.pages.content.faq }}</v-tab>
       <v-tab value="organization">{{
