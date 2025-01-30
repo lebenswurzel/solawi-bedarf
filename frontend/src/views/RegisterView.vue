@@ -31,7 +31,11 @@ import {
   cityRules,
 } from "../lib/validation";
 import { Address } from "../../../shared/src/types";
-import { appConfig } from "../../../shared/src/config.js";
+import { useTextContentStore } from "../store/textContentStore.js";
+import { storeToRefs } from "pinia";
+
+const textContentStore = useTextContentStore();
+const { organizationInfo } = storeToRefs(textContentStore);
 
 const valid = ref(false);
 const confirmGDPR = ref(false);
@@ -217,7 +221,7 @@ const click = async () => {
         <v-card-text class="text-center">
           Bitte registriere Dich noch einmal zu einem späteren Zeitpunkt. Wenn
           dieser Fehler wiederholt auftritt, wende Dich bitte an
-          {{ appConfig.address.email }}. Danke für Dein Verständnis.
+          {{ organizationInfo.address.email }}. Danke für Dein Verständnis.
         </v-card-text>
       </v-card>
     </div>

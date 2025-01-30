@@ -54,6 +54,7 @@ import { getProductCategories } from "../product/getProductCategory";
 import { createDefaultPdf } from "../../../../shared/src/pdf/pdf";
 import { resolve } from "path";
 import { format } from "date-fns";
+import { getOrganizationInfo } from "../text/getOrganizationInfo";
 
 export const saveOrder = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -214,6 +215,7 @@ export const saveOrder = async (
     }
 
     const currentDate = new Date();
+    const organizationInfo = await getOrganizationInfo();
 
     const { html, subject } = await buildOrderEmail(
       order.id,
@@ -222,6 +224,7 @@ export const saveOrder = async (
       changingUser,
       orderUserFirstname,
       currentDate,
+      organizationInfo,
     );
 
     // create overview pdf
@@ -238,7 +241,10 @@ export const saveOrder = async (
 
     let pdfBlob: Blob | null = null;
     if (dataByUserAndProductCategory.length > 0) {
-      const pdf = createDefaultPdf(dataByUserAndProductCategory[0]);
+      const pdf = createDefaultPdf(
+        dataByUserAndProductCategory[0],
+        organizationInfo,
+      );
       pdfBlob = await new Promise((resolve, _) => {
         pdf.getBlob((blob: Blob) => resolve(blob));
       });

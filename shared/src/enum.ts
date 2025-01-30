@@ -44,10 +44,12 @@ export enum TextContentCategory {
   FAQ = "FAQ",
   TAC = "TAC",
   MAINTENANCE_MESSAGE = "MAINTENANCE_MESSAGE",
+  ORGANIZATION_INFO = "ORGANIZATION_INFO",
 }
 
 export enum TextContentTyp {
   MD = "MD",
+  PLAIN = "PLAIN",
 }
 
 export enum ProductCategoryType {

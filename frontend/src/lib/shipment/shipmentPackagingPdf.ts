@@ -17,6 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import {
   Depot,
+  OrganizationInfo,
   Product,
   ProductCategoryWithProducts,
   ProductsById,
@@ -162,6 +163,7 @@ export async function createShipmentPackagingPdfs(
   depots: Depot[],
   productsById: ProductsById,
   productCategories: ProductCategoryWithProducts[],
+  organizationInfo: OrganizationInfo,
 ) {
   const pdfs = createShipmentPackagingPdfSpecs(
     shipment,
@@ -173,7 +175,7 @@ export async function createShipmentPackagingPdfs(
   const zip = new Zip();
   for (const pdf of pdfs) {
     await zip.addPdf(
-      createDefaultPdf(pdf),
+      createDefaultPdf(pdf, organizationInfo),
       `${sanitizeFileName(pdf.receiver)}.pdf`,
     );
   }

@@ -23,7 +23,7 @@ import { Applicant } from "../../database/Applicant";
 import { UserAddress } from "../../database/UserAddress";
 import { sendEmail } from "../email/email";
 import { config } from "../../config";
-import { appConfig } from "../../../../shared/src/config";
+import { getOrganizationInfo } from "../text/getOrganizationInfo";
 
 export const saveApplicant = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -103,13 +103,14 @@ export const saveApplicant = async (
 
   // send email to applicant
   if (config.email.sendConfirmation) {
+    const organizationInfo = await getOrganizationInfo();
     const title = "Registrierung bestätigt";
     const paragraphs = [
       `Hallo,`,
-      `danke, dass du dich beim ${appConfig.address.name} registriert hast. ` +
+      `danke, dass du dich beim ${organizationInfo.address.name} registriert hast. ` +
         "Wir werden deine Anmeldung zeitnah bearbeiten und du erhältst eine weitere Bestätigungsmail mit deinem Benutzernamen.",
       "Viele Grüße",
-      `Die ehrenamtlichen Mitglieder vom ${appConfig.address.name}`,
+      `Die ehrenamtlichen Mitglieder vom ${organizationInfo.address.name}`,
     ];
     sendEmail({
       sender: config.email.sender,

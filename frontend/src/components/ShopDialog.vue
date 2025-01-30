@@ -36,8 +36,8 @@ import {
 import SeasonText from "./styled/SeasonText.vue";
 import { useUiFeedback } from "../store/uiFeedbackStore.ts";
 import { UserCategory } from "../../../shared/src/enum.ts";
-import { appConfig } from "../../../shared/src/config.ts";
 import { UserWithLastOrderChange } from "../../../shared/src/types.ts";
+import { useTextContentStore } from "../store/textContentStore.ts";
 
 defineProps(["open"]);
 const emit = defineEmits(["close"]);
@@ -48,6 +48,7 @@ const configStore = useConfigStore();
 const orderStore = useOrderStore();
 const biStore = useBIStore();
 const uiFeedback = useUiFeedback();
+const textContentStore = useTextContentStore();
 
 const { depots, activeConfigId, config } = storeToRefs(configStore);
 const { depot, msrp, capacityByDepotId, increaseOnly } = storeToRefs(biStore);
@@ -61,6 +62,7 @@ const {
   orderItems,
   validFrom,
 } = storeToRefs(orderStore);
+const { organizationInfo } = storeToRefs(textContentStore);
 
 const confirmGTC = ref(false);
 const confirmContribution = ref(false);
@@ -334,8 +336,8 @@ const onSave = () => {
               >
                 {{
                   interpolate(paragraph, {
-                    email: appConfig.address.email,
-                    forumContact: appConfig.address.forumContact,
+                    email: organizationInfo.address.email,
+                    forumContact: organizationInfo.address.forumContact,
                   })
                 }}
               </p>
@@ -366,7 +368,7 @@ const onSave = () => {
           :label="
             interpolate(t.confirm.label, {
               season: config?.name ?? 'SAISON?',
-              solawiName: appConfig.address.name,
+              solawiName: organizationInfo.address.name,
             })
           "
         />

@@ -43,6 +43,7 @@ import { NonUniqueProductNames1728134733135 } from "../migrations/1728134733135-
 import { ConfigPublicFlag1728677345133 } from "../migrations/1728677345133-config-public-flag";
 import { AddMaintenanceMsgText1730887882789 } from "../migrations/1730887882789-add-maintenance-msg-text";
 import { AddProductCategoryType1731067417340 } from "../migrations/1731067417340-add-product-category-type";
+import { OrganizationInfoTextContent1738274522237 } from "../migrations/1738274522237-organization-info-text-content";
 
 const entities = [
   User,
@@ -77,6 +78,7 @@ const migrations = [
   ConfigPublicFlag1728677345133,
   AddMaintenanceMsgText1730887882789,
   AddProductCategoryType1731067417340,
+  OrganizationInfoTextContent1738274522237,
 ];
 
 const configuredPort = config.testing.isTesting
