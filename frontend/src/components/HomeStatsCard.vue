@@ -88,6 +88,7 @@ const percentageSold = computed(() => {
                       offers: biStore.offers.toString(),
                     })
                   "
+                  open-on-click
                 >
                   <template v-slot:activator="{ props }">
                     <v-icon v-bind="props">mdi-cash-multiple</v-icon>
@@ -122,6 +123,7 @@ const percentageSold = computed(() => {
                       food: percentageSold.toString(),
                     })
                   "
+                  open-on-click
                 >
                   <template v-slot:activator="{ props }">
                     <v-icon v-bind="props">mdi-sprout-outline</v-icon>
