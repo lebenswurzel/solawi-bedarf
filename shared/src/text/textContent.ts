@@ -80,5 +80,6 @@ export const makePdfTexts = (textContents: SimpleTextContent[]): PdfTexts => {
   };
   return {
     packagingListFooter: getField("packagingListFooter"),
+    packagingListHeader: getField("packagingListHeader"),
   };
 };

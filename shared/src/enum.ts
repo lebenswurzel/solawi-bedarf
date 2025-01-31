@@ -48,6 +48,20 @@ export enum TextContentCategory {
   PDF = "PDF",
 }
 
+/**
+ * Categories that may contain more than one text entry but that have a pre-defined
+ * set of titles (unlike FAQ entries that can have an arbitrary number of entries).
+ */
+export const multiContentCategories = [
+  TextContentCategory.ORGANIZATION_INFO,
+  TextContentCategory.PDF,
+];
+export const isMultiContentCategory = (
+  category: TextContentCategory
+): boolean => {
+  return multiContentCategories.includes(category);
+};
+
 export enum TextContentTyp {
   MD = "MD",
   PLAIN = "PLAIN",

@@ -16,12 +16,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { expect, test } from "vitest";
 import {
+  isMultiContentCategory,
   TextContentCategory,
   TextContentTyp,
 } from "../../../../shared/src/enum";
 import {
   Id,
-  NewTextContent,
   OrganizationInfoKeys,
   SaveTextContentRequest,
   SimpleTextContent,
@@ -74,7 +74,7 @@ testAsAdmin("save wrong category", async ({ userData }: TestUserData) => {
   );
   await saveTextContent(ctx);
   expect(ctx.status).toBe(http.bad_request);
-  await validateTextContentsWithoutOrgInfo({ userData }, [
+  await validateTextContentsWithoutMultiContentCategories({ userData }, [
     "",
     "# Impressum",
     "# Datenschutzerklärung",
@@ -100,7 +100,7 @@ testAsAdmin("save imprint", async ({ userData }: TestUserData) => {
       content: "Inhaltstext Impressum",
     },
   ]);
-  await validateTextContentsWithoutOrgInfo({ userData }, [
+  await validateTextContentsWithoutMultiContentCategories({ userData }, [
     "",
     "Inhaltstext Impressum",
     "# Datenschutzerklärung",
@@ -126,7 +126,7 @@ testAsAdmin("save privacy note", async ({ userData }: TestUserData) => {
       content: "Inhaltstext PN",
     },
   ]);
-  await validateTextContentsWithoutOrgInfo({ userData }, [
+  await validateTextContentsWithoutMultiContentCategories({ userData }, [
     "",
     "Inhaltstext PN",
     "# Impressum",
@@ -158,7 +158,7 @@ testAsAdmin("save maintenance message", async ({ userData }: TestUserData) => {
       },
     ],
   );
-  await validateTextContentsWithoutOrgInfo({ userData }, [
+  await validateTextContentsWithoutMultiContentCategories({ userData }, [
     "# Datenschutzerklärung",
     "Inhaltstext Wartung",
     "# Impressum",
@@ -191,7 +191,7 @@ testAsAdmin("save FAQ", async ({ userData }: TestUserData) => {
       content: "Inhalt FAQ 1",
     },
   ]);
-  await validateTextContentsWithoutOrgInfo({ userData }, [
+  await validateTextContentsWithoutMultiContentCategories({ userData }, [
     "# Datenschutzerklärung",
     "",
     "# Impressum",
@@ -222,7 +222,7 @@ testAsAdmin("save FAQ", async ({ userData }: TestUserData) => {
       content: "Inhalt FAQ 2",
     },
   ]);
-  await validateTextContentsWithoutOrgInfo({ userData }, [
+  await validateTextContentsWithoutMultiContentCategories({ userData }, [
     "# Datenschutzerklärung",
     "",
     "# Impressum",
@@ -256,7 +256,7 @@ testAsAdmin("save FAQ", async ({ userData }: TestUserData) => {
       content: "Inhalt FAQ 2",
     },
   ]);
-  await validateTextContentsWithoutOrgInfo({ userData }, [
+  await validateTextContentsWithoutMultiContentCategories({ userData }, [
     "# Datenschutzerklärung",
     "",
     "# Impressum",
@@ -291,7 +291,7 @@ testAsAdmin("save FAQ", async ({ userData }: TestUserData) => {
       },
     ]),
   );
-  await validateTextContentsWithoutOrgInfo({ userData }, [
+  await validateTextContentsWithoutMultiContentCategories({ userData }, [
     "# Datenschutzerklärung",
     "",
     "# Impressum",
@@ -310,7 +310,7 @@ testAsAdmin("save FAQ", async ({ userData }: TestUserData) => {
   );
   await deleteTextContent(ctxDelete1);
   expect(ctxDelete1.status).toBe(http.no_content);
-  await validateTextContentsWithoutOrgInfo({ userData }, [
+  await validateTextContentsWithoutMultiContentCategories({ userData }, [
     "# Datenschutzerklärung",
     "",
     "# Impressum",
@@ -340,7 +340,7 @@ testAsAdmin("save bad FAQ", async ({ userData }: TestUserData) => {
       content: "Inhalt FAQ 1",
     },
   ]);
-  await validateTextContentsWithoutOrgInfo({ userData }, [
+  await validateTextContentsWithoutMultiContentCategories({ userData }, [
     "# Datenschutzerklärung",
     "",
     "# Impressum",
@@ -368,7 +368,7 @@ testAsAdmin("save bad FAQ", async ({ userData }: TestUserData) => {
       content: "Inhalt FAQ 1",
     },
   ]);
-  await validateTextContentsWithoutOrgInfo({ userData }, [
+  await validateTextContentsWithoutMultiContentCategories({ userData }, [
     "# Datenschutzerklärung",
     "",
     "# Impressum",
@@ -474,16 +474,14 @@ const validateAllTextContents = async (
   ).toEqual(new Set(expectedTexts));
 };
 
-const validateTextContentsWithoutOrgInfo = async (
+const validateTextContentsWithoutMultiContentCategories = async (
   { userData }: TestUserData,
   expectedTexts: string[],
 ) => {
   const ctx = createBasicTestCtx(undefined, userData.token);
   await getTextContent(ctx);
   const filteredTexts = ctx.body.textContent.filter(
-    (t: TextContent) =>
-      t.category != TextContentCategory.ORGANIZATION_INFO &&
-      t.category != TextContentCategory.PDF,
+    (t: TextContent) => !isMultiContentCategory(t.category),
   );
   expect(new Set(filteredTexts.map((v: TextContent) => v.content))).toEqual(
     new Set(expectedTexts),

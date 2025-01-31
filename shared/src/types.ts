@@ -359,5 +359,6 @@ export type OrganizationInfoKeys = FlattenKeys<OrganizationInfo>;
 
 export interface PdfTexts {
   packagingListFooter: string;
+  packagingListHeader: string;
 }
 export type PdfTextsKeys = FlattenKeys<PdfTexts>;

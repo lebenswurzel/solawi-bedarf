@@ -176,6 +176,7 @@ const onShipmentPdfClick = async () => {
     productsById.value,
     productCategories.value,
     organizationInfo.value,
+    pdfTexts.value.packagingListHeader,
     pdfTexts.value.packagingListFooter,
   ).then(() => {
     loading.value = false;
