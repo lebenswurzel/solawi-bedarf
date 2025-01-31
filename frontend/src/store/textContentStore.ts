@@ -16,12 +16,19 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { defineStore } from "pinia";
 import { computed, ref } from "vue";
-import { OrganizationInfo, TextContent } from "../../../shared/src/types.ts";
+import {
+  OrganizationInfo,
+  PdfTexts,
+  TextContent,
+} from "../../../shared/src/types.ts";
 import { getTextContent } from "../requests/textcontent.ts";
 import { marked } from "marked";
 import { TextContentCategory } from "../../../shared/src/enum.ts";
 import { faqAlphabeticalDown } from "../lib/compare.ts";
-import { makeOrganizationInfo } from "../../../shared/src/text/textContent.ts";
+import {
+  makeOrganizationInfo,
+  makePdfTexts,
+} from "../../../shared/src/text/textContent.ts";
 
 export const useTextContentStore = defineStore("textContent", () => {
   const textContent = ref<TextContent[]>([]);
@@ -73,12 +80,23 @@ export const useTextContentStore = defineStore("textContent", () => {
     return makeOrganizationInfo(values);
   });
 
+  const pdfTexts = computed((): PdfTexts => {
+    const values = textContent.value
+      .filter((content) => content.category == TextContentCategory.PDF)
+      .map((content) => ({
+        title: content.title,
+        content: content.content,
+      }));
+    return makePdfTexts(values);
+  });
+
   return {
     textContent,
     faqs,
     imprint,
     privacyNotice,
     organizationInfo,
+    pdfTexts,
     update,
   };
 });

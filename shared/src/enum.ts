@@ -45,6 +45,7 @@ export enum TextContentCategory {
   TAC = "TAC",
   MAINTENANCE_MESSAGE = "MAINTENANCE_MESSAGE",
   ORGANIZATION_INFO = "ORGANIZATION_INFO",
+  PDF = "PDF",
 }
 
 export enum TextContentTyp {

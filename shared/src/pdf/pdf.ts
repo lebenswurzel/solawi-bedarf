@@ -139,20 +139,23 @@ export function createDefaultPdf(
         {
           text: pdf.footerTextLeft || "",
           width: "*",
+          fontSize: 10,
         },
         {
           text: pdf.footerTextCenter || "",
           alignment: "center",
           width: "auto",
           margin: [10, 0],
+          fontSize: 10,
         },
         {
           text: `Seite ${currentPage} / ${pageCount}`,
           alignment: "right",
           width: "auto",
+          fontSize: 10,
         },
       ],
-      margin: [40, 0, 40, -20],
+      margin: [40, 5, 40, -20],
     };
   };
 
@@ -165,7 +168,7 @@ export function createDefaultPdf(
       },
     },
     footer,
-    pageMargins: [40, 60, 40, 40],
+    pageMargins: [40, 60, 40, 60],
   });
 }
 

@@ -55,7 +55,7 @@ const { productsById, deliveredByProductIdDepotId, capacityByDepotId } =
   storeToRefs(biStore);
 const { depots } = storeToRefs(configStore);
 const { productCategories } = storeToRefs(productStore);
-const { organizationInfo } = storeToRefs(textContentStore);
+const { organizationInfo, pdfTexts } = storeToRefs(textContentStore);
 
 const loading = ref(false);
 const error = ref<string>();
@@ -176,6 +176,7 @@ const onShipmentPdfClick = async () => {
     productsById.value,
     productCategories.value,
     organizationInfo.value,
+    pdfTexts.value.packagingListFooter,
   ).then(() => {
     loading.value = false;
   });

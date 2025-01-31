@@ -14,9 +14,12 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+import { pdfTextsDefaults } from "../config";
 import {
   OrganizationInfo,
   OrganizationInfoKeys,
+  PdfTexts,
+  PdfTextsKeys,
   SimpleTextContent,
 } from "../types";
 
@@ -65,4 +68,17 @@ export const getOrganizationInfoValueByKey = (
     default:
       return "";
   }
+};
+
+export const makePdfTexts = (textContents: SimpleTextContent[]): PdfTexts => {
+  const getField = (title: PdfTextsKeys): string => {
+    const value = textContents.filter((c) => c.title == title);
+    if (value.length > 0) {
+      return value[0].content;
+    }
+    return pdfTextsDefaults[title];
+  };
+  return {
+    packagingListFooter: getField("packagingListFooter"),
+  };
 };

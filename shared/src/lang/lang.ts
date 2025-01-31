@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { ProductCategoryType, UserCategory, UserRole } from "../enum";
-import { OrganizationInfoKeys } from "../types";
+import { OrganizationInfoKeys, PdfTextsKeys } from "../types";
 
 // info i: 24D8
 // black truck: 26DF
@@ -394,6 +394,7 @@ export const language = {
       faq: "Informationen & Grundlagen",
       action: "Textbaustein hinzufügen",
       organizationInfo: "Organisation",
+      pdf: "PDF",
       general: "Allgemein",
       dialog: {},
     },
@@ -498,4 +499,8 @@ export const langOrganizationInfo: Record<OrganizationInfoKeys, string> = {
   "address.postalcode": "Postleitzahl",
   "address.city": "Stadt",
   "address.forumContact": "Forum-Kontakt",
+};
+
+export const langPdfTexts: Record<PdfTextsKeys, string> = {
+  packagingListFooter: "Fußzeile im Lieferschein",
 };
