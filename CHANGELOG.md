@@ -100,3 +100,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 
 #142 Die Informationen zur Organisation (Name, Adresse) können jetzt in den Text-Einstellungen festgelegt werden (die Infos in shared/src/config.ts sind damit obsolet, werden aber als Standardwerte übernommen)
 #142 In den Texteinstellungen können jetzt Texte für die Kopf- und die Fußzeile der Lieferscheine festgelegt werden
+#171 Bestätigungsdialog derBedarfsanmeldung: Buttons werden auf schmalen Bildschirmen jetzt übereinander dargestellt
+#171 Alle Tooltips funktionieren jetzt auch auf Mobilgeräten
