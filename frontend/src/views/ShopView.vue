@@ -170,7 +170,7 @@ onMounted(refresh);
           cooperation: msrp.cooperation.toString(),
         })
       }}
-      <v-tooltip :text="t.cards.products.msrpTooltip">
+      <v-tooltip :text="t.cards.products.msrpTooltip" open-on-click>
         <template v-slot:activator="{ props }">
           <v-icon v-bind="props">mdi-information-outline</v-icon>
         </template>

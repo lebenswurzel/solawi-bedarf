@@ -142,7 +142,11 @@ onMounted(() => {
     <v-row no-gutters align="center" justify="center">
       <v-col cols="12" sm="5">
         {{ product.name }}
-        <v-tooltip :text="product.description" v-if="product.description">
+        <v-tooltip
+          :text="product.description"
+          v-if="product.description"
+          open-on-click
+        >
           <template v-slot:activator="{ props }">
             <v-icon v-bind="props">mdi-information-outline</v-icon>
           </template>
@@ -153,6 +157,7 @@ onMounted(() => {
           :text="
             interpolate(t.freq, { freq: product.frequency?.toString() || '1' })
           "
+          open-on-click
         >
           <template v-slot:activator="{ props }">
             <v-icon v-bind="props">mdi-truck-fast-outline</v-icon>
@@ -163,6 +168,7 @@ onMounted(() => {
       <v-col cols="3" sm="2">
         <v-tooltip
           :text="interpolate(t.stock, { stock: percentageSold.toString() })"
+          open-on-click
         >
           <template v-slot:activator="{ props }">
             <v-progress-circular

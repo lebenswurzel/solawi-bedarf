@@ -163,7 +163,7 @@ const prettyLastOrderChanged = (
         <v-row no-gutters>
           <v-col cols="11" sm="7">
             <div class="d-flex align-center" v-if="selectedUsers.length > 0">
-              <v-tooltip :text="selectedUserNames" location="top">
+              <v-tooltip :text="selectedUserNames" location="top" open-on-click>
                 <template v-slot:activator="{ props }">
                   <span v-bind="props" class="mb-5">
                     Aktion für {{ selectedUsers.length }} gewählt Nutzer:
@@ -219,7 +219,7 @@ const prettyLastOrderChanged = (
               v-model="selectedUsers"
             >
               <template v-slot:item.active="{ item }">
-                <v-tooltip text="aktiviert">
+                <v-tooltip text="aktiviert" open-on-click>
                   <template v-slot:activator="{ props }">
                     <span v-bind="props">
                       <v-icon v-if="item.active"
@@ -228,7 +228,7 @@ const prettyLastOrderChanged = (
                     </span>
                   </template>
                 </v-tooltip>
-                <v-tooltip text="deaktiviert">
+                <v-tooltip text="deaktiviert" open-on-click>
                   <template v-slot:activator="{ props }">
                     <span v-bind="props">
                       <v-icon v-if="!item.active" class="opacity-40"
@@ -237,7 +237,7 @@ const prettyLastOrderChanged = (
                     </span>
                   </template>
                 </v-tooltip>
-                <v-tooltip text="E-Mail-Adresse vorhanden">
+                <v-tooltip text="E-Mail-Adresse vorhanden" open-on-click>
                   <template v-slot:activator="{ props }">
                     <span v-bind="props">
                       <v-icon v-if="item.emailEnabled"
@@ -246,7 +246,7 @@ const prettyLastOrderChanged = (
                     </span></template
                   >
                 </v-tooltip>
-                <v-tooltip text="Keine E-Mail-Adresse vorhanden">
+                <v-tooltip text="Keine E-Mail-Adresse vorhanden" open-on-click>
                   <template v-slot:activator="{ props }">
                     <span v-bind="props">
                       <v-icon v-if="!item.emailEnabled" class="opacity-40"

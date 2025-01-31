@@ -266,7 +266,7 @@ const onSave = () => {
               cooperation: msrp.cooperation.toString(),
             })
           }}
-          <v-tooltip :text="p.msrpTooltip">
+          <v-tooltip :text="p.msrpTooltip" open-on-click>
             <template v-slot:activator="{ props }">
               <v-icon v-bind="props">mdi-information-outline</v-icon>
             </template>
@@ -371,6 +371,7 @@ const onSave = () => {
               solawiName: organizationInfo.address.name,
             })
           "
+          hide-details
         />
         <div class="mb-3" v-if="requireConfirmContribution">
           {{
@@ -385,12 +386,14 @@ const onSave = () => {
           v-model="confirmContribution"
           :label="t.confirmContribution.label"
           v-if="requireConfirmContribution"
+          hide-details
         />
         <v-switch
           v-model="sendConfirmationEmail"
           :label="`${t.sendConfirmationEmail.title}`"
           :color="sendConfirmationEmail ? 'primary' : 'secondary'"
           :disabled="!requestUser.emailEnabled"
+          hide-details
         ></v-switch>
         <v-alert
           color="warning"
@@ -401,27 +404,25 @@ const onSave = () => {
           >{{ t.sendConfirmationEmail.notAvailable }}</v-alert
         >
       </v-card-text>
-      <v-card-actions class="justify-center">
-        <v-btn class="text-error" @click="onClose" variant="outlined">
-          {{ language.app.actions.cancel }}
+      <v-card-actions class="d-flex flex-wrap justify-center">
+        <v-btn
+          class="text-white bg-success my-1"
+          @click="onSave"
+          :disabled="!!disableSubmit"
+          :loading="loading"
+          variant="elevated"
+        >
+          {{ language.app.actions.save }}
         </v-btn>
         <v-btn
-          class="text-white mx-1 mx-md-5"
+          class="text-white my-1"
           @click="() => (openFAQ = true)"
-          style="margin-left: 0"
           variant="elevated"
         >
           {{ t.action.faq }}
         </v-btn>
-        <v-btn
-          class="text-white bg-success"
-          @click="onSave"
-          :disabled="!!disableSubmit"
-          :loading="loading"
-          style="margin-left: 0"
-          variant="elevated"
-        >
-          {{ language.app.actions.save }}
+        <v-btn class="text-error my-1" @click="onClose" variant="outlined">
+          {{ language.app.actions.cancel }}
         </v-btn>
       </v-card-actions>
     </v-card>
