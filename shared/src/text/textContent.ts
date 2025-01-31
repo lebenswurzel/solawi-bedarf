@@ -14,7 +14,11 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { OrganizationInfo, SimpleTextContent } from "../types";
+import {
+  OrganizationInfo,
+  OrganizationInfoKeys,
+  SimpleTextContent,
+} from "../types";
 
 export const makeOrganizationInfo = (
   textContents: SimpleTextContent[]
@@ -37,4 +41,28 @@ export const makeOrganizationInfo = (
       forumContact: getField("address.forumContact"),
     },
   };
+};
+
+export const getOrganizationInfoValueByKey = (
+  organizationInfo: OrganizationInfo,
+  key: OrganizationInfoKeys
+): string => {
+  switch (key) {
+    case "appUrl":
+      return organizationInfo.appUrl;
+    case "address.name":
+      return organizationInfo.address.name;
+    case "address.street":
+      return organizationInfo.address.street;
+    case "address.postalcode":
+      return organizationInfo.address.postalcode;
+    case "address.city":
+      return organizationInfo.address.city;
+    case "address.email":
+      return organizationInfo.address.email;
+    case "address.forumContact":
+      return organizationInfo.address.forumContact;
+    default:
+      return "";
+  }
 };

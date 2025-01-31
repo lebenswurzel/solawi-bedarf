@@ -15,7 +15,10 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { expect, test } from "vitest";
-import { TextContentCategory } from "../../../../shared/src/enum";
+import {
+  TextContentCategory,
+  TextContentTyp,
+} from "../../../../shared/src/enum";
 import {
   Id,
   SaveTextContentRequest,
@@ -89,7 +92,7 @@ testAsAdmin("cannot delete imprint", async ({ userData }: TestUserData) => {
   });
   await deleteTextContent(ctx);
   expect(ctx.status).toBe(http.bad_request);
-  await validateAllTextContents({ userData }, [
+  await validateTextContentsWithoutOrgInfo({ userData }, [
     "# Datenschutzerklärung",
     "",
     "# Impressum",
@@ -113,7 +116,7 @@ testAsAdmin(
     });
     await deleteTextContent(ctx);
     expect(ctx.status).toBe(http.bad_request);
-    await validateAllTextContents({ userData }, [
+    await validateTextContentsWithoutOrgInfo({ userData }, [
       "# Datenschutzerklärung",
       "",
       "# Impressum",
@@ -138,7 +141,7 @@ testAsAdmin(
     });
     await deleteTextContent(ctx);
     expect(ctx.status).toBe(http.bad_request);
-    await validateAllTextContents({ userData }, [
+    await validateTextContentsWithoutOrgInfo({ userData }, [
       "# Datenschutzerklärung",
       "",
       "# Impressum",
@@ -159,6 +162,7 @@ testAsAdmin("delete FAQ", async ({ userData }: TestUserData) => {
       title: "Neue FAQ 1",
       category: TextContentCategory.FAQ,
       content: "Inhalt FAQ 1",
+      typ: TextContentTyp.MD,
     },
     userData.token,
   );
@@ -172,7 +176,7 @@ testAsAdmin("delete FAQ", async ({ userData }: TestUserData) => {
       content: "Inhalt FAQ 1",
     },
   ]);
-  await validateAllTextContents({ userData }, [
+  await validateTextContentsWithoutOrgInfo({ userData }, [
     "# Datenschutzerklärung",
     "",
     "# Impressum",
@@ -190,22 +194,25 @@ testAsAdmin("delete FAQ", async ({ userData }: TestUserData) => {
   );
   await deleteTextContent(ctxDelete1);
   expect(ctxDelete1.status).toBe(http.no_content);
-  await validateAllTextContents({ userData }, [
+  await validateTextContentsWithoutOrgInfo({ userData }, [
     "# Datenschutzerklärung",
     "",
     "# Impressum",
   ]);
 });
 
-const validateAllTextContents = async (
+const validateTextContentsWithoutOrgInfo = async (
   { userData }: TestUserData,
   expectedTexts: string[],
 ) => {
   const ctx = createBasicTestCtx(undefined, userData.token);
   await getTextContent(ctx);
-  expect(
-    new Set(ctx.body.textContent.map((v: TextContent) => v.content)),
-  ).toEqual(new Set(expectedTexts));
+  const filteredTexts = ctx.body.textContent.filter(
+    (t: TextContent) => t.category != TextContentCategory.ORGANIZATION_INFO,
+  );
+  expect(new Set(filteredTexts.map((v: TextContent) => v.content))).toEqual(
+    new Set(expectedTexts),
+  );
 };
 
 const getTexts = async (
@@ -218,5 +225,6 @@ const getTexts = async (
     category: v.category,
     content: v.content,
     id: v.id,
+    typ: v.typ,
   }));
 };

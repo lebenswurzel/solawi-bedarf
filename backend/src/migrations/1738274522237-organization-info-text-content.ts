@@ -15,7 +15,11 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { MigrationInterface, QueryRunner } from "typeorm";
-import { basicOrganizationInfo } from "../../../shared/src/config";
+import {
+  basicOrganizationInfo,
+  organizationInfoKeys,
+} from "../../../shared/src/config";
+import { getOrganizationInfoValueByKey } from "../../../shared/src/text/textContent";
 
 export class OrganizationInfoTextContent1738274522237
   implements MigrationInterface
@@ -46,21 +50,10 @@ export class OrganizationInfoTextContent1738274522237
     );
     await queryRunner.query(`DROP TYPE "public"."text_content_typ_enum_old"`);
     // Insert default values from basicOrganizationInfo
-    const organizationInfoDefaults = [
-      { key: "appUrl", value: basicOrganizationInfo.appUrl },
-      { key: "address.name", value: basicOrganizationInfo.address.name },
-      { key: "address.street", value: basicOrganizationInfo.address.street },
-      {
-        key: "address.postalcode",
-        value: basicOrganizationInfo.address.postalcode,
-      },
-      { key: "address.city", value: basicOrganizationInfo.address.city },
-      { key: "address.email", value: basicOrganizationInfo.address.email },
-      {
-        key: "address.forumContact",
-        value: basicOrganizationInfo.address.forumContact,
-      },
-    ];
+    const organizationInfoDefaults = organizationInfoKeys.map((key) => ({
+      key,
+      value: getOrganizationInfoValueByKey(basicOrganizationInfo, key),
+    }));
 
     for (const entry of organizationInfoDefaults) {
       await queryRunner.query(
