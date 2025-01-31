@@ -15,16 +15,19 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { onMounted } from "vue";
+import { onMounted, ref } from "vue";
 import HomeStatsCard from "../components/HomeStatsCard.vue";
 import ProductStatistics from "../components/statistics/ProductStatistics.vue";
 import { useBIStore } from "../store/biStore";
 import { useConfigStore } from "../store/configStore.ts";
 import { useUserStore } from "../store/userStore.ts";
+import { language } from "../../../shared/src/lang/lang.ts";
+import OrderStatistics from "../components/statistics/OrderStatistics.vue";
 
 const configStore = useConfigStore();
 const biStore = useBIStore();
 const userStore = useUserStore();
+const tab = ref("products");
 
 onMounted(async () => {
   await configStore.update();
@@ -35,5 +38,26 @@ onMounted(async () => {
 
 <template>
   <HomeStatsCard />
-  <ProductStatistics />
+  <v-card class="ma-4">
+    <v-tabs align-tabs="center" v-model="tab" stacked>
+      <v-tab value="products">
+        <v-icon icon="mdi-sprout"></v-icon>
+
+        {{ language.pages.statistics.tabs.products }}
+      </v-tab>
+      <v-tab value="orders">
+        <v-icon icon="mdi-list-box-outline"></v-icon>
+
+        {{ language.pages.statistics.tabs.orders }}
+      </v-tab>
+    </v-tabs>
+    <v-tabs-window v-model="tab">
+      <v-tabs-window-item value="products">
+        <ProductStatistics />
+      </v-tabs-window-item>
+      <v-tabs-window-item value="orders">
+        <OrderStatistics />
+      </v-tabs-window-item>
+    </v-tabs-window>
+  </v-card>
 </template>
