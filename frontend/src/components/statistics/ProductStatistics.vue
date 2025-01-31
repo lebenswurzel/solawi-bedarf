@@ -64,32 +64,28 @@ const selfGrownProductSum = computed(() => {
 </script>
 
 <template>
-  <v-card class="ma-4">
-    <v-card-title style="white-space: normal">
-      {{ t.productsCard.title }}
-    </v-card-title>
-    <v-card-text>
-      <p class="mb-4">
-        {{ t.productsCard.text }}
-      </p>
-      <p class="mb-4">Summe: {{ Math.ceil(selfGrownProductSum) }}€</p>
-      <v-row>
-        <v-col cols="12" sm="6" md="4" v-for="item in topProducts">
-          <v-progress-circular
-            :model-value="item.percentageSold"
-            height="30"
-            :color="item.percentageSold > 90 ? 'green' : 'blue-grey'"
-          >
-            <template v-slot:default="{ value }">{{
-              Math.ceil(value)
-            }}</template>
-          </v-progress-circular>
-          &nbsp;
-          <span class="text-medium-emphasis">
-            {{ item.name }} ({{ item.money }}€)
-          </span>
-        </v-col>
-      </v-row>
-    </v-card-text>
-  </v-card>
+  <v-card-title style="white-space: normal">
+    {{ t.productsCard.title }}
+  </v-card-title>
+  <v-card-text>
+    <p class="mb-4">
+      {{ t.productsCard.text }}
+    </p>
+    <p class="mb-4">Summe: {{ Math.ceil(selfGrownProductSum) }}€</p>
+    <v-row>
+      <v-col cols="12" sm="6" md="4" v-for="item in topProducts">
+        <v-progress-circular
+          :model-value="item.percentageSold"
+          height="30"
+          :color="item.percentageSold > 90 ? 'green' : 'blue-grey'"
+        >
+          <template v-slot:default="{ value }">{{ Math.ceil(value) }}</template>
+        </v-progress-circular>
+        &nbsp;
+        <span class="text-medium-emphasis">
+          {{ item.name }} ({{ item.money }}€)
+        </span>
+      </v-col>
+    </v-row>
+  </v-card-text>
 </template>

@@ -416,12 +416,21 @@ export const language = {
     },
     statistics: {
       title: "Statistiken",
+      tabs: {
+        products: "Produkte",
+        orders: "Bedarfsanmeldungen",
+      },
       navigation: {
         subtitle: "Admin",
       },
       productsCard: {
         title: "Produkte nach monatlichem Umsatz",
         text: "In Bedarfsanmeldungen enthaltene Produkte mit durchschnittlichem Monatsumsatz in Klammern.",
+      },
+      ordersCard: {
+        title: "Bedarfsanmeldungen in der gewählten Saison",
+        text: "Alle Bedarfsanmeldung, die für die gewählte Saison relevant sind.",
+        distributions: "Verteilungen",
       },
     },
   },
