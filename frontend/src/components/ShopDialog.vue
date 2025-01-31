@@ -404,25 +404,31 @@ const onSave = () => {
           >{{ t.sendConfirmationEmail.notAvailable }}</v-alert
         >
       </v-card-text>
-      <v-card-actions class="d-flex flex-wrap justify-center">
+      <v-card-actions
+        class="d-flex flex-wrap flex-sm-row flex-column justify-center"
+      >
         <v-btn
-          class="text-white bg-success my-1"
+          class="text-error my-1 order-3 order-sm-1"
+          @click="onClose"
+          variant="outlined"
+        >
+          {{ language.app.actions.cancel }}
+        </v-btn>
+        <v-btn
+          class="text-white my-1 order-2 order-sm-2"
+          @click="() => (openFAQ = true)"
+          variant="elevated"
+        >
+          {{ t.action.faq }}
+        </v-btn>
+        <v-btn
+          class="text-white bg-success my-1 order-1 order-sm-3"
           @click="onSave"
           :disabled="!!disableSubmit"
           :loading="loading"
           variant="elevated"
         >
           {{ language.app.actions.save }}
-        </v-btn>
-        <v-btn
-          class="text-white my-1"
-          @click="() => (openFAQ = true)"
-          variant="elevated"
-        >
-          {{ t.action.faq }}
-        </v-btn>
-        <v-btn class="text-error my-1" @click="onClose" variant="outlined">
-          {{ language.app.actions.cancel }}
         </v-btn>
       </v-card-actions>
     </v-card>
