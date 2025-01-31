@@ -97,3 +97,6 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #170 COMPAT: Renamed EMAIL_SEND_CONFIRMATION to EMAIL_SEND_REGISTER_CONFIRMATION in env-be-prod.env
 
 # NEW
+
+#142 Die Informationen zur Organisation (Name, Adresse) können jetzt in den Text-Einstellungen festgelegt werden (die Infos in shared/src/config.ts sind damit obsolet, werden aber als Standardwerte übernommen)
+#142 In den Texteinstellungen können jetzt Texte für die Kopf- und die Fußzeile der Lieferscheine festgelegt werden
