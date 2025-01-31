@@ -115,6 +115,8 @@ export interface Order {
   categoryReason: string | null;
   validFrom: Date | null;
   requisitionConfigId: number;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
 }
 
 export interface ConfirmedOrder extends Order {

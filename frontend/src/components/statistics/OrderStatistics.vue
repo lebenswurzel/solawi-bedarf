@@ -23,6 +23,8 @@ import { useConfigStore } from "../../store/configStore.ts";
 import { useUserStore } from "../../store/userStore.ts";
 import { UserCategory } from "../../../../shared/src/enum.ts";
 import { storeToRefs } from "pinia";
+import { format } from "date-fns";
+import { de } from "date-fns/locale";
 
 const t = language.pages.statistics;
 const userStore = useUserStore();
@@ -52,6 +54,13 @@ const headers = [
 
 const isEmpty = (obj: Order): boolean => {
   return obj && Object.keys(obj).length === 0;
+};
+
+const prettyDate = (date?: Date | string | null): string => {
+  if (date) {
+    return format(date, "PPp", { locale: de });
+  }
+  return "nie";
 };
 
 onMounted(async () => {
@@ -113,25 +122,28 @@ const offerRanges = computed(() => {
       { offerMin: 150, offerMax: 200, count: 0 },
       { offerMin: 200, offerMax: 250, count: 0 },
       { offerMin: 250, offerMax: 500, count: 0 },
+      { offerMin: 500, offerMax: 1000, count: 0 },
     ],
   );
 });
 const depotDistribution = computed(() => {
-  return orders.value.reduce(
-    (acc, order) => {
-      return acc.map((c) => {
-        if (c.depotName == order.depotName) {
-          return { ...c, count: c.count + 1 };
-        } else {
-          return c;
-        }
-      });
-    },
-    depots.value.map((d) => ({
-      depotName: d.name,
-      count: 0,
-    })),
-  );
+  return orders.value
+    .reduce(
+      (acc, order) => {
+        return acc.map((c) => {
+          if (c.depotName == order.depotName) {
+            return { ...c, count: c.count + 1 };
+          } else {
+            return c;
+          }
+        });
+      },
+      depots.value.map((d) => ({
+        depotName: d.name,
+        count: 0,
+      })),
+    )
+    .sort((a, b) => (a.depotName < b.depotName ? -1 : 1));
 });
 </script>
 
@@ -163,6 +175,22 @@ const depotDistribution = computed(() => {
         hint="Volltextsuche in allen Spalten"
       />
       <v-data-table :items="orders" :headers="headers" :search="search">
+        <template v-slot:item.createdAt="{ item }">
+          {{ prettyDate(item.createdAt) }}
+        </template>
+        <template v-slot:item.updatedAt="{ item }">
+          {{ prettyDate(item.updatedAt) }}
+        </template>
+        <template v-slot:item.validFrom="{ item }">
+          {{ prettyDate(item.validFrom) }}
+        </template>
+        <template v-slot:item.category="{ item }">
+          {{
+            language.app.options.orderUserCategories[
+              item.category as UserCategory
+            ].title
+          }}
+        </template>
       </v-data-table>
 
       <div class="text-h6">{{ t.ordersCard.distributions }}</div>
