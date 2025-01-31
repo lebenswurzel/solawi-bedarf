@@ -96,9 +96,11 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #170 Send a BCC to an internal address (specified by EMAIL_ORDER_UPDATED_BCC in env-be-prod.env) if a user updates an order
 #170 COMPAT: Renamed EMAIL_SEND_CONFIRMATION to EMAIL_SEND_REGISTER_CONFIRMATION in env-be-prod.env
 
-# NEW
+# v0.4.11 - 2025-01-31 - Neue Textelemente für Lieferscheine
 
 #142 Die Informationen zur Organisation (Name, Adresse) können jetzt in den Text-Einstellungen festgelegt werden (die Infos in shared/src/config.ts sind damit obsolet, werden aber als Standardwerte übernommen)
 #142 In den Texteinstellungen können jetzt Texte für die Kopf- und die Fußzeile der Lieferscheine festgelegt werden
 #171 Bestätigungsdialog derBedarfsanmeldung: Buttons werden auf schmalen Bildschirmen jetzt übereinander dargestellt
 #171 Alle Tooltips funktionieren jetzt auch auf Mobilgeräten
+
+# NEW
