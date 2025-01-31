@@ -104,3 +104,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #171 Alle Tooltips funktionieren jetzt auch auf Mobilgeräten
 
 # NEW
+
+#174 Stastitk und Übersicht für Bedarfsanmeldungen
