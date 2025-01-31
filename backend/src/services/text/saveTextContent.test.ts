@@ -21,7 +21,10 @@ import {
 } from "../../../../shared/src/enum";
 import {
   Id,
+  NewTextContent,
+  OrganizationInfoKeys,
   SaveTextContentRequest,
+  SimpleTextContent,
   TextContent as TextContentType,
   VersionInfo,
 } from "../../../../shared/src/types";
@@ -38,6 +41,11 @@ import { getVersion } from "../getVersion";
 import { deleteTextContent } from "./deleteTextContent";
 import { getTextContent } from "./getTextContent";
 import { saveTextContent } from "./saveTextContent";
+import {
+  basicOrganizationInfo,
+  organizationInfoKeys,
+} from "../../../../shared/src/config";
+import { getOrganizationInfoValueByKey } from "../../../../shared/src/text/textContent";
 
 test("prevent unauthorized access", async () => {
   const ctx = createBasicTestCtx();
@@ -368,6 +376,93 @@ testAsAdmin("save bad FAQ", async ({ userData }: TestUserData) => {
   ]);
 });
 
+testAsAdmin("change organization info", async ({ userData }: TestUserData) => {
+  const defaultOrgInfo = new Set(
+    organizationInfoKeys.map((key) => {
+      const content = getOrganizationInfoValueByKey(basicOrganizationInfo, key);
+      return {
+        title: key,
+        content,
+        typ: TextContentTyp.PLAIN,
+        category: TextContentCategory.ORGANIZATION_INFO,
+      };
+    }),
+  );
+
+  const actualTexts = await getTexts(TextContentCategory.ORGANIZATION_INFO);
+
+  expect(new Set(actualTexts)).toMatchObject(defaultOrgInfo);
+
+  // change info fields
+  await changeAndValidateOrgInfo(
+    "address.city",
+    "New City",
+    userData,
+    actualTexts,
+    [],
+  );
+  await changeAndValidateOrgInfo(
+    "appUrl",
+    "https://changed",
+    userData,
+    actualTexts,
+    [{ title: "address.city", content: "New City" }],
+  );
+  await changeAndValidateOrgInfo(
+    "address.name",
+    "New Name",
+    userData,
+    actualTexts,
+    [
+      { title: "address.city", content: "New City" },
+      { title: "appUrl", content: "https://changed" },
+    ],
+  );
+});
+
+const changeAndValidateOrgInfo = async (
+  title: OrganizationInfoKeys,
+  changedContent: string,
+  userData,
+  actualTexts: TextContentType[],
+  otherChanges: SimpleTextContent[],
+) => {
+  const changedAppUrl = {
+    title,
+    category: TextContentCategory.ORGANIZATION_INFO,
+    content: changedContent,
+    typ: TextContentTyp.PLAIN,
+    id: actualTexts.filter((t) => t.title == title)[0].id,
+  };
+  const ctx = createBasicTestCtx<SaveTextContentRequest>(
+    changedAppUrl,
+    userData.token,
+  );
+  await saveTextContent(ctx);
+  expect(ctx.status).toBe(http.no_content);
+
+  const changeAppUrlOrgInfo = new Set(
+    organizationInfoKeys.map((key) => {
+      let content = getOrganizationInfoValueByKey(basicOrganizationInfo, key);
+      if (key == title) {
+        content = changedContent;
+      }
+      if (otherChanges.map((o) => o.title).includes(key)) {
+        content = otherChanges.filter((o) => o.title == key)[0].content;
+      }
+      return {
+        title: key,
+        content,
+        typ: TextContentTyp.PLAIN,
+        category: TextContentCategory.ORGANIZATION_INFO,
+      };
+    }),
+  );
+
+  const actual = new Set(await getTexts(TextContentCategory.ORGANIZATION_INFO));
+  expect(actual).toMatchObject(changeAppUrlOrgInfo);
+};
+
 const validateAllTextContents = async (
   { userData }: TestUserData,
   expectedTexts: string[],
@@ -395,9 +490,13 @@ const validateTextContentsWithoutOrgInfo = async (
 
 const getTexts = async (
   category: TextContentCategory,
+  title?: string,
 ): Promise<TextContentType[]> => {
   return (
-    (await AppDataSource.getRepository(TextContent).findBy({ category })) || []
+    (await AppDataSource.getRepository(TextContent).findBy({
+      category,
+      title,
+    })) || []
   ).map((v) => ({
     title: v.title,
     category: v.category,

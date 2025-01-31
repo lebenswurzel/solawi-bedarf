@@ -84,6 +84,7 @@ export const initDb = async () => {
       category: TextContentCategory.ORGANIZATION_INFO,
       title: key,
       content,
+      typ: TextContentTyp.PLAIN,
     });
   }
 };
@@ -92,21 +93,30 @@ const ensureTextContent = async ({
   category,
   title,
   content,
+  typ,
 }: {
   category: TextContentCategory;
   title: string;
   content: string;
+  typ?: TextContentTyp;
 }) => {
-  const textContentCount = await AppDataSource.getRepository(TextContent).count(
-    { where: { category } },
-  );
+  let textContentCount = 0;
+  if (category == TextContentCategory.ORGANIZATION_INFO) {
+    textContentCount = await AppDataSource.getRepository(TextContent).count({
+      where: { title, category },
+    });
+  } else {
+    textContentCount = await AppDataSource.getRepository(TextContent).count({
+      where: { category },
+    });
+  }
 
   if (textContentCount > 0) {
     return;
   }
   const textContent = new TextContent();
   textContent.active = true;
-  textContent.typ = TextContentTyp.MD;
+  textContent.typ = typ ?? TextContentTyp.MD;
   textContent.title = title;
   textContent.content = content;
   textContent.category = category;

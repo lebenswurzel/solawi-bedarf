@@ -65,6 +65,7 @@ const updateTextContent = async (
   const repository = AppDataSource.getRepository(TextContent);
   const isStaticEntry = category != TextContentCategory.FAQ;
   const create = !id && !isStaticEntry;
+  const needsIdForUpdate = category == TextContentCategory.ORGANIZATION_INFO;
 
   let textContent: TextContent | null;
   if (create) {
@@ -72,7 +73,10 @@ const updateTextContent = async (
     textContent.typ = TextContentTyp.MD;
     textContent.category = category;
   } else {
-    const query = id ? { category, id } : { category };
+    if (needsIdForUpdate && !id) {
+      ctx.throw(http.bad_request, "missing field id for updating");
+    }
+    let query = id ? { category, id } : { category };
     textContent = await repository.findOneBy(query);
     if (!textContent) {
       ctx.throw(http.bad_request);
