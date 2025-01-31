@@ -103,6 +103,8 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #171 Bestätigungsdialog derBedarfsanmeldung: Buttons werden auf schmalen Bildschirmen jetzt übereinander dargestellt
 #171 Alle Tooltips funktionieren jetzt auch auf Mobilgeräten
 
-# NEW
+# v0.4.12 - 2025-01-31 - Statistik Bedarfsanmeldungen
 
 #174 Stastitk und Übersicht für Bedarfsanmeldungen
+
+# NEW
