@@ -377,7 +377,7 @@ export const language = {
       },
     },
     content: {
-      title: "Text",
+      title: "Textelemente",
       navigation: {
         subtitle: "Admin",
       },

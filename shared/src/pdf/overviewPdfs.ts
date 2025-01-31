@@ -217,10 +217,7 @@ export function generateUserData(
       new Map()
     );
 
-  console.log("grouped", grouped);
-
   return Array.from(grouped.entries(), ([user, userProducts]) => {
-    console.log("user", user);
     const [userName, depotName] = user.split("\n");
     return {
       receiver: user,
