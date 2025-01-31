@@ -15,7 +15,10 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { expect, test } from "vitest";
-import { TextContentCategory } from "../../../../shared/src/enum";
+import {
+  TextContentCategory,
+  TextContentTyp,
+} from "../../../../shared/src/enum";
 import {
   Id,
   SaveTextContentRequest,
@@ -57,12 +60,13 @@ testAsAdmin("save wrong category", async ({ userData }: TestUserData) => {
       title: "Geht nicht",
       category: TextContentCategory.TAC,
       content: "Falsch",
+      typ: TextContentTyp.MD,
     },
     userData.token,
   );
   await saveTextContent(ctx);
   expect(ctx.status).toBe(http.bad_request);
-  await validateAllTextContents({ userData }, [
+  await validateTextContentsWithoutOrgInfo({ userData }, [
     "",
     "# Impressum",
     "# Datenschutzerklärung",
@@ -75,6 +79,7 @@ testAsAdmin("save imprint", async ({ userData }: TestUserData) => {
       title: "Impressum bleibt gleich",
       category: TextContentCategory.IMPRINT,
       content: "Inhaltstext Impressum",
+      typ: TextContentTyp.MD,
     },
     userData.token,
   );
@@ -87,7 +92,7 @@ testAsAdmin("save imprint", async ({ userData }: TestUserData) => {
       content: "Inhaltstext Impressum",
     },
   ]);
-  await validateAllTextContents({ userData }, [
+  await validateTextContentsWithoutOrgInfo({ userData }, [
     "",
     "Inhaltstext Impressum",
     "# Datenschutzerklärung",
@@ -100,6 +105,7 @@ testAsAdmin("save privacy note", async ({ userData }: TestUserData) => {
       title: "Datenschutzerklärung - bleibt gleich",
       category: TextContentCategory.PRIVACY_NOTICE,
       content: "Inhaltstext PN",
+      typ: TextContentTyp.MD,
     },
     userData.token,
   );
@@ -112,7 +118,7 @@ testAsAdmin("save privacy note", async ({ userData }: TestUserData) => {
       content: "Inhaltstext PN",
     },
   ]);
-  await validateAllTextContents({ userData }, [
+  await validateTextContentsWithoutOrgInfo({ userData }, [
     "",
     "Inhaltstext PN",
     "# Impressum",
@@ -129,6 +135,7 @@ testAsAdmin("save maintenance message", async ({ userData }: TestUserData) => {
       title: "Wartungshinweis - bleibt gleich",
       category: TextContentCategory.MAINTENANCE_MESSAGE,
       content: "Inhaltstext Wartung",
+      typ: TextContentTyp.MD,
     },
     userData.token,
   );
@@ -143,7 +150,7 @@ testAsAdmin("save maintenance message", async ({ userData }: TestUserData) => {
       },
     ],
   );
-  await validateAllTextContents({ userData }, [
+  await validateTextContentsWithoutOrgInfo({ userData }, [
     "# Datenschutzerklärung",
     "Inhaltstext Wartung",
     "# Impressum",
@@ -163,6 +170,7 @@ testAsAdmin("save FAQ", async ({ userData }: TestUserData) => {
       title: "Neue FAQ 1",
       category: TextContentCategory.FAQ,
       content: "Inhalt FAQ 1",
+      typ: TextContentTyp.MD,
     },
     userData.token,
   );
@@ -175,7 +183,7 @@ testAsAdmin("save FAQ", async ({ userData }: TestUserData) => {
       content: "Inhalt FAQ 1",
     },
   ]);
-  await validateAllTextContents({ userData }, [
+  await validateTextContentsWithoutOrgInfo({ userData }, [
     "# Datenschutzerklärung",
     "",
     "# Impressum",
@@ -188,6 +196,7 @@ testAsAdmin("save FAQ", async ({ userData }: TestUserData) => {
       title: "Neue FAQ 2",
       category: TextContentCategory.FAQ,
       content: "Inhalt FAQ 2",
+      typ: TextContentTyp.MD,
     },
     userData.token,
   );
@@ -205,7 +214,7 @@ testAsAdmin("save FAQ", async ({ userData }: TestUserData) => {
       content: "Inhalt FAQ 2",
     },
   ]);
-  await validateAllTextContents({ userData }, [
+  await validateTextContentsWithoutOrgInfo({ userData }, [
     "# Datenschutzerklärung",
     "",
     "# Impressum",
@@ -219,6 +228,7 @@ testAsAdmin("save FAQ", async ({ userData }: TestUserData) => {
       title: "Neue FAQ 2",
       category: TextContentCategory.FAQ,
       content: "Inhalt FAQ 2",
+      typ: TextContentTyp.MD,
     },
     userData.token,
   );
@@ -238,7 +248,7 @@ testAsAdmin("save FAQ", async ({ userData }: TestUserData) => {
       content: "Inhalt FAQ 2",
     },
   ]);
-  await validateAllTextContents({ userData }, [
+  await validateTextContentsWithoutOrgInfo({ userData }, [
     "# Datenschutzerklärung",
     "",
     "# Impressum",
@@ -253,24 +263,27 @@ testAsAdmin("save FAQ", async ({ userData }: TestUserData) => {
       category: TextContentCategory.FAQ,
       content: "Inhalt FAQ 2.2",
       id: allFaqTexts.filter((v) => v.title == "Neue FAQ 2")[0].id,
+      typ: TextContentTyp.MD,
     },
     userData.token,
   );
   await saveTextContent(ctx22);
   expect(ctx22.status).toBe(http.no_content);
-  expect(await getTexts(TextContentCategory.FAQ)).toMatchObject([
-    {
-      title: "Neue FAQ 1",
-      category: TextContentCategory.FAQ,
-      content: "Inhalt FAQ 1",
-    },
-    {
-      title: "Neue FAQ 2.2",
-      category: TextContentCategory.FAQ,
-      content: "Inhalt FAQ 2.2",
-    },
-  ]);
-  await validateAllTextContents({ userData }, [
+  expect(new Set(await getTexts(TextContentCategory.FAQ))).toMatchObject(
+    new Set([
+      {
+        title: "Neue FAQ 1",
+        category: TextContentCategory.FAQ,
+        content: "Inhalt FAQ 1",
+      },
+      {
+        title: "Neue FAQ 2.2",
+        category: TextContentCategory.FAQ,
+        content: "Inhalt FAQ 2.2",
+      },
+    ]),
+  );
+  await validateTextContentsWithoutOrgInfo({ userData }, [
     "# Datenschutzerklärung",
     "",
     "# Impressum",
@@ -289,7 +302,7 @@ testAsAdmin("save FAQ", async ({ userData }: TestUserData) => {
   );
   await deleteTextContent(ctxDelete1);
   expect(ctxDelete1.status).toBe(http.no_content);
-  await validateAllTextContents({ userData }, [
+  await validateTextContentsWithoutOrgInfo({ userData }, [
     "# Datenschutzerklärung",
     "",
     "# Impressum",
@@ -306,6 +319,7 @@ testAsAdmin("save bad FAQ", async ({ userData }: TestUserData) => {
       title: "Neue FAQ 1",
       category: TextContentCategory.FAQ,
       content: "Inhalt FAQ 1",
+      typ: TextContentTyp.MD,
     },
     userData.token,
   );
@@ -318,7 +332,7 @@ testAsAdmin("save bad FAQ", async ({ userData }: TestUserData) => {
       content: "Inhalt FAQ 1",
     },
   ]);
-  await validateAllTextContents({ userData }, [
+  await validateTextContentsWithoutOrgInfo({ userData }, [
     "# Datenschutzerklärung",
     "",
     "# Impressum",
@@ -332,6 +346,7 @@ testAsAdmin("save bad FAQ", async ({ userData }: TestUserData) => {
       category: TextContentCategory.FAQ,
       content: "Wrong",
       id: -1,
+      typ: TextContentTyp.MD,
     },
     userData.token,
   );
@@ -345,7 +360,7 @@ testAsAdmin("save bad FAQ", async ({ userData }: TestUserData) => {
       content: "Inhalt FAQ 1",
     },
   ]);
-  await validateAllTextContents({ userData }, [
+  await validateTextContentsWithoutOrgInfo({ userData }, [
     "# Datenschutzerklärung",
     "",
     "# Impressum",
@@ -364,6 +379,20 @@ const validateAllTextContents = async (
   ).toEqual(new Set(expectedTexts));
 };
 
+const validateTextContentsWithoutOrgInfo = async (
+  { userData }: TestUserData,
+  expectedTexts: string[],
+) => {
+  const ctx = createBasicTestCtx(undefined, userData.token);
+  await getTextContent(ctx);
+  const filteredTexts = ctx.body.textContent.filter(
+    (t: TextContent) => t.category != TextContentCategory.ORGANIZATION_INFO,
+  );
+  expect(new Set(filteredTexts.map((v: TextContent) => v.content))).toEqual(
+    new Set(expectedTexts),
+  );
+};
+
 const getTexts = async (
   category: TextContentCategory,
 ): Promise<TextContentType[]> => {
@@ -374,6 +403,7 @@ const getTexts = async (
     category: v.category,
     content: v.content,
     id: v.id,
+    typ: v.typ,
   }));
 };
 

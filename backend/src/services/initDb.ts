@@ -28,6 +28,12 @@ import {
   TextContentCategory,
   TextContentTyp,
 } from "../../../shared/src/enum";
+import {
+  basicOrganizationInfo,
+  organizationInfoKeys,
+} from "../../../shared/src/config";
+import { getOrganizationInfoValueByKey } from "../../../shared/src/text/textContent";
+import { OrganizationInfoKeys } from "../../../shared/src/types";
 
 export const initDb = async () => {
   const userCount = await AppDataSource.getRepository(User).count();
@@ -56,21 +62,30 @@ export const initDb = async () => {
     await AppDataSource.getRepository(RequisitionConfig).save(config);
     console.log("initial config created.");
   }
-  ensureTextContent({
+  await ensureTextContent({
     category: TextContentCategory.IMPRINT,
     title: "Impressum",
     content: "# Impressum",
   });
-  ensureTextContent({
+  await ensureTextContent({
     category: TextContentCategory.PRIVACY_NOTICE,
     title: "Datenschutzerklärung",
     content: "# Datenschutzerklärung",
   });
-  ensureTextContent({
+  await ensureTextContent({
     category: TextContentCategory.MAINTENANCE_MESSAGE,
     title: "Wartungshinweis",
     content: "",
   });
+
+  for (const key of organizationInfoKeys) {
+    const content = getOrganizationInfoValueByKey(basicOrganizationInfo, key);
+    await ensureTextContent({
+      category: TextContentCategory.ORGANIZATION_INFO,
+      title: key,
+      content,
+    });
+  }
 };
 
 const ensureTextContent = async ({
