@@ -27,6 +27,7 @@ import {
   UserRole,
   TextContentCategory,
   TextContentTyp,
+  isMultiContentCategory,
 } from "../../../shared/src/enum";
 import {
   basicOrganizationInfo,
@@ -35,7 +36,6 @@ import {
   pdfTextsKeys,
 } from "../../../shared/src/config";
 import { getOrganizationInfoValueByKey } from "../../../shared/src/text/textContent";
-import { OrganizationInfoKeys } from "../../../shared/src/types";
 
 export const initDb = async () => {
   const userCount = await AppDataSource.getRepository(User).count();
@@ -113,7 +113,7 @@ const ensureTextContent = async ({
   typ?: TextContentTyp;
 }) => {
   let textContentCount = 0;
-  if (category == TextContentCategory.ORGANIZATION_INFO) {
+  if (isMultiContentCategory(category)) {
     textContentCount = await AppDataSource.getRepository(TextContent).count({
       where: { title, category },
     });

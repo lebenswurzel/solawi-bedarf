@@ -82,8 +82,12 @@ export const appConfig = {
   },
 };
 
-export const pdfTextsKeys: PdfTextsKeys[] = ["packagingListFooter"];
+export const pdfTextsKeys: PdfTextsKeys[] = [
+  "packagingListFooter",
+  "packagingListHeader",
+];
 
 export const pdfTextsDefaults: PdfTexts = {
   packagingListFooter: "",
+  packagingListHeader: "",
 };

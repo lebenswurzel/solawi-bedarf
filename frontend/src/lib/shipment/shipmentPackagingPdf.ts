@@ -81,7 +81,8 @@ export function createShipmentPackagingPdfSpecs(
   depots: Depot[],
   productsById: ProductsById,
   productCategories: ProductCategoryWithProducts[],
-  footer?: string,
+  headerText?: string,
+  footerText?: string,
 ): PdfSpec[] {
   const dataByDepotAndProductCategory: DepotGroupedProducts = new Map();
   for (let item of shipment.shipmentItems) {
@@ -140,15 +141,16 @@ export function createShipmentPackagingPdfSpecs(
       }
 
       let footerLeft = "";
-      if (footer) {
-        footerLeft = `${footer}\n`;
+      if (footerText) {
+        footerLeft = `${footerText}\n`;
       }
 
       return {
         receiver: depotKey,
         description,
+        headerTextLeft: headerText,
         footerTextLeft: `${footerLeft}Depot ${depotKey}`,
-        footerTextCenter: `Lieferschein ${prettyDate}`,
+        footerTextRight: `Lieferschein ${prettyDate}`,
         tables: Array.from(
           dataByProductCategory.entries(),
           ([name, tableData]) =>
@@ -170,14 +172,16 @@ export async function createShipmentPackagingPdfs(
   productsById: ProductsById,
   productCategories: ProductCategoryWithProducts[],
   organizationInfo: OrganizationInfo,
-  footer: string,
+  headerText: string,
+  footerText: string,
 ) {
   const pdfs = createShipmentPackagingPdfSpecs(
     shipment,
     depots,
     productsById,
     productCategories,
-    footer,
+    headerText,
+    footerText,
   );
 
   const zip = new Zip();

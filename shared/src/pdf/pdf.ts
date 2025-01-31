@@ -23,6 +23,7 @@ import {
 } from "pdfmake/interfaces";
 import { logo } from "../logo";
 import { OrganizationInfo } from "../types";
+import { format } from "date-fns";
 
 (<any>pdfMake).vfs = pdfFonts.vfs;
 
@@ -71,7 +72,8 @@ export interface PdfSpec {
   receiver: string;
   description: string;
   footerTextLeft?: string;
-  footerTextCenter?: string;
+  footerTextRight?: string;
+  headerTextLeft?: string;
   tables: PdfTable[];
 }
 
@@ -133,31 +135,50 @@ export function createDefaultPdf(
     });
   }
 
+  const creationDate = format(new Date(), "dd.MM.yyyy, HH:mm:ss");
+
+  const footerTextLeft = pdf.footerTextLeft || "";
+
   const footer: DynamicContent = (currentPage, pageCount): Content => {
     return {
       columns: [
         {
-          text: pdf.footerTextLeft || "",
+          text: footerTextLeft.includes("\n")
+            ? footerTextLeft
+            : `\n${footerTextLeft}`,
           width: "*",
           fontSize: 10,
         },
         {
-          text: pdf.footerTextCenter || "",
+          text: `\nSeite ${currentPage} / ${pageCount}`,
           alignment: "center",
           width: "auto",
-          margin: [10, 0],
           fontSize: 10,
         },
         {
-          text: `Seite ${currentPage} / ${pageCount}`,
+          text: (pdf.footerTextRight || "") + `\nErstellt am ${creationDate}`,
           alignment: "right",
-          width: "auto",
+          width: "*",
+          margin: [10, 0],
           fontSize: 10,
         },
       ],
       margin: [40, 5, 40, -20],
     };
   };
+
+  let header: DynamicContent | undefined = undefined;
+  if (pdf.headerTextLeft) {
+    header = (): Content => {
+      return [
+        {
+          text: pdf.headerTextLeft ?? "",
+          fontSize: 10,
+          margin: [40, 30, 40, 5],
+        },
+      ];
+    };
+  }
 
   return createPdf({
     content,
@@ -167,6 +188,7 @@ export function createDefaultPdf(
         fontSize: 11,
       },
     },
+    header,
     footer,
     pageMargins: [40, 60, 40, 60],
   });

@@ -29,7 +29,6 @@ import {
 } from "../util/utils";
 import { language } from "../lang/lang";
 import { getLangUnit } from "../util/unitHelper";
-import { format } from "date-fns/format";
 
 const t = language.pages.overview;
 
@@ -218,38 +217,39 @@ export function generateUserData(
       new Map()
     );
 
-  const prettyDate = format(new Date(), "dd.MM.yyyy");
-  return Array.from(
-    grouped.entries(),
-    ([user, userProducts]) =>
-      ({
-        receiver: user,
-        description: interpolate(t.documents.user.description, {
-          season: seasonName,
-        }),
-        footerTextLeft: `Bedarf Ernteteiler ${user}`,
-        footerTextCenter: `Stand ${prettyDate}`,
-        tables: Array.from(
-          userProducts.entries(),
-          ([category, products]) =>
-            ({
-              name: category,
-              headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
-              widths: ["70%", "10%", "20%"],
-              rows: Array.from(products.values(), (item) => {
-                const product = item.category.products.find(
-                  (p) => p.name === item.name
-                )!;
-                return [
-                  item.name,
-                  `${item.value} ${getLangUnit(product.unit)}`,
-                  `${product.frequency} x`,
-                ];
-              }).sort(byKey((row) => row[0], inLocaleOrder)),
-            }) as PdfTable
-        ).sort(byKey((table) => table.name, inLocaleOrder)),
-      }) as PdfSpec
-  ).sort(byKey((pdf) => pdf.receiver, inLocaleOrder));
+  console.log("grouped", grouped);
+
+  return Array.from(grouped.entries(), ([user, userProducts]) => {
+    console.log("user", user);
+    const [userName, depotName] = user.split("\n");
+    return {
+      receiver: user,
+      description: interpolate(t.documents.user.description, {
+        season: seasonName,
+      }),
+      footerTextRight: `Bedarf Ernteteiler ${userName}`,
+      footerTextLeft: `Depot ${depotName}`,
+      tables: Array.from(
+        userProducts.entries(),
+        ([category, products]) =>
+          ({
+            name: category,
+            headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
+            widths: ["70%", "10%", "20%"],
+            rows: Array.from(products.values(), (item) => {
+              const product = item.category.products.find(
+                (p) => p.name === item.name
+              )!;
+              return [
+                item.name,
+                `${item.value} ${getLangUnit(product.unit)}`,
+                `${product.frequency} x`,
+              ];
+            }).sort(byKey((row) => row[0], inLocaleOrder)),
+          }) as PdfTable
+      ).sort(byKey((table) => table.name, inLocaleOrder)),
+    } as PdfSpec;
+  }).sort(byKey((pdf) => pdf.receiver, inLocaleOrder));
 }
 
 export function generateDepotData(
@@ -316,7 +316,6 @@ export function generateDepotData(
       new Map()
     );
 
-  const prettyDate = format(new Date(), "dd.MM.yyyy");
   return Array.from(
     dataByDepotAndProduct.entries(),
     ([depot, depotProducts]) =>
@@ -326,7 +325,6 @@ export function generateDepotData(
           season: seasonName,
         }),
         footerTextLeft: `Anmeldung Depot ${depot}`,
-        footerTextCenter: `Stand ${prettyDate}`,
         tables: Array.from(
           depotProducts.entries(),
           ([group, products]) =>

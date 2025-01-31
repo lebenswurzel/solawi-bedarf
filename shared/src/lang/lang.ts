@@ -503,4 +503,5 @@ export const langOrganizationInfo: Record<OrganizationInfoKeys, string> = {
 
 export const langPdfTexts: Record<PdfTextsKeys, string> = {
   packagingListFooter: "Fußzeile im Lieferschein",
+  packagingListHeader: "Kopfzeile im Lieferschein",
 };
