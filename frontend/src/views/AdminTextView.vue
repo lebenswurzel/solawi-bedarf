@@ -22,10 +22,15 @@ import TextContentDialog from "../components/text/TextContentDialog.vue";
 import {
   NewTextContent,
   OrganizationInfoKeys,
+  PdfTextsKeys,
   TextContent,
 } from "../../../shared/src/types";
 import { TextContentCategory, TextContentTyp } from "../../../shared/src/enum";
-import { langOrganizationInfo, language } from "../../../shared/src/lang/lang";
+import {
+  langOrganizationInfo,
+  langPdfTexts,
+  language,
+} from "../../../shared/src/lang/lang";
 
 const defaultTextContent: NewTextContent = {
   title: "Beispieltitel",
@@ -42,9 +47,14 @@ const faqs = computed(() =>
 );
 
 const organizationInfo = computed(() =>
-  textContent.value.filter(
-    (c) => c.category == TextContentCategory.ORGANIZATION_INFO,
-  ),
+  textContent.value
+    .filter((c) => c.category == TextContentCategory.ORGANIZATION_INFO)
+    .sort((a, b) => (a.title < b.title ? -1 : 1)),
+);
+const pdfTexts = computed(() =>
+  textContent.value
+    .filter((c) => c.category == TextContentCategory.PDF)
+    .sort((a, b) => (a.title < b.title ? -1 : 1)),
 );
 
 const maintenanceMessage = computed((): NewTextContent => {
@@ -122,6 +132,7 @@ const onClose = async () => {
       <v-tab value="organization">{{
         language.pages.content.organizationInfo
       }}</v-tab>
+      <v-tab value="pdf">{{ language.pages.content.pdf }}</v-tab>
       <v-tab value="general">{{ language.pages.content.general }}</v-tab>
     </v-tabs>
 
@@ -158,7 +169,23 @@ const onClose = async () => {
                 langOrganizationInfo[info.title as OrganizationInfoKeys] ??
                 info.title
               }}
+              <code class="opacity-50">{organization.{{ info.title }}}</code>
               <v-list-item-subtitle>{{ info.content }}</v-list-item-subtitle>
+            </v-list-item>
+          </v-list>
+        </v-card-text>
+      </v-tabs-window-item>
+
+      <v-tabs-window-item value="pdf">
+        <v-card-text>
+          <v-list>
+            <v-list-item
+              v-for="text in pdfTexts"
+              @click="() => onEditTextContent(text)"
+            >
+              {{ langPdfTexts[text.title as PdfTextsKeys] ?? text.title }}
+              <code class="opacity-50">{pdf.{{ text.title }}}</code>
+              <v-list-item-subtitle>{{ text.content }}</v-list-item-subtitle>
             </v-list-item>
           </v-list>
         </v-card-text>
@@ -195,3 +222,9 @@ const onClose = async () => {
   <TextContentDialog :open="open" @close="onClose" />
 </template>
 ../store/textContetnStore../../../shared/src/types
+
+<style>
+span.keyword {
+  font-family: monospace;
+}
+</style>

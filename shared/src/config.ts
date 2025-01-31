@@ -15,7 +15,12 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { Unit, UserCategory } from "./enum";
-import { OrganizationInfo, OrganizationInfoKeys } from "./types";
+import {
+  OrganizationInfo,
+  OrganizationInfoKeys,
+  PdfTexts,
+  PdfTextsKeys,
+} from "./types";
 
 export const organizationInfoKeys: OrganizationInfoKeys[] = [
   "appUrl",
@@ -75,4 +80,10 @@ export const appConfig = {
   meta: {
     sourceCodeUrl: "https://github.com/lebenswurzel/solawi-bedarf",
   },
+};
+
+export const pdfTextsKeys: PdfTextsKeys[] = ["packagingListFooter"];
+
+export const pdfTextsDefaults: PdfTexts = {
+  packagingListFooter: "",
 };

@@ -356,3 +356,8 @@ type FlattenKeys<T, Prefix extends string = ""> = T extends object
   : never;
 
 export type OrganizationInfoKeys = FlattenKeys<OrganizationInfo>;
+
+export interface PdfTexts {
+  packagingListFooter: string;
+}
+export type PdfTextsKeys = FlattenKeys<PdfTexts>;

@@ -44,6 +44,7 @@ import { ConfigPublicFlag1728677345133 } from "../migrations/1728677345133-confi
 import { AddMaintenanceMsgText1730887882789 } from "../migrations/1730887882789-add-maintenance-msg-text";
 import { AddProductCategoryType1731067417340 } from "../migrations/1731067417340-add-product-category-type";
 import { OrganizationInfoTextContent1738274522237 } from "../migrations/1738274522237-organization-info-text-content";
+import { PdfTextContent1738317876884 } from "../migrations/1738317876884-pdf-text-content";
 
 const entities = [
   User,
@@ -79,6 +80,7 @@ const migrations = [
   AddMaintenanceMsgText1730887882789,
   AddProductCategoryType1731067417340,
   OrganizationInfoTextContent1738274522237,
+  PdfTextContent1738317876884,
 ];
 
 const configuredPort = config.testing.isTesting

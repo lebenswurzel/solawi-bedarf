@@ -31,6 +31,8 @@ import {
 import {
   basicOrganizationInfo,
   organizationInfoKeys,
+  pdfTextsDefaults,
+  pdfTextsKeys,
 } from "../../../shared/src/config";
 import { getOrganizationInfoValueByKey } from "../../../shared/src/text/textContent";
 import { OrganizationInfoKeys } from "../../../shared/src/types";
@@ -82,6 +84,16 @@ export const initDb = async () => {
     const content = getOrganizationInfoValueByKey(basicOrganizationInfo, key);
     await ensureTextContent({
       category: TextContentCategory.ORGANIZATION_INFO,
+      title: key,
+      content,
+      typ: TextContentTyp.PLAIN,
+    });
+  }
+
+  for (const key of pdfTextsKeys) {
+    const content = pdfTextsDefaults[key];
+    await ensureTextContent({
+      category: TextContentCategory.PDF,
       title: key,
       content,
       typ: TextContentTyp.PLAIN,

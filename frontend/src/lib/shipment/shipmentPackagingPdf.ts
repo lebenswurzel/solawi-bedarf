@@ -81,6 +81,7 @@ export function createShipmentPackagingPdfSpecs(
   depots: Depot[],
   productsById: ProductsById,
   productCategories: ProductCategoryWithProducts[],
+  footer?: string,
 ): PdfSpec[] {
   const dataByDepotAndProductCategory: DepotGroupedProducts = new Map();
   for (let item of shipment.shipmentItems) {
@@ -138,10 +139,15 @@ export function createShipmentPackagingPdfSpecs(
         description += `\n\n${shipment.description}`;
       }
 
+      let footerLeft = "";
+      if (footer) {
+        footerLeft = `${footer}\n`;
+      }
+
       return {
         receiver: depotKey,
         description,
-        footerTextLeft: `Depot ${depotKey}`,
+        footerTextLeft: `${footerLeft}Depot ${depotKey}`,
         footerTextCenter: `Lieferschein ${prettyDate}`,
         tables: Array.from(
           dataByProductCategory.entries(),
@@ -164,12 +170,14 @@ export async function createShipmentPackagingPdfs(
   productsById: ProductsById,
   productCategories: ProductCategoryWithProducts[],
   organizationInfo: OrganizationInfo,
+  footer: string,
 ) {
   const pdfs = createShipmentPackagingPdfSpecs(
     shipment,
     depots,
     productsById,
     productCategories,
+    footer,
   );
 
   const zip = new Zip();
