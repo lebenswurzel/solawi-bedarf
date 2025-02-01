@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 import { language } from "../../../../shared/src/lang/lang.ts";
-import { Order } from "../../../../shared/src/types.ts";
+import { SavedOrder } from "../../../../shared/src/types.ts";
 import { getOrder } from "../../requests/shop.ts";
 import { useConfigStore } from "../../store/configStore.ts";
 import { useUserStore } from "../../store/userStore.ts";
@@ -29,13 +29,14 @@ import DistributionPlot, {
   DistributionData,
   DistributionDataItem,
 } from "./DistributionPlot.vue";
+import SeasonText from "../styled/SeasonText.vue";
 
 const t = language.pages.statistics;
 const userStore = useUserStore();
 const configStore = useConfigStore();
 const { depots } = storeToRefs(configStore);
 
-interface OrderExt extends Order {
+interface OrderExt extends SavedOrder {
   userName: string;
   depotName: string;
 }
@@ -56,7 +57,7 @@ const headers = [
   { title: "ID", key: "id" },
 ];
 
-const isEmpty = (obj: Order): boolean => {
+const isEmpty = (obj: SavedOrder): boolean => {
   return obj && Object.keys(obj).length === 0;
 };
 
@@ -182,8 +183,8 @@ const depotDistribution = computed((): DistributionData => {
 
 // A reusable helper function that computes a distribution from orders
 function computeDistribution(
-  orders: Order[],
-  dateSelector: (order: Order) => Date | string | undefined,
+  orders: SavedOrder[],
+  dateSelector: (order: SavedOrder) => Date | string | undefined,
 ): DistributionData {
   // Helper to create a label from a date
   const makeLabel = (date: Date | string | undefined): string => {
@@ -238,7 +239,7 @@ const updatedAtDistribution = computed(
 
 <template>
   <v-card-title style="white-space: normal">
-    {{ t.ordersCard.title }}
+    {{ t.ordersCard.title }} <SeasonText />
   </v-card-title>
   <v-card-text>
     <p class="mb-4">
@@ -264,6 +265,19 @@ const updatedAtDistribution = computed(
         hint="Volltextsuche in allen Spalten"
       />
       <v-data-table :items="orders" :headers="headers" :search="search">
+        <template v-slot:item.offer="{ item }">
+          {{ item.offer }} €
+
+          <v-tooltip
+            :text="item.offerReason"
+            open-on-click
+            v-if="item.offerReason"
+          >
+            <template v-slot:activator="{ props }">
+              <v-icon v-bind="props">mdi-information-outline</v-icon>
+            </template>
+          </v-tooltip>
+        </template>
         <template v-slot:item.createdAt="{ item }">
           {{ prettyDate(item.createdAt) }}
         </template>
@@ -279,6 +293,23 @@ const updatedAtDistribution = computed(
               item.category as UserCategory
             ].title
           }}
+          <v-tooltip
+            :text="item.categoryReason"
+            open-on-click
+            v-if="item.categoryReason"
+          >
+            <template v-slot:activator="{ props }">
+              <v-icon v-bind="props">mdi-information-outline</v-icon>
+            </template>
+          </v-tooltip>
+        </template>
+        <template v-slot:item.id="{ item }">
+          {{ item.id }}
+          <v-btn
+            icon="mdi-eye"
+            variant="plain"
+            :to="{ path: `/shop/${item.userId}` }"
+          ></v-btn>
         </template>
       </v-data-table>
 

@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { ConfirmedOrder, Order } from "../../../shared/src/types.ts";
+import { ConfirmedOrder, SavedOrder } from "../../../shared/src/types.ts";
 import { getUrl, verifyResponse } from "./requests.ts";
 
 export const saveOrder = async (order: ConfirmedOrder & { userId: number }) => {
@@ -47,7 +47,7 @@ export const getOrder = async (
   configId: number,
   noOrderItems?: boolean,
   noProductConfiguration?: boolean,
-): Promise<Order> => {
+): Promise<SavedOrder> => {
   const options = [
     noOrderItems ? "no-order-items" : "",
     noProductConfiguration ? "no-product-configuration" : "",

@@ -119,6 +119,11 @@ export interface Order {
   updatedAt?: string | Date;
 }
 
+export interface SavedOrder extends Order {
+  id: number;
+  userId?: number;
+}
+
 export interface ConfirmedOrder extends Order {
   confirmGTC: boolean;
   sendConfirmationEmail?: boolean;

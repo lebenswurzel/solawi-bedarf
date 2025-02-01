@@ -428,7 +428,7 @@ export const language = {
         text: "In Bedarfsanmeldungen enthaltene Produkte mit durchschnittlichem Monatsumsatz in Klammern.",
       },
       ordersCard: {
-        title: "Bedarfsanmeldungen in der gewählten Saison",
+        title: "Bedarfsanmeldungen in der gewählten",
         text: "Alle Bedarfsanmeldung, die für die gewählte Saison relevant sind.",
         distributions: "Verteilungen",
       },
