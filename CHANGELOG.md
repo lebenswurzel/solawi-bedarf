@@ -107,6 +107,8 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 
 #174 Stastitk und Übersicht für Bedarfsanmeldungen
 
-# NEW
+# v0.4.13 - 2025-02-01 - Weitere Statistiken zur Bedarfsanmeldung
 
 #174 Stastik zum Zeitpunkt erstmaliger Bedarfsanmeldungen
+
+# NEW
