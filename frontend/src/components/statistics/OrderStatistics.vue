@@ -25,7 +25,10 @@ import { UserCategory } from "../../../../shared/src/enum.ts";
 import { storeToRefs } from "pinia";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
-import DistributionPlot, { DistributionData } from "./DistributionPlot.vue";
+import DistributionPlot, {
+  DistributionData,
+  DistributionDataItem,
+} from "./DistributionPlot.vue";
 
 const t = language.pages.statistics;
 const userStore = useUserStore();
@@ -49,7 +52,7 @@ const headers = [
   { title: "Aktualisiert", key: "updatedAt" },
   { title: "Gültig ab", key: "validFrom" },
   { title: "Kategorie", key: "category" },
-  { title: "Depot", key: "depot" },
+  { title: "Depot", key: "depotName" },
   { title: "ID", key: "id" },
 ];
 
@@ -168,6 +171,48 @@ const depotDistribution = computed((): DistributionData => {
       .sort((a, b) => (a.label < b.label ? -1 : 1)),
   };
 });
+
+const createAtDistribution = computed((): DistributionData => {
+  const makeLabel = (date: Date | string | undefined): string => {
+    const month = date ? new Date(date).getMonth() : 0;
+    const kw = date ? format(date, "ww") : "?";
+    let year = date ? new Date(date).getFullYear() : 2000;
+    if (kw === "01" && month == 11) {
+      // adjust KW01 at the end of the year to be KW01 of next year
+      year += 1;
+    }
+    return `${year} KW${kw}`;
+  };
+
+  const items: DistributionDataItem[] = orders.value
+    .map((v) => ({
+      label: makeLabel(v.createdAt),
+      value: 1,
+    }))
+    .reduce((acc, cur) => {
+      const found = acc.filter((a) => a.label == cur.label);
+      const remaining = acc.filter((a) => a.label != cur.label);
+      if (found.length > 0) {
+        return [
+          ...remaining,
+          {
+            ...found[0],
+            value: found[0].value + 1,
+          },
+        ];
+      } else {
+        return [
+          ...acc,
+          {
+            label: cur.label,
+            value: 1,
+          },
+        ];
+      }
+    }, [] as DistributionDataItem[])
+    .sort((a, b) => (a.label < b.label ? -1 : 1));
+  return { items };
+});
 </script>
 
 <template>
@@ -226,12 +271,22 @@ const depotDistribution = computed((): DistributionData => {
 
           <v-col cols="12" sm="6" lg="4">
             <div class="text-subtitle-1">Monatsbeitrag</div>
-            <div>Summe: {{ offerRanges.offersSum }} €</div>
+            <div class="text-subtitle-2 opacity-60">
+              Summe: {{ offerRanges.offersSum }} €
+            </div>
             <DistributionPlot :distribution-data="offerRanges.data" />
           </v-col>
           <v-col cols="12" sm="6" lg="4">
             <div class="text-subtitle-1">Depot-Belegung</div>
             <DistributionPlot :distribution-data="depotDistribution" />
+          </v-col>
+          <v-col cols="12" sm="6" lg="4">
+            <div class="text-subtitle-1">Erstmalige Bedarfsanmeldung</div>
+            <div class="text-subtitle-2 opacity-60">
+              Kalenderwoche in der erstmalig eine Bedarfsanmeldung angelegt
+              wurde
+            </div>
+            <DistributionPlot :distribution-data="createAtDistribution" />
           </v-col>
         </v-row>
       </v-container>
