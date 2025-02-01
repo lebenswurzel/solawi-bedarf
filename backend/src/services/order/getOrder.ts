@@ -20,7 +20,10 @@ import Router from "koa-router";
 import { AppDataSource } from "../../database/database";
 import { Order } from "../../database/Order";
 import { Order as OrderType } from "../../../../shared/src/types";
-import { getConfigIdFromQuery } from "../../util/requestUtil";
+import {
+  getConfigIdFromQuery,
+  getStringQueryParameter,
+} from "../../util/requestUtil";
 
 export const getOrder = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -28,12 +31,30 @@ export const getOrder = async (
   const requestUserId = await getRequestUserId(ctx);
 
   const configId = getConfigIdFromQuery(ctx);
+  const option = getStringQueryParameter(ctx.request.query, "options", "");
+
+  let relations = { orderItems: true };
+  if (option.includes("no-order-items")) {
+    relations = { orderItems: false };
+  }
+
+  const allColumns: string[] = AppDataSource.getRepository(
+    Order,
+  ).metadata.columns.map((col) => col.propertyName);
+
+  let columnsToSelect = undefined;
+  if (option.includes("no-product-configuration")) {
+    columnsToSelect = allColumns.filter(
+      (col) => col !== "productConfiguration",
+    );
+  }
 
   const order: OrderType | null = await AppDataSource.getRepository(
     Order,
   ).findOne({
+    select: columnsToSelect as (keyof Order)[],
     where: { userId: requestUserId, requisitionConfigId: configId },
-    relations: { orderItems: true },
+    relations,
   });
 
   ctx.body = order || {};
