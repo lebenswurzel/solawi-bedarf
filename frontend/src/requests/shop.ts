@@ -45,9 +45,15 @@ export const saveOrder = async (order: ConfirmedOrder & { userId: number }) => {
 export const getOrder = async (
   userId: number,
   configId: number,
+  noOrderItems?: boolean,
+  noProductConfiguration?: boolean,
 ): Promise<Order> => {
+  const options = [
+    noOrderItems ? "no-order-items" : "",
+    noProductConfiguration ? "no-product-configuration" : "",
+  ].join(",");
   const response = await fetch(
-    getUrl(`/shop/order?id=${userId}&configId=${configId}`),
+    getUrl(`/shop/order?id=${userId}&configId=${configId}&options=${options}`),
   );
 
   await verifyResponse(response);

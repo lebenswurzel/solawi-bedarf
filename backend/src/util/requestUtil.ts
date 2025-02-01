@@ -45,3 +45,13 @@ export const getConfigIdFromQuery = (
   }
   return configId;
 };
+
+export const getStringQueryParameter = (
+  requestQuery: ParsedUrlQuery,
+  name: string,
+  fallback?: string,
+): string => {
+  fallback = fallback ?? "";
+  const requestValue = requestQuery[name];
+  return requestValue && !Array.isArray(requestValue) ? requestValue : fallback;
+};

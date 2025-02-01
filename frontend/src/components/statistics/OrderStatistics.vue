@@ -72,7 +72,12 @@ onMounted(async () => {
   isProcessing.value = true;
 
   const allOrders = userStore.userOptions.map(async (u) => {
-    const order = await getOrder(u.value, configStore.activeConfigId);
+    const order = await getOrder(
+      u.value,
+      configStore.activeConfigId,
+      true,
+      true,
+    );
     processedOrders.value++;
     if (isEmpty(order)) {
       return undefined;
@@ -117,7 +122,7 @@ const categoriesDistribution = computed((): DistributionData => {
 });
 
 const offerRanges = computed(
-  (): { data: DistributionData; offersSum: number } => {
+  (): { data: DistributionData; offersSum: number; offersMean: number } => {
     const items = orders.value.reduce(
       (acc, cur) => {
         return acc.map((c) => {
@@ -146,6 +151,9 @@ const offerRanges = computed(
         })),
       },
       offersSum: orders.value.reduce((acc, cur) => acc + cur.offer, 0),
+      offersMean:
+        orders.value.reduce((acc, cur) => acc + cur.offer, 0) /
+        orders.value.length,
     };
   },
 );
@@ -172,47 +180,60 @@ const depotDistribution = computed((): DistributionData => {
   };
 });
 
-const createAtDistribution = computed((): DistributionData => {
+// A reusable helper function that computes a distribution from orders
+function computeDistribution(
+  orders: Order[],
+  dateSelector: (order: Order) => Date | string | undefined,
+): DistributionData {
+  // Helper to create a label from a date
   const makeLabel = (date: Date | string | undefined): string => {
     const month = date ? new Date(date).getMonth() : 0;
-    const kw = date ? format(date, "ww") : "?";
+    const kw = date ? format(new Date(date), "ww") : "?"; // ensure date is a Date object
     let year = date ? new Date(date).getFullYear() : 2000;
-    if (kw === "01" && month == 11) {
-      // adjust KW01 at the end of the year to be KW01 of next year
+    // Adjust for week 01 at end of year
+    if (kw === "01" && month === 11) {
       year += 1;
     }
     return `${year} KW${kw}`;
   };
 
-  const items: DistributionDataItem[] = orders.value
-    .map((v) => ({
-      label: makeLabel(v.createdAt),
+  // Create and reduce the items array
+  const items: DistributionDataItem[] = orders
+    .map((order) => ({
+      label: makeLabel(dateSelector(order)),
       value: 1,
     }))
     .reduce((acc, cur) => {
-      const found = acc.filter((a) => a.label == cur.label);
-      const remaining = acc.filter((a) => a.label != cur.label);
-      if (found.length > 0) {
-        return [
-          ...remaining,
-          {
-            ...found[0],
-            value: found[0].value + 1,
-          },
-        ];
+      // Find if there's already an item with the same label
+      const foundIndex = acc.findIndex((a) => a.label === cur.label);
+      if (foundIndex !== -1) {
+        // Update the existing item
+        acc[foundIndex] = {
+          ...acc[foundIndex],
+          value: acc[foundIndex].value + 1,
+        };
       } else {
-        return [
-          ...acc,
-          {
-            label: cur.label,
-            value: 1,
-          },
-        ];
+        // Add new item
+        acc.push(cur);
       }
+      return acc;
     }, [] as DistributionDataItem[])
     .sort((a, b) => (a.label < b.label ? -1 : 1));
+
   return { items };
-});
+}
+
+// For createdAt distribution
+const createdAtDistribution = computed(
+  (): DistributionData =>
+    computeDistribution(orders.value, (order) => order.createdAt),
+);
+
+// For updatedAt distribution
+const updatedAtDistribution = computed(
+  (): DistributionData =>
+    computeDistribution(orders.value, (order) => order.updatedAt),
+);
 </script>
 
 <template>
@@ -274,6 +295,9 @@ const createAtDistribution = computed((): DistributionData => {
             <div class="text-subtitle-2 opacity-60">
               Summe: {{ offerRanges.offersSum }} €
             </div>
+            <div class="text-subtitle-2 opacity-60">
+              Durchschnitt: {{ offerRanges.offersMean.toFixed(0) }} €
+            </div>
             <DistributionPlot :distribution-data="offerRanges.data" />
           </v-col>
           <v-col cols="12" sm="6" lg="4">
@@ -281,12 +305,24 @@ const createAtDistribution = computed((): DistributionData => {
             <DistributionPlot :distribution-data="depotDistribution" />
           </v-col>
           <v-col cols="12" sm="6" lg="4">
-            <div class="text-subtitle-1">Erstmalige Bedarfsanmeldung</div>
+            <div class="text-subtitle-1">
+              Erstmaliges Anlegen der Bedarfsanmeldung
+            </div>
             <div class="text-subtitle-2 opacity-60">
               Kalenderwoche in der erstmalig eine Bedarfsanmeldung angelegt
               wurde
             </div>
-            <DistributionPlot :distribution-data="createAtDistribution" />
+            <DistributionPlot :distribution-data="createdAtDistribution" />
+          </v-col>
+          <v-col cols="12" sm="6" lg="4">
+            <div class="text-subtitle-1">
+              Letztmalige Aktualisierung der Bedarfsanmeldung
+            </div>
+            <div class="text-subtitle-2 opacity-60">
+              Kalenderwoche in der zuletzt die Bedarfsanmeldung aktualisiert
+              wurde
+            </div>
+            <DistributionPlot :distribution-data="updatedAtDistribution" />
           </v-col>
         </v-row>
       </v-container>
