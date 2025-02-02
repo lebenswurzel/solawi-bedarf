@@ -40,6 +40,8 @@ const { setError, setSuccess } = useUiFeedback();
 const configId = ref<number>(0);
 const openCreateDialog = ref<boolean>(false);
 const isPublic = ref<boolean>(false);
+const isInputValid = ref<boolean>(false);
+const form = ref<HTMLFormElement | null>(null);
 
 onMounted(async () => {
   await configStore.update();
@@ -56,6 +58,11 @@ const onConfigUpdated = () => {
   validTo.value = orderConfig?.validTo || new Date();
   configId.value = orderConfig?.id || 0;
   isPublic.value = orderConfig?.public || false;
+  validateForm();
+};
+
+const validateForm = () => {
+  form.value?.validate();
 };
 
 watch(configStore, () => {
@@ -112,6 +119,47 @@ const onDelete = () => {
       loading.value = false;
     });
 };
+
+const startOrderRules = [
+  (value: string) => {
+    if (stringToDate(value) >= startBiddingRound.value)
+      return "Bedarsanmeldung muss vor Bietrunde beginnen";
+    return true;
+  },
+];
+const updateStartOrder = (val: string) => {
+  startOrder.value = stringToDate(val) || startOrder.value;
+  validateForm();
+};
+
+const startBiddingRules = [
+  (value: string) => {
+    if (stringToDate(value) <= startOrder.value)
+      return "Bietrunde muss nach der Bedarsanmeldung beginnen";
+    return true;
+  },
+  (value: string) => {
+    if (stringToDate(value) >= endBiddingRound.value)
+      return "Start der Bieterunde muss vor Ende der Bieterunde sein";
+    return true;
+  },
+];
+const updateStartBiddingRound = (val: string) => {
+  startBiddingRound.value = stringToDate(val) || startBiddingRound.value;
+  validateForm();
+};
+
+const endBiddingRules = [
+  (value: string) => {
+    if (stringToDate(value) <= startBiddingRound.value)
+      return "Ende der Bietrunde muss nach Beginn der Bietrunde sein";
+    return true;
+  },
+];
+const updateEndBiddingRound = (val: string) => {
+  endBiddingRound.value = stringToDate(val) || endBiddingRound.value;
+  validateForm();
+};
 </script>
 
 <template>
@@ -119,73 +167,120 @@ const onDelete = () => {
     <v-card-title> {{ t.title }} </v-card-title>
     <v-card-subtitle>{{ t.subtitle }}</v-card-subtitle>
     <v-card-text>
-      <v-text-field
-        :label="t.name"
-        type="text"
-        v-model="seasonName"
-      ></v-text-field>
-      <v-switch
-        v-model="isPublic"
-        :label="isPublic ? t.public.yes : t.public.no"
-        color="primary"
-      ></v-switch>
-      <v-text-field
-        :label="t.validFrom"
-        type="datetime-local"
-        :model-value="dateToString(validFrom)"
-        @update:model-value="
-          (val: string) => (validFrom = stringToDate(val) || validFrom)
-        "
-      ></v-text-field>
-      <v-text-field
-        :label="t.validTo"
-        type="datetime-local"
-        :model-value="dateToString(validTo)"
-        @update:model-value="
-          (val: string) => (validTo = stringToDate(val) || validTo)
-        "
-      ></v-text-field>
-      <v-text-field
-        :label="t.startOrder"
-        type="datetime-local"
-        :model-value="dateToString(startOrder)"
-        @update:model-value="
-          (val: string) => (startOrder = stringToDate(val) || startOrder)
-        "
-      ></v-text-field>
-      <v-text-field
-        :label="t.startBiddingRound"
-        type="datetime-local"
-        :model-value="dateToString(startBiddingRound)"
-        @update:model-value="
-          (val: string) =>
-            (startBiddingRound = stringToDate(val) || startBiddingRound)
-        "
-      ></v-text-field>
-      <v-text-field
-        :label="t.endBiddingRound"
-        type="datetime-local"
-        :model-value="dateToString(endBiddingRound)"
-        @update:model-value="
-          (val: string) =>
-            (endBiddingRound = stringToDate(val) || endBiddingRound)
-        "
-      ></v-text-field>
-      <v-text-field
-        :label="t.budget"
-        type="number"
-        v-model="budget"
-      ></v-text-field>
-      <v-text-field
-        label="ID"
-        type="number"
-        v-model="configId"
-        disabled
-      ></v-text-field>
+      <v-form v-model="isInputValid" validate-on="input" ref="form">
+        <v-container fluid class="pa-0">
+          <v-row>
+            <v-col cols="12" sm="6">
+              <v-text-field
+                :label="t.name"
+                type="text"
+                v-model="seasonName"
+                hide-details
+              ></v-text-field>
+            </v-col>
+            <v-col cols="12" sm="6">
+              <v-text-field
+                :label="t.budget"
+                type="number"
+                v-model="budget"
+                hint="Wert wird aktuell nur für die Statistik-Anzeige verwendet"
+              ></v-text-field>
+            </v-col>
+          </v-row>
+        </v-container>
+        <v-switch
+          v-model="isPublic"
+          :label="isPublic ? t.public.yes : t.public.no"
+          color="primary"
+          hide-details
+        ></v-switch>
+        <v-card variant="tonal" class="mb-3">
+          <v-card-title>{{ t.validity.title }}</v-card-title>
+          <v-card-text>
+            <p class="pb-2">{{ t.validity.description }}</p>
+            <v-container fluid class="pa-0">
+              <v-row>
+                <v-col cols="12" sm="6">
+                  <v-text-field
+                    :label="t.validFrom"
+                    type="datetime-local"
+                    :model-value="dateToString(validFrom)"
+                    @update:model-value="
+                      (val: string) =>
+                        (validFrom = stringToDate(val) || validFrom)
+                    "
+                    :onchange="validateForm"
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12" sm="6">
+                  <v-text-field
+                    :label="t.validTo"
+                    type="datetime-local"
+                    :model-value="dateToString(validTo)"
+                    @update:model-value="
+                      (val: string) => (validTo = stringToDate(val) || validTo)
+                    "
+                  ></v-text-field>
+                </v-col>
+              </v-row>
+            </v-container>
+          </v-card-text>
+        </v-card>
+
+        <v-card variant="tonal" class="mb-3">
+          <v-card-title>{{ t.bidding.title }}</v-card-title>
+          <v-card-text>
+            <p class="pb-2">{{ t.bidding.description }}</p>
+            <v-container fluid class="pa-0">
+              <v-row>
+                <v-col cols="12" md="4">
+                  <v-text-field
+                    :label="t.startOrder"
+                    type="datetime-local"
+                    :model-value="dateToString(startOrder)"
+                    @update:model-value="updateStartOrder"
+                    :rules="startOrderRules"
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12" md="4">
+                  <v-text-field
+                    :label="t.startBiddingRound"
+                    type="datetime-local"
+                    :model-value="dateToString(startBiddingRound)"
+                    @update:model-value="updateStartBiddingRound"
+                    :rules="startBiddingRules"
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12" md="4">
+                  <v-text-field
+                    :label="t.endBiddingRound"
+                    type="datetime-local"
+                    :model-value="dateToString(endBiddingRound)"
+                    @update:model-value="updateEndBiddingRound"
+                    :rules="endBiddingRules"
+                  ></v-text-field>
+                </v-col>
+              </v-row>
+            </v-container>
+          </v-card-text>
+        </v-card>
+        <v-container fluid class="pa-0">
+          <v-row>
+            <v-col cols="12" sm="6">
+              <v-text-field
+                label="ID"
+                type="number"
+                v-model="configId"
+                disabled
+              ></v-text-field>
+            </v-col>
+          </v-row>
+        </v-container>
+      </v-form>
     </v-card-text>
 
     <v-card-actions>
-      <v-btn @click="onSave" :loading="loading">{{
+      <v-btn @click="onSave" :loading="loading" :disabled="!isInputValid">{{
         language.app.actions.save
       }}</v-btn>
       <v-btn color="secondary" :loading="loading">
