@@ -110,6 +110,9 @@ const dataSourceOptions: PostgresConnectionOptions = {
   subscribers: [],
   migrations,
   migrationsRun: !syncronize,
+  extra: {
+    options: "-c timezone=UTC",
+  },
 };
 
 export const AppDataSource = new DataSource(dataSourceOptions);

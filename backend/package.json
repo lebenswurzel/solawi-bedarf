@@ -27,6 +27,7 @@
     "basic-auth": "^2.0.1",
     "bcrypt": "^5.1.1",
     "date-fns": "^4.1.0",
+    "date-fns-tz": "^3.2.0",
     "jsonwebtoken": "^9.0.2",
     "koa": "^2.14.2",
     "koa-bodyparser": "^4.4.1",

@@ -55,6 +55,7 @@ import { createDefaultPdf } from "../../../../shared/src/pdf/pdf";
 import { resolve } from "path";
 import { format } from "date-fns";
 import { getOrganizationInfo } from "../text/getOrganizationInfo";
+import { toZonedTime } from "date-fns-tz";
 
 export const saveOrder = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -214,7 +215,7 @@ export const saveOrder = async (
       }
     }
 
-    const currentDate = new Date();
+    const currentDate = toZonedTime(new Date(), config.timezone);
     const organizationInfo = await getOrganizationInfo();
 
     const { html, subject } = await buildOrderEmail(

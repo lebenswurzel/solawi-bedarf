@@ -3,6 +3,31 @@
 When adding new files, don't forget to add the AGPLv3 header to it. This can be done
 by executing `./apply_license_headers.bash` in the project root (requires python3).
 
+## Running locally
+
+The easiest development approach is to just start the db container in docker. The frontend and backend can then be run as follows
+
+### Backend without Docker
+
+- Create a copy of the `env-be-dev.env` file to `env-be-localdev.env` with a few adjustments
+  - `POSTGRES_URL=localhost`
+  - `POSTGRES_PORT=5532`
+- Initialize the environment from it
+  - `set -a; source env-be-localdev.env; set +a`
+- Start the server with the UTC time zone in order to have consistent date behavior with the docker container
+
+```
+cd backend
+TZ=UTC npm run start
+```
+
+### Frontend without Docker
+
+```
+cd frontend
+npm run dev
+```
+
 ## Generate migrations
 
 If database tables are changed or added, typeorm can automatically generate migration scripts
