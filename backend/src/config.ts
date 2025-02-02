@@ -71,4 +71,5 @@ export const config = {
     isTesting: process.env.NODE_ENV === "test",
     dbPort: process.env.POSTGRES_TESTING_PORT || 5533,
   },
+  timezone: process.env.TIMEZONE || "Europe/Berlin",
 };
