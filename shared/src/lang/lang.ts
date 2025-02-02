@@ -365,10 +365,20 @@ export const language = {
         yes: "Veröffentlicht: für alle Benutzer sichtbar",
         no: "Nicht veröffentlicht: sichtbar nur für Administratoren und Mitarbeiter",
       },
+      validity: {
+        title: "Zeitraum der Saison",
+        description:
+          "Gültigkeitszeitraum der Saison. Üblicherweise 12 Monate vom 1.4. eines Jahres bis zum 31.3. des Folgejahres.",
+      },
+      bidding: {
+        title: "Bedarfsanmeldung und Bieterrunde",
+        description:
+          "Festlegung ab wann Nutzer ihren Bedarf für die Saison anmelden können (Start der Bedarfsanmeldung). Ab dem Zeitpunkt der Bieterrunde kann der Bedarf nur noch nach oben angepasst werden. Zum Ende der Bieterrunde wird der Bedarf verbindlich.",
+      },
       startOrder: "Start der Bedarfsmeldung",
       startBiddingRound: "Start der Bieterrunde",
       endBiddingRound: "Ende der Bieterrunde",
-      budget: "Budget [€]",
+      budget: "Geplantes Budget [€]",
       validFrom: "Start der Saison",
       validTo: "Ende der Saison",
       newSeason: {
