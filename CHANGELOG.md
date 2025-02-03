@@ -115,8 +115,10 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 
 #174 Feinschliff Statistik zu Bedarfsanmeldungen
 
-# NEW
+# v0.4.15 - 2025-02-03 - Zeitzone und Saisonübersicht
 
 #178 Zeitzonenprobleme bei Zeitstempeln in der Bedars-Bestätigungsmail behoben
 #178 Optimierte Darstellung zum Status der Bedarfsanmeldung auf der Home-Seite
 #178 Konsistenzprüfungen bei der Saison-Konfiguration
+
+# NEW
