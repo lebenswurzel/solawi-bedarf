@@ -91,7 +91,8 @@ const seasonStatus = computed((): SeasonStatusElement[] => {
     },
     {
       title: "Saison",
-      description: "Die Saison beginnt am {dateBegin}",
+      description:
+        "Die Saison beginnt am {dateBegin} und läuft bis zum {dateEnd}",
       descriptionActive:
         "Die Saison läuft noch bis zum {dateEnd}. Immer donnerstags findest du unten die Liste der Nahrungsmittel, welche du in deinem Depot abholen kannst. ",
       dateBegin: startSeason,
@@ -102,15 +103,30 @@ const seasonStatus = computed((): SeasonStatusElement[] => {
   ].map((v): SeasonStatusElement => {
     const isActive =
       v.isActive === undefined ? v.dateBegin <= now && now < v.dateEnd : false;
+    const isPast = v.isActive === false || now < v.dateBegin;
     return {
       ...v,
-      color: isActive ? "primary" : now < v.dateBegin ? "primary" : "grey",
-      variant: isActive ? "elevated" : v.dateEnd < now ? "plain" : "outlined",
-      statusText: isActive
-        ? "läuft"
-        : v.dateBegin > now
-          ? "steht bevor"
-          : "abgeschlossen",
+      color: isPast
+        ? "grey"
+        : isActive
+          ? "primary"
+          : now < v.dateBegin
+            ? "primary"
+            : "grey",
+      variant: isPast
+        ? "plain"
+        : isActive
+          ? "elevated"
+          : v.dateEnd < now
+            ? "plain"
+            : "outlined",
+      statusText: isPast
+        ? "abgeschlossen"
+        : isActive
+          ? "läuft"
+          : v.dateBegin > now
+            ? "steht bevor"
+            : "abgeschlossen",
       isActive,
       icon: isActive ? "mdi-arrow-right" : "",
       showBeginDate: v.dateBegin > now,
