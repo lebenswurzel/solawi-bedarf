@@ -103,7 +103,8 @@ const seasonStatus = computed((): SeasonStatusElement[] => {
   ].map((v): SeasonStatusElement => {
     const isActive =
       v.isActive === undefined ? v.dateBegin <= now && now < v.dateEnd : false;
-    const isPast = v.isActive === false || now < v.dateBegin;
+    const isPast =
+      (v.isActive === false && now > startSeason) || now > v.dateEnd;
     return {
       ...v,
       color: isPast
@@ -135,7 +136,14 @@ const seasonStatus = computed((): SeasonStatusElement[] => {
 
   // if no step is active, insert a step for the current date
   if (steps.every((step) => !step.isActive)) {
-    const order = now > endSeason ? 6 : now > endBiddingRound ? 4 : 2;
+    const order =
+      now > endSeason
+        ? 6
+        : now > endBiddingRound
+          ? 4
+          : now > startBiddingRound
+            ? 2
+            : 0;
     steps.push({
       title: "Aktuell",
       description: "Heute ist der {dateBegin}",
