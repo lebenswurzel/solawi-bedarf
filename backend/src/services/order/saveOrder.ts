@@ -14,48 +14,46 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { getRequestUserId, getUserFromContext } from "../getUserFromContext";
+import { format } from "date-fns";
+import { toZonedTime } from "date-fns-tz";
 import Koa from "koa";
 import Router from "koa-router";
-import { http } from "../../consts/http";
-import { AppDataSource } from "../../database/database";
-import { Order } from "../../database/Order";
-import { OrderItem } from "../../database/OrderItem";
-import { ProductCategory } from "../../database/ProductCategory";
-import { Depot } from "../../database/Depot";
-import { RequisitionConfig } from "../../database/RequisitionConfig";
-import { ConfirmedOrder } from "../../../../shared/src/types";
+import { LessThan } from "typeorm";
 import { appConfig } from "../../../../shared/src/config";
 import { getMsrp } from "../../../../shared/src/msrp";
-import {
-  isRequisitionActive,
-  isValidBiddingOrder,
-} from "../../../../shared/src/validation/requisition";
-import {
-  isOfferValid,
-  isCategoryReasonValid,
-  isOfferReasonValid,
-} from "../../../../shared/src/validation/reason";
-import { bi } from "../bi/bi";
+import { generateUserData } from "../../../../shared/src/pdf/overviewPdfs";
+import { createDefaultPdf } from "../../../../shared/src/pdf/pdf";
+import { ConfirmedOrder } from "../../../../shared/src/types";
 import {
   getRemainingDepotCapacity,
   isOrderItemValid,
 } from "../../../../shared/src/validation/capacity";
-import { LessThan } from "typeorm";
+import {
+  isCategoryReasonValid,
+  isOfferReasonValid,
+  isOfferValid,
+} from "../../../../shared/src/validation/reason";
+import {
+  isRequisitionActive,
+  isValidBiddingOrder,
+} from "../../../../shared/src/validation/requisition";
+import { config } from "../../config";
+import { http } from "../../consts/http";
+import { EncryptedUserAddress } from "../../consts/types";
+import { AppDataSource } from "../../database/database";
+import { Depot } from "../../database/Depot";
+import { Order } from "../../database/Order";
+import { OrderItem } from "../../database/OrderItem";
+import { ProductCategory } from "../../database/ProductCategory";
+import { RequisitionConfig } from "../../database/RequisitionConfig";
+import { User } from "../../database/User";
+import { bi } from "../bi/bi";
 import { sendEmail } from "../email/email";
 import { buildOrderEmail } from "../email/emailHelper";
-import { User } from "../../database/User";
-import { config } from "../../config";
-import { Applicant } from "../../database/Applicant";
-import { EncryptedUserAddress } from "../../consts/types";
 import { getUserOrderOverview } from "../getOverview";
-import { generateUserData } from "../../../../shared/src/pdf/overviewPdfs";
+import { getRequestUserId, getUserFromContext } from "../getUserFromContext";
 import { getProductCategories } from "../product/getProductCategory";
-import { createDefaultPdf } from "../../../../shared/src/pdf/pdf";
-import { resolve } from "path";
-import { format } from "date-fns";
 import { getOrganizationInfo } from "../text/getOrganizationInfo";
-import { toZonedTime } from "date-fns-tz";
 
 export const saveOrder = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -221,7 +219,9 @@ export const saveOrder = async (
     const { html, subject } = await buildOrderEmail(
       order.id,
       orderUser,
-      requisitionConfig,
+      requisitionConfig.name,
+      toZonedTime(requisitionConfig.validFrom, config.timezone),
+      toZonedTime(requisitionConfig.validTo, config.timezone),
       changingUser,
       orderUserFirstname,
       currentDate,

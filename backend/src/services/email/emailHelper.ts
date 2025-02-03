@@ -66,7 +66,9 @@ const escapeMdTableCell = (value: string): string => {
 export const buildOrderEmail = async (
   orderId: number,
   orderUser: User,
-  config: RequisitionConfig,
+  seasonName: string,
+  seasonValidFrom: Date,
+  seasonValidTo: Date,
   changingUser: User,
   userName: string,
   updatedDate: Date,
@@ -103,9 +105,9 @@ export const buildOrderEmail = async (
       solawiName: organizationInfo.address.name,
       solawiEmail: organizationInfo.address.email,
       appUrl: organizationInfo.appUrl,
-      season: config.name,
-      seasonStart: prettyDate(config.validFrom),
-      seasonEnd: prettyDate(config.validTo),
+      season: seasonName,
+      seasonStart: prettyDate(seasonValidFrom),
+      seasonEnd: prettyDate(seasonValidTo),
       offer: `${order.offer}€`,
       contributionModel:
         language.app.options.orderUserCategories[order.category].title,
@@ -123,7 +125,7 @@ export const buildOrderEmail = async (
     html: emailHtmlTemplate.replace("{bodyContent}", html),
     subject: interpolate(el.subject, {
       now: prettyDateTime(updatedDate),
-      season: config.name,
+      season: seasonName,
     }),
   };
 };
