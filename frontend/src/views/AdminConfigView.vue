@@ -194,7 +194,7 @@ const updateEndBiddingRound = (val: string) => {
           color="primary"
           hide-details
         ></v-switch>
-        <v-card variant="tonal" class="mb-3">
+        <v-card variant="outlined" class="mb-3">
           <v-card-title>{{ t.validity.title }}</v-card-title>
           <v-card-text>
             <p class="pb-2">{{ t.validity.description }}</p>
@@ -227,7 +227,7 @@ const updateEndBiddingRound = (val: string) => {
           </v-card-text>
         </v-card>
 
-        <v-card variant="tonal" class="mb-3">
+        <v-card variant="outlined" class="mb-3">
           <v-card-title>{{ t.bidding.title }}</v-card-title>
           <v-card-text>
             <p class="pb-2">{{ t.bidding.description }}</p>
