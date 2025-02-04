@@ -125,6 +125,4 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 
 #178 Verbessertes Design der Bedarfsliste auf der Home-Seite für Ernteteiler
 
-# v0.4.16 - 2025-02-04 - Design Home-Seite (Abholung)
-
 # NEW
