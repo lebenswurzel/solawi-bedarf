@@ -155,7 +155,7 @@ const seasonStatus = computed((): SeasonStatusElement[] => {
 </script>
 
 <template>
-  <v-card class="ma-4">
+  <v-card class="ma-2">
     <v-card-title style="white-space: normal">
       Herzlich willkommen zur Bedarfsanmeldung des Solawi-Projektes in der
       <SeasonText />!

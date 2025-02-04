@@ -119,7 +119,7 @@ watch(activeConfigId, async () => {
 </script>
 
 <template>
-  <v-card class="ma-4">
+  <v-card class="ma-2">
     <v-card-title> {{ t.title }} </v-card-title>
     <v-card-text>
       <v-card-actions>

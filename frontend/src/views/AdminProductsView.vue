@@ -77,7 +77,7 @@ const onCloseProductCategory = async () => {
 </script>
 
 <template>
-  <v-card class="ma-4">
+  <v-card class="ma-2">
     <v-card-title> {{ t.title }} - {{ config?.name }} </v-card-title>
     <v-card-subtitle>
       {{

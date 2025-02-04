@@ -28,7 +28,7 @@ const onClose = () => {
 
 <template>
   <v-dialog :model-value="open" @update:model-value="onClose">
-    <v-card class="ma-4">
+    <v-card class="ma-2">
       <FAQ />
       <v-card-actions class="justify-center">
         <v-btn class="text-white" @click="onClose" variant="elevated">

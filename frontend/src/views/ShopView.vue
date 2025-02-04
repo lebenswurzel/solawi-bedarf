@@ -127,7 +127,7 @@ onMounted(refresh);
 </script>
 
 <template>
-  <v-card class="ma-4">
+  <v-card class="ma-2">
     <v-card-title v-if="canAdministerOtherUsers">
       <v-select
         v-model="requestUserId"
@@ -160,7 +160,7 @@ onMounted(refresh);
     </v-card-text>
   </v-card>
 
-  <v-card class="ma-4">
+  <v-card class="ma-2">
     <v-card-title>{{ t.cards.products.title }} für <SeasonText /></v-card-title>
     <v-card-subtitle class="text-wrap">
       {{

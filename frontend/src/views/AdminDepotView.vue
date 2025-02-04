@@ -90,7 +90,7 @@ const onClose = async () => {
 </script>
 
 <template>
-  <v-card class="ma-4">
+  <v-card class="ma-2">
     <BusyIndicator :busy="busy" />
     <v-card-title>
       {{ t.title }}

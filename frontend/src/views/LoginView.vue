@@ -60,7 +60,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <v-card class="ma-4">
+  <v-card class="ma-2">
     <v-card-title>Login</v-card-title>
     <v-card-subtitle>
       Noch kein Login?

@@ -154,7 +154,7 @@ const isSelected = (id: number) => !!selectedShippingItems.value[id];
 </script>
 
 <template>
-  <v-card class="ma-4">
+  <v-card class="ma-2">
     <v-card-title style="white-space: normal"
       >{{ t.cards.list.title }} <SeasonText
     /></v-card-title>
@@ -191,70 +191,76 @@ const isSelected = (id: number) => !!selectedShippingItems.value[id];
       <template v-else>
         <p class="text-medium-emphasis mb-2">{{ t.cards.list.detailText }}</p>
         <v-card variant="outlined" color="primary" prepend-icon="mdi-truck">
-          <template v-slot:title style="white-space: normal">
-            {{
-              interpolate(t.cards.list.shipment, {
-                from: format(shipment.validFrom, "EEEE, dd.MM.", {
-                  locale: de,
-                }),
-              })
-            }}
+          <template v-slot:title
+            ><div style="white-space: normal">
+              {{
+                interpolate(t.cards.list.shipment, {
+                  from: format(shipment.validFrom, "EEEE, dd.MM.", {
+                    locale: de,
+                  }),
+                })
+              }}
+            </div>
           </template>
-          <v-card-text>
-            <v-list
-              v-if="shipmentItems.length > 0 && validFrom && validFrom < now"
-              class="bg-surface-light rounded-lg"
-            >
-              <v-list-item
-                v-for="item of shipmentItems"
-                density="compact"
-                :key="item.id"
-                @click="toggleSelection(item.id)"
+          <v-card-text class="pa-2">
+            <div class="mx-auto" style="max-width: 700px">
+              <v-list
+                v-if="shipmentItems.length > 0 && validFrom && validFrom < now"
+                class="bg-surface-light rounded-lg"
+                elevation="4"
               >
-                <template v-slot:append>
-                  <v-icon v-if="isSelected(item.id)" color="primary"
-                    >mdi-check-circle</v-icon
+                <v-list-item
+                  v-for="item of shipmentItems"
+                  density="compact"
+                  :key="item.id"
+                  @click="toggleSelection(item.id)"
+                >
+                  <template v-slot:append>
+                    <v-icon v-if="isSelected(item.id)" color="primary"
+                      >mdi-check-circle</v-icon
+                    >
+                    <v-icon v-else color="grey">mdi-circle-outline</v-icon>
+                  </template>
+                  <v-list-item-title
+                    :class="{ 'opacity-60': isSelected(item.id) }"
+                    style="white-space: normal"
                   >
-                  <v-icon v-else color="grey">mdi-circle-outline</v-icon>
-                </template>
-                <v-list-item-title
-                  :class="{ 'opacity-60': isSelected(item.id) }"
+                    {{ item.quantity }}
+                    {{ getLangUnit(item.unit) }}
+                    {{ item.name }}
+                    {{ item.isBio ? "[BIO]" : "" }}
+                  </v-list-item-title>
+                  <v-list-item-subtitle
+                    style="white-space: normal; display: block"
+                  >
+                    {{ item.description }}
+                  </v-list-item-subtitle>
+                </v-list-item>
+              </v-list>
+              <v-list
+                v-if="
+                  additionalShipmentItems.length > 0 &&
+                  validFrom &&
+                  validFrom < now
+                "
+              >
+                {{ t.cards.list.additionalShipment }}
+                <v-list-item
+                  v-for="item of additionalShipmentItems"
+                  density="compact"
                 >
                   {{ item.quantity }}
                   {{ getLangUnit(item.unit) }}
                   {{ item.name }}
                   {{ item.isBio ? "[BIO]" : "" }}
-                </v-list-item-title>
-                <v-list-item-subtitle
-                  style="white-space: normal; display: block"
-                >
-                  {{ item.description }}
-                </v-list-item-subtitle>
-              </v-list-item>
-            </v-list>
-            <v-list
-              v-if="
-                additionalShipmentItems.length > 0 &&
-                validFrom &&
-                validFrom < now
-              "
-            >
-              {{ t.cards.list.additionalShipment }}
-              <v-list-item
-                v-for="item of additionalShipmentItems"
-                density="compact"
-              >
-                {{ item.quantity }}
-                {{ getLangUnit(item.unit) }}
-                {{ item.name }}
-                {{ item.isBio ? "[BIO]" : "" }}
-                <v-list-item-subtitle
-                  style="white-space: normal; display: block"
-                >
-                  {{ item.description }}
-                </v-list-item-subtitle>
-              </v-list-item>
-            </v-list>
+                  <v-list-item-subtitle
+                    style="white-space: normal; display: block"
+                  >
+                    {{ item.description }}
+                  </v-list-item-subtitle>
+                </v-list-item>
+              </v-list>
+            </div>
           </v-card-text>
         </v-card>
       </template>

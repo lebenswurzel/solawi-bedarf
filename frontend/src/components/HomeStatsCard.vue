@@ -66,7 +66,7 @@ const percentageSold = computed(() => {
 </script>
 
 <template>
-  <v-card class="ma-4">
+  <v-card class="ma-2">
     <v-card-title style="white-space: normal">
       Budget und Stand der Bedarfsanmeldung für <SeasonText plain />
     </v-card-title>

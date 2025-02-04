@@ -163,7 +163,7 @@ const updateEndBiddingRound = (val: string) => {
 </script>
 
 <template>
-  <v-card class="ma-4">
+  <v-card class="ma-2">
     <v-card-title> {{ t.title }} </v-card-title>
     <v-card-subtitle>{{ t.subtitle }}</v-card-subtitle>
     <v-card-text>

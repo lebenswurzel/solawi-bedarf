@@ -121,7 +121,7 @@ const onUserPdfClick = async () => {
 </script>
 
 <template>
-  <v-card class="ma-4">
+  <v-card class="ma-2">
     <v-card-title> Übersicht</v-card-title>
     <v-card-text>
       Bei Click auf "Übersicht herunterladen" wird eine aktuelle Übersicht der
@@ -133,7 +133,7 @@ const onUserPdfClick = async () => {
       <v-btn @click="onClick" :loading="loading">Übersicht herunterladen</v-btn>
     </v-card-actions>
   </v-card>
-  <v-card class="ma-4">
+  <v-card class="ma-2">
     <v-card-title> Download Depot pdf</v-card-title>
     <v-card-text>
       Bei Click auf "Übersicht herunterladen" wird eine aktuelle Übersicht der
@@ -147,7 +147,7 @@ const onUserPdfClick = async () => {
       </v-btn>
     </v-card-actions>
   </v-card>
-  <v-card class="ma-4">
+  <v-card class="ma-2">
     <v-card-title> Download Ernteteiler pdf</v-card-title>
     <v-card-text>
       Bei Click auf "Übersicht herunterladen" wird eine aktuelle Übersicht der

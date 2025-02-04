@@ -19,7 +19,7 @@ import FAQ from "./../components/FAQ.vue";
 </script>
 
 <template>
-  <v-card>
+  <v-card class="ma-2">
     <FAQ />
   </v-card>
 </template>

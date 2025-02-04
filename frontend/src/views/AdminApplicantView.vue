@@ -72,7 +72,7 @@ const getName = ({ address: { firstname, lastname }, name }: Applicant) =>
 </script>
 
 <template>
-  <v-card class="ma-4">
+  <v-card class="ma-2">
     <v-card-title>Registrierte Nutzer</v-card-title>
     <v-card-item>
       <v-select

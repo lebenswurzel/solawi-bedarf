@@ -38,7 +38,7 @@ onMounted(async () => {
 
 <template>
   <HomeStatsCard />
-  <v-card class="ma-4">
+  <v-card class="ma-2">
     <v-tabs align-tabs="center" v-model="tab" stacked>
       <v-tab value="products">
         <v-icon icon="mdi-sprout"></v-icon>
