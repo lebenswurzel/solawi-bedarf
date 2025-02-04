@@ -20,18 +20,21 @@ import { interpolate } from "../../../shared/src/lang/template.ts";
 import { computed, ref, watchEffect } from "vue";
 import { useUserStore } from "../store/userStore.ts";
 import { getShipment } from "../requests/shipment.ts";
-import { getISOWeek } from "date-fns";
+import { format, getISOWeek } from "date-fns";
 import { useOrderStore } from "../store/orderStore.ts";
 import { Id, Shipment } from "../../../shared/src/types.ts";
 import { storeToRefs } from "pinia";
-import { Unit } from "../../../shared/src/enum.ts";
+import { SeasonPhase, Unit } from "../../../shared/src/enum.ts";
 import { useBIStore } from "../store/biStore.ts";
 import { valueToDelivered } from "../lib/convert.ts";
 import { useConfigStore } from "../store/configStore.ts";
 import SeasonText from "./styled/SeasonText.vue";
 import { getLangUnit } from "../../../shared/src/util/unitHelper.ts";
+import { de } from "date-fns/locale";
 
 const t = language.pages.home;
+
+const props = defineProps<{ seasonPhase: SeasonPhase }>();
 
 const userStore = useUserStore();
 const biStore = useBIStore();
@@ -63,6 +66,7 @@ const shipment = computed(() => {
       description: null,
       shipmentItems: [],
       additionalShipmentItems: [],
+      validFrom: new Date(),
     }
   );
 });
@@ -74,6 +78,7 @@ const shipmentItems = computed(() => {
     name: string;
     description: string | null;
     isBio: boolean;
+    id: number;
   }[] = [];
   for (let shipmentItem of shipment.value.shipmentItems || []) {
     const orderItem = orderItems.value.find(
@@ -91,6 +96,7 @@ const shipmentItems = computed(() => {
         unit: shipmentItem.unit,
         description: shipmentItem.description,
         isBio: shipmentItem.isBio,
+        id: shipmentItem.productId,
       });
     }
   }
@@ -153,7 +159,7 @@ watchEffect(async () => {
       >
       </v-select>
     </v-card-subtitle>
-    <v-card-subtitle v-else>
+    <v-card-subtitle v-else-if="props.seasonPhase >= SeasonPhase.SEASON_PHASE">
       {{
         interpolate(t.cards.list.subtitle, {
           kw: getISOWeek(Date.now()).toString(),
@@ -163,36 +169,7 @@ watchEffect(async () => {
     <v-card-subtitle v-if="shipment.description" style="white-space: normal">
       {{ shipment.description }}
     </v-card-subtitle>
-    <v-card-text>
-      <p class="text-medium-emphasis mb-2">{{ t.cards.list.detailText }}</p>
-      <v-list v-if="shipmentItems.length > 0 && validFrom && validFrom < now">
-        {{ t.cards.list.shipment }}
-        <v-list-item v-for="item of shipmentItems">
-          {{ item.quantity }}
-          {{ getLangUnit(item.unit) }}
-          {{ item.name }}
-          {{ item.isBio ? "[BIO]" : "" }}
-          <v-list-item-subtitle style="white-space: normal; display: block">
-            {{ item.description }}
-          </v-list-item-subtitle>
-        </v-list-item>
-      </v-list>
-      <v-list
-        v-if="
-          additionalShipmentItems.length > 0 && validFrom && validFrom < now
-        "
-      >
-        {{ t.cards.list.additionalShipment }}
-        <v-list-item v-for="item of additionalShipmentItems">
-          {{ item.quantity }}
-          {{ getLangUnit(item.unit) }}
-          {{ item.name }}
-          {{ item.isBio ? "[BIO]" : "" }}
-          <v-list-item-subtitle style="white-space: normal; display: block">
-            {{ item.description }}
-          </v-list-item-subtitle>
-        </v-list-item>
-      </v-list>
+    <v-card-text v-if="props.seasonPhase >= SeasonPhase.SEASON_PHASE">
       <template
         v-if="
           (additionalShipmentItems.length == 0 && shipmentItems.length == 0) ||
@@ -201,6 +178,71 @@ watchEffect(async () => {
       >
         {{ t.cards.list.text }}
       </template>
+      <template v-else>
+        <p class="text-medium-emphasis mb-2">{{ t.cards.list.detailText }}</p>
+        <v-card variant="outlined" color="primary" prepend-icon="mdi-truck">
+          <template v-slot:title style="white-space: normal">
+            {{
+              interpolate(t.cards.list.shipment, {
+                from: format(shipment.validFrom, "EEEE, dd.MM.", {
+                  locale: de,
+                }),
+              })
+            }}
+          </template>
+          <v-card-text>
+            <v-list
+              v-if="shipmentItems.length > 0 && validFrom && validFrom < now"
+              class="bg-surface-light rounded-lg"
+            >
+              <v-list-item
+                v-for="item of shipmentItems"
+                density="compact"
+                :key="item.id"
+              >
+                <v-icon>mdi-circle-medium</v-icon>
+                {{ item.id }}
+                {{ item.quantity }}
+                {{ getLangUnit(item.unit) }}
+                {{ item.name }}
+                {{ item.isBio ? "[BIO]" : "" }}
+                <v-list-item-subtitle
+                  style="white-space: normal; display: block"
+                >
+                  {{ item.description }}
+                </v-list-item-subtitle>
+              </v-list-item>
+            </v-list>
+            <v-list
+              v-if="
+                additionalShipmentItems.length > 0 &&
+                validFrom &&
+                validFrom < now
+              "
+            >
+              {{ t.cards.list.additionalShipment }}
+              <v-list-item
+                v-for="item of additionalShipmentItems"
+                density="compact"
+              >
+                {{ item.quantity }}
+                {{ getLangUnit(item.unit) }}
+                {{ item.name }}
+                {{ item.isBio ? "[BIO]" : "" }}
+                <v-list-item-subtitle
+                  style="white-space: normal; display: block"
+                >
+                  {{ item.description }}
+                </v-list-item-subtitle>
+              </v-list-item>
+            </v-list>
+          </v-card-text>
+        </v-card>
+      </template>
+    </v-card-text>
+    <v-card-text v-else>
+      <p>{{ t.cards.list.seasonBefore }}</p>
+      <p>{{ t.cards.list.text }}</p>
     </v-card-text>
   </v-card>
 </template>

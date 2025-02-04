@@ -208,6 +208,6 @@ const seasonStatus = computed((): SeasonStatusElement[] => {
       </v-timeline>
     </v-card-text>
   </v-card>
-  <ShipmentCard />
+  <ShipmentCard :season-phase="seasonPhase" />
   <HomeStatsCard />
 </template>
