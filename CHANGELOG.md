@@ -122,3 +122,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #178 Konsistenzprüfungen bei der Saison-Konfiguration
 
 # NEW
+
+#178 Verbessertes Design der Bedarfsliste auf der Home-Seite für Ernteteiler
