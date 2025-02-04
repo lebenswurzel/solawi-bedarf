@@ -217,12 +217,14 @@ const isSelected = (id: number) => !!selectedShippingItems.value[id];
                   >
                   <v-icon v-else color="grey">mdi-circle-outline</v-icon>
                 </template>
-                <v-list-title :class="{ 'opacity-60': isSelected(item.id) }">
+                <v-list-item-title
+                  :class="{ 'opacity-60': isSelected(item.id) }"
+                >
                   {{ item.quantity }}
                   {{ getLangUnit(item.unit) }}
                   {{ item.name }}
                   {{ item.isBio ? "[BIO]" : "" }}
-                </v-list-title>
+                </v-list-item-title>
                 <v-list-item-subtitle
                   style="white-space: normal; display: block"
                 >
