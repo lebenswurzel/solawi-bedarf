@@ -23,6 +23,9 @@ import { useBIStore } from "../store/biStore";
 import { useConfigStore } from "../store/configStore.ts";
 import { useUserStore } from "../store/userStore.ts";
 import { interpolate } from "../../../shared/src/lang/template.ts";
+import SeasonText from "../components/styled/SeasonText.vue";
+import { SeasonPhase } from "../../../shared/src/enum.ts";
+import { getSeasonPhase } from "../../../shared/src/util/configHelper.ts";
 
 const configStore = useConfigStore();
 const biStore = useBIStore();
@@ -40,9 +43,11 @@ const prettyDate = (date: Date) => {
   }
   return "?";
 };
+
 type VariantType = "elevated" | "outlined" | "plain";
 
 type SeasonStatusElement = {
+  phase: SeasonPhase;
   title: string;
   description: string;
   descriptionActive: string;
@@ -52,14 +57,21 @@ type SeasonStatusElement = {
   variant: VariantType;
   statusText: string;
   isActive: boolean;
+  isPast: boolean;
   icon: string;
   addGotoOrderButton: boolean;
   showBeginDate: boolean;
-  order: number;
 };
 
+const today = computed(() => new Date());
+
+const seasonPhase = computed((): SeasonPhase => {
+  return getSeasonPhase(configStore.config!, today.value);
+});
+
 const seasonStatus = computed((): SeasonStatusElement[] => {
-  const now = new Date();
+  const now = today.value;
+  const phase = seasonPhase.value;
   const startOrder = configStore.config?.startOrder!;
   const startBiddingRound = configStore.config?.startBiddingRound!;
   const endBiddingRound = configStore.config?.endBiddingRound!;
@@ -68,6 +80,7 @@ const seasonStatus = computed((): SeasonStatusElement[] => {
   const isSeasonActive = startSeason <= now && now < endSeason;
   const steps = [
     {
+      phase: SeasonPhase.ORDER_PHASE,
       title: "Bedarfsanmeldung",
       description: "Der Bedarf kann angemeldet beliebig angepasst werden",
       descriptionActive:
@@ -75,10 +88,9 @@ const seasonStatus = computed((): SeasonStatusElement[] => {
       dateBegin: startOrder,
       dateEnd: startBiddingRound,
       addGotoOrderButton: true,
-      order: 1,
-      isActive: isSeasonActive ? false : undefined,
     },
     {
+      phase: SeasonPhase.BIDDING_PHASE,
       title: "Bieterrunde",
       description: "Der Bedarf kann nach oben angepasst werden",
       descriptionActive:
@@ -86,11 +98,11 @@ const seasonStatus = computed((): SeasonStatusElement[] => {
       dateBegin: startBiddingRound,
       dateEnd: endBiddingRound,
       addGotoOrderButton: true,
-      order: 3,
       isActive: isSeasonActive ? false : undefined,
     },
     {
-      title: "Saison",
+      phase: SeasonPhase.SEASON_PHASE,
+      title: configStore.config?.name || "Saison",
       description:
         "Die Saison beginnt am {dateBegin} und läuft bis zum {dateEnd}",
       descriptionActive:
@@ -98,37 +110,17 @@ const seasonStatus = computed((): SeasonStatusElement[] => {
       dateBegin: startSeason,
       dateEnd: endSeason,
       addGotoOrderButton: false,
-      order: 5,
     },
   ].map((v): SeasonStatusElement => {
-    const isActive =
-      v.isActive === undefined ? v.dateBegin <= now && now < v.dateEnd : false;
-    const isPast =
-      (v.isActive === false && now > startSeason) || now > v.dateEnd;
+    const isActive = v.phase === phase;
+    const isPast = v.phase < phase;
     return {
       ...v,
-      color: isPast
-        ? "grey"
-        : isActive
-          ? "primary"
-          : now < v.dateBegin
-            ? "primary"
-            : "grey",
-      variant: isPast
-        ? "plain"
-        : isActive
-          ? "elevated"
-          : v.dateEnd < now
-            ? "plain"
-            : "outlined",
-      statusText: isPast
-        ? "abgeschlossen"
-        : isActive
-          ? "läuft"
-          : v.dateBegin > now
-            ? "steht bevor"
-            : "abgeschlossen",
+      color: isPast ? "grey" : "primary",
+      variant: isPast ? "plain" : isActive ? "elevated" : "outlined",
+      statusText: isPast ? "abgeschlossen" : isActive ? "läuft" : "steht bevor",
       isActive,
+      isPast,
       icon: isActive ? "mdi-arrow-right" : "",
       showBeginDate: v.dateBegin > now,
     };
@@ -136,15 +128,9 @@ const seasonStatus = computed((): SeasonStatusElement[] => {
 
   // if no step is active, insert a step for the current date
   if (steps.every((step) => !step.isActive)) {
-    const order =
-      now > endSeason
-        ? 6
-        : now > endBiddingRound
-          ? 4
-          : now > startBiddingRound
-            ? 2
-            : 0;
+    const todayPhase = seasonPhase.value;
     steps.push({
+      phase: todayPhase,
       title: "Aktuell",
       description: "Heute ist der {dateBegin}",
       descriptionActive: "Heute ist der {dateBegin}",
@@ -154,25 +140,25 @@ const seasonStatus = computed((): SeasonStatusElement[] => {
       variant: "elevated",
       statusText: "",
       isActive: true,
+      isPast: false,
       icon: "mdi-arrow-right",
       addGotoOrderButton: false,
       showBeginDate: false,
-      order,
     });
   }
 
-  // return empty list if not al dateBegin values are valid
   if (steps.some((step) => !step.dateBegin)) {
     return [];
   }
-  return steps.sort((a, b) => a.order - b.order);
+  return steps.sort((a, b) => a.phase - b.phase);
 });
 </script>
 
 <template>
   <v-card class="ma-4">
     <v-card-title style="white-space: normal">
-      Herzlich willkommen zur Bedarfsanmeldung des Solawi-Projektes!
+      Herzlich willkommen zur Bedarfsanmeldung des Solawi-Projektes in der
+      <SeasonText />!
     </v-card-title>
 
     <v-card-subtitle style="white-space: normal">
@@ -186,7 +172,11 @@ const seasonStatus = computed((): SeasonStatusElement[] => {
           :dot-color="status.color"
           :icon="status.icon"
         >
-          <v-alert :color="status.color" :variant="status.variant">
+          <v-alert
+            :color="status.color"
+            :variant="status.variant"
+            :elevation="status.isPast ? 0 : 4"
+          >
             <template v-slot:title
               >{{ status.title }} {{ status.statusText }}</template
             >
@@ -208,7 +198,7 @@ const seasonStatus = computed((): SeasonStatusElement[] => {
               class="justify-center d-flex"
             >
               <router-link to="/shop">
-                <v-btn class="mt-4" color="secondary" variant="elevated">
+                <v-btn class="mt-4 my-1" color="secondary" variant="elevated">
                   Zur Bedarfsanmeldung
                 </v-btn>
               </router-link>

@@ -71,3 +71,12 @@ export enum ProductCategoryType {
   SELFGROWN = "SELFGROWN",
   COOPERATION = "COOPERATION",
 }
+
+export enum SeasonPhase {
+  BEFORE_ORDER,
+  ORDER_PHASE,
+  BIDDING_PHASE,
+  BETWEEN_BIDDING_AND_SEASON,
+  SEASON_PHASE,
+  AFTER_SEASON,
+}
