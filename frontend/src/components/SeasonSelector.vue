@@ -149,6 +149,13 @@ const showNewSeasonHint = computed(() => {
         />
       </v-card-text>
       <v-card-actions class="justify-center">
+        <v-btn @click="onCancel" variant="outlined" color="secondary">
+          {{
+            selectionAvailable
+              ? language.app.actions.cancel
+              : language.app.actions.close
+          }}
+        </v-btn>
         <v-btn
           @click="onApply"
           :loading="loading"
@@ -156,13 +163,6 @@ const showNewSeasonHint = computed(() => {
           v-if="selectionAvailable"
         >
           {{ language.app.actions.apply }}
-        </v-btn>
-        <v-btn @click="onCancel" variant="elevated" color="secondary">
-          {{
-            selectionAvailable
-              ? language.app.actions.cancel
-              : language.app.actions.close
-          }}
         </v-btn>
       </v-card-actions>
     </v-card>
