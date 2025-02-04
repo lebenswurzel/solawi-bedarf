@@ -206,7 +206,7 @@ const isSelected = (id: number) => !!selectedShippingItems.value[id];
             <div class="mx-auto" style="max-width: 700px">
               <v-list
                 v-if="shipmentItems.length > 0 && validFrom && validFrom < now"
-                class="bg-surface-light rounded-lg"
+                class="bg-surface-light rounded-lg mb-2"
                 elevation="4"
               >
                 <v-list-item
