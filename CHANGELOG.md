@@ -121,6 +121,8 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #178 Optimierte Darstellung zum Status der Bedarfsanmeldung auf der Home-Seite
 #178 Konsistenzprüfungen bei der Saison-Konfiguration
 
-# NEW
+# v0.4.16 - 2025-02-04 - Design Home-Seite (Abholung)
 
 #178 Verbessertes Design der Bedarfsliste auf der Home-Seite für Ernteteiler
+
+# NEW
