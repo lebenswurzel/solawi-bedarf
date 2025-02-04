@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <script setup lang="ts">
 import { language } from "../../../shared/src/lang/lang.ts";
 import { interpolate } from "../../../shared/src/lang/template.ts";
-import { computed, ref, watchEffect } from "vue";
+import { computed, ref, watch, watchEffect } from "vue";
 import { useUserStore } from "../store/userStore.ts";
 import { getShipment } from "../requests/shipment.ts";
 import { format, getISOWeek } from "date-fns";
@@ -47,6 +47,7 @@ const { productsById } = storeToRefs(biStore);
 
 const model = ref<number>();
 const now = ref<Date>(new Date());
+const selectedShippingItems = ref<{ [key: number]: boolean }>({});
 
 const dateOptions = computed(() => {
   if (shipments.value.length) {
@@ -69,6 +70,10 @@ const shipment = computed(() => {
       validFrom: new Date(),
     }
   );
+});
+
+watch(model, () => {
+  selectedShippingItems.value = {};
 });
 
 const shipmentItems = computed(() => {
@@ -141,6 +146,11 @@ watchEffect(async () => {
     now.value = new Date();
   }
 });
+
+const toggleSelection = (id: number) => {
+  selectedShippingItems.value[id] = !selectedShippingItems.value[id];
+};
+const isSelected = (id: number) => !!selectedShippingItems.value[id];
 </script>
 
 <template>
@@ -199,13 +209,20 @@ watchEffect(async () => {
                 v-for="item of shipmentItems"
                 density="compact"
                 :key="item.id"
+                @click="toggleSelection(item.id)"
               >
-                <v-icon>mdi-circle-medium</v-icon>
-                {{ item.id }}
-                {{ item.quantity }}
-                {{ getLangUnit(item.unit) }}
-                {{ item.name }}
-                {{ item.isBio ? "[BIO]" : "" }}
+                <template v-slot:append>
+                  <v-icon v-if="isSelected(item.id)" color="primary"
+                    >mdi-check-circle</v-icon
+                  >
+                  <v-icon v-else color="grey">mdi-circle-outline</v-icon>
+                </template>
+                <v-list-title :class="{ 'opacity-60': isSelected(item.id) }">
+                  {{ item.quantity }}
+                  {{ getLangUnit(item.unit) }}
+                  {{ item.name }}
+                  {{ item.isBio ? "[BIO]" : "" }}
+                </v-list-title>
                 <v-list-item-subtitle
                   style="white-space: normal; display: block"
                 >
