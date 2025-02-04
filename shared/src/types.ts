@@ -186,7 +186,7 @@ export function isIdType(entity: any): entity is Id {
   return entity.id !== undefined;
 }
 
-interface RequisitionConfig {
+export interface RequisitionConfig {
   name: string;
   startOrder: Date;
   startBiddingRound: Date;
