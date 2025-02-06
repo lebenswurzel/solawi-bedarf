@@ -38,14 +38,25 @@ const uiFeedbackStore = useUiFeedback();
 const textContentStore = useTextContentStore();
 const { organizationInfo } = storeToRefs(textContentStore);
 
+const orderOveriewWithApplicant = ref(true);
+const orderOveriewWithProductCategoryId = ref(false);
+
 const onClick = async () => {
   loading.value = true;
   try {
-    const overview = await getOverview(configStore.activeConfigId);
+    const overview = await getOverview(
+      configStore.activeConfigId,
+      orderOveriewWithApplicant.value,
+    );
     const productCategories = await getProductCategory(
       configStore.activeConfigId,
     );
-    const csv = generateOverviewCsv(overview, productCategories);
+    const csv = generateOverviewCsv(
+      overview,
+      productCategories,
+      orderOveriewWithApplicant.value,
+      orderOveriewWithProductCategoryId.value,
+    );
     const blob = new Blob([csv], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -122,19 +133,38 @@ const onUserPdfClick = async () => {
 
 <template>
   <v-card class="ma-2">
-    <v-card-title> Übersicht</v-card-title>
-    <v-card-text>
+    <v-card-title>Bestellübersicht als CSV</v-card-title>
+    <v-card-text class="pb-0">
       Bei Click auf "Übersicht herunterladen" wird eine aktuelle Übersicht der
       Bedarfsanmeldung als csv heruntergeladen und generiert. Das kann eine
       Weile dauern und sollte mit Rücksicht auf die Nutzer nicht zur
       Hauptnutzungszeit erfolgen.
+
+      <v-row dense>
+        <v-col cols="12" sm="6">
+          <v-checkbox
+            v-model="orderOveriewWithApplicant"
+            label="Inklusive Kontaktinformationen"
+            hide-details
+            density="compact"
+          ></v-checkbox>
+        </v-col>
+        <v-col cols="12" sm="6">
+          <v-checkbox
+            v-model="orderOveriewWithProductCategoryId"
+            label="Inklusive Produktkategorien-IDs"
+            hide-details
+            density="compact"
+          ></v-checkbox>
+        </v-col>
+      </v-row>
     </v-card-text>
     <v-card-actions>
       <v-btn @click="onClick" :loading="loading">Übersicht herunterladen</v-btn>
     </v-card-actions>
   </v-card>
   <v-card class="ma-2">
-    <v-card-title> Download Depot pdf</v-card-title>
+    <v-card-title>Depot-Übersichten als PDFs</v-card-title>
     <v-card-text>
       Bei Click auf "Übersicht herunterladen" wird eine aktuelle Übersicht der
       Bedarfsanmeldung je Depot als pdf heruntergeladen und generiert. Das kann
@@ -148,7 +178,7 @@ const onUserPdfClick = async () => {
     </v-card-actions>
   </v-card>
   <v-card class="ma-2">
-    <v-card-title> Download Ernteteiler pdf</v-card-title>
+    <v-card-title>Bedarsanmeldungen je Ernteteiler als PDFs</v-card-title>
     <v-card-text>
       Bei Click auf "Übersicht herunterladen" wird eine aktuelle Übersicht der
       Bedarfsanmeldung je Ernteteiler als pdf heruntergeladen und generiert. Das

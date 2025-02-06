@@ -14,13 +14,18 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { OrderOverviewItem } from "../../../shared/src/types";
+import { OrderOverviewWithApplicantItem } from "../../../shared/src/types";
 import { getUrl, verifyResponse } from "./requests";
 
 export const getOverview = async (
   configId: number,
-): Promise<OrderOverviewItem[]> => {
-  const response = await fetch(getUrl(`/overview?configId=${configId}`), {});
+  withApplicant: boolean = false,
+): Promise<OrderOverviewWithApplicantItem[]> => {
+  const options = withApplicant ? "with-applicant" : "";
+  const response = await fetch(
+    getUrl(`/overview?configId=${configId}&options=${options}`),
+    {},
+  );
 
   await verifyResponse(response);
 

@@ -15,7 +15,12 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { Unit } from "../enum";
-import { OrderOverviewItem, ProductCategoryWithProducts } from "../types";
+import {
+  OrderOverviewApplicant,
+  OrderOverviewItem,
+  OrderOverviewWithApplicantItem,
+  ProductCategoryWithProducts,
+} from "../types";
 import { interpolate } from "../lang/template";
 import { PdfSpec, PdfTable } from "./pdf";
 import {
@@ -38,9 +43,24 @@ const unitPostifx = {
   [Unit.VOLUME]: "[ml]",
 };
 
+const csvQuote = (value: string) => {
+  return `"${value}"`;
+};
+interface ProductInfo {
+  conversion: number;
+  msrp: number;
+  offer: number;
+  value: number;
+  rawMsrp: number;
+  rawFrequency: number;
+  rawConversion: number;
+}
+
 export const generateOverviewCsv = (
-  overview: OrderOverviewItem[],
-  productCategories: ProductCategoryWithProducts[]
+  overview: OrderOverviewWithApplicantItem[],
+  productCategories: ProductCategoryWithProducts[],
+  withApplicant: boolean,
+  withProductCategoryId: boolean
 ) => {
   const fixedHeader = [
     "name",
@@ -52,22 +72,21 @@ export const generateOverviewCsv = (
     "category",
     "categoryReason",
   ];
+  const fixedApplicantHeader = ["realName", "email", "phone"];
   const dynamicHeader: string[] = [];
   const prices: {
-    [key: string]: {
-      conversion: number;
-      msrp: number;
-      offer: number;
-      value: number;
-      rawMsrp: number;
-      rawFrequency: number;
-      rawConversion: number;
-    };
+    [key: string]: ProductInfo;
   } = {};
+
+  const getItemKey = (category: number, name: string, unit: Unit) => {
+    return withProductCategoryId
+      ? `${category}) ${name} ${unitPostifx[unit]}`
+      : `${name} ${unitPostifx[unit]}`;
+  };
 
   productCategories.forEach((pc) => {
     pc.products.forEach((p) => {
-      const key = `${p.productCategoryId}) ${p.name} ${unitPostifx[p.unit]}`;
+      const key = getItemKey(p.productCategoryId, p.name, p.unit);
       if (!dynamicHeader.includes(key)) {
         dynamicHeader.push(key);
         const conversion = p.unit == Unit.PIECE ? 100 : 100000;
@@ -86,18 +105,27 @@ export const generateOverviewCsv = (
 
   dynamicHeader.sort();
 
+  const getApplicantFields = (applicant: OrderOverviewApplicant) => {
+    return {
+      realName: csvQuote(applicant.realName),
+      email: csvQuote(applicant.email),
+      phone: applicant.phone ? csvQuote(applicant.phone) : "",
+    };
+  };
+
   const data = overview.map((overviewItem) => ({
     name: overviewItem.name,
     depot: overviewItem.depot,
     alternateDepot: overviewItem.alternateDepot,
     msrp: overviewItem.msrp,
     offer: overviewItem.offer,
-    offerReason: `"${overviewItem.offerReason}"`,
+    offerReason: csvQuote(overviewItem.offerReason),
     category: overviewItem.category,
-    categoryReason: `"${overviewItem.categoryReason}"`,
+    categoryReason: csvQuote(overviewItem.categoryReason),
+    ...(withApplicant ? getApplicantFields(overviewItem) : {}),
     ...overviewItem.items.reduce(
       (acc, cur) => {
-        const key = `${cur.category}) ${cur.name} ${unitPostifx[cur.unit]}`;
+        const key = getItemKey(cur.category, cur.name, cur.unit);
         acc[key] = cur.value;
         prices[key].value += cur.value;
         return acc;
@@ -117,7 +145,11 @@ export const generateOverviewCsv = (
     prices[k].msrp = Math.round(prices[k].msrp);
   });
 
-  const header = [...fixedHeader, ...dynamicHeader];
+  const header = [
+    ...fixedHeader,
+    ...(withApplicant ? fixedApplicantHeader : []),
+    ...dynamicHeader,
+  ];
 
   const csv = data
     .map((item) => {
