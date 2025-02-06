@@ -319,6 +319,13 @@ export interface VersionInfo {
   buildInfo: BuildInfo;
 }
 
+export interface OrderOverviewProductItem {
+  name: string;
+  value: number;
+  unit: Unit;
+  category: number;
+}
+
 export interface OrderOverviewItem {
   name: string;
   depot: string;
@@ -328,13 +335,17 @@ export interface OrderOverviewItem {
   offerReason: string;
   category: UserCategory;
   categoryReason: string;
-  items: {
-    name: string;
-    value: number;
-    unit: Unit;
-    category: number;
-  }[];
+  items: OrderOverviewProductItem[];
 }
+
+export interface OrderOverviewApplicant {
+  realName: string;
+  email: string;
+  phone: string;
+}
+
+export type OrderOverviewWithApplicantItem = OrderOverviewItem &
+  OrderOverviewApplicant;
 
 export interface Msrp {
   total: number;

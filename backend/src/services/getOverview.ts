@@ -24,8 +24,16 @@ import { MoreThan } from "typeorm";
 import { UserRole } from "../../../shared/src/enum";
 import { getMsrp } from "../../../shared/src/msrp";
 import { bi } from "./bi/bi";
-import { getConfigIdFromQuery } from "../util/requestUtil";
-import { OrderOverviewItem } from "../../../shared/src/types";
+import {
+  getConfigIdFromQuery,
+  getStringQueryParameter,
+} from "../util/requestUtil";
+import {
+  OrderOverviewApplicant,
+  OrderOverviewWithApplicantItem,
+} from "../../../shared/src/types";
+import { EncryptedUserAddress } from "../consts/types";
+import { Applicant } from "../database/Applicant";
 
 export const getOverview = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -34,15 +42,26 @@ export const getOverview = async (
   if (role != UserRole.ADMIN) {
     ctx.throw(http.forbidden);
   }
+  const options = getStringQueryParameter(
+    ctx.request.query,
+    "options",
+    "",
+  ).split(",");
+
   const configId = getConfigIdFromQuery(ctx);
-  const overview = await getUserOrderOverview(configId);
+  const overview = await getUserOrderOverview(
+    configId,
+    undefined,
+    options.includes("with-applicant"),
+  );
   ctx.body = { overview };
 };
 
 export const getUserOrderOverview = async (
   configId: number,
   userId?: number,
-): Promise<OrderOverviewItem[]> => {
+  withApplicant: boolean = false,
+): Promise<OrderOverviewWithApplicantItem[]> => {
   const { productsById } = await bi(configId);
   const orders = await AppDataSource.getRepository(Order).find({
     relations: {
@@ -71,6 +90,7 @@ export const getUserOrderOverview = async (
       },
       user: {
         name: true,
+        id: true,
       },
       orderItems: {
         productId: true,
@@ -79,24 +99,63 @@ export const getUserOrderOverview = async (
     },
   });
 
-  return orders.map((order) => {
-    const msrp = getMsrp(order.category, order.orderItems, productsById);
-
+  const getApplicantAddress = async (
+    userId: number,
+  ): Promise<OrderOverviewApplicant> => {
+    if (!withApplicant) {
+      return {
+        realName: "",
+        email: "",
+        phone: "",
+      };
+    }
+    const address = await AppDataSource.getRepository(Applicant).findOne({
+      relations: {
+        address: true,
+      },
+      where: {
+        userId: userId || -1,
+      },
+      select: {
+        address: {
+          address: true,
+        },
+      },
+    });
+    const addressData = JSON.parse(
+      address?.address.address || "{}",
+    ) as EncryptedUserAddress;
+    const names = [addressData.firstname, addressData.lastname].filter(
+      (n) => n,
+    );
     return {
-      name: order.user.name,
-      depot: order.depot.name,
-      alternateDepot: order.alternateDepot?.name,
-      msrp: msrp.total,
-      offer: order.offer,
-      offerReason: order.offerReason || "",
-      category: order.category,
-      categoryReason: order.categoryReason || "",
-      items: order.orderItems.map((orderItem) => ({
-        name: orderItem.product.name,
-        value: orderItem.value,
-        unit: orderItem.product.unit,
-        category: orderItem.product.productCategoryId,
-      })),
+      realName: names.join(" "),
+      email: addressData.email || "",
+      phone: addressData.phone || "",
     };
-  });
+  };
+  return Promise.all(
+    orders.map(async (order) => {
+      const msrp = getMsrp(order.category, order.orderItems, productsById);
+
+      const applicantData = await getApplicantAddress(order.user.id);
+      return {
+        name: order.user.name,
+        depot: order.depot.name,
+        alternateDepot: order.alternateDepot?.name,
+        msrp: msrp.total,
+        offer: order.offer,
+        offerReason: order.offerReason || "",
+        category: order.category,
+        categoryReason: order.categoryReason || "",
+        ...applicantData,
+        items: order.orderItems.map((orderItem) => ({
+          name: orderItem.product.name,
+          value: orderItem.value,
+          unit: orderItem.product.unit,
+          category: orderItem.product.productCategoryId,
+        })),
+      };
+    }),
+  );
 };
