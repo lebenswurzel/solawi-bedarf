@@ -194,8 +194,16 @@ export function generateUserData(
       (item) => item.id,
       (item) => item
     ),
-    new Map()
+    new Map<number, ProductCategoryWithProducts>()
   );
+
+  type GroupedItem = {
+    group: string;
+    depot: string;
+    name: string;
+    category: ProductCategoryWithProducts;
+    value: number;
+  };
 
   const grouped = overview
     .flatMap((overviewItem) =>
@@ -214,7 +222,7 @@ export function generateUserData(
         (item) => item.group,
         collectMap((item) => item.category.name, collectArray())
       ),
-      new Map()
+      new Map<string, Map<string, GroupedItem[]>>()
     );
 
   return Array.from(grouped.entries(), ([user, userProducts]) => {
@@ -268,7 +276,7 @@ export function generateDepotData(
       (item) => item.id,
       (item) => item
     ),
-    new Map()
+    new Map<number, ProductCategoryWithProducts>()
   );
 
   const dataByDepotAndProduct = overview
@@ -290,7 +298,7 @@ export function generateDepotData(
           collectMap(
             (item) => item.name,
             collect(
-              (name, first) => {
+              (name: string, first): Value => {
                 const product = first.category.products.find(
                   (p) => p.name == name
                 )!;
@@ -301,7 +309,7 @@ export function generateDepotData(
                   quantity: 0,
                   category: first.category.name,
                   frequency: product.frequency || 1,
-                } as Value;
+                };
               },
               (acc, item) => {
                 acc.quantity += item.value;
@@ -310,7 +318,7 @@ export function generateDepotData(
           )
         )
       ),
-      new Map()
+      new Map<number, Map<string, Map<string, Value>>>()
     );
 
   return Array.from(
