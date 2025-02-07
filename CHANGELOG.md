@@ -125,7 +125,9 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 
 #178 Verbessertes Design der Bedarfsliste auf der Home-Seite für Ernteteiler
 
-# NEW
+# v0.4.17 - 2025-02-07 - Erweiterter Export
 
 #181 Erweiterter Export der Bedarfsanmeldung-CSV
 #181 Schöner Wohnen: Überarbeitetes Navigationsmenü
+
+# NEW
