@@ -64,6 +64,14 @@ const onToggleTheme = () => {
   theme.global.name.value = newTheme;
 };
 
+const showEmployeeNav = computed(
+  () =>
+    currentUser.value?.role == UserRole.ADMIN ||
+    currentUser.value?.role == UserRole.EMPLOYEE,
+);
+
+const showAdminNav = computed(() => currentUser.value?.role == UserRole.ADMIN);
+
 type NavEntry = {
   title: string;
   icon: string;
@@ -182,34 +190,30 @@ const adminNavEntries: NavEntry[] = [
       >
         <v-list-item-title>{{ entry.title }}</v-list-item-title>
       </v-list-item>
-      <v-divider></v-divider>
-      <v-list-subheader class="ml-2">{{
-        language.navigation.employees
-      }}</v-list-subheader>
-      <v-list-item
-        to="/employeeshipment"
-        v-if="
-          currentUser?.role == UserRole.ADMIN ||
-          currentUser?.role == UserRole.EMPLOYEE
-        "
-        prepend-icon="mdi-truck"
+      <template v-if="showEmployeeNav">
+        <v-divider></v-divider>
+        <v-list-subheader class="ml-2">{{
+          language.navigation.employees
+        }}</v-list-subheader>
+        <v-list-item to="/employeeshipment" prepend-icon="mdi-truck">
+          <v-list-item-title>{{
+            language.pages.shipment.title
+          }}</v-list-item-title>
+        </v-list-item></template
       >
-        <v-list-item-title>{{
-          language.pages.shipment.title
-        }}</v-list-item-title>
-      </v-list-item>
-      <v-divider></v-divider>
-      <v-list-subheader class="ml-2">{{
-        language.navigation.administration
-      }}</v-list-subheader>
-      <v-list-item
-        v-for="entry in adminNavEntries"
-        :to="entry.to"
-        v-if="currentUser?.role == UserRole.ADMIN"
-        :prepend-icon="entry.icon"
-      >
-        <v-list-item-title>{{ entry.title }}</v-list-item-title>
-      </v-list-item>
+      <template v-if="showAdminNav">
+        <v-divider></v-divider>
+        <v-list-subheader class="ml-2">{{
+          language.navigation.administration
+        }}</v-list-subheader>
+        <v-list-item
+          v-for="entry in adminNavEntries"
+          :to="entry.to"
+          :prepend-icon="entry.icon"
+        >
+          <v-list-item-title>{{ entry.title }}</v-list-item-title>
+        </v-list-item>
+      </template>
     </v-list>
   </v-navigation-drawer>
 </template>
