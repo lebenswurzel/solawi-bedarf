@@ -45,25 +45,50 @@ const configStore = useConfigStore();
 const { orderItems, validFrom } = storeToRefs(orderStore);
 const { productsById } = storeToRefs(biStore);
 
-const model = ref<number>();
+const monthModel = ref<Date>();
+const selectedShipmentModel = ref<number>(0);
 const now = ref<Date>(new Date());
 const selectedShippingItems = ref<{ [key: number]: boolean }>({});
 
-const dateOptions = computed(() => {
+const getFirstOfMonth = (date: string | Date): Date => {
+  return new Date(new Date(date).getFullYear(), new Date(date).getMonth(), 1);
+};
+
+const dateOptionsMonths = computed(() => {
   if (shipments.value.length) {
-    model.value = shipments.value[0].id;
+    monthModel.value = getFirstOfMonth(shipments.value[0].validFrom);
   }
-  return shipments.value.map((shipment) => ({
-    title: interpolate(t.cards.list.subtitle, {
-      kw: getISOWeek(shipment.validFrom).toString(),
-    }),
-    value: shipment.id,
-  }));
+  const all = shipments.value.map((shipment) => {
+    const monthName = format(shipment.validFrom, "MMMM", { locale: de });
+    const firstOfMonth = getFirstOfMonth(shipment.validFrom);
+    return {
+      title: monthName + " " + firstOfMonth.getFullYear(),
+      value: firstOfMonth,
+    };
+  });
+  //return reduced array with unique values for each month
+  return all.filter((v, i, a) => a.findIndex((t) => t.title === v.title) === i);
+});
+
+const shipmentOptions = computed(() => {
+  // subset of shipments that are in the selected month
+  return shipments.value
+    .filter(
+      (s) =>
+        getFirstOfMonth(s.validFrom).getTime() == monthModel.value?.getTime(),
+    )
+    .map((v) => ({
+      title: format(v.validFrom, "dd.MM."),
+      value: v.id,
+    }));
 });
 
 const shipment = computed(() => {
   return (
-    shipments.value.find((s) => s.id == model.value) || {
+    shipments.value.find(
+      (s) =>
+        s.id == shipmentOptions.value[selectedShipmentModel?.value || 0].value,
+    ) || {
       description: null,
       shipmentItems: [],
       additionalShipmentItems: [],
@@ -72,7 +97,11 @@ const shipment = computed(() => {
   );
 });
 
-watch(model, () => {
+watch(monthModel, () => {
+  selectedShippingItems.value = {};
+  selectedShipmentModel.value = 0;
+});
+watch(selectedShipmentModel, () => {
   selectedShippingItems.value = {};
 });
 
@@ -141,7 +170,7 @@ watchEffect(async () => {
     );
     shipments.value = requestShipments;
     if (requestShipments.length) {
-      model.value = requestShipments[0].id;
+      monthModel.value = getFirstOfMonth(requestShipments[0].validFrom);
     }
     now.value = new Date();
   }
@@ -158,17 +187,52 @@ const isSelected = (id: number) => !!selectedShippingItems.value[id];
     <v-card-title style="white-space: normal"
       >{{ t.cards.list.title }} <SeasonText
     /></v-card-title>
-    <v-card-subtitle
-      v-if="dateOptions.length > 0 && validFrom && validFrom < now"
+    <v-card-text
+      v-if="dateOptionsMonths.length > 0 && validFrom && validFrom < now"
+      class="pb-0"
     >
-      <v-select
-        :items="dateOptions"
-        v-model="model"
-        variant="outlined"
-        hide-details
-      >
-      </v-select>
-    </v-card-subtitle>
+      <v-container fluid style="max-width: 800px">
+        <v-row dense justify="center">
+          <v-col cols="8" sm="4" md="3" class="d-flex justify-center">
+            <v-select
+              density="compact"
+              :items="dateOptionsMonths"
+              v-model="monthModel"
+              variant="outlined"
+              hide-details
+            >
+            </v-select>
+          </v-col>
+          <v-col
+            cols="12"
+            sm="8"
+            md="7"
+            class="d-flex justify-center justify-sm-start"
+          >
+            <v-slide-group
+              v-model="selectedShipmentModel"
+              selected-class="bg-primary"
+            >
+              <v-slide-group-item
+                v-for="shipment in shipmentOptions"
+                :key="shipment.value"
+                v-slot="{ isSelected, select, selectedClass }"
+              >
+                <v-btn
+                  :class="['mx-1', selectedClass, 'px-0']"
+                  @click="select"
+                  :color="isSelected ? 'primary' : 'grey'"
+                  rounded="sm"
+                  hide-details
+                >
+                  {{ shipment.title }}
+                </v-btn>
+              </v-slide-group-item>
+            </v-slide-group>
+          </v-col>
+        </v-row>
+      </v-container>
+    </v-card-text>
     <v-card-subtitle v-else-if="props.seasonPhase >= SeasonPhase.SEASON_PHASE">
       {{
         interpolate(t.cards.list.subtitle, {
@@ -190,7 +254,13 @@ const isSelected = (id: number) => !!selectedShippingItems.value[id];
       </template>
       <template v-else>
         <p class="text-medium-emphasis mb-2">{{ t.cards.list.detailText }}</p>
-        <v-card variant="outlined" color="primary" prepend-icon="mdi-truck">
+        <v-card
+          variant="outlined"
+          color="primary"
+          prepend-icon="mdi-truck"
+          style="max-width: 800px"
+          class="mx-auto my-4"
+        >
           <template v-slot:title
             ><div style="white-space: normal">
               {{
