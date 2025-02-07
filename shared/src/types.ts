@@ -328,6 +328,7 @@ export interface OrderOverviewProductItem {
 
 export interface OrderOverviewItem {
   name: string;
+  identifier: string;
   depot: string;
   alternateDepot?: string;
   msrp: number;

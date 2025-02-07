@@ -64,6 +64,7 @@ export const generateOverviewCsv = (
 ) => {
   const fixedHeader = [
     "name",
+    "identifier",
     "depot",
     "alternateDepot",
     "msrp",
@@ -116,6 +117,7 @@ export const generateOverviewCsv = (
 
   const data = overview.map((overviewItem) => ({
     name: overviewItem.name,
+    identifier: overviewItem.identifier,
     depot: overviewItem.depot,
     alternateDepot: overviewItem.alternateDepot,
     msrp: overviewItem.msrp,
