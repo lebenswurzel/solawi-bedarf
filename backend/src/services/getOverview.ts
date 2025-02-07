@@ -99,6 +99,8 @@ export const getUserOrderOverview = async (
       },
       requisitionConfig: {
         name: true,
+        validFrom: true,
+        validTo: true,
       },
     },
   });
@@ -138,6 +140,14 @@ export const getUserOrderOverview = async (
       phone: addressData.phone || "",
     };
   };
+
+  const makeIdentifier = (userName: string, validFrom: Date, validTo: Date) => {
+    // return an identifier that is unique for the user and the season
+    const fromYear = validFrom.getFullYear() % 100;
+    const toYear = validTo.getFullYear() % 100;
+    return `${userName}_${fromYear}-${toYear}`;
+  };
+
   return Promise.all(
     orders.map(async (order) => {
       const msrp = getMsrp(order.category, order.orderItems, productsById);
@@ -145,6 +155,11 @@ export const getUserOrderOverview = async (
       const applicantData = await getApplicantAddress(order.user.id);
       return {
         name: order.user.name,
+        identifier: makeIdentifier(
+          order.user.name,
+          order.requisitionConfig.validFrom,
+          order.requisitionConfig.validTo,
+        ),
         depot: order.depot.name,
         alternateDepot: order.alternateDepot?.name,
         msrp: msrp.total,
