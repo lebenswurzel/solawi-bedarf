@@ -71,6 +71,7 @@ export const getUserOrderOverview = async (
       user: true,
       depot: true,
       alternateDepot: true,
+      requisitionConfig: true,
     },
     where: {
       offer: MoreThan(0),
@@ -95,6 +96,9 @@ export const getUserOrderOverview = async (
       orderItems: {
         productId: true,
         value: true,
+      },
+      requisitionConfig: {
+        name: true,
       },
     },
   });
@@ -148,6 +152,7 @@ export const getUserOrderOverview = async (
         offerReason: order.offerReason || "",
         category: order.category,
         categoryReason: order.categoryReason || "",
+        seasonName: order.requisitionConfig.name,
         ...applicantData,
         items: order.orderItems.map((orderItem) => ({
           name: orderItem.product.name,

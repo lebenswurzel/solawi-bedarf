@@ -53,6 +53,10 @@ export const language = {
       update: "Aktualisieren",
       restore: "Änderungen verwerfen",
     },
+    hints: {
+      warning: "Warnung",
+      note: "Hinweis",
+    },
     uiFeedback: {
       saving: {
         success: "Speichern erfolgreich",

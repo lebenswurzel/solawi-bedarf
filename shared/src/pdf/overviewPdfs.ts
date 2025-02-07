@@ -71,6 +71,7 @@ export const generateOverviewCsv = (
     "offerReason",
     "category",
     "categoryReason",
+    "seasonName",
   ];
   const fixedApplicantHeader = ["realName", "email", "phone"];
   const dynamicHeader: string[] = [];
@@ -122,6 +123,7 @@ export const generateOverviewCsv = (
     offerReason: csvQuote(overviewItem.offerReason),
     category: overviewItem.category,
     categoryReason: csvQuote(overviewItem.categoryReason),
+    seasonName: overviewItem.seasonName,
     ...(withApplicant ? getApplicantFields(overviewItem) : {}),
     ...overviewItem.items.reduce(
       (acc, cur) => {
@@ -162,57 +164,64 @@ export const generateOverviewCsv = (
     })
     .join("\n");
 
-  const csvMsrp = header
-    .map((headerItem) =>
-      headerItem == "name" ? "msrp" : prices[headerItem]?.msrp || ""
-    )
-    .join(",");
-  const csvOffer = header
-    .map((headerItem) =>
-      headerItem == "name" ? "offer" : prices[headerItem]?.offer || ""
-    )
-    .join(",");
-  const csvRawMsrp = header
-    .map((headerItem) =>
-      headerItem == "name" ? "rawMsrp" : prices[headerItem]?.rawMsrp || ""
-    )
-    .join(",");
-  const csvRawFreq = header
-    .map((headerItem) =>
-      headerItem == "name"
-        ? "rawFrequency"
-        : prices[headerItem]?.rawFrequency || ""
-    )
-    .join(",");
-  const csvRawConversion = header
-    .map((headerItem) =>
-      headerItem == "name"
-        ? "rawConversion"
-        : prices[headerItem]?.rawConversion || ""
-    )
-    .join(",");
-  const csvConversion = header
-    .map((headerItem) =>
-      headerItem == "name" ? "conversion" : prices[headerItem]?.conversion || ""
-    )
-    .join(",");
+  let summaryLines = "";
+
+  if (withProductCategoryId) {
+    // only show product summaries if productCategoryId is set
+    // otherwise the data might be inconsistent due to duplicate product names
+    const csvMsrp = header
+      .map((headerItem) =>
+        headerItem == "name" ? "msrp" : prices[headerItem]?.msrp || ""
+      )
+      .join(",");
+    const csvOffer = header
+      .map((headerItem) =>
+        headerItem == "name" ? "offer" : prices[headerItem]?.offer || ""
+      )
+      .join(",");
+    const csvRawMsrp = header
+      .map((headerItem) =>
+        headerItem == "name" ? "rawMsrp" : prices[headerItem]?.rawMsrp || ""
+      )
+      .join(",");
+    const csvRawFreq = header
+      .map((headerItem) =>
+        headerItem == "name"
+          ? "rawFrequency"
+          : prices[headerItem]?.rawFrequency || ""
+      )
+      .join(",");
+    const csvRawConversion = header
+      .map((headerItem) =>
+        headerItem == "name"
+          ? "rawConversion"
+          : prices[headerItem]?.rawConversion || ""
+      )
+      .join(",");
+    const csvConversion = header
+      .map((headerItem) =>
+        headerItem == "name"
+          ? "conversion"
+          : prices[headerItem]?.conversion || ""
+      )
+      .join(",");
+
+    summaryLines =
+      csvMsrp +
+      "\n" +
+      csvOffer +
+      "\n" +
+      csvRawMsrp +
+      "\n" +
+      csvRawFreq +
+      "\n" +
+      csvRawConversion +
+      "\n" +
+      csvConversion;
+  }
 
   return (
-    header.map((h) => `"${h}"`).join(",") +
-    "\n" +
-    csv +
-    "\n" +
-    csvMsrp +
-    "\n" +
-    csvOffer +
-    "\n" +
-    csvRawMsrp +
-    "\n" +
-    csvRawFreq +
-    "\n" +
-    csvRawConversion +
-    "\n" +
-    csvConversion
+    header.map((h) => `"${h}"`).join(",") + "\n" + csv + "\n" + summaryLines
   );
 };
 
