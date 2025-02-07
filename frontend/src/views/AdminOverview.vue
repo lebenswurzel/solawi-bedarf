@@ -40,8 +40,8 @@ const uiFeedbackStore = useUiFeedback();
 const textContentStore = useTextContentStore();
 const { organizationInfo } = storeToRefs(textContentStore);
 
-const orderOveriewWithApplicant = ref(true);
-const orderOveriewWithProductCategoryId = ref(false);
+const orderOveriewWithApplicant = ref(false);
+const orderOveriewWithProductCategoryId = ref(true);
 const orderOverviewSeasons = computed(() =>
   configStore.availableConfigs.map((c) => ({
     title: c.name,
