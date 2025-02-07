@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { getOverview } from "../requests/overview";
 import { getProductCategory } from "../requests/productCategory";
 import {
@@ -30,6 +30,8 @@ import { Zip } from "../../../shared/src/pdf/zip.ts";
 import { createDefaultPdf } from "../../../shared/src/pdf/pdf.ts";
 import { useTextContentStore } from "../store/textContentStore.ts";
 import { storeToRefs } from "pinia";
+import { formatDateForFilename } from "../../../shared/src/util/dateHelper.ts";
+import { language } from "../../../shared/src/lang/lang.ts";
 
 const loading = ref(false);
 
@@ -40,17 +42,30 @@ const { organizationInfo } = storeToRefs(textContentStore);
 
 const orderOveriewWithApplicant = ref(true);
 const orderOveriewWithProductCategoryId = ref(false);
+const orderOverviewSeasons = computed(() =>
+  configStore.availableConfigs.map((c) => ({
+    title: c.name,
+    value: c.id,
+  })),
+);
+const orderOverviewSelectedSeasons = ref<number[]>([
+  configStore.activeConfigId,
+]);
 
 const onClick = async () => {
   loading.value = true;
   try {
-    const overview = await getOverview(
-      configStore.activeConfigId,
-      orderOveriewWithApplicant.value,
-    );
-    const productCategories = await getProductCategory(
-      configStore.activeConfigId,
-    );
+    const configIds = orderOverviewSelectedSeasons.value;
+    const overview = await Promise.all(
+      configIds.map(
+        async (configId) =>
+          await getOverview(configId, orderOveriewWithApplicant.value),
+      ),
+    ).then((os) => os.flat());
+
+    const productCategories = await Promise.all(
+      configIds.map(async (configId) => await getProductCategory(configId)),
+    ).then((pcs) => pcs.flat());
     const csv = generateOverviewCsv(
       overview,
       productCategories,
@@ -60,8 +75,9 @@ const onClick = async () => {
     const blob = new Blob([csv], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
+    const filename = `uebersicht ${formatDateForFilename(new Date())}.csv`;
     a.href = url;
-    a.download = "uebersicht.csv";
+    a.download = sanitizeFileName(filename);
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -93,7 +109,9 @@ const onDepotPdfClick = async () => {
         `${sanitizeFileName(pdfSpec.receiver)}.pdf`,
       );
     }
-    zip.download("depots.zip");
+
+    const filename = `depots ${formatDateForFilename(new Date())}.pdf`;
+    zip.download(filename);
   } catch (e) {
     uiFeedbackStore.setError("" + e);
     throw e;
@@ -121,7 +139,8 @@ const onUserPdfClick = async () => {
         `${sanitizeFileName(pdf.receiver)}.pdf`,
       );
     }
-    zip.download("users.zip");
+    const filename = `users ${formatDateForFilename(new Date())}.pdf`;
+    zip.download(filename);
   } catch (e) {
     uiFeedbackStore.setError("" + e);
     throw e;
@@ -135,60 +154,88 @@ const onUserPdfClick = async () => {
   <v-card class="ma-2">
     <v-card-title>Bestellübersicht als CSV</v-card-title>
     <v-card-text class="pb-0">
-      Bei Click auf "Übersicht herunterladen" wird eine aktuelle Übersicht der
-      Bedarfsanmeldung als csv heruntergeladen und generiert. Das kann eine
-      Weile dauern und sollte mit Rücksicht auf die Nutzer nicht zur
-      Hauptnutzungszeit erfolgen.
-
-      <v-row dense>
-        <v-col cols="12" sm="6">
+      Bei Klick auf "Übersicht herunterladen" wird eine aktuelle Übersicht der
+      Bedarfsanmeldungen heruntergeladen und als CSV exportiert. Die
+      Nachfolgenden Optionen beeinflussen den Datenumfang und die Formatierung.
+      <v-row>
+        <v-col cols="12" md="4">
           <v-checkbox
             v-model="orderOveriewWithApplicant"
             label="Inklusive Kontaktinformationen"
-            hide-details
             density="compact"
+            persistent-hint
+            :hint="
+              orderOveriewWithApplicant
+                ? 'Name, E-Mail und Telefonnummer der Ernteteiler werden in der CSV ausgegeben.'
+                : 'Es ist nur die LW-Nummer der Ernteteiler enthalten.'
+            "
           ></v-checkbox>
         </v-col>
-        <v-col cols="12" sm="6">
+        <v-col cols="12" md="4">
           <v-checkbox
             v-model="orderOveriewWithProductCategoryId"
             label="Inklusive Produktkategorien-IDs"
-            hide-details
+            :hint="
+              orderOveriewWithProductCategoryId
+                ? 'Dem Produktnamen wird der Produktkategorie-ID vorangestellt um potentielle Namensdopplungen zu vermeiden.'
+                : 'Achtung: Falls der selbe Produktname in mehreren Kategorien vorkommt, wird dieser in der CSV nicht eindeutig zugeordnet.'
+            "
             density="compact"
+            persistent-hint
           ></v-checkbox>
+        </v-col>
+        <v-col cols="12" md="4">
+          <v-select
+            :items="orderOverviewSeasons"
+            v-model="orderOverviewSelectedSeasons"
+            label="Saison(s)"
+            chips
+            multiple
+            persistent-hint
+          ></v-select>
         </v-col>
       </v-row>
     </v-card-text>
     <v-card-actions>
-      <v-btn @click="onClick" :loading="loading">Übersicht herunterladen</v-btn>
+      <v-btn
+        @click="onClick"
+        :loading="loading"
+        :disabled="orderOverviewSelectedSeasons.length === 0"
+        >Bedarfsanmeldungs-CSV herunterladen</v-btn
+      >
     </v-card-actions>
   </v-card>
   <v-card class="ma-2">
     <v-card-title>Depot-Übersichten als PDFs</v-card-title>
     <v-card-text>
-      Bei Click auf "Übersicht herunterladen" wird eine aktuelle Übersicht der
-      Bedarfsanmeldung je Depot als pdf heruntergeladen und generiert. Das kann
-      eine Weile dauern und sollte mit Rücksicht auf die Nutzer nicht zur
-      Hauptnutzungszeit erfolgen.
+      Bei Klick auf "Übersicht herunterladen" wird eine aktuelle Übersicht der
+      Bedarfsanmeldung je Depot als PDF heruntergeladen und generiert.
     </v-card-text>
     <v-card-actions>
       <v-btn @click="onDepotPdfClick" :loading="loading"
-        >Übersicht herunterladen
+        >Depot-PDFs herunterladen
       </v-btn>
     </v-card-actions>
   </v-card>
   <v-card class="ma-2">
     <v-card-title>Bedarsanmeldungen je Ernteteiler als PDFs</v-card-title>
     <v-card-text>
-      Bei Click auf "Übersicht herunterladen" wird eine aktuelle Übersicht der
-      Bedarfsanmeldung je Ernteteiler als pdf heruntergeladen und generiert. Das
-      kann eine Weile dauern und sollte mit Rücksicht auf die Nutzer nicht zur
-      Hauptnutzungszeit erfolgen.
+      Bei Klick auf "Übersicht herunterladen" wird eine aktuelle Übersicht der
+      Bedarfsanmeldung je Ernteteiler als PDF heruntergeladen und generiert.
     </v-card-text>
     <v-card-actions>
       <v-btn @click="onUserPdfClick" :loading="loading"
-        >Übersicht herunterladen
+        >Nutzer-PDFs herunterladen
       </v-btn>
     </v-card-actions>
   </v-card>
+  <v-alert
+    class="ma-2"
+    type="warning"
+    variant="outlined"
+    :title="language.app.hints.note"
+  >
+    Das Zusammenstellen der Daten kann eine Weile dauern und sollte mit
+    Rücksicht auf die Nutzer nicht zur Hauptnutzungszeit erfolgen.
+  </v-alert>
 </template>

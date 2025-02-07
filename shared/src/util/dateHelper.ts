@@ -14,6 +14,8 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+import { format } from "date-fns";
+
 export const addYears = (date: Date, yearsDiff: number): Date => {
   const result = new Date(date);
   result.setFullYear(date.getFullYear() + yearsDiff);
@@ -34,4 +36,8 @@ export const addMonths = (date: Date, monthsDiff: number): Date => {
   const result = new Date(date);
   result.setMonth(date.getMonth() + monthsDiff);
   return result;
+};
+
+export const formatDateForFilename = (date: Date): string => {
+  return format(date, "yyyy-MM-dd HH_mm_ss");
 };

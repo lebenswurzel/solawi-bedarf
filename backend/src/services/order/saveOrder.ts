@@ -54,6 +54,7 @@ import { getUserOrderOverview } from "../getOverview";
 import { getRequestUserId, getUserFromContext } from "../getUserFromContext";
 import { getProductCategories } from "../product/getProductCategory";
 import { getOrganizationInfo } from "../text/getOrganizationInfo";
+import { formatDateForFilename } from "../../../../shared/src/util/dateHelper";
 
 export const saveOrder = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -260,7 +261,7 @@ export const saveOrder = async (
       attachments: pdfBlob
         ? [
             {
-              filename: `Bedarfsanmeldung ${orderUser.name} ${format(currentDate, "yyyy-MM-dd HH_mm_ss")}.pdf`,
+              filename: `Bedarfsanmeldung ${orderUser.name} ${formatDateForFilename(currentDate)}.pdf`,
               data: pdfBlob,
             },
           ]

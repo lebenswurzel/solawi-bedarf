@@ -335,6 +335,7 @@ export interface OrderOverviewItem {
   offerReason: string;
   category: UserCategory;
   categoryReason: string;
+  seasonName: string;
   items: OrderOverviewProductItem[];
 }
 

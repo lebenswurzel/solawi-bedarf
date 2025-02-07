@@ -33,6 +33,26 @@ export const getNumericQueryParameter = (
   return isFinite(numericValue) ? numericValue : fallback;
 };
 
+export const getNumericArrayQueryParameter = (
+  requestQuery: ParsedUrlQuery,
+  name: string,
+  fallback?: number,
+): number[] => {
+  const numericFallback: number = fallback ?? -1;
+  const requestValue = requestQuery[name];
+  if (!requestValue) {
+    return [];
+  }
+  if (Array.isArray(requestValue)) {
+    return requestValue.map((value) => {
+      const numericValue = parseInt(value);
+      return isFinite(numericValue) ? numericValue : numericFallback;
+    });
+  }
+  const numericValue = parseInt(requestValue);
+  return [isFinite(numericValue) ? numericValue : numericFallback];
+};
+
 export const getConfigIdFromQuery = (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
 ): number => {
@@ -44,6 +64,22 @@ export const getConfigIdFromQuery = (
     );
   }
   return configId;
+};
+
+export const getConfigIdsFromQuery = (
+  ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
+): number[] => {
+  const configIds = getNumericArrayQueryParameter(
+    ctx.request.query,
+    "configId",
+  );
+  if (configIds.length < 1) {
+    ctx.throw(http.bad_request, `missing config id in query`);
+  }
+  if (configIds.some((configId) => configId < 1)) {
+    ctx.throw(http.bad_request, `bad config id in query ${configIds}`);
+  }
+  return configIds;
 };
 
 export const getStringQueryParameter = (
