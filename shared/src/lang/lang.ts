@@ -126,6 +126,10 @@ export const language = {
       sourceCode: "Quellcode",
     },
   },
+  navigation: {
+    employees: "Mitarbeiter",
+    administration: "Administration",
+  },
   pages: {
     login: {
       title: "Login",

@@ -63,6 +63,73 @@ const onToggleTheme = () => {
   localStorage.setItem("theme-color", newTheme);
   theme.global.name.value = newTheme;
 };
+
+type NavEntry = {
+  title: string;
+  icon: string;
+  to: string;
+};
+
+const mainNavEntries: NavEntry[] = [
+  {
+    title: language.pages.home.navigation.title,
+    icon: "mdi-home",
+    to: "/",
+  },
+  {
+    title: language.pages.shop.navigation.title,
+    icon: "mdi-storefront",
+    to: "/shop",
+  },
+  {
+    title: language.pages.faq.navigation.title,
+    icon: "mdi-help-circle-outline",
+    to: "/faq",
+  },
+];
+
+const adminNavEntries: NavEntry[] = [
+  {
+    title: language.pages.user.title,
+    icon: "mdi-account", // Replace with appropriate icons
+    to: "/adminusers",
+  },
+  {
+    title: language.pages.product.title,
+    icon: "mdi-cube-outline",
+    to: "/adminproducts",
+  },
+  {
+    title: language.pages.applicants.title,
+    icon: "mdi-clipboard-text",
+    to: "/adminregister",
+  },
+  {
+    title: language.pages.depots.title,
+    icon: "mdi-warehouse",
+    to: "/admindepot",
+  },
+  {
+    title: language.pages.config.title,
+    icon: "mdi-cog",
+    to: "/adminconfig",
+  },
+  {
+    title: language.pages.content.title,
+    icon: "mdi-text-box-multiple",
+    to: "/admintext",
+  },
+  {
+    title: language.pages.overview.title,
+    icon: "mdi-view-dashboard",
+    to: "/adminoverview",
+  },
+  {
+    title: "Statistics", // Replace with a placeholder title or update as needed
+    icon: "mdi-chart-bar",
+    to: "/statistics",
+  },
+];
 </script>
 
 <template>
@@ -100,93 +167,55 @@ const onToggleTheme = () => {
     </template>
   </v-app-bar>
   <v-navigation-drawer v-model="drawer">
-    <v-list-item :class="seasonColorClass">
-      <v-list-item-title>{{ language.app.navigation.title }}</v-list-item-title>
-      <v-list-item-subtitle>{{ config?.name }}</v-list-item-subtitle>
-    </v-list-item>
-    <v-divider></v-divider>
-    <v-list-item to="/">
-      <v-list-item-title>{{
-        language.pages.home.navigation.title
-      }}</v-list-item-title>
-    </v-list-item>
-    <v-list-item to="/shop">
-      <v-list-item-title>{{
-        language.pages.shop.navigation.title
-      }}</v-list-item-title>
-    </v-list-item>
-    <v-list-item to="/faq">
-      <v-list-item-title>{{
-        language.pages.faq.navigation.title
-      }}</v-list-item-title>
-    </v-list-item>
-    <v-divider></v-divider>
-    <v-list-item
-      to="/employeeshipment"
-      v-if="
-        currentUser?.role == UserRole.ADMIN ||
-        currentUser?.role == UserRole.EMPLOYEE
-      "
-    >
-      <v-list-item-title>{{ language.pages.shipment.title }}</v-list-item-title>
-      <v-list-item-subtitle>{{
-        language.pages.shipment.navigation.subtitle
-      }}</v-list-item-subtitle>
-    </v-list-item>
-    <v-divider></v-divider>
-    <v-list-item to="/adminusers" v-if="currentUser?.role == UserRole.ADMIN">
-      <v-list-item-title>{{ language.pages.user.title }}</v-list-item-title>
-      <v-list-item-subtitle>{{
-        language.pages.user.navigation.subtitle
-      }}</v-list-item-subtitle>
-    </v-list-item>
-    <v-list-item to="/adminproducts" v-if="currentUser?.role == UserRole.ADMIN">
-      <v-list-item-title>{{ language.pages.product.title }}</v-list-item-title>
-      <v-list-item-subtitle>{{
-        language.pages.product.navigation.subtitle
-      }}</v-list-item-subtitle>
-    </v-list-item>
-    <v-list-item to="/adminregister" v-if="currentUser?.role == UserRole.ADMIN">
-      <v-list-item-title>{{
-        language.pages.applicants.title
-      }}</v-list-item-title>
-      <v-list-item-subtitle>{{
-        language.pages.applicants.navigation.subtitle
-      }}</v-list-item-subtitle>
-    </v-list-item>
-    <v-list-item to="/admindepot" v-if="currentUser?.role == UserRole.ADMIN">
-      <v-list-item-title>{{ language.pages.depots.title }}</v-list-item-title>
-      <v-list-item-subtitle>{{
-        language.pages.depots.navigation.subtitle
-      }}</v-list-item-subtitle>
-    </v-list-item>
-    <v-list-item to="/adminconfig" v-if="currentUser?.role == UserRole.ADMIN">
-      <v-list-item-title>{{ language.pages.config.title }}</v-list-item-title>
-      <v-list-item-subtitle>{{
-        language.pages.config.navigation.subtitle
-      }}</v-list-item-subtitle>
-    </v-list-item>
-    <v-list-item to="/admintext" v-if="currentUser?.role == UserRole.ADMIN">
-      <v-list-item-title> {{ language.pages.content.title }}</v-list-item-title>
-      <v-list-item-subtitle>{{
-        language.pages.content.navigation.subtitle
-      }}</v-list-item-subtitle>
-    </v-list-item>
-    <v-list-item to="/adminoverview" v-if="currentUser?.role == UserRole.ADMIN">
-      <v-list-item-title>
-        {{ language.pages.overview.title }}</v-list-item-title
+    <v-list>
+      <v-list-item :class="seasonColorClass">
+        <v-list-item-title>{{
+          language.app.navigation.title
+        }}</v-list-item-title>
+        <v-list-item-subtitle>{{ config?.name }}</v-list-item-subtitle>
+      </v-list-item>
+      <v-divider></v-divider>
+      <v-list-item
+        v-for="entry in mainNavEntries"
+        :to="entry.to"
+        :prepend-icon="entry.icon"
       >
-      <v-list-item-subtitle>{{
-        language.pages.overview.navigation.subtitle
-      }}</v-list-item-subtitle>
-    </v-list-item>
-    <v-list-item to="/statistics" v-if="currentUser?.role == UserRole.ADMIN">
-      <v-list-item-title>
-        {{ language.pages.statistics.title }}</v-list-item-title
+        <v-list-item-title>{{ entry.title }}</v-list-item-title>
+      </v-list-item>
+      <v-divider></v-divider>
+      <v-list-subheader class="ml-2">{{
+        language.navigation.employees
+      }}</v-list-subheader>
+      <v-list-item
+        to="/employeeshipment"
+        v-if="
+          currentUser?.role == UserRole.ADMIN ||
+          currentUser?.role == UserRole.EMPLOYEE
+        "
+        prepend-icon="mdi-truck"
       >
-      <v-list-item-subtitle>{{
-        language.pages.statistics.navigation.subtitle
-      }}</v-list-item-subtitle>
-    </v-list-item>
+        <v-list-item-title>{{
+          language.pages.shipment.title
+        }}</v-list-item-title>
+      </v-list-item>
+      <v-divider></v-divider>
+      <v-list-subheader class="ml-2">{{
+        language.navigation.administration
+      }}</v-list-subheader>
+      <v-list-item
+        v-for="entry in adminNavEntries"
+        :to="entry.to"
+        v-if="currentUser?.role == UserRole.ADMIN"
+        :prepend-icon="entry.icon"
+      >
+        <v-list-item-title>{{ entry.title }}</v-list-item-title>
+      </v-list-item>
+    </v-list>
   </v-navigation-drawer>
 </template>
+
+<style>
+.v-list-item__prepend > .v-icon ~ .v-list-item__spacer {
+  width: 8px;
+}
+</style>
