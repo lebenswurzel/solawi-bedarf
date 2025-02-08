@@ -130,6 +130,8 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #181 Erweiterter Export der Bedarfsanmeldung-CSV
 #181 Schöner Wohnen: Überarbeitetes Navigationsmenü
 
-# NEW
+# v0.4.18 - 2025-02-08 - Bedarsanmeldungen gültig setzen
 
 #174 Fix: neu angelegte Bedarfsanmeldungen bekommen ein 'gültig ab'-Datum auf zwei Monate vor Saisonbeginn gesetzt, damit sie in Verteilungen berücksichtigt werden
+
+# NEW
