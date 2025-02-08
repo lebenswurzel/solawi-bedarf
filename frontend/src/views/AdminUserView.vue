@@ -64,6 +64,8 @@ const selectedUserActions = [
 const selectedAction = ref(selectedUserActions[0]);
 const processedUsers = ref<number>(0);
 const isProcessing = ref(false);
+const openDatePicker = ref(false);
+const selectedDate = ref(new Date());
 
 provide("dialogUser", dialogUser);
 
@@ -133,13 +135,22 @@ const applySelectedAction = async () => {
       ...option,
       active: selectedAction.value == ACTION_ACTIVATE,
     };
+    await updateSelectedUsers(option);
   } else if (selectedAction.value == ACTION_SET_ORDER_VALID_FROM) {
-    option = {
-      ...option,
-      orderValidFrom: new Date(), // TODO take date from a dialog
-    };
+    openDatePicker.value = true;
   }
+};
 
+const onUpdateValidFromDates = async () => {
+  const option = {
+    configId: activeConfigId.value,
+    orderValidFrom: selectedDate.value,
+  };
+  openDatePicker.value = false;
+  await updateSelectedUsers(option);
+};
+
+const updateSelectedUsers = async (option: Omit<UpdateUserRequest, "id">) => {
   const updateAll = selectedUsers.value.map((userId) =>
     updateUser({
       id: userId,
@@ -317,5 +328,33 @@ const prettyDate = (date?: Date | null): string => {
     </v-card-actions>
   </v-card>
   <UserDialog :open="open" @close="onClose" />
+  <v-dialog :model-value="openDatePicker">
+    <v-card class="mx-auto">
+      <v-card-title>Bedarf gültig ab</v-card-title>
+      <v-card-text style="max-width: 600px"
+        ><p class="mb-2">
+          Setze für die gewählten Nutzer das Datum, ab welchem der Bedarf in den
+          Verteilungen berücksichtig werden soll. Es sollte sich um den Freitag
+          vor der ersten Lieferung handeln, damit der Bedarf dieses Nutzers in
+          der Planung der Verteilung berücksichtigt werden kann.
+        </p>
+        <p>
+          Das Datum wird nur gesetzt, falls der Nutzer bereits einen Bedarf
+          angemeldet hat.
+        </p></v-card-text
+      >
+      <v-card-text class="mx-auto">
+        <v-date-picker v-model="selectedDate"> </v-date-picker>
+      </v-card-text>
+      <v-card-actions>
+        <v-btn @click="() => (openDatePicker = false)">
+          {{ language.app.actions.cancel }}
+        </v-btn>
+        <v-btn @click="onUpdateValidFromDates">
+          {{ language.app.actions.apply }}
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 ../../../shared/src/types.ts
