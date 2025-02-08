@@ -121,9 +121,6 @@ const selectedUserNames = computed(() => {
 });
 
 const applySelectedAction = async () => {
-  isProcessing.value = true;
-  processedUsers.value = 0;
-
   let option: Omit<UpdateUserRequest, "id"> = {
     configId: activeConfigId.value,
   };
@@ -151,6 +148,8 @@ const onUpdateValidFromDates = async () => {
 };
 
 const updateSelectedUsers = async (option: Omit<UpdateUserRequest, "id">) => {
+  isProcessing.value = true;
+  processedUsers.value = 0;
   const updateAll = selectedUsers.value.map((userId) =>
     updateUser({
       id: userId,
@@ -227,6 +226,9 @@ const prettyDate = (date?: Date | null): string => {
                 :disabled="isProcessing"
                 >OK</v-btn
               >
+            </div>
+            <div v-else class="opacity-70">
+              Wähle einen oder mehrere Benutzer um eine Aktion auszuführen.
             </div>
           </v-col>
           <v-col cols="1" class="d-flex align-center">
