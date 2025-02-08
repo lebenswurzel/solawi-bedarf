@@ -44,18 +44,19 @@ export type SaveUserRequest = Required<NewUser> &
     requisitionConfigId: number;
   };
 
-export type LastOrderChange = {
-  date: Date;
+export type UserOrder = {
+  updatedAt: Date;
   configId: number;
+  validFrom: Date | null;
 };
 
-export type UserWithLastOrderChange = Required<User> & {
-  lastOrderChanges: LastOrderChange[];
+export type UserWithOrders = Required<User> & {
+  orders: UserOrder[];
   emailEnabled: boolean;
 };
 export type GetUserResponse = {
   userId: number;
-  users: UserWithLastOrderChange[];
+  users: UserWithOrders[];
 };
 
 export type UpdateUserRequest = Id & {

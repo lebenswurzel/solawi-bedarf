@@ -22,10 +22,10 @@ import { useUserStore } from "../store/userStore.ts";
 import { storeToRefs } from "pinia";
 import { useConfigStore } from "../store/configStore";
 import {
-  LastOrderChange,
   NewUser,
   User,
-  UserWithLastOrderChange,
+  UserOrder,
+  UserWithOrders,
 } from "../../../shared/src/types";
 import { UserRole } from "../../../shared/src/enum";
 import { computed } from "@vue/reactivity";
@@ -65,13 +65,21 @@ const headers = [
   { title: "Status", key: "active" },
   {
     title: "Letzte Bedarfsänderung",
-    key: "lastOrderChanges",
-    sortRaw(a: UserWithLastOrderChange, b: UserWithLastOrderChange) {
+    key: "orderUpdatedAt",
+    sortRaw(a: UserWithOrders, b: UserWithOrders) {
       return (
-        (getCurrentSeasonLastOrderChangeDate(a.lastOrderChanges)?.getTime() ??
-          0) -
-        (getCurrentSeasonLastOrderChangeDate(b.lastOrderChanges)?.getTime() ??
-          0)
+        (getCurrentSeasonOrder(a.orders)?.updatedAt.getTime() ?? 0) -
+        (getCurrentSeasonOrder(b.orders)?.updatedAt.getTime() ?? 0)
+      );
+    },
+  },
+  {
+    title: "Bedarf gültig ab",
+    key: "orderValidFrom",
+    sortRaw(a: UserWithOrders, b: UserWithOrders) {
+      return (
+        (getCurrentSeasonOrder(a.orders)?.validFrom?.getTime() ?? 0) -
+        (getCurrentSeasonOrder(b.orders)?.validFrom?.getTime() ?? 0)
       );
     },
   },
@@ -131,25 +139,14 @@ watch(selectedUsers, () => {
   processedUsers.value = 0;
 });
 
-const getCurrentSeasonLastOrderChangeDate = (
-  lastOrderChanges?: LastOrderChange[],
-): Date | null => {
-  const thisSeason =
-    lastOrderChanges?.filter((o) => o.configId == activeConfigId.value) || [];
-  if (thisSeason.length > 0) {
-    return thisSeason[0].date;
-  }
-  return null;
+const getCurrentSeasonOrder = (
+  userOrders?: UserOrder[],
+): UserOrder | undefined => {
+  return userOrders?.find((o) => o.configId == activeConfigId.value);
 };
 
-const prettyLastOrderChanged = (
-  lastOrderChanges?: LastOrderChange[],
-): string => {
-  const date = getCurrentSeasonLastOrderChangeDate(lastOrderChanges);
-  if (date) {
-    return format(date, "PPp", { locale: de });
-  }
-  return "nie";
+const prettyDate = (date?: Date | null): string => {
+  return date ? format(date, "PPp", { locale: de }) : "nie";
 };
 </script>
 
@@ -256,8 +253,16 @@ const prettyLastOrderChanged = (
                   >
                 </v-tooltip>
               </template>
-              <template v-slot:item.lastOrderChanges="{ item }">
-                {{ prettyLastOrderChanged(item.lastOrderChanges) }}
+              <template v-slot:item.orderUpdatedAt="{ item }">
+                {{ prettyDate(getCurrentSeasonOrder(item.orders)?.updatedAt) }}
+                <v-btn
+                  icon="mdi-eye"
+                  variant="plain"
+                  :to="{ path: `/shop/${item.id}` }"
+                ></v-btn>
+              </template>
+              <template v-slot:item.orderValidFrom="{ item }">
+                {{ prettyDate(getCurrentSeasonOrder(item.orders)?.validFrom) }}
                 <v-btn
                   icon="mdi-eye"
                   variant="plain"

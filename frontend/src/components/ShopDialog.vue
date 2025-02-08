@@ -36,7 +36,7 @@ import {
 import SeasonText from "./styled/SeasonText.vue";
 import { useUiFeedback } from "../store/uiFeedbackStore.ts";
 import { UserCategory } from "../../../shared/src/enum.ts";
-import { UserWithLastOrderChange } from "../../../shared/src/types.ts";
+import { UserWithOrders } from "../../../shared/src/types.ts";
 import { useTextContentStore } from "../store/textContentStore.ts";
 
 defineProps(["open"]);
@@ -71,9 +71,9 @@ const loading = ref(false);
 const model = ref<string>();
 const showDepotNote = ref(false);
 
-const requestUser = inject<Ref<UserWithLastOrderChange>>(
+const requestUser = inject<Ref<UserWithOrders>>(
   "requestUser",
-) as Ref<UserWithLastOrderChange>;
+) as Ref<UserWithOrders>;
 
 const sendConfirmationEmail = ref(false);
 
