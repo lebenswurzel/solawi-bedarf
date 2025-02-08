@@ -61,6 +61,8 @@ export type GetUserResponse = {
 
 export type UpdateUserRequest = Id & {
   active?: boolean;
+  orderValidFrom?: Date;
+  configId: number;
 };
 
 export interface NewProduct {

@@ -98,8 +98,13 @@ export const updateOrderValidFrom = async (
     where: { userId: user.id, requisitionConfigId: configId },
   });
   if (order) {
-    order.validFrom = orderValidFrom;
-    await AppDataSource.getRepository(Order).save(order);
+    await AppDataSource.getRepository(Order).update(
+      { id: order.id },
+      {
+        validFrom: orderValidFrom,
+        updatedAt: order.updatedAt, // prevent modification of updatedAt as we use it to indicate whether a user changed his order
+      },
+    );
   } else {
     order = new Order();
     order.user = user;

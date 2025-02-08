@@ -23,6 +23,7 @@ import { storeToRefs } from "pinia";
 import { useConfigStore } from "../store/configStore";
 import {
   NewUser,
+  UpdateUserRequest,
   User,
   UserOrder,
   UserWithOrders,
@@ -32,9 +33,11 @@ import { computed } from "@vue/reactivity";
 import { updateUser } from "../requests/user.ts";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
+import { useUiFeedback } from "../store/uiFeedbackStore.ts";
 
 const t = language.pages.user;
 
+const { setError, setSuccess } = useUiFeedback();
 const configStore = useConfigStore();
 const { externalAuthProvider, activeConfigId } = storeToRefs(configStore);
 
@@ -43,8 +46,9 @@ const defaultUser: NewUser = {
   active: false,
 };
 
-const ACTION_ACTIVATE = "aktivieren";
-const ACTION_DEACTIVATE = "deaktivieren";
+const ACTION_ACTIVATE = "Aktivieren";
+const ACTION_DEACTIVATE = "Deaktivieren";
+const ACTION_SET_ORDER_VALID_FROM = "Setze 'Bedarf gültig ab'";
 
 const userStore = useUserStore();
 const { users } = storeToRefs(userStore);
@@ -52,7 +56,11 @@ const open = ref(false);
 const dialogUser = ref<NewUser | User>({ ...defaultUser });
 const search = ref<string>("");
 const selectedUsers = ref<number[]>([]);
-const selectedUserActions = [ACTION_ACTIVATE, ACTION_DEACTIVATE];
+const selectedUserActions = [
+  ACTION_ACTIVATE,
+  ACTION_DEACTIVATE,
+  ACTION_SET_ORDER_VALID_FROM,
+];
 const selectedAction = ref(selectedUserActions[0]);
 const processedUsers = ref<number>(0);
 const isProcessing = ref(false);
@@ -114,19 +122,45 @@ const applySelectedAction = async () => {
   isProcessing.value = true;
   processedUsers.value = 0;
 
+  let option: Omit<UpdateUserRequest, "id"> = {
+    configId: activeConfigId.value,
+  };
+  if (
+    selectedAction.value == ACTION_ACTIVATE ||
+    selectedAction.value == ACTION_DEACTIVATE
+  ) {
+    option = {
+      ...option,
+      active: selectedAction.value == ACTION_ACTIVATE,
+    };
+  } else if (selectedAction.value == ACTION_SET_ORDER_VALID_FROM) {
+    option = {
+      ...option,
+      orderValidFrom: new Date(), // TODO take date from a dialog
+    };
+  }
+
   const updateAll = selectedUsers.value.map((userId) =>
     updateUser({
       id: userId,
-      active: selectedAction.value == ACTION_ACTIVATE,
+      ...option,
     }).then(() => {
       processedUsers.value++;
     }),
   );
 
-  await Promise.all(updateAll);
-
-  isProcessing.value = false;
-  userStore.update();
+  try {
+    await Promise.all(updateAll);
+    setSuccess(
+      `${selectedUsers.value.length} Benutzer erfolgreich aktualisiert`,
+    );
+  } catch (error) {
+    setError("Aktualisierung fehlgeschlagen", error as Error);
+    throw error;
+  } finally {
+    isProcessing.value = false;
+    userStore.update();
+  }
 };
 
 const actionProgress = computed(() => {
@@ -263,11 +297,6 @@ const prettyDate = (date?: Date | null): string => {
               </template>
               <template v-slot:item.orderValidFrom="{ item }">
                 {{ prettyDate(getCurrentSeasonOrder(item.orders)?.validFrom) }}
-                <v-btn
-                  icon="mdi-eye"
-                  variant="plain"
-                  :to="{ path: `/shop/${item.id}` }"
-                ></v-btn>
               </template>
               <template v-slot:item.edit="{ item }">
                 <v-btn
