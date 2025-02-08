@@ -131,3 +131,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #181 Schöner Wohnen: Überarbeitetes Navigationsmenü
 
 # NEW
+
+#174 Fix: neu angelegte Bedarfsanmeldungen bekommen ein 'gültig ab'-Datum auf zwei Monate vor Saisonbeginn gesetzt, damit sie in Verteilungen berücksichtigt werden
