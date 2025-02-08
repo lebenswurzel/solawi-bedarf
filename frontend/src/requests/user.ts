@@ -19,20 +19,21 @@ import {
   GetUserResponse,
   SaveUserRequest,
   UpdateUserRequest,
-  UserWithLastOrderChange,
+  UserWithOrders,
 } from "../../../shared/src/types.ts";
 import { getUrl, verifyResponse } from "./requests.ts";
 
 // auxiliary types that allow receiving the date as string for later conversion to a Date object
-export type SerializedLastOrderChange = {
-  date: string;
+export type SerializedUserOrders = {
+  validFrom: string;
   configId: number;
+  updatedAt: string;
 };
 
 export type SerializedGetUserResponse = {
   userId: number;
-  users: (Omit<UserWithLastOrderChange, "lastOrderChanges"> & {
-    lastOrderChanges: SerializedLastOrderChange[];
+  users: (Omit<UserWithOrders, "orders"> & {
+    orders: SerializedUserOrders[];
   })[];
 };
 
@@ -46,9 +47,10 @@ export const getUser = async (): Promise<GetUserResponse> => {
     ...result,
     users: result.users.map((u) => ({
       ...u,
-      lastOrderChanges: u.lastOrderChanges?.map((loc) => ({
-        ...loc,
-        date: parseISO(loc.date),
+      orders: u.orders?.map((userOrder) => ({
+        ...userOrder,
+        updatedAt: parseISO(userOrder.updatedAt),
+        validFrom: userOrder.validFrom ? parseISO(userOrder.validFrom) : null,
       })),
     })),
   };

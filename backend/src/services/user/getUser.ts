@@ -36,7 +36,11 @@ export const getUser = async (
             id: true,
             role: true,
             active: true,
-            orders: { updatedAt: true, requisitionConfigId: true },
+            orders: {
+              updatedAt: true,
+              requisitionConfigId: true,
+              validFrom: true,
+            },
           },
           relations: {
             orders: true,
@@ -60,9 +64,10 @@ export const getUser = async (
       id: u.id,
       role: u.role,
       active: u.active,
-      lastOrderChanges: (u.orders ?? []).map((o) => ({
-        date: o.updatedAt,
+      orders: (u.orders ?? []).map((o) => ({
+        updatedAt: o.updatedAt,
         configId: o.requisitionConfigId,
+        validFrom: o.validFrom,
       })),
       emailEnabled: !!u.applicant,
     })),

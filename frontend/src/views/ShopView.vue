@@ -28,7 +28,7 @@ import { useBIStore } from "../store/biStore";
 import { storeToRefs } from "pinia";
 import { useConfigStore } from "../store/configStore.ts";
 import SeasonText from "../components/styled/SeasonText.vue";
-import { UserWithLastOrderChange } from "../../../shared/src/types.ts";
+import { UserWithOrders } from "../../../shared/src/types.ts";
 import { useRoute } from "vue-router";
 import { router } from "../routes.ts";
 
@@ -48,9 +48,7 @@ const { activeConfigId, config } = storeToRefs(configStore);
 const open = ref(false);
 const faqOpen = ref(false);
 const requestUserId = ref<number | undefined>(userStore.userId);
-const requestUser = ref<UserWithLastOrderChange | undefined>(
-  userStore.currentUser,
-);
+const requestUser = ref<UserWithOrders | undefined>(userStore.currentUser);
 const canAdministerOtherUsers = computed(() => {
   return userStore.userOptions.length > 1;
 });
