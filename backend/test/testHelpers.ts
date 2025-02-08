@@ -109,11 +109,17 @@ export const updateRequisition = async (
     } else {
       requisition.startBiddingRound = dateDeltaDays(5);
     }
+    requisition.validFrom = dateDeltaDays(20);
+    requisition.validTo = dateDeltaDays(20 + 365);
   } else {
     // bidding round in the past
     requisition.startOrder = dateDeltaDays(-20);
-    requisition.endBiddingRound = dateDeltaDays(-10);
     requisition.startBiddingRound = dateDeltaDays(-15);
+    requisition.endBiddingRound = dateDeltaDays(-10);
+
+    // season is currently active
+    requisition.validFrom = dateDeltaDays(-5);
+    requisition.validTo = dateDeltaDays(-5 + 365);
   }
   await repo.save(requisition);
   return requisition.id;

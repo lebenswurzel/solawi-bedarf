@@ -23,9 +23,16 @@ import {
   testAsUser1,
 } from "../../../testSetup";
 import { Order } from "../../database/Order";
-import { getDepotByName, updateRequisition } from "../../../test/testHelpers";
+import {
+  getDepotByName,
+  getRequisitionConfigId,
+  updateRequisition,
+} from "../../../test/testHelpers";
 import { getOrder } from "./getOrder";
 import { saveOrder } from "./saveOrder";
+import { AppDataSource } from "../../database/database";
+import { RequisitionConfig } from "../../database/RequisitionConfig";
+import { addMonths } from "date-fns";
 
 test("prevent unauthorized access", async () => {
   const ctx = createBasicTestCtx();
@@ -80,7 +87,16 @@ testAsUser1("get order", async ({ userData }: TestUserData) => {
   );
   await saveOrder(ctxCreateOrder);
 
+  const config = await AppDataSource.getRepository(
+    RequisitionConfig,
+  ).findOneOrFail({ where: { id: configId } });
+
+  const expectedValidFrom = addMonths(config.validFrom, -2);
+
   // get existing order
   await getOrder(ctx);
-  expect(ctx.body as Order).toMatchObject(createOrderRequest);
+  expect(ctx.body as Order).toMatchObject({
+    ...createOrderRequest,
+    validFrom: expectedValidFrom,
+  });
 });
