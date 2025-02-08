@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { format } from "date-fns";
+import { addMonths } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 import Koa from "koa";
 import Router from "koa-router";
@@ -55,6 +55,7 @@ import { getRequestUserId, getUserFromContext } from "../getUserFromContext";
 import { getProductCategories } from "../product/getProductCategory";
 import { getOrganizationInfo } from "../text/getOrganizationInfo";
 import { formatDateForFilename } from "../../../../shared/src/util/dateHelper";
+import { getSeasonPhase } from "../../../../shared/src/util/configHelper";
 
 export const saveOrder = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -150,6 +151,7 @@ export const saveOrder = async (
     order = new Order();
     order.userId = requestUserId;
     order.requisitionConfigId = configId;
+    order.validFrom = getNewOrderValidFromDate(requisitionConfig);
   }
 
   order.offer = body.offer;
@@ -270,4 +272,15 @@ export const saveOrder = async (
   }
 
   ctx.status = http.no_content;
+};
+
+export const getNewOrderValidFromDate = (
+  config: RequisitionConfig,
+): Date | null => {
+  if (config.validFrom < new Date()) {
+    // season already started --> new orders must be enabled manually by an admin
+    return null;
+  }
+  // validFrom two month before the season starts
+  return addMonths(config.validFrom, -2);
 };
