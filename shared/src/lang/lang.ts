@@ -191,7 +191,7 @@ export const language = {
             "Der Orientierungswert errechnet sich aus den von Dir gewählten Nahrungsmitteln sowie Mengen und entspricht dem durchschnittlichen Solawi-Beitrag für Deine Auswahl.",
           offer: "Dein Beitrag: {offer} € pro Monat",
           item: {
-            freq: "{freq} vorraussichtkiche Häufigkeit (in Wochen)",
+            freq: "{freq} vorraussichtliche Häufigkeit (in Wochen)",
             stock: "{stock} % verteilt",
             value: "Menge [{unit}]",
           },

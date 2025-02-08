@@ -240,20 +240,28 @@ const isSelected = (id: number) => !!selectedShippingItems.value[id];
         })
       }}</v-card-subtitle
     >
-    <v-card-subtitle v-if="shipment.description" style="white-space: normal">
-      {{ shipment.description }}
-    </v-card-subtitle>
     <v-card-text v-if="props.seasonPhase >= SeasonPhase.SEASON_PHASE">
-      <template
+      <p
+        v-if="shipment.description"
+        style="white-space: normal; max-width: 800px"
+        class="opacity-70 mx-auto mb-2"
+      >
+        {{ shipment.description }}
+      </p>
+      <p
         v-if="
           (additionalShipmentItems.length == 0 && shipmentItems.length == 0) ||
           (validFrom && validFrom > now)
         "
+        style="max-width: 800px"
+        class="mx-auto"
       >
         {{ t.cards.list.text }}
-      </template>
+      </p>
       <template v-else>
-        <p class="text-medium-emphasis mb-2">{{ t.cards.list.detailText }}</p>
+        <p class="text-medium-emphasis mb-2 mx-auto" style="max-width: 800px">
+          {{ t.cards.list.detailText }}
+        </p>
         <v-card
           variant="outlined"
           color="primary"
@@ -336,8 +344,10 @@ const isSelected = (id: number) => !!selectedShippingItems.value[id];
       </template>
     </v-card-text>
     <v-card-text v-else>
-      <p>{{ t.cards.list.seasonBefore }}</p>
-      <p>{{ t.cards.list.text }}</p>
+      <div>
+        <p>{{ t.cards.list.seasonBefore }}</p>
+        <p>{{ t.cards.list.text }}</p>
+      </div>
     </v-card-text>
   </v-card>
 </template>
