@@ -320,6 +320,7 @@ export interface BuildInfo {
 
 export interface VersionInfo {
   buildInfo: BuildInfo;
+  tokenValidUntil: Date | null;
 }
 
 export interface OrderOverviewProductItem {

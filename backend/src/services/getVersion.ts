@@ -21,10 +21,12 @@ import { VersionInfo } from "../../../shared/src/types";
 import { AppDataSource } from "../database/database";
 import { TextContent } from "../database/TextContent";
 import { TextContentCategory } from "../../../shared/src/enum";
+import { getTokenValidity } from "./getUserFromContext";
 
 export const getVersion = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
 ) => {
+  const tokenValidUntil = getTokenValidity(ctx);
   const maintenanceMessage: TextContent | null =
     await AppDataSource.getRepository(TextContent).findOne({
       where: { category: TextContentCategory.MAINTENANCE_MESSAGE },
@@ -38,6 +40,7 @@ export const getVersion = async (
         message: maintenanceMessage?.content || "",
       },
     },
+    tokenValidUntil,
   };
   ctx.body = response as VersionInfo;
 };

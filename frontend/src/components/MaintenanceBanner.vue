@@ -15,41 +15,25 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script lang="ts" setup>
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted } from "vue";
 import { buildInfo } from "../../../shared/src/buildInfo";
-import { getVersionInfo } from "../requests/versionInfo";
-import { VersionInfo } from "../../../shared/src/types";
 import { language } from "../../../shared/src/lang/lang";
-import { useUiFeedback } from "../store/uiFeedbackStore";
-import { interpolate } from "../../../shared/src/lang/template";
-import { useUserStore } from "../store/userStore";
 import { marked } from "marked";
+import { useVersionInfoStore } from "../store/versionInfoStore";
+import { storeToRefs } from "pinia";
+import { useUserStore } from "../store/userStore";
 
-const serverVersionInfo = ref<VersionInfo | undefined>();
-const serverError = ref<string>("");
-const uiFeedback = useUiFeedback();
+const versionInfoStore = useVersionInfoStore();
 const userStore = useUserStore();
+const {
+  versionInfo: serverVersionInfo,
+  serverError,
+  remainingTimeHumanized,
+  remainingTimeSeconds,
+} = storeToRefs(versionInfoStore);
+const { currentUser } = storeToRefs(userStore);
 
-const refreshServerVersionInfo = async () => {
-  getVersionInfo(userStore.currentUser?.id || 0)
-    .then((response: VersionInfo) => {
-      serverVersionInfo.value = response;
-      serverError.value = "";
-    })
-    .catch((e: Error) => {
-      uiFeedback.setError("Server error", e);
-      serverError.value = interpolate(language.app.maintenance.serverError, {
-        message: e.message,
-      });
-      serverVersionInfo.value = undefined;
-    })
-    .finally(() => {
-      // cyclically check server status
-      setTimeout(refreshServerVersionInfo, 60000);
-    });
-};
-
-onMounted(refreshServerVersionInfo);
+onMounted(() => versionInfoStore.update(true));
 
 const showVersionInfo = computed(() => {
   return (
@@ -73,6 +57,24 @@ const reload = () => {
 };
 </script>
 <template>
+  <div
+    :class="[
+      'logged-in-time',
+      remainingTimeSeconds < 60 ? 'pulse-opacity' : '',
+    ]"
+    v-if="remainingTimeSeconds < 900 && currentUser && currentUser?.id !== 0"
+  >
+    <v-sheet
+      :color="remainingTimeSeconds < 300 ? 'error' : 'info'"
+      rounded
+      class="text-caption ma-1 pa-1"
+      elevation="10"
+    >
+      <v-icon>mdi-timer-alert-outline</v-icon>
+
+      {{ remainingTimeHumanized }}
+    </v-sheet>
+  </div>
   <div v-if="showMaintenanceBanner" class="maintenance banner">
     <p class="bg-yellow message" v-html="maintenanceMessageHtml"></p>
   </div>
@@ -151,5 +153,31 @@ const reload = () => {
 }
 .server-error p.message {
   background-color: red !important;
+}
+
+.logged-in-time {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  z-index: 2000;
+}
+
+.pulse-opacity {
+  animation: pulseAnimation 1200ms ease-in-out infinite;
+}
+
+@keyframes pulseAnimation {
+  0% {
+    opacity: 1;
+  }
+  20% {
+    opacity: 1;
+  }
+  60% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 </style>
