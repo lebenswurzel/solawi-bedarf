@@ -22,6 +22,7 @@ import { useUserStore } from "../store/userStore.ts";
 import { useConfigStore } from "../store/configStore.ts";
 import { useProductStore } from "../store/productStore.ts";
 import { useOrderStore } from "../store/orderStore.ts";
+import { useVersionInfoStore } from "../store/versionInfoStore.ts";
 const password = ref<string>();
 const username = ref<string>();
 const untilMidnight = ref<boolean>();
@@ -32,6 +33,7 @@ const userStore = useUserStore();
 const configStore = useConfigStore();
 const productStore = useProductStore();
 const orderStore = useOrderStore();
+const versionInfoStore = useVersionInfoStore();
 
 const error = ref<string>();
 
@@ -44,6 +46,7 @@ const click = async () => {
         redirect = "/";
       }
       await router.push(redirect);
+      versionInfoStore.update();
     })
     .catch(() => {
       error.value =

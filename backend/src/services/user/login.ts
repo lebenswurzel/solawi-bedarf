@@ -29,6 +29,7 @@ import { invalidateTokenForUser } from "../../token";
 import http from "http";
 import { verifyLDAP } from "../ldap/ldap";
 import { UserRole } from "../../../../shared/src/enum";
+import { fromZonedTime, toZonedTime } from "date-fns-tz";
 
 export const login = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -119,9 +120,10 @@ export const calculateExpirationTimeStamp = (
   untilMidnight = untilMidnight === true;
 
   if (untilMidnight) {
-    const nextMidnight = new Date(issuedAtTime);
+    const nextMidnight = toZonedTime(new Date(issuedAtTime), config.timezone);
     nextMidnight.setHours(23, 59, 59, 0);
-    return nextMidnight.getTime();
+    const utcDate = fromZonedTime(nextMidnight, config.timezone);
+    return utcDate.getTime();
   }
   return issuedAtTime.getTime() + expirationTimeInMs;
 };
