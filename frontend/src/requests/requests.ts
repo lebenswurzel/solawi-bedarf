@@ -20,8 +20,15 @@ const host = "api";
 
 export const getUrl = (path: string): string => `${host}${path}`;
 
-export const verifyResponse = async (response: Response) => {
-  if (response.status == 401 && router.currentRoute.value.path != "/login") {
+export const verifyResponse = async (
+  response: Response,
+  redirectToLogin = true,
+) => {
+  if (
+    redirectToLogin &&
+    response.status == 401 &&
+    router.currentRoute.value.path != "/login"
+  ) {
     await router.push({
       path: "/login",
       query: { redirect: router.currentRoute.value.path },

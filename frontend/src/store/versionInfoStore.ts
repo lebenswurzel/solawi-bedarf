@@ -31,7 +31,7 @@ export const useVersionInfoStore = defineStore("versionInfo", () => {
 
   const update = async (startTimer = false) => {
     // make sure this function is called with startTime=true exactly once in the app life cycle
-    console.log("update version info store");
+    // console.log("update version info");
     await getVersionInfo(userStore.currentUser?.id || 0)
       .then((response: VersionInfo) => {
         versionInfo.value = response;
@@ -52,8 +52,14 @@ export const useVersionInfoStore = defineStore("versionInfo", () => {
       });
   };
 
-  const isLoggedIn = computed(() => {
-    return !!versionInfo.value?.tokenValidUntil;
+  const isSessionExpired = computed(() => {
+    // console.log(
+    //   "isSesssionExpired",
+    //   versionInfo.value,
+    //   userStore.currentUser,
+    //   remainingTimeSeconds.value,
+    // );
+    return !!userStore.currentUser?.name && remainingTimeSeconds.value === 0;
   });
 
   // A reactive "now" variable that updates every second
@@ -75,6 +81,7 @@ export const useVersionInfoStore = defineStore("versionInfo", () => {
     const diffInSeconds = Math.floor(
       (expiry.getTime() - now.value.getTime()) / 1000,
     );
+    console.log("diff in seconds", diffInSeconds);
     return diffInSeconds > 0 ? diffInSeconds : 0;
   });
 
@@ -101,7 +108,7 @@ export const useVersionInfoStore = defineStore("versionInfo", () => {
     serverError,
     remainingTimeSeconds,
     remainingTimeHumanized,
-    isLoggedIn,
+    isSessionExpired,
     update,
   };
 });

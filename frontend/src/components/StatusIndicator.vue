@@ -15,13 +15,14 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script lang="ts" setup>
-import { computed, onMounted } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { buildInfo } from "../../../shared/src/buildInfo";
 import { language } from "../../../shared/src/lang/lang";
 import { marked } from "marked";
 import { useVersionInfoStore } from "../store/versionInfoStore";
 import { storeToRefs } from "pinia";
 import { useUserStore } from "../store/userStore";
+import Login from "./Login.vue";
 
 const versionInfoStore = useVersionInfoStore();
 const userStore = useUserStore();
@@ -30,8 +31,10 @@ const {
   serverError,
   remainingTimeHumanized,
   remainingTimeSeconds,
+  isSessionExpired,
 } = storeToRefs(versionInfoStore);
 const { currentUser } = storeToRefs(userStore);
+const showLogin = ref(false);
 
 onMounted(() => versionInfoStore.update(true));
 
@@ -55,6 +58,13 @@ const maintenanceMessageHtml = computed(() => {
 const reload = () => {
   location.reload();
 };
+
+watch(isSessionExpired, (value) => {
+  if (value) {
+    console.log("is session expired");
+    showLogin.value = true;
+  }
+});
 </script>
 <template>
   <div
@@ -73,6 +83,14 @@ const reload = () => {
       <v-icon>mdi-timer-alert-outline</v-icon>
 
       {{ remainingTimeHumanized }}
+
+      <span
+        v-if="isSessionExpired"
+        class="text-decoration-underline"
+        style="cursor: pointer"
+        @click="showLogin = true"
+        >Erneut einloggen</span
+      >
     </v-sheet>
   </div>
   <div v-if="showMaintenanceBanner" class="maintenance banner">
@@ -102,6 +120,25 @@ const reload = () => {
       >{{ language.app.actions.update }}</v-btn
     >
   </div>
+  <v-dialog v-model="showLogin" persistent>
+    <v-container>
+      <v-row justify="center">
+        <v-col cols="12" md="8">
+          <Login @login-ok="showLogin = false">
+            <v-card-subtitle style="white-space: normal">
+              Du wurdest automatisch ausgeloggt. Zum weiterarbeiten bitte erneut
+              einloggen.
+            </v-card-subtitle>
+            <template v-slot:actions>
+              <v-btn @click="showLogin = false">{{
+                language.app.actions.close
+              }}</v-btn></template
+            >
+          </Login>
+        </v-col>
+      </v-row>
+    </v-container>
+  </v-dialog>
 </template>
 
 <style>
@@ -159,7 +196,7 @@ const reload = () => {
   position: fixed;
   right: 0;
   bottom: 0;
-  z-index: 2000;
+  z-index: 5000;
 }
 
 .pulse-opacity {

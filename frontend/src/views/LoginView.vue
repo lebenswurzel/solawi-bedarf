@@ -15,44 +15,16 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import { login } from "../requests/login.ts";
+import { onMounted } from "vue";
 import { useUserStore } from "../store/userStore.ts";
 import { useConfigStore } from "../store/configStore.ts";
 import { useProductStore } from "../store/productStore.ts";
 import { useOrderStore } from "../store/orderStore.ts";
-import { useVersionInfoStore } from "../store/versionInfoStore.ts";
-const password = ref<string>();
-const username = ref<string>();
-const untilMidnight = ref<boolean>();
-
-const router = useRouter();
-const route = useRoute();
+import Login from "../components/Login.vue";
 const userStore = useUserStore();
 const configStore = useConfigStore();
 const productStore = useProductStore();
 const orderStore = useOrderStore();
-const versionInfoStore = useVersionInfoStore();
-
-const error = ref<string>();
-
-const click = async () => {
-  login(username.value!, password.value!, untilMidnight.value!)
-    .then(async () => {
-      await userStore.update();
-      let redirect = (route.query.redirect as string) || "/";
-      if (redirect == "/login") {
-        redirect = "/";
-      }
-      await router.push(redirect);
-      versionInfoStore.update();
-    })
-    .catch(() => {
-      error.value =
-        "Der Login ist leider fehlgeschlagen. Bitte gib das richtige Passwort ein oder korrigiere gegebenenfalls vorher den Anmeldenamen.";
-    });
-};
 
 onMounted(() => {
   userStore.clear();
@@ -63,33 +35,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <v-card class="ma-2">
-    <v-card-title>Login</v-card-title>
-    <v-card-subtitle>
-      Noch kein Login?
-      <router-link to="/register">Hier Registrieren</router-link>
-    </v-card-subtitle>
-    <v-card-text>
-      <v-text-field
-        v-model="username"
-        label="Anmeldename"
-        placeholder="LW23042"
-      ></v-text-field>
-      <v-text-field label="Passwort" type="password" v-model="password" />
-      <v-checkbox label="Heute angemeldet bleiben" v-model="untilMidnight" />
-    </v-card-text>
-    <v-card-actions class="justify-center">
-      <v-btn class="text-white" @click="click" variant="elevated">
-        Login
-      </v-btn>
-    </v-card-actions>
-  </v-card>
-
-  <v-snackbar
-    color="red"
-    :model-value="!!error"
-    @update:model-value="() => (error = undefined)"
-  >
-    {{ error }}
-  </v-snackbar>
+  <div class="mx-auto" style="max-width: 800px">
+    <Login show-register-link use-redirect />
+  </div>
 </template>
