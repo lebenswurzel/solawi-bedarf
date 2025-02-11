@@ -125,6 +125,11 @@ export const language = {
       licensedUnder: "Lizensiert unter AGPLv3",
       sourceCode: "Quellcode",
     },
+    status: {
+      autoLogout:
+        "Du wurdest automatisch ausgeloggt. Zum Weiterarbeiten bitte erneut einloggen.",
+      loginAgain: "Erneut einloggen",
+    },
   },
   navigation: {
     employees: "Mitarbeiter",
