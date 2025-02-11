@@ -76,7 +76,7 @@ watch(isSessionExpired, (value) => {
     "
   >
     <v-sheet
-      :color="remainingTokenTimeSeconds < 300 ? 'error' : 'info'"
+      :color="remainingTokenTimeSeconds < 300 ? 'orange' : 'info'"
       rounded
       class="text-caption ma-1 pa-1"
       elevation="10"
@@ -90,7 +90,7 @@ watch(isSessionExpired, (value) => {
         class="text-decoration-underline"
         style="cursor: pointer"
         @click="showLogin = true"
-        >Erneut einloggen</span
+        >{{ language.app.status.loginAgain }}</span
       >
     </v-sheet>
   </div>
@@ -121,14 +121,26 @@ watch(isSessionExpired, (value) => {
       >{{ language.app.actions.update }}</v-btn
     >
   </div>
+  <div v-if="isSessionExpired" class="session-expired banner">
+    <p class="bg-yellow message">
+      {{ language.app.status.autoLogout }}
+    </p>
+    <v-btn
+      class="mt-2"
+      prepend-icon="mdi-login"
+      variant="elevated"
+      color="orange"
+      @click="showLogin = true"
+      >{{ language.pages.login.action.login }}</v-btn
+    >
+  </div>
   <v-dialog v-model="showLogin" persistent>
     <v-container>
       <v-row justify="center">
         <v-col cols="12" md="8">
           <Login @login-ok="showLogin = false">
             <v-card-subtitle style="white-space: normal">
-              Du wurdest automatisch ausgeloggt. Zum weiterarbeiten bitte erneut
-              einloggen.
+              {{ language.app.status.autoLogout }}
             </v-card-subtitle>
             <template v-slot:actions>
               <v-btn @click="showLogin = false">{{
@@ -150,6 +162,7 @@ watch(isSessionExpired, (value) => {
   position: sticky;
   top: 60px;
   z-index: 100;
+  opacity: 0.8;
 }
 
 .maintenance {
@@ -191,6 +204,19 @@ watch(isSessionExpired, (value) => {
 }
 .server-error p.message {
   background-color: red !important;
+}
+
+.session-expired {
+  background-image: repeating-linear-gradient(
+    45deg,
+    white,
+    white 1em,
+    orange 1em,
+    orange 2em
+  );
+}
+.session-expired p.message {
+  background-color: orange !important;
 }
 
 .logged-in-time {
