@@ -26,14 +26,14 @@ import Login from "./Login.vue";
 
 const versionInfoStore = useVersionInfoStore();
 const userStore = useUserStore();
+const { versionInfo: serverVersionInfo, serverError } =
+  storeToRefs(versionInfoStore);
 const {
-  versionInfo: serverVersionInfo,
-  serverError,
-  remainingTimeHumanized,
-  remainingTimeSeconds,
+  currentUser,
   isSessionExpired,
-} = storeToRefs(versionInfoStore);
-const { currentUser } = storeToRefs(userStore);
+  remainingTokenTimeSeconds,
+  remainingTimeHumanized,
+} = storeToRefs(userStore);
 const showLogin = ref(false);
 
 onMounted(() => versionInfoStore.update(true));
@@ -61,7 +61,6 @@ const reload = () => {
 
 watch(isSessionExpired, (value) => {
   if (value) {
-    console.log("is session expired");
     showLogin.value = true;
   }
 });
@@ -70,12 +69,14 @@ watch(isSessionExpired, (value) => {
   <div
     :class="[
       'logged-in-time',
-      remainingTimeSeconds < 60 ? 'pulse-opacity' : '',
+      remainingTokenTimeSeconds < 60 ? 'pulse-opacity' : '',
     ]"
-    v-if="remainingTimeSeconds < 900 && currentUser && currentUser?.id !== 0"
+    v-if="
+      remainingTokenTimeSeconds < 900 && currentUser && currentUser?.id !== 0
+    "
   >
     <v-sheet
-      :color="remainingTimeSeconds < 300 ? 'error' : 'info'"
+      :color="remainingTokenTimeSeconds < 300 ? 'error' : 'info'"
       rounded
       class="text-caption ma-1 pa-1"
       elevation="10"

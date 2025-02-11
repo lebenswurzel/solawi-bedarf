@@ -15,13 +15,13 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { defineStore } from "pinia";
-import { computed, onUnmounted, ref } from "vue";
+import { ref } from "vue";
+import { language } from "../../../shared/src/lang/lang.ts";
+import { interpolate } from "../../../shared/src/lang/template.ts";
 import { VersionInfo } from "../../../shared/src/types.ts";
 import { getVersionInfo } from "../requests/versionInfo.ts";
 import { useUiFeedback } from "./uiFeedbackStore.ts";
 import { useUserStore } from "./userStore.ts";
-import { interpolate } from "../../../shared/src/lang/template.ts";
-import { language } from "../../../shared/src/lang/lang.ts";
 
 export const useVersionInfoStore = defineStore("versionInfo", () => {
   const versionInfo = ref<VersionInfo>();
@@ -31,7 +31,6 @@ export const useVersionInfoStore = defineStore("versionInfo", () => {
 
   const update = async (startTimer = false) => {
     // make sure this function is called with startTime=true exactly once in the app life cycle
-    // console.log("update version info");
     await getVersionInfo(userStore.currentUser?.id || 0)
       .then((response: VersionInfo) => {
         versionInfo.value = response;
@@ -52,63 +51,9 @@ export const useVersionInfoStore = defineStore("versionInfo", () => {
       });
   };
 
-  const isSessionExpired = computed(() => {
-    // console.log(
-    //   "isSesssionExpired",
-    //   versionInfo.value,
-    //   userStore.currentUser,
-    //   remainingTimeSeconds.value,
-    // );
-    return !!userStore.currentUser?.name && remainingTimeSeconds.value === 0;
-  });
-
-  // A reactive "now" variable that updates every second
-  const now = ref(new Date());
-  const timer = setInterval(() => {
-    now.value = new Date();
-  }, 1000);
-
-  // Clear the interval if the store is ever unmounted (optional in many apps)
-  onUnmounted(() => {
-    clearInterval(timer);
-  });
-
-  // Computed property for the remaining time in seconds.
-  const remainingTimeSeconds = computed(() => {
-    if (!versionInfo.value?.tokenValidUntil) return 0;
-    const expiry = new Date(versionInfo.value.tokenValidUntil);
-    // Calculate the difference in seconds.
-    const diffInSeconds = Math.floor(
-      (expiry.getTime() - now.value.getTime()) / 1000,
-    );
-    console.log("diff in seconds", diffInSeconds);
-    return diffInSeconds > 0 ? diffInSeconds : 0;
-  });
-
-  // Computed property for a human-readable remaining time.
-  const remainingTimeHumanized = computed(() => {
-    const seconds = remainingTimeSeconds.value;
-
-    if (seconds <= 0) return "Sitzung abgelaufen";
-    if (seconds < 60) return `Sitzung läuft in ${seconds} Sekunden ab`;
-
-    const minutes = Math.floor(seconds / 60);
-    if (minutes < 5)
-      return `Sitzung läuft in ${minutes} Minuten und ${seconds % 60} Sekunden ab`;
-
-    if (minutes < 60) return `Sitzung läuft in ${minutes} Minuten ab`;
-
-    const hours = Math.floor(minutes / 60);
-    const remainderMinutes = minutes % 60;
-    return `Sitzung läuft in ${hours} Stunden und ${remainderMinutes} Minuten ab`;
-  });
-
   return {
     versionInfo,
     serverError,
-    remainingTimeSeconds,
-    remainingTimeHumanized,
-    isSessionExpired,
     update,
   };
 });
