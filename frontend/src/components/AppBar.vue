@@ -36,12 +36,9 @@ const configStore = useConfigStore();
 const productStore = useProductStore();
 const orderStore = useOrderStore();
 
-const { currentUser } = storeToRefs(userStore);
+const { currentUser, isLoggedIn } = storeToRefs(userStore);
 const theme = useTheme();
 const { config, seasonColorClass } = storeToRefs(configStore);
-const isLoggedIn = computed(() => {
-  return currentUser.value !== undefined;
-});
 
 onMounted(async () => {
   if (window.location.hash != "#/register") {

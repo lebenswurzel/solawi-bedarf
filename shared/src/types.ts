@@ -57,6 +57,7 @@ export type UserWithOrders = Required<User> & {
 export type GetUserResponse = {
   userId: number;
   users: UserWithOrders[];
+  tokenValidUntil: Date | null;
 };
 
 export type UpdateUserRequest = Id & {
@@ -320,7 +321,6 @@ export interface BuildInfo {
 
 export interface VersionInfo {
   buildInfo: BuildInfo;
-  tokenValidUntil: Date | null;
 }
 
 export interface OrderOverviewProductItem {
