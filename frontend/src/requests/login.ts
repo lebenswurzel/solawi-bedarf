@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { getUrl } from "./requests.ts";
+import { getUrl, verifyResponse } from "./requests.ts";
 
 export const login = async (
   username: string,
@@ -25,11 +25,12 @@ export const login = async (
   if (untilMidnight === true) {
     query = "?untilMidnight=true";
   }
-  await fetch(getUrl("/user/token" + query), {
+  const response = await fetch(getUrl("/user/token" + query), {
     headers: new Headers({
       Authorization: `Basic ${btoa(`${username}:${password}`)}`,
     }),
   });
+  await verifyResponse(response, false);
 };
 
 export const logout = async () => {

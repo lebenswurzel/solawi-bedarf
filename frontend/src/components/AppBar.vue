@@ -36,12 +36,9 @@ const configStore = useConfigStore();
 const productStore = useProductStore();
 const orderStore = useOrderStore();
 
-const { currentUser } = storeToRefs(userStore);
+const { currentUser, isLoggedIn, isSessionExpired } = storeToRefs(userStore);
 const theme = useTheme();
 const { config, seasonColorClass } = storeToRefs(configStore);
-const isLoggedIn = computed(() => {
-  return currentUser.value !== undefined;
-});
 
 onMounted(async () => {
   if (window.location.hash != "#/register") {
@@ -201,6 +198,7 @@ const adminNavEntries: NavEntry[] = [
           }}</v-list-item-title>
         </v-list-item></template
       >
+
       <template v-if="showAdminNav">
         <v-divider></v-divider>
         <v-list-subheader class="ml-2">{{
@@ -215,6 +213,38 @@ const adminNavEntries: NavEntry[] = [
         </v-list-item>
       </template>
     </v-list>
+
+    <template v-slot:append>
+      <v-divider></v-divider>
+      <div class="ma-2">{{ currentUser?.name }}</div>
+      <div
+        class="ma-2 text-caption opacity-50"
+        v-if="isLoggedIn || isSessionExpired"
+      >
+        {{ userStore.remainingTimeHumanized }}
+      </div>
+      <div class="mb-2">
+        <v-list-item
+          @click="onLogout"
+          prepend-icon="mdi-logout"
+          v-if="isLoggedIn"
+        >
+          <v-list-item-title>{{
+            language.pages.login.action.logout
+          }}</v-list-item-title>
+        </v-list-item>
+
+        <v-list-item
+          to="/login"
+          prepend-icon="mdi-login"
+          v-else-if="!isSessionExpired"
+        >
+          <v-list-item-title>{{
+            language.pages.login.title
+          }}</v-list-item-title>
+        </v-list-item>
+      </div>
+    </template>
   </v-navigation-drawer>
 </template>
 

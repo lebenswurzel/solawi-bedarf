@@ -16,15 +16,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { expect, test } from "vitest";
 import { calculateExpirationTimeStamp } from "./login";
+import { fromZonedTime } from "date-fns-tz";
 
 test("expiration time stamp", () => {
   const issuedAt = new Date("2024-09-11 12:34:56");
 
   // one hour
   let expirationTime = calculateExpirationTimeStamp(issuedAt, 60 * 60 * 1000);
-  expect(expirationTime).toEqual(new Date("2024-09-11 13:34:56").getTime());
+  expect(expirationTime).toEqual(new Date("2024-09-11 13:34:56Z").getTime());
 
   // until midnight
   expirationTime = calculateExpirationTimeStamp(issuedAt, 60 * 60 * 1000, true);
-  expect(expirationTime).toEqual(new Date("2024-09-11 23:59:59").getTime());
+  expect(new Date(expirationTime)).toEqual(new Date("2024-09-11 21:59:59Z"));
 });

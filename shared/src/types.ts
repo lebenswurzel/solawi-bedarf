@@ -57,6 +57,7 @@ export type UserWithOrders = Required<User> & {
 export type GetUserResponse = {
   userId: number;
   users: UserWithOrders[];
+  tokenValidUntil: Date | null;
 };
 
 export type UpdateUserRequest = Id & {

@@ -15,41 +15,28 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script lang="ts" setup>
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { buildInfo } from "../../../shared/src/buildInfo";
-import { getVersionInfo } from "../requests/versionInfo";
-import { VersionInfo } from "../../../shared/src/types";
 import { language } from "../../../shared/src/lang/lang";
-import { useUiFeedback } from "../store/uiFeedbackStore";
-import { interpolate } from "../../../shared/src/lang/template";
-import { useUserStore } from "../store/userStore";
 import { marked } from "marked";
+import { useVersionInfoStore } from "../store/versionInfoStore";
+import { storeToRefs } from "pinia";
+import { useUserStore } from "../store/userStore";
+import Login from "./Login.vue";
 
-const serverVersionInfo = ref<VersionInfo | undefined>();
-const serverError = ref<string>("");
-const uiFeedback = useUiFeedback();
+const versionInfoStore = useVersionInfoStore();
 const userStore = useUserStore();
+const { versionInfo: serverVersionInfo, serverError } =
+  storeToRefs(versionInfoStore);
+const {
+  currentUser,
+  isSessionExpired,
+  remainingTokenTimeSeconds,
+  remainingTimeHumanized,
+} = storeToRefs(userStore);
+const showLogin = ref(false);
 
-const refreshServerVersionInfo = async () => {
-  getVersionInfo(userStore.currentUser?.id || 0)
-    .then((response: VersionInfo) => {
-      serverVersionInfo.value = response;
-      serverError.value = "";
-    })
-    .catch((e: Error) => {
-      uiFeedback.setError("Server error", e);
-      serverError.value = interpolate(language.app.maintenance.serverError, {
-        message: e.message,
-      });
-      serverVersionInfo.value = undefined;
-    })
-    .finally(() => {
-      // cyclically check server status
-      setTimeout(refreshServerVersionInfo, 60000);
-    });
-};
-
-onMounted(refreshServerVersionInfo);
+onMounted(() => versionInfoStore.update(true));
 
 const showVersionInfo = computed(() => {
   return (
@@ -71,8 +58,42 @@ const maintenanceMessageHtml = computed(() => {
 const reload = () => {
   location.reload();
 };
+
+watch(isSessionExpired, (value) => {
+  if (value) {
+    showLogin.value = true;
+  }
+});
 </script>
 <template>
+  <div
+    :class="[
+      'logged-in-time',
+      remainingTokenTimeSeconds < 60 ? 'pulse-opacity' : '',
+    ]"
+    v-if="
+      remainingTokenTimeSeconds < 900 && currentUser && currentUser?.id !== 0
+    "
+  >
+    <v-sheet
+      :color="remainingTokenTimeSeconds < 300 ? 'orange' : 'info'"
+      rounded
+      class="text-caption ma-1 pa-1"
+      elevation="10"
+    >
+      <v-icon>mdi-timer-alert-outline</v-icon>
+
+      {{ remainingTimeHumanized }}
+
+      <span
+        v-if="isSessionExpired"
+        class="text-decoration-underline"
+        style="cursor: pointer"
+        @click="showLogin = true"
+        >{{ language.app.status.loginAgain }}</span
+      >
+    </v-sheet>
+  </div>
   <div v-if="showMaintenanceBanner" class="maintenance banner">
     <p class="bg-yellow message" v-html="maintenanceMessageHtml"></p>
   </div>
@@ -100,6 +121,37 @@ const reload = () => {
       >{{ language.app.actions.update }}</v-btn
     >
   </div>
+  <div v-if="isSessionExpired" class="session-expired banner">
+    <p class="bg-yellow message">
+      {{ language.app.status.autoLogout }}
+    </p>
+    <v-btn
+      class="mt-2"
+      prepend-icon="mdi-login"
+      variant="elevated"
+      color="orange"
+      @click="showLogin = true"
+      >{{ language.pages.login.action.login }}</v-btn
+    >
+  </div>
+  <v-dialog v-model="showLogin" persistent>
+    <v-container>
+      <v-row justify="center">
+        <v-col cols="12" md="8">
+          <Login @login-ok="showLogin = false">
+            <v-card-subtitle style="white-space: normal">
+              {{ language.app.status.autoLogout }}
+            </v-card-subtitle>
+            <template v-slot:actions>
+              <v-btn @click="showLogin = false">{{
+                language.app.actions.close
+              }}</v-btn></template
+            >
+          </Login>
+        </v-col>
+      </v-row>
+    </v-container>
+  </v-dialog>
 </template>
 
 <style>
@@ -110,6 +162,7 @@ const reload = () => {
   position: sticky;
   top: 60px;
   z-index: 100;
+  opacity: 0.8;
 }
 
 .maintenance {
@@ -151,5 +204,44 @@ const reload = () => {
 }
 .server-error p.message {
   background-color: red !important;
+}
+
+.session-expired {
+  background-image: repeating-linear-gradient(
+    45deg,
+    white,
+    white 1em,
+    orange 1em,
+    orange 2em
+  );
+}
+.session-expired p.message {
+  background-color: orange !important;
+}
+
+.logged-in-time {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  z-index: 5000;
+}
+
+.pulse-opacity {
+  animation: pulseAnimation 1200ms ease-in-out infinite;
+}
+
+@keyframes pulseAnimation {
+  0% {
+    opacity: 1;
+  }
+  20% {
+    opacity: 1;
+  }
+  60% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 </style>

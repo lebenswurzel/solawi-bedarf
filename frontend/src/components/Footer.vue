@@ -27,7 +27,12 @@ const privacyNotice = ref(false);
 </script>
 
 <template>
-  <v-footer app absolute elevation="2" class="text-center d-flex flex-column">
+  <v-footer
+    app
+    absolute
+    elevation="2"
+    class="text-center d-flex flex-column pb-5"
+  >
     <v-container>
       <v-row justify="center" no-gutters>
         <v-col class="text-center" cols="12">

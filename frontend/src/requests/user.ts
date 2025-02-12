@@ -35,6 +35,7 @@ export type SerializedGetUserResponse = {
   users: (Omit<UserWithOrders, "orders"> & {
     orders: SerializedUserOrders[];
   })[];
+  tokenValidUntil: Date;
 };
 
 export const getUser = async (): Promise<GetUserResponse> => {
@@ -45,6 +46,9 @@ export const getUser = async (): Promise<GetUserResponse> => {
   const result = (await response.json()) as SerializedGetUserResponse;
   return {
     ...result,
+    tokenValidUntil: result.tokenValidUntil
+      ? new Date(result.tokenValidUntil)
+      : null,
     users: result.users.map((u) => ({
       ...u,
       orders: u.orders?.map((userOrder) => ({

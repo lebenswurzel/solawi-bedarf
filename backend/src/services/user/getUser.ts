@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { FindManyOptions } from "typeorm";
 import { User } from "../../database/User";
 import { AppDataSource } from "../../database/database";
-import { getUserFromContext } from "../getUserFromContext";
+import { getTokenValidity, getUserFromContext } from "../getUserFromContext";
 import Koa from "koa";
 import Router from "koa-router";
 import { UserRole } from "../../../../shared/src/enum";
@@ -27,6 +27,7 @@ export const getUser = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
 ) => {
   const { id, role } = await getUserFromContext(ctx);
+  const tokenValidUntil = getTokenValidity(ctx);
   const findOptions: FindManyOptions<User> =
     role == UserRole.ADMIN
       ? {
@@ -71,5 +72,7 @@ export const getUser = async (
       })),
       emailEnabled: !!u.applicant,
     })),
+
+    tokenValidUntil,
   } as GetUserResponse;
 };

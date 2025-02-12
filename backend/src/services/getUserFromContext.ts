@@ -48,6 +48,21 @@ export const getUserFromContext = async (
   ctx.throw(http.unauthorized);
 };
 
+export const getTokenValidity = (
+  ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
+): Date | null => {
+  const cookieToken = ctx.cookies.get("token");
+  if (cookieToken) {
+    const { jti, exp } = jwt.verify(
+      cookieToken,
+      config.jwt.secret,
+    ) as JwtPayload;
+
+    return exp ? new Date(exp * 1000) : null;
+  }
+  return null;
+};
+
 export const getRequestUserId = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
 ): Promise<number> => {
