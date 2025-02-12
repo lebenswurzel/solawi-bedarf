@@ -36,7 +36,7 @@ const configStore = useConfigStore();
 const productStore = useProductStore();
 const orderStore = useOrderStore();
 
-const { currentUser, isLoggedIn } = storeToRefs(userStore);
+const { currentUser, isLoggedIn, isSessionExpired } = storeToRefs(userStore);
 const theme = useTheme();
 const { config, seasonColorClass } = storeToRefs(configStore);
 
@@ -212,6 +212,15 @@ const adminNavEntries: NavEntry[] = [
         </v-list-item>
       </template>
     </v-list>
+
+    <template v-slot:append>
+      <div
+        class="ma-2 text-caption opacity-50"
+        v-if="isLoggedIn || isSessionExpired"
+      >
+        {{ userStore.remainingTimeHumanized }}
+      </div>
+    </template>
   </v-navigation-drawer>
 </template>
 
