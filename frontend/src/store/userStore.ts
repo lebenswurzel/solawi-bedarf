@@ -110,13 +110,13 @@ export const useUserStore = defineStore("userStore", () => {
 
     const minutes = Math.floor(seconds / 60);
     if (minutes < 5)
-      return `Sitzung läuft in ${minutes} Minuten und ${seconds % 60} Sekunden ab`;
+      return `Sitzung läuft in ${minutes} Min. ${seconds % 60} Sek. ab`;
 
     if (minutes < 60) return `Sitzung läuft in ${minutes} Minuten ab`;
 
     const hours = Math.floor(minutes / 60);
     const remainderMinutes = minutes % 60;
-    return `Sitzung läuft in ${hours} Stunden und ${remainderMinutes} Minuten ab`;
+    return `Sitzung läuft in ${hours} Std. ${remainderMinutes} Min. ab`;
   });
 
   return {

@@ -215,6 +215,8 @@ const adminNavEntries: NavEntry[] = [
     </v-list>
 
     <template v-slot:append>
+      <v-divider></v-divider>
+      <div class="ma-2">{{ currentUser?.name }}</div>
       <div
         class="ma-2 text-caption opacity-50"
         v-if="isLoggedIn || isSessionExpired"
@@ -232,7 +234,11 @@ const adminNavEntries: NavEntry[] = [
           }}</v-list-item-title>
         </v-list-item>
 
-        <v-list-item to="/login" prepend-icon="mdi-login" v-else>
+        <v-list-item
+          to="/login"
+          prepend-icon="mdi-login"
+          v-else-if="!isSessionExpired"
+        >
           <v-list-item-title>{{
             language.pages.login.title
           }}</v-list-item-title>
