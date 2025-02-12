@@ -148,6 +148,7 @@ export const language = {
       },
       action: {
         login: "Login",
+        logout: "Logout",
       },
     },
     home: {
