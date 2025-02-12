@@ -198,6 +198,7 @@ const adminNavEntries: NavEntry[] = [
           }}</v-list-item-title>
         </v-list-item></template
       >
+
       <template v-if="showAdminNav">
         <v-divider></v-divider>
         <v-list-subheader class="ml-2">{{
@@ -219,6 +220,23 @@ const adminNavEntries: NavEntry[] = [
         v-if="isLoggedIn || isSessionExpired"
       >
         {{ userStore.remainingTimeHumanized }}
+      </div>
+      <div class="mb-2">
+        <v-list-item
+          @click="onLogout"
+          prepend-icon="mdi-logout"
+          v-if="isLoggedIn"
+        >
+          <v-list-item-title>{{
+            language.pages.login.action.logout
+          }}</v-list-item-title>
+        </v-list-item>
+
+        <v-list-item to="/login" prepend-icon="mdi-login" v-else>
+          <v-list-item-title>{{
+            language.pages.login.title
+          }}</v-list-item-title>
+        </v-list-item>
       </div>
     </template>
   </v-navigation-drawer>
