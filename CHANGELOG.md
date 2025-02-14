@@ -134,6 +134,8 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 
 #174 Fix: neu angelegte Bedarfsanmeldungen bekommen ein 'gültig ab'-Datum auf zwei Monate vor Saisonbeginn gesetzt, damit sie in Verteilungen berücksichtigt werden
 
-# NEW
+# v0.4.19 - 2025-02-14 - Sitzungstimer
 
 #184 Bei Ablauf der Sitzung ist ein erneuter Login möglich, ohne dass der Nutzer ungespeicherte Daten verliert.
+
+# NEW
