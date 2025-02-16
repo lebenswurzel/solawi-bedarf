@@ -14,7 +14,8 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { ref, provide, inject, Ref } from "vue";
+import { defineStore } from "pinia";
+import { ref, Ref } from "vue";
 
 interface UiFeedbackStore {
   error: Ref<string | null>;
@@ -26,51 +27,41 @@ interface UiFeedbackStore {
   clearSuccess: () => void;
 }
 
-function useUiFeedbackStore(): UiFeedbackStore {
-  const error = ref<string | null>("");
+export const useUiFeedback = defineStore(
+  "uiFeedbackStore",
+  (): UiFeedbackStore => {
+    const error = ref<string | null>("");
 
-  const setError = (message: string, e?: Error) => {
-    if (e) {
-      error.value = message + ": " + e.message;
-    } else {
-      error.value = message;
-    }
-  };
+    const setError = (message: string, e?: Error) => {
+      if (e) {
+        error.value = message + ": " + e.message;
+      } else {
+        error.value = message;
+      }
+    };
 
-  const clearError = () => {
-    error.value = null;
-  };
+    const clearError = () => {
+      error.value = null;
+    };
 
-  const success = ref<string | null>("");
+    const success = ref<string | null>("");
 
-  const setSuccess = (message: string) => {
-    clearSuccess();
-    success.value = message;
-  };
+    const setSuccess = (message: string) => {
+      clearSuccess();
+      success.value = message;
+    };
 
-  const clearSuccess = () => {
-    success.value = null;
-  };
+    const clearSuccess = () => {
+      success.value = null;
+    };
 
-  return {
-    error,
-    setError,
-    clearError,
-    success,
-    setSuccess,
-    clearSuccess,
-  };
-}
-
-export function provideUiFeedbackStore(): void {
-  const uiFeedbackStore = useUiFeedbackStore();
-  provide("uiFeedbackStore", uiFeedbackStore);
-}
-
-export function useUiFeedback(): UiFeedbackStore {
-  const uiFeedbackStore = inject<UiFeedbackStore>("uiFeedbackStore");
-  if (!uiFeedbackStore) {
-    throw new Error("useError() must be used within a <provider>");
-  }
-  return uiFeedbackStore;
-}
+    return {
+      error,
+      setError,
+      clearError,
+      success,
+      setSuccess,
+      clearSuccess,
+    };
+  },
+);
