@@ -139,3 +139,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #184 Bei Ablauf der Sitzung ist ein erneuter Login möglich, ohne dass der Nutzer ungespeicherte Daten verliert.
 
 # NEW
+
+#186 Technisches Update: Verwendete Bibliotheken auf den neuesten Stand gebracht
