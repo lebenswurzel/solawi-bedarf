@@ -110,7 +110,7 @@ const onDepotPdfClick = async () => {
       );
     }
 
-    const filename = `depots ${formatDateForFilename(new Date())}.pdf`;
+    const filename = `depots ${formatDateForFilename(new Date())}.zip`;
     zip.download(filename);
   } catch (e) {
     uiFeedbackStore.setError("" + e);
@@ -139,7 +139,7 @@ const onUserPdfClick = async () => {
         `${sanitizeFileName(pdf.receiver)}.pdf`,
       );
     }
-    const filename = `users ${formatDateForFilename(new Date())}.pdf`;
+    const filename = `users ${formatDateForFilename(new Date())}.zip`;
     zip.download(filename);
   } catch (e) {
     uiFeedbackStore.setError("" + e);
