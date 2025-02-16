@@ -130,7 +130,7 @@ const adminNavEntries: NavEntry[] = [
     to: "/adminoverview",
   },
   {
-    title: "Statistics", // Replace with a placeholder title or update as needed
+    title: language.pages.statistics.title,
     icon: "mdi-chart-bar",
     to: "/statistics",
   },

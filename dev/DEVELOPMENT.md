@@ -84,7 +84,7 @@ To start the live test server run
 
 ```
 cd backend
-npm run test
+TZ=UTC npm run test
 ```
 
 ## Releasing
