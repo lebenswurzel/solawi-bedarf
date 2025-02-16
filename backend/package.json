@@ -33,7 +33,7 @@
     "koa-bodyparser": "^4.4.1",
     "koa-router": "^13.0.1",
     "ldapjs": "^3.0.7",
-    "marked": "^14.1.2",
+    "marked": "^15.0.7",
     "nodemailer": "^6.9.7",
     "pg": "^8.11.3",
     "prettier": "^3.0.3",

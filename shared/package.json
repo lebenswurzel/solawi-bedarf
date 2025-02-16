@@ -16,6 +16,7 @@
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-vue": "^9.17.0",
     "jszip": "^3.10.1",
+    "marked": "^15.0.7",
     "pdfmake": "^0.2.16",
     "prettier": "^3.0.3",
     "typescript": "^5.2.2"
