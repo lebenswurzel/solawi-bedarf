@@ -15,21 +15,23 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
+import { storeToRefs } from "pinia";
 import { useUiFeedback } from "../store/uiFeedbackStore";
 
-const { error, clearError, success, clearSuccess } = useUiFeedback();
+const uiFeedbackStore = useUiFeedback();
+const { error, success } = storeToRefs(uiFeedbackStore);
 </script>
 <template>
   <v-snackbar
     :model-value="!!error"
-    @update:model-value="clearError"
+    @update:model-value="uiFeedbackStore.clearError"
     color="red"
   >
     {{ error }}
   </v-snackbar>
   <v-snackbar
     :model-value="!!success"
-    @update:model-value="clearSuccess"
+    @update:model-value="uiFeedbackStore.clearSuccess"
     color="success"
   >
     {{ success }}

@@ -21,7 +21,6 @@ import AppBar from "./components/AppBar.vue";
 import AppBarForRegister from "./components/AppBarForRegister.vue";
 import FooterVue from "./components/Footer.vue";
 import { useTextContentStore } from "./store/textContentStore";
-import { provideUiFeedbackStore } from "./store/uiFeedbackStore";
 import UiFeedbackDisplay from "./components/UiFeedbackDisplay.vue";
 import { useConfigStore } from "./store/configStore";
 import StatusIndicator from "./components/StatusIndicator.vue";
@@ -29,7 +28,6 @@ import StatusIndicator from "./components/StatusIndicator.vue";
 const route = useRoute();
 const configStore = useConfigStore();
 const textContentStore = useTextContentStore();
-provideUiFeedbackStore();
 
 onMounted(async () => {
   await textContentStore.update();
