@@ -138,7 +138,9 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 
 #184 Bei Ablauf der Sitzung ist ein erneuter Login möglich, ohne dass der Nutzer ungespeicherte Daten verliert.
 
-# NEW
+# v0.4.20 - 2025-02-17 - Dummy-Lieferscheine ignorieren
 
 #117 Verteilungs-Dialog: Die Anzeige der Produktlieferungen je Depot beinhaltet jetzt nur noch Lieferungen, welche aktiv gesetzt sind
 #186 Technisches Update: Verwendete Bibliotheken auf den neuesten Stand gebracht
+
+# NEW
