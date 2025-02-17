@@ -102,7 +102,7 @@ const getAvailableDepotsForProduct = (productId?: number) => {
 const depotOptions = computed(() => {
   return getAvailableDepotsForProduct(props.shipmentItem.productId)?.map(
     (dd) => ({
-      title: `${dd.depot.name} (${dd.delivered.delivered / 100}/${
+      title: `${dd.depot.name} (${dd.delivered.actuallyDelivered / 100}/${
         dd.delivered.frequency
       })`,
       value: dd.depot.id,
