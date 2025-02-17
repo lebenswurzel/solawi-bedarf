@@ -140,4 +140,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 
 # NEW
 
+#117 Verteilungs-Dialog: Die Anzeige der Produktlieferungen je Depot beinhaltet jetzt nur noch Lieferungen, welche aktiv gesetzt sind
 #186 Technisches Update: Verwendete Bibliotheken auf den neuesten Stand gebracht
