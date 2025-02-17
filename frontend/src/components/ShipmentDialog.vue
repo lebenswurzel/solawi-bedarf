@@ -206,6 +206,10 @@ const onShipmentOverviewPdfClick = async () => {
         {{ t.title }} KW {{ getISOWeek(editShipment.validFrom).toString() }}
       </v-card-title>
       <v-card-text style="overflow-y: auto">
+        <v-alert type="info" class="mb-2" variant="outlined"
+          >Hinweis: Die Anzahl Lieferungen je Depot beinhalten jetzt nur noch
+          'aktiv' geschaltete Verteilungen.</v-alert
+        >
         <v-row align="start" justify="center">
           <v-col cols="3">
             <v-text-field

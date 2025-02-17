@@ -39,6 +39,8 @@ import {
 } from "../../../shared/src/types.ts";
 import { getShipments } from "../requests/shipment.ts";
 import { storeToRefs } from "pinia";
+import SeasonText from "../components/styled/SeasonText.vue";
+import BusyIndicator from "../components/BusyIndicator.vue";
 
 const t = language.pages.shipment;
 
@@ -62,6 +64,7 @@ const { activeConfigId } = storeToRefs(configStore);
 const shipment = ref<EditShipment & OptionalId>(defaultEditShipment);
 const savedShipment = ref<Shipment & Id>();
 const open = ref(false);
+const busy = ref<boolean>(true);
 
 provide("dialogShipment", shipment);
 provide("savedShipment", savedShipment);
@@ -108,9 +111,11 @@ const onClose = async () => {
 };
 
 const refresh = async () => {
+  busy.value = true;
   await productStore.update(activeConfigId.value);
   await biStore.update(activeConfigId.value);
   shipments.value = (await getShipments(activeConfigId.value)).shipments;
+  busy.value = false;
 };
 onMounted(refresh);
 watch(activeConfigId, async () => {
@@ -120,6 +125,7 @@ watch(activeConfigId, async () => {
 
 <template>
   <v-card class="ma-2">
+    <BusyIndicator :busy="busy" />
     <v-card-title> {{ t.title }} </v-card-title>
     <v-card-text>
       <v-card-actions>
@@ -129,11 +135,7 @@ watch(activeConfigId, async () => {
           >{{ t.action.createShipment }}</v-btn
         >
       </v-card-actions>
-      <v-alert title="Hinweis" type="info" closable
-        >Die Reihenfolge der Liste wurde geändert, so dass die aktuellen
-        Verteilungen jetzt oben sind.</v-alert
-      >
-      <v-list>
+      <v-list v-if="shipments.length > 0">
         <v-list-item
           v-for="shipment in shipments.slice().reverse()"
           @click="() => onEditShipment(shipment)"
@@ -147,6 +149,7 @@ watch(activeConfigId, async () => {
           {{ shipment.description || "" }}
         </v-list-item>
       </v-list>
+      <p v-else-if="!busy">Keine Verteilungen in <SeasonText /> vorhanden</p>
     </v-card-text>
   </v-card>
   <ShipmentDialog :open="open" @close="onClose" />
