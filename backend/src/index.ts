@@ -51,6 +51,7 @@ import { deleteProductCategory } from "./services/product/deleteProductCategory"
 import { deleteProduct } from "./services/product/deleteProduct";
 import { getVersion } from "./services/getVersion";
 import { updateUser } from "./services/user/updateUser";
+import { uploadFile } from "./services/upload/uploadFile";
 
 const port = config.server.serverPort;
 const app = new Koa();
@@ -124,6 +125,8 @@ router.get("/bi", biHandler);
 router.get("/overview", getOverview);
 
 router.get("/version", getVersion);
+
+router.put("/upload", uploadFile);
 
 app.use(bodyParser());
 app.use(router.routes()).use(router.allowedMethods());

@@ -174,6 +174,7 @@ export async function createShipmentPackagingPdfs(
   organizationInfo: OrganizationInfo,
   headerText: string,
   footerText: string,
+  uploadToNextcloud: boolean,
 ) {
   const pdfs = createShipmentPackagingPdfSpecs(
     shipment,
@@ -192,5 +193,10 @@ export async function createShipmentPackagingPdfs(
     );
   }
 
-  zip.download(`shipments-${format(shipment.validFrom, "yyyy-MM-dd")}.zip`);
+  const filename = `shipments-${format(shipment.validFrom, "yyyy-MM-dd")}.zip`;
+  zip.download(filename);
+
+  if (uploadToNextcloud) {
+    await zip.upload(filename);
+  }
 }

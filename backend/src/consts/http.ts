@@ -23,4 +23,5 @@ export const http = {
   forbidden: 403,
   not_found: 404,
   method_not_allowed: 405,
+  service_unavailable: 503,
 };

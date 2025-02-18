@@ -36,6 +36,7 @@ import { useProductStore } from "../store/productStore";
 import AdditionalShipmentItem from "./AdditionalShipmentItem.vue";
 import ShipmentItem from "./ShipmentItem.vue";
 import { useTextContentStore } from "../store/textContentStore.ts";
+import { useUiFeedback } from "../store/uiFeedbackStore.ts";
 
 const t = language.pages.shipment.dialog;
 
@@ -51,6 +52,7 @@ const biStore = useBIStore();
 const configStore = useConfigStore();
 const productStore = useProductStore();
 const textContentStore = useTextContentStore();
+const uiFeedbackStore = useUiFeedback();
 const { productsById, deliveredByProductIdDepotId, capacityByDepotId } =
   storeToRefs(biStore);
 const { depots } = storeToRefs(configStore);
@@ -58,7 +60,6 @@ const { productCategories } = storeToRefs(productStore);
 const { organizationInfo, pdfTexts } = storeToRefs(textContentStore);
 
 const loading = ref(false);
-const error = ref<string>();
 
 const onDeleteAdditionalShipmentItem = (idx: number) => {
   editShipment.value.additionalShipmentItems.splice(idx, 1);
@@ -155,12 +156,13 @@ const onSave = () => {
     ),
   )
     .then(() => {
+      uiFeedbackStore.setSuccess("Speichern erfolgreich");
       loading.value = false;
       emit("close");
     })
     .catch((e: Error) => {
       console.log(e);
-      error.value = e.message;
+      uiFeedbackStore.setError("Fehler beim Speichern", e);
       loading.value = false;
     });
 };
@@ -178,9 +180,16 @@ const onShipmentPdfClick = async () => {
     organizationInfo.value,
     pdfTexts.value.packagingListHeader,
     pdfTexts.value.packagingListFooter,
-  ).then(() => {
-    loading.value = false;
-  });
+    false,
+  )
+    .then(() => {
+      uiFeedbackStore.setSuccess("Export erfolgreich");
+      loading.value = false;
+    })
+    .catch((e) => {
+      uiFeedbackStore.setError("Fehler beim hochladen der Lieferscheine", e);
+      loading.value = false;
+    });
 };
 
 const onShipmentOverviewPdfClick = async () => {
@@ -298,11 +307,4 @@ const onShipmentOverviewPdfClick = async () => {
       </v-card-actions>
     </v-card>
   </v-dialog>
-  <v-snackbar
-    :model-value="!!error"
-    color="red"
-    @update:model-value="() => (error = undefined)"
-  >
-    {{ error }}
-  </v-snackbar>
 </template>

@@ -44,4 +44,32 @@ export class Zip {
       window.URL.revokeObjectURL(url);
     });
   }
+
+  public async upload(filename: string) {
+    try {
+      const content = await this.jszip.generateAsync({ type: "blob" });
+      const zipBlob = new Blob([content], { type: "application/zip" });
+
+      const headers = new Headers({
+        "Content-Type": "application/zip",
+      });
+
+      const response = await fetch(`/api/upload?filename=${filename}`, {
+        method: "PUT",
+        headers: headers,
+        body: zipBlob,
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          `Upload failed: ${response.status} ${response.statusText}`
+        );
+      }
+
+      return response;
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      throw error;
+    }
+  }
 }
