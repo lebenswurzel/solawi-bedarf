@@ -52,7 +52,7 @@ const orderOverviewSelectedSeasons = ref<number[]>([
   configStore.activeConfigId,
 ]);
 
-const onClick = async () => {
+const onUserCsvClick = async () => {
   loading.value = true;
   try {
     const configIds = orderOverviewSelectedSeasons.value;
@@ -166,7 +166,7 @@ const onUserPdfClick = async () => {
             persistent-hint
             :hint="
               orderOveriewWithApplicant
-                ? 'Name, E-Mail und Telefonnummer der Ernteteiler werden in der CSV ausgegeben.'
+                ? 'Name, E-Mail, Telefonnummer und Adresse der Ernteteiler werden in der CSV ausgegeben.'
                 : 'Es ist nur die LW-Nummer der Ernteteiler enthalten.'
             "
           ></v-checkbox>
@@ -198,7 +198,7 @@ const onUserPdfClick = async () => {
     </v-card-text>
     <v-card-actions>
       <v-btn
-        @click="onClick"
+        @click="onUserCsvClick"
         :loading="loading"
         :disabled="orderOverviewSelectedSeasons.length === 0"
         >Bedarfsanmeldungs-CSV herunterladen</v-btn
