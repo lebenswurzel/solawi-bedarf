@@ -144,3 +144,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #186 Technisches Update: Verwendete Bibliotheken auf den neuesten Stand gebracht
 
 # NEW
+
+#190 CSV-Export um Benutzeradressen erweitert (optional)
