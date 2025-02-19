@@ -29,10 +29,10 @@ import {
   getStringQueryParameter,
 } from "../util/requestUtil";
 import {
+  Address,
   OrderOverviewApplicant,
   OrderOverviewWithApplicantItem,
 } from "../../../shared/src/types";
-import { EncryptedUserAddress } from "../consts/types";
 import { Applicant } from "../database/Applicant";
 
 export const getOverview = async (
@@ -113,6 +113,9 @@ export const getUserOrderOverview = async (
         realName: "",
         email: "",
         phone: "",
+        street: "",
+        postalcode: "",
+        city: "",
       };
     }
     const address = await AppDataSource.getRepository(Applicant).findOne({
@@ -128,9 +131,7 @@ export const getUserOrderOverview = async (
         },
       },
     });
-    const addressData = JSON.parse(
-      address?.address.address || "{}",
-    ) as EncryptedUserAddress;
+    const addressData = JSON.parse(address?.address.address || "{}") as Address;
     const names = [addressData.firstname, addressData.lastname].filter(
       (n) => n,
     );
@@ -138,6 +139,9 @@ export const getUserOrderOverview = async (
       realName: names.join(" "),
       email: addressData.email || "",
       phone: addressData.phone || "",
+      street: addressData.street || "",
+      postalcode: addressData.postalcode || "",
+      city: addressData.city || "",
     };
   };
 

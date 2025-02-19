@@ -348,6 +348,9 @@ export interface OrderOverviewApplicant {
   realName: string;
   email: string;
   phone: string;
+  street: string;
+  postalcode: string;
+  city: string;
 }
 
 export type OrderOverviewWithApplicantItem = OrderOverviewItem &

@@ -33,7 +33,11 @@ import { storeToRefs } from "pinia";
 import { formatDateForFilename } from "../../../shared/src/util/dateHelper.ts";
 import { language } from "../../../shared/src/lang/lang.ts";
 
-const loading = ref(false);
+const loading = ref({
+  csv: false,
+  depot: false,
+  orders: false,
+});
 
 const configStore = useConfigStore();
 const uiFeedbackStore = useUiFeedback();
@@ -52,8 +56,8 @@ const orderOverviewSelectedSeasons = ref<number[]>([
   configStore.activeConfigId,
 ]);
 
-const onClick = async () => {
-  loading.value = true;
+const onUserCsvClick = async () => {
+  loading.value.csv = true;
   try {
     const configIds = orderOverviewSelectedSeasons.value;
     const overview = await Promise.all(
@@ -86,12 +90,12 @@ const onClick = async () => {
     uiFeedbackStore.setError("" + e);
     throw e;
   } finally {
-    loading.value = false;
+    loading.value.csv = false;
   }
 };
 
 const onDepotPdfClick = async () => {
-  loading.value = true;
+  loading.value.depot = true;
   try {
     const overview = await getOverview(configStore.activeConfigId);
     const productCategories = await getProductCategory(
@@ -116,12 +120,12 @@ const onDepotPdfClick = async () => {
     uiFeedbackStore.setError("" + e);
     throw e;
   } finally {
-    loading.value = false;
+    loading.value.depot = false;
   }
 };
 
 const onUserPdfClick = async () => {
-  loading.value = true;
+  loading.value.orders = true;
   try {
     const overview = await getOverview(configStore.activeConfigId);
     const productCategories = await getProductCategory(
@@ -145,7 +149,7 @@ const onUserPdfClick = async () => {
     uiFeedbackStore.setError("" + e);
     throw e;
   } finally {
-    loading.value = false;
+    loading.value.orders = false;
   }
 };
 </script>
@@ -166,7 +170,7 @@ const onUserPdfClick = async () => {
             persistent-hint
             :hint="
               orderOveriewWithApplicant
-                ? 'Name, E-Mail und Telefonnummer der Ernteteiler werden in der CSV ausgegeben.'
+                ? 'Name, E-Mail, Telefonnummer und Adresse der Ernteteiler werden in der CSV ausgegeben.'
                 : 'Es ist nur die LW-Nummer der Ernteteiler enthalten.'
             "
           ></v-checkbox>
@@ -198,8 +202,8 @@ const onUserPdfClick = async () => {
     </v-card-text>
     <v-card-actions>
       <v-btn
-        @click="onClick"
-        :loading="loading"
+        @click="onUserCsvClick"
+        :loading="loading.csv"
         :disabled="orderOverviewSelectedSeasons.length === 0"
         >Bedarfsanmeldungs-CSV herunterladen</v-btn
       >
@@ -212,7 +216,7 @@ const onUserPdfClick = async () => {
       Bedarfsanmeldung je Depot als PDF heruntergeladen und generiert.
     </v-card-text>
     <v-card-actions>
-      <v-btn @click="onDepotPdfClick" :loading="loading"
+      <v-btn @click="onDepotPdfClick" :loading="loading.depot"
         >Depot-PDFs herunterladen
       </v-btn>
     </v-card-actions>
@@ -224,7 +228,7 @@ const onUserPdfClick = async () => {
       Bedarfsanmeldung je Ernteteiler als PDF heruntergeladen und generiert.
     </v-card-text>
     <v-card-actions>
-      <v-btn @click="onUserPdfClick" :loading="loading"
+      <v-btn @click="onUserPdfClick" :loading="loading.orders"
         >Nutzer-PDFs herunterladen
       </v-btn>
     </v-card-actions>

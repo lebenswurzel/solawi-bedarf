@@ -24,6 +24,7 @@ import { UserAddress } from "../../database/UserAddress";
 import { sendEmail } from "../email/email";
 import { config } from "../../config";
 import { getOrganizationInfo } from "../text/getOrganizationInfo";
+import { Address } from "../../../../shared/src/types";
 
 export const saveApplicant = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -70,9 +71,7 @@ export const saveApplicant = async (
     ctx.throw(http.bad_request);
   }
 
-  const address = new UserAddress();
-  address.active = false;
-  address.address = JSON.stringify({
+  const addressData: Address = {
     firstname: request.address.firstname,
     lastname: request.address.lastname,
     phone: request.address.phone,
@@ -80,16 +79,19 @@ export const saveApplicant = async (
     street: request.address.street,
     postalcode: request.address.postalcode,
     city: request.address.city,
-  });
+  };
+  const userAddress = new UserAddress();
+  userAddress.active = false;
+  userAddress.address = JSON.stringify(addressData);
 
-  await AppDataSource.getRepository(UserAddress).save(address);
+  await AppDataSource.getRepository(UserAddress).save(userAddress);
 
   const applicant = new Applicant();
   applicant.confirmGDPR = request.confirmGDPR;
   applicant.comment = request.comment;
   applicant.hash = await hashPassword(request.password!);
   applicant.active = true;
-  applicant.address = address;
+  applicant.address = userAddress;
 
   await AppDataSource.getRepository(Applicant).save(applicant);
 
