@@ -23,7 +23,7 @@ import { appConfig } from "../../../../shared/src/config";
 import { getMsrp } from "../../../../shared/src/msrp";
 import { generateUserData } from "../../../../shared/src/pdf/overviewPdfs";
 import { createDefaultPdf } from "../../../../shared/src/pdf/pdf";
-import { ConfirmedOrder } from "../../../../shared/src/types";
+import { Address, ConfirmedOrder } from "../../../../shared/src/types";
 import {
   getRemainingDepotCapacity,
   isOrderItemValid,
@@ -39,7 +39,6 @@ import {
 } from "../../../../shared/src/validation/requisition";
 import { config } from "../../config";
 import { http } from "../../consts/http";
-import { EncryptedUserAddress } from "../../consts/types";
 import { AppDataSource } from "../../database/database";
 import { Depot } from "../../database/Depot";
 import { Order } from "../../database/Order";
@@ -206,7 +205,7 @@ export const saveOrder = async (
       // can only send email to user if his email address is in the database
       const address = JSON.parse(
         orderUser.applicant.address.address,
-      ) as EncryptedUserAddress;
+      ) as Address;
 
       if (address.email) {
         orderUserEmail = address.email;
