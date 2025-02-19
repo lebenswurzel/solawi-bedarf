@@ -74,7 +74,14 @@ export const generateOverviewCsv = (
     "categoryReason",
     "seasonName",
   ];
-  const fixedApplicantHeader = ["realName", "email", "phone"];
+  const fixedApplicantHeader = [
+    "realName",
+    "email",
+    "phone",
+    "street",
+    "postalcode",
+    "city",
+  ];
   const dynamicHeader: string[] = [];
   const prices: {
     [key: string]: ProductInfo;
@@ -112,6 +119,9 @@ export const generateOverviewCsv = (
       realName: csvQuote(applicant.realName),
       email: csvQuote(applicant.email),
       phone: applicant.phone ? csvQuote(applicant.phone) : "",
+      street: csvQuote(applicant.street),
+      postalcode: csvQuote(applicant.postalcode),
+      city: csvQuote(applicant.city),
     };
   };
 

@@ -113,6 +113,9 @@ export const getUserOrderOverview = async (
         realName: "",
         email: "",
         phone: "",
+        street: "",
+        postalcode: "",
+        city: "",
       };
     }
     const address = await AppDataSource.getRepository(Applicant).findOne({
@@ -136,6 +139,9 @@ export const getUserOrderOverview = async (
       realName: names.join(" "),
       email: addressData.email || "",
       phone: addressData.phone || "",
+      street: addressData.street || "",
+      postalcode: addressData.postalcode || "",
+      city: addressData.city || "",
     };
   };
 
