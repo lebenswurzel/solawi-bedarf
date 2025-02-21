@@ -146,3 +146,4 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 # NEW
 
 #190 CSV-Export um Benutzeradressen erweitert (optional)
+#194 Leere Verteilungen ausblenden

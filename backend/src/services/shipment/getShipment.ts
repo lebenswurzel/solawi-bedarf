@@ -48,12 +48,14 @@ export const getShipment = async (
     },
     where: [
       {
+        requisitionConfigId: configId,
         shipmentItems: {
           depotId: In(depotIds),
         },
         active: true,
       },
       {
+        requisitionConfigId: configId,
         additionalShipmentItems: {
           depotId: In(depotIds),
         },
