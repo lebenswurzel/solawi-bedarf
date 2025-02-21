@@ -74,6 +74,7 @@ const importUserData = async (data: ImportApplicantRequest[]) => {
   try {
     const result = await importApplicantsData(data);
     importResponse.value = result;
+    uiFeedbackStore.setSuccess("Importvorgang abgeschlossen");
   } catch (e) {
     uiFeedbackStore.setError("Error importing user data", e as Error);
   } finally {
