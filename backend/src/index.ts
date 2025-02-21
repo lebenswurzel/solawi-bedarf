@@ -51,6 +51,7 @@ import { deleteProductCategory } from "./services/product/deleteProductCategory"
 import { deleteProduct } from "./services/product/deleteProduct";
 import { getVersion } from "./services/getVersion";
 import { updateUser } from "./services/user/updateUser";
+import { importApplicant } from "./services/applicant/importApplicant";
 
 const port = config.server.serverPort;
 const app = new Koa();
@@ -102,6 +103,7 @@ router.put("/user", updateUser);
 router.post("/applicant", saveApplicant);
 router.get("/applicant", getApplicant);
 router.post("/applicant/update", updateApplicant);
+router.put("/applicant/import", importApplicant);
 
 router.get("/shop/order", getOrder);
 router.post("/shop/order", saveOrder);

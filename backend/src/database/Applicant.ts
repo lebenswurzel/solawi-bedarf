@@ -46,7 +46,7 @@ export class Applicant extends BaseEntity {
   @Column({ nullable: true })
   userId: number;
 
-  @OneToOne(() => User, { nullable: true })
+  @OneToOne(() => User, (user) => user.applicant, { nullable: true })
   @JoinColumn()
   user: User;
 

@@ -15,7 +15,11 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { ApplicantState } from "../../../shared/src/enum.ts";
-import { Applicant } from "../../../shared/src/types.ts";
+import {
+  Applicant,
+  ImportApplicantRequest,
+  ImportApplicantsResponse,
+} from "../../../shared/src/types.ts";
 import { getUrl, verifyResponse } from "./requests.ts";
 
 export const saveApplicant = async (applicant: Applicant) => {
@@ -54,4 +58,19 @@ export const getApplicants = async (
   await verifyResponse(response);
 
   return (await response.json()).applicants as Applicant[];
+};
+
+export const importApplicantsData = async (
+  data: ImportApplicantRequest[],
+): Promise<ImportApplicantsResponse> => {
+  const response = await fetch(getUrl("/applicant/import"), {
+    method: "PUT",
+    body: JSON.stringify(data),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  await verifyResponse(response);
+  return (await response.json()) as ImportApplicantsResponse;
 };

@@ -153,6 +153,16 @@ export interface Applicant {
   createdAt?: string;
 }
 
+export interface ImportApplicantRequest {
+  name: string;
+  data: Partial<Address>;
+}
+
+export interface ImportApplicantsResponse {
+  success: string[];
+  error: string[];
+}
+
 export interface NewDepot {
   name?: string;
   address?: string;

@@ -45,7 +45,6 @@ const activate = async (id: number, name?: string) => {
 };
 
 const refresh = async () => {
-  console.log(`refresh ${props.state}`);
   busy.value = true;
   try {
     applicants.value = await getApplicants(props.state);
@@ -70,7 +69,7 @@ const getName = ({ address: { firstname, lastname }, name }: Applicant) =>
 
 <template>
   <BusyIndicator :busy="busy" class="mt-2" />
-  <div v-if="applicants.length == 0" class="my-2">
+  <div v-if="applicants.length == 0" class="my-5">
     <div class="ma-2" v-if="busy">Daten werden geladen ...</div>
     <div class="ma-2" v-else>Keine Einträge</div>
   </div>
