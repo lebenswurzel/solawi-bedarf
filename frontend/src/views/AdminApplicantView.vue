@@ -15,16 +15,11 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
-import { format } from "date-fns/format";
-import { parseISO } from "date-fns/parseISO";
-import { applicantCreatedAtDown, applicantCreatedAtUp } from "../lib/compare";
-import { Applicant } from "../../../shared/src/types";
-import { activateApplicant, getApplicants } from "../requests/applicant";
+import { ref } from "vue";
 import { ApplicantState } from "../../../shared/src/enum";
+import ApplicantView from "../components/applicant/ApplicantView.vue";
 
-const applicants = ref<Applicant[]>([]);
-const select = ref<ApplicantState>(ApplicantState.NEW);
+const currentTab = ref(ApplicantState.NEW);
 
 const applicantOptions = [
   {
@@ -40,92 +35,22 @@ const applicantOptions = [
     value: ApplicantState.CONFIRMED,
   },
 ];
-
-const activate = async (id: number, name?: string) => {
-  await activateApplicant(id, name);
-  applicants.value = await getApplicants(select.value);
-};
-
-const onStateChange = async (state: ApplicantState) => {
-  select.value = state;
-  if (state == ApplicantState.CONFIRMED) {
-    applicants.value = (await getApplicants(select.value)).sort(
-      applicantCreatedAtDown,
-    );
-  } else {
-    applicants.value = (await getApplicants(select.value)).sort(
-      applicantCreatedAtUp,
-    );
-  }
-};
-
-onMounted(async () => {
-  applicants.value = await getApplicants(select.value);
-});
-
-const getAddress = ({ address: { street, postalcode, city } }: Applicant) =>
-  `${street}, ${postalcode} ${city}`;
-const getContact = ({ address: { email, phone } }: Applicant) =>
-  `${email} / ${phone}`;
-const getName = ({ address: { firstname, lastname }, name }: Applicant) =>
-  `${firstname} ${lastname} [${name}]`;
 </script>
 
 <template>
   <v-card class="ma-2">
     <v-card-title>Registrierte Nutzer</v-card-title>
-    <v-card-item>
-      <v-select
-        :model-value="select"
-        @update:model-value="onStateChange"
-        :items="applicantOptions"
-        item-props
-        persistent-hint
-        label="Status"
-      />
-    </v-card-item>
-    <v-card-text>
-      <v-list>
-        <template v-for="applicant in applicants">
-          <v-hover v-slot="{ props }">
-            <v-list-item v-bind="props">
-              <v-list-item-title>
-                {{ getName(applicant) }}
-              </v-list-item-title>
-              <v-list-item-subtitle style="max-width: fit-content">
-                {{
-                  applicant.createdAt &&
-                  format(parseISO(applicant.createdAt), "dd.MM.yyyy HH:mm")
-                }}
-              </v-list-item-subtitle>
-              <v-list-item-subtitle style="max-width: fit-content">
-                {{ getContact(applicant) }}
-              </v-list-item-subtitle>
-              <v-list-item-subtitle style="max-width: fit-content">
-                {{ getAddress(applicant) }}
-              </v-list-item-subtitle>
-              {{ applicant.comment }}
-              <template v-slot:append v-if="select != ApplicantState.CONFIRMED">
-                <v-btn
-                  icon
-                  class="mr-2"
-                  @click="() => activate(applicant.id!, undefined)"
-                >
-                  <v-icon> mdi-close-thick</v-icon>
-                </v-btn>
-                <v-btn
-                  icon
-                  @click="() => activate(applicant.id!, applicant.name!)"
-                >
-                  <v-icon> mdi-check-bold</v-icon>
-                </v-btn>
-              </template>
-            </v-list-item>
-          </v-hover>
-        </template>
-      </v-list>
-    </v-card-text>
+    <v-tabs v-model="currentTab">
+      <v-tab v-for="item in applicantOptions" :value="item.value">{{
+        item.title
+      }}</v-tab>
+    </v-tabs>
+    <v-tabs-window v-model="currentTab">
+      <template v-for="item in applicantOptions">
+        <v-tabs-window-item :value="item.value">
+          <ApplicantView :state="item.value" />
+        </v-tabs-window-item>
+      </template>
+    </v-tabs-window>
   </v-card>
 </template>
-../../../shared/src/types.jsimport { ApplicantState } from
-"../../../shared/src/enum";
