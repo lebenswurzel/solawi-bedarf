@@ -30,9 +30,10 @@ import BusyIndicator from "../components/BusyIndicator.vue";
 import { useUiFeedback } from "../store/uiFeedbackStore";
 
 const currentTab = ref(ApplicantState.NEW);
-const openImportdialog = ref(true);
+const openImportdialog = ref(false);
 const importResponse = ref<ImportApplicantsResponse | null>(null);
 const importBusy = ref(false);
+const refreshKey = ref(0);
 const uiFeedbackStore = useUiFeedback();
 
 const applicantOptions = [
@@ -76,8 +77,13 @@ const importUserData = async (data: ImportApplicantRequest[]) => {
   } catch (e) {
     uiFeedbackStore.setError("Error importing user data", e as Error);
   } finally {
+    refreshViews();
     importBusy.value = false;
   }
+};
+
+const refreshViews = () => {
+  refreshKey.value++;
 };
 </script>
 
@@ -112,7 +118,10 @@ const importUserData = async (data: ImportApplicantRequest[]) => {
     <v-tabs-window v-model="currentTab">
       <template v-for="item in applicantOptions">
         <v-tabs-window-item :value="item.value">
-          <ApplicantView :state="item.value" />
+          <ApplicantView
+            :state="item.value"
+            :key="`${item.value}-${refreshKey}`"
+          />
         </v-tabs-window-item>
       </template>
     </v-tabs-window>
