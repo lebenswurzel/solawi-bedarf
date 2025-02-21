@@ -143,7 +143,9 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #117 Verteilungs-Dialog: Die Anzeige der Produktlieferungen je Depot beinhaltet jetzt nur noch Lieferungen, welche aktiv gesetzt sind
 #186 Technisches Update: Verwendete Bibliotheken auf den neuesten Stand gebracht
 
-# NEW
+# v0.4.21 - 2025-02-21 - Leere Verteilungen verstecken
 
 #190 CSV-Export um Benutzeradressen erweitert (optional)
 #194 Leere Verteilungen ausblenden
+
+# NEW
