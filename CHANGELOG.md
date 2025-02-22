@@ -149,3 +149,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #194 Leere Verteilungen ausblenden
 
 # NEW
+
+#195 Statstik der Bedarfsanmeldungen: Nur Beitrag > 0 berücksichtigen

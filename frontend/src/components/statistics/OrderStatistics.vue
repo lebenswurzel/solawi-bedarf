@@ -95,8 +95,12 @@ onMounted(async () => {
   isProcessing.value = false;
 });
 
+const relevantOrders = computed(() => {
+  return orders.value.filter((o) => o.offer > 0);
+});
+
 const categoriesDistribution = computed((): DistributionData => {
-  const items = orders.value.reduce(
+  const items = relevantOrders.value.reduce(
     (acc, cur) => {
       return acc.map((c) => {
         if (c.label == cur.category) {
@@ -124,7 +128,7 @@ const categoriesDistribution = computed((): DistributionData => {
 
 const offerRanges = computed(
   (): { data: DistributionData; offersSum: number; offersMean: number } => {
-    const items = orders.value.reduce(
+    const items = relevantOrders.value.reduce(
       (acc, cur) => {
         return acc.map((c) => {
           if (cur.offer >= c.offerMin && cur.offer < c.offerMax) {
@@ -135,7 +139,7 @@ const offerRanges = computed(
         });
       },
       [
-        { offerMin: 0, offerMax: 50, count: 0 },
+        { offerMin: 1, offerMax: 50, count: 0 },
         { offerMin: 50, offerMax: 100, count: 0 },
         { offerMin: 100, offerMax: 150, count: 0 },
         { offerMin: 150, offerMax: 200, count: 0 },
@@ -147,21 +151,21 @@ const offerRanges = computed(
     return {
       data: {
         items: items.map((i) => ({
-          label: `${i.offerMin} € < x < ${i.offerMax} €`,
+          label: `${i.offerMin} € ≤ x < ${i.offerMax} €`,
           value: i.count,
         })),
       },
-      offersSum: orders.value.reduce((acc, cur) => acc + cur.offer, 0),
+      offersSum: relevantOrders.value.reduce((acc, cur) => acc + cur.offer, 0),
       offersMean:
-        orders.value.reduce((acc, cur) => acc + cur.offer, 0) /
-        orders.value.length,
+        relevantOrders.value.reduce((acc, cur) => acc + cur.offer, 0) /
+        relevantOrders.value.length,
     };
   },
 );
 
 const depotDistribution = computed((): DistributionData => {
   return {
-    items: orders.value
+    items: relevantOrders.value
       .reduce(
         (acc, order) => {
           return acc.map((c) => {
@@ -227,13 +231,13 @@ function computeDistribution(
 // For createdAt distribution
 const createdAtDistribution = computed(
   (): DistributionData =>
-    computeDistribution(orders.value, (order) => order.createdAt),
+    computeDistribution(relevantOrders.value, (order) => order.createdAt),
 );
 
 // For updatedAt distribution
 const updatedAtDistribution = computed(
   (): DistributionData =>
-    computeDistribution(orders.value, (order) => order.updatedAt),
+    computeDistribution(relevantOrders.value, (order) => order.updatedAt),
 );
 </script>
 
@@ -264,7 +268,7 @@ const updatedAtDistribution = computed(
         clearable
         hint="Volltextsuche in allen Spalten"
       />
-      <v-data-table :items="orders" :headers="headers" :search="search">
+      <v-data-table :items="relevantOrders" :headers="headers" :search="search">
         <template v-slot:item.offer="{ item }">
           {{ item.offer }} €
 
