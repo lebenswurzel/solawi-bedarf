@@ -148,6 +148,8 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #190 CSV-Export um Benutzeradressen erweitert (optional)
 #194 Leere Verteilungen ausblenden
 
-# NEW
+# v0.4.22 - 2025-02-22 - Bedarsanmeldungsstastik angepasst
 
 #195 Statstik der Bedarfsanmeldungen: Nur Beitrag > 0 berücksichtigen
+
+# NEW
