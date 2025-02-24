@@ -104,7 +104,9 @@ const refreshViews = () => {
           <v-list>
             <v-list-item>
               <v-list-item-title>
-                <v-btn @click="onImportData"> Nutzerdaten importieren </v-btn>
+                <v-btn @click="onImportData" variant="text">
+                  Nutzerdaten importieren
+                </v-btn>
               </v-list-item-title>
             </v-list-item>
           </v-list>

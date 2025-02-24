@@ -100,10 +100,11 @@ const duplicatesCount = computed(() => {
     <v-row>
       <v-col>
         <p class="mb-2">
-          Um Daten zu importieren, wähle eine CSV-Datei aus, die folgende mit
-          Semikolon getrennte Spalten enthält:<br />
-          Erforderliche Spalten: {{ props.identifier }}<br />
-          Optionale Spalten: {{ props.columns.join(", ") }}
+          Um Daten zu importieren, wähle eine CSV-Datei aus, die folgende
+          Spalten enthält:<br />
+          Erforderliche Spalten: <code>{{ props.identifier }}</code
+          ><br />
+          Optionale Spalten: <code>{{ props.columns.join(", ") }}</code>
         </p>
         <p class="mb-2">
           Vor dem eigentlichen Import können die Daten in der Vorschau geprüft
