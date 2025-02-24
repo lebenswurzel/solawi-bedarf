@@ -153,3 +153,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #195 Statstik der Bedarfsanmeldungen: Nur Beitrag > 0 berücksichtigen
 
 # NEW
+
+#192 Import von Benutzerdaten
