@@ -61,7 +61,7 @@ const dummyAddress: Address = {
   phone: "",
 };
 
-const columns = Object.keys(dummyAddress);
+const columns = Object.keys(dummyAddress) as (keyof Address)[];
 
 const onImportData = () => {
   importResponse.value = null;
@@ -122,6 +122,7 @@ const refreshViews = () => {
           <ApplicantView
             :state="item.value"
             :key="`${item.value}-${refreshKey}`"
+            :export-columns="columns"
           />
         </v-tabs-window-item>
       </template>
