@@ -56,10 +56,17 @@ const clearFile = () => {
   parsedData.value = [];
 };
 
+const countLetter = (text: string, letter: string): number => {
+  return text.split("").filter((c) => c === letter).length;
+};
+
 const parseCSV = (csvText: string) => {
+  const firstLine = csvText.split("\n")[0];
+  const delimiter =
+    countLetter(firstLine, ";") >= countLetter(firstLine, ",") ? ";" : ",";
   Papa.parse(csvText, {
-    delimiter: ";", // Adjust based on your CSV format
-    header: true, // Treat first row as headers
+    delimiter,
+    header: true,
     skipEmptyLines: true,
     complete: (result) => {
       parsedData.value = result.data as Record<string, string>[];
