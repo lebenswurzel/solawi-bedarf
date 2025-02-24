@@ -88,10 +88,14 @@ export const importApplicant = async (
           );
         } else {
           // update existing applicant
+          const existingAddressData = JSON.parse(
+            applicant.address.address,
+          ) as Partial<Address>;
           const userAddress = await saveUserAddress(
             applicant.address,
             applicantData.data,
             entityManager,
+            existingAddressData,
           );
           applicant.address = userAddress;
           entityManager.save(Applicant, applicant);
@@ -114,18 +118,22 @@ export const importApplicant = async (
 
 const saveUserAddress = async (
   userAddress: UserAddress,
-  address: Partial<Address>,
+  importedAddressData: Partial<Address>,
   entityManager: EntityManager,
+  existingAddressData?: Partial<Address>,
 ): Promise<UserAddress> => {
   userAddress.active = false;
   const addressData: Address = {
-    firstname: address.firstname || "",
-    lastname: address.lastname || "",
-    phone: address.phone || "",
-    email: address.email || "",
-    street: address.street || "",
-    postalcode: address.postalcode || "",
-    city: address.city || "",
+    firstname:
+      importedAddressData.firstname || existingAddressData?.firstname || "",
+    lastname:
+      importedAddressData.lastname || existingAddressData?.lastname || "",
+    phone: importedAddressData.phone || existingAddressData?.phone || "",
+    email: importedAddressData.email || existingAddressData?.email || "",
+    street: importedAddressData.street || existingAddressData?.street || "",
+    postalcode:
+      importedAddressData.postalcode || existingAddressData?.postalcode || "",
+    city: importedAddressData.city || existingAddressData?.city || "",
   };
   userAddress.address = JSON.stringify(addressData);
 
