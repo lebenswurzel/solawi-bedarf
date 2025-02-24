@@ -152,6 +152,8 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 
 #195 Statstik der Bedarfsanmeldungen: Nur Beitrag > 0 berücksichtigen
 
-# NEW
+# v0.4.23 - 2025-02-24 - Nutzerdaten importieren
 
 #192 Import von Benutzerdaten
+
+# NEW
