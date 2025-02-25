@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 import { language } from "../../../../shared/src/lang/lang.ts";
-import { SavedOrder } from "../../../../shared/src/types.ts";
+import { Msrp, SavedOrder } from "../../../../shared/src/types.ts";
 import { getOrder } from "../../requests/shop.ts";
 import { useConfigStore } from "../../store/configStore.ts";
 import { useUserStore } from "../../store/userStore.ts";
@@ -30,15 +30,19 @@ import DistributionPlot, {
   DistributionDataItem,
 } from "./DistributionPlot.vue";
 import SeasonText from "../styled/SeasonText.vue";
+import { getMsrp } from "../../../../shared/src/msrp.ts";
+import { useBIStore } from "../../store/biStore.ts";
 
 const t = language.pages.statistics;
 const userStore = useUserStore();
 const configStore = useConfigStore();
 const { depots } = storeToRefs(configStore);
+const biStore = useBIStore();
 
 interface OrderExt extends SavedOrder {
   userName: string;
   depotName: string;
+  msrp: Msrp;
 }
 
 const orders = ref<OrderExt[]>([]);
@@ -49,6 +53,13 @@ const search = ref<string>("");
 const headers = [
   { title: "Benutzer", key: "userName" },
   { title: "Monatsbeitrag", key: "offer" },
+  {
+    title: "Orientierungswert",
+    key: "msrp",
+    sortRaw(a: OrderExt, b: OrderExt) {
+      return a.offer / a.msrp.total - b.offer / b.msrp.total;
+    },
+  },
   { title: "Angelegt", key: "createdAt" },
   { title: "Aktualisiert", key: "updatedAt" },
   { title: "Gültig ab", key: "validFrom" },
@@ -76,7 +87,7 @@ onMounted(async () => {
     const order = await getOrder(
       u.value,
       configStore.activeConfigId,
-      true,
+      false,
       true,
     );
     processedOrders.value++;
@@ -84,8 +95,12 @@ onMounted(async () => {
       return undefined;
     }
     const depot = depots.value.filter((d) => d.id == order.depotId);
+    if (!order.orderItems) {
+      console.log(order);
+    }
     return {
       ...order,
+      msrp: getMsrp(order.category, order.orderItems, biStore.productsById),
       userName: u.title,
       depotName: depot.length ? depot[0].name : "unbekannt",
     };
@@ -239,6 +254,23 @@ const updatedAtDistribution = computed(
   (): DistributionData =>
     computeDistribution(relevantOrders.value, (order) => order.updatedAt),
 );
+
+const overallContribution = computed(() => {
+  return relevantOrders.value.reduce(
+    (acc, o) => ({
+      total: o.msrp.total + acc.total,
+      selfgrown: o.msrp.selfgrown + acc.selfgrown,
+      cooperation: o.msrp.cooperation + acc.cooperation,
+      offer: o.offer + acc.offer,
+    }),
+    {
+      total: 0,
+      selfgrown: 0,
+      cooperation: 0,
+      offer: 0,
+    },
+  );
+});
 </script>
 
 <template>
@@ -282,6 +314,25 @@ const updatedAtDistribution = computed(
             </template>
           </v-tooltip>
         </template>
+        <template v-slot:item.msrp="{ item }">
+          {{ item.msrp.total }} € =
+          <span class="opacity-70">
+            <v-icon style="font-size: 0.7rem">mdi-sprout-outline</v-icon
+            >{{ item.msrp.selfgrown }} € +
+
+            <v-icon style="font-size: 0.7rem">mdi-truck-delivery-outline</v-icon
+            >{{ item.msrp.cooperation }} €
+          </span>
+          <br />
+          <span class="text-bold">
+            {{ item.offer >= item.msrp.total ? "+" : "-" }}
+            {{
+              Math.abs(
+                Math.round((1000 * item.offer) / item.msrp.total - 1000) / 10,
+              )
+            }}%
+          </span>
+        </template>
         <template v-slot:item.createdAt="{ item }">
           {{ prettyDate(item.createdAt) }}
         </template>
@@ -316,8 +367,39 @@ const updatedAtDistribution = computed(
           ></v-btn>
         </template>
       </v-data-table>
+      <div class="text-h6">Zusammenfassung</div>
+      <v-container fluid>
+        <v-row>
+          <v-col cols="12" lg="6">
+            <div class="text-subtitle-1">Beiträge (Summe)</div>
+            <v-table>
+              <thead>
+                <tr>
+                  <th>Monatsbeiträge</th>
+                  <th>Orientierungswerte</th>
+                  <th>Differenz</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>{{ overallContribution.offer }} €</td>
+                  <td>{{ overallContribution.total }} €</td>
+                  <td color="success">
+                    {{
+                      overallContribution.offer > overallContribution.total
+                        ? "+"
+                        : ""
+                    }}
+                    {{ overallContribution.offer - overallContribution.total }}
+                    €
+                  </td>
+                </tr>
+              </tbody>
+            </v-table>
+          </v-col>
+        </v-row>
+      </v-container>
 
-      <div class="text-h6">{{ t.ordersCard.distributions }}</div>
       <v-container fluid>
         <v-row>
           <v-col cols="12" sm="6" lg="4">
