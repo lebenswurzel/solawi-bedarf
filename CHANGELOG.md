@@ -156,6 +156,8 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 
 #192 Import von Benutzerdaten
 
-# NEW
+# v0.4.24 - 2025-02-25 - Statistik Beiträge
 
 #196 Statistik der Bedarfsanmeldungen: Orientierungswert ggü. Monatsbeitrag darstellen
+
+# NEW
