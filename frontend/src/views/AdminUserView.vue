@@ -31,9 +31,8 @@ import {
 import { UserRole } from "../../../shared/src/enum";
 import { computed } from "@vue/reactivity";
 import { updateUser } from "../requests/user.ts";
-import { format } from "date-fns";
-import { de } from "date-fns/locale";
 import { useUiFeedback } from "../store/uiFeedbackStore.ts";
+import { prettyDate } from "../../../shared/src/util/dateHelper.ts";
 
 const t = language.pages.user;
 
@@ -187,10 +186,6 @@ const getCurrentSeasonOrder = (
   userOrders?: UserOrder[],
 ): UserOrder | undefined => {
   return userOrders?.find((o) => o.configId == activeConfigId.value);
-};
-
-const prettyDate = (date?: Date | null): string => {
-  return date ? format(date, "PPp", { locale: de }) : "nie";
 };
 </script>
 

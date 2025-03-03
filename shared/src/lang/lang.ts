@@ -52,6 +52,7 @@ export const language = {
       edit: "Bearbeiten",
       update: "Aktualisieren",
       restore: "Änderungen verwerfen",
+      activate: "Aktivieren",
     },
     hints: {
       warning: "Warnung",
