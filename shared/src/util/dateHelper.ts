@@ -15,6 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { format } from "date-fns";
+import { de } from "date-fns/locale";
 
 export const addYears = (date: Date, yearsDiff: number): Date => {
   const result = new Date(date);
@@ -40,4 +41,8 @@ export const addMonths = (date: Date, monthsDiff: number): Date => {
 
 export const formatDateForFilename = (date: Date): string => {
   return format(date, "yyyy-MM-dd HH_mm_ss");
+};
+
+export const prettyDate = (date?: Date | string | null): string => {
+  return date ? format(date, "PPp", { locale: de }) : "nie";
 };

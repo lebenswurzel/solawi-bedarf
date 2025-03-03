@@ -41,6 +41,9 @@ const theme = useTheme();
 const { config, seasonColorClass } = storeToRefs(configStore);
 
 onMounted(async () => {
+  if (window.innerWidth >= 1280) {
+    drawer.value = true;
+  }
   if (window.location.hash != "#/register") {
     await userStore.init();
   }

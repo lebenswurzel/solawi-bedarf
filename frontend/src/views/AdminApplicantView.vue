@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <script setup lang="ts">
 import { ref } from "vue";
 import { ApplicantState } from "../../../shared/src/enum";
-import ApplicantView from "../components/applicant/ApplicantView.vue";
+import ApplicantTable from "../components/applicant/ApplicantTable.vue";
 import {
   Address,
   ImportApplicantRequest,
@@ -121,10 +121,11 @@ const refreshViews = () => {
     <v-tabs-window v-model="currentTab">
       <template v-for="item in applicantOptions">
         <v-tabs-window-item :value="item.value">
-          <ApplicantView
+          <ApplicantTable
             :state="item.value"
             :key="`${item.value}-${refreshKey}`"
             :export-columns="columns"
+            @refresh-all="refreshViews"
           />
         </v-tabs-window-item>
       </template>
