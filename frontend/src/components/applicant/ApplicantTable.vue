@@ -129,40 +129,48 @@ const tableItems = computed(() =>
 <template>
   <BusyIndicator :busy="busy" class="mt-2" />
   <v-card-text>
-    <v-menu v-if="props.state === ApplicantState.CONFIRMED">
-      <template v-slot:activator="{ props }">
-        <v-btn variant="plain" icon="mdi-dots-vertical" v-bind="props"> </v-btn>
-      </template>
-      <v-list>
-        <v-list-item>
-          <v-btn @click="onExportData" variant="text"
-            >Nutzerdaten exportieren</v-btn
-          >
-        </v-list-item>
-      </v-list>
-    </v-menu>
     <div v-if="applicants.length == 0" class="my-5">
       <div class="ma-2" v-if="busy">Daten werden geladen ...</div>
       <div class="ma-2" v-else>Keine Einträge</div>
     </div>
     <template v-else>
+      <v-container fluid>
+        <v-row no-gutters>
+          <v-col cols="11">
+            <v-text-field
+              prepend-inner-icon="mdi-magnify"
+              v-model="search"
+              variant="outlined"
+              density="compact"
+              label="Volltextsuche in allen Spalten"
+              single-line
+              clearable
+              hint="Volltextsuche in allen Spalten"
+            />
+          </v-col>
+          <v-spacer></v-spacer>
+          <v-col cols="auto">
+            <v-menu v-if="props.state === ApplicantState.CONFIRMED">
+              <template v-slot:activator="{ props }">
+                <v-btn variant="plain" icon="mdi-dots-vertical" v-bind="props">
+                </v-btn>
+              </template>
+              <v-list>
+                <v-list-item>
+                  <v-btn @click="onExportData" variant="text"
+                    >Nutzerdaten exportieren</v-btn
+                  >
+                </v-list-item>
+              </v-list>
+            </v-menu>
+          </v-col>
+        </v-row>
+      </v-container>
       <v-data-table
         :headers="tableColumns"
         :items="tableItems"
         :search="search"
       >
-        <template v-slot:top>
-          <v-text-field
-            prepend-inner-icon="mdi-magnify"
-            v-model="search"
-            variant="outlined"
-            density="compact"
-            label="Volltextsuche in allen Spalten"
-            single-line
-            clearable
-            hint="Volltextsuche in allen Spalten"
-          />
-        </template>
         <template v-slot:item.contact="{ item }">
           <div v-html="item.contact"></div>
         </template>
