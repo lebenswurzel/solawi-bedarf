@@ -160,6 +160,8 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 
 #196 Statistik der Bedarfsanmeldungen: Orientierungswert ggü. Monatsbeitrag darstellen
 
-# NEW
+# v0.4.25 - 2025-03-05 - Tabelle registrierte Nutzer
 
 #207 Darstellung der registrierten Nutzer als Tabelle
+
+# NEW
