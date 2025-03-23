@@ -22,6 +22,7 @@ import Koa from "koa";
 import Router from "koa-router";
 import { UserRole } from "../../../../shared/src/enum";
 import { GetUserResponse } from "../../../../shared/src/types";
+import { Applicant } from "../../database/Applicant";
 
 export const getUser = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -45,34 +46,39 @@ export const getUser = async (
           },
           relations: {
             orders: true,
-            applicant: true,
           },
         }
       : {
           order: { name: "ASC" },
           select: { name: true, id: true, role: true, active: true },
           where: { id },
-          relations: {
-            applicant: true,
-          },
         };
   const users = await AppDataSource.getRepository(User).find(findOptions);
 
   ctx.body = {
     userId: id,
-    users: users.map((u) => ({
-      name: u.name,
-      id: u.id,
-      role: u.role,
-      active: u.active,
-      orders: (u.orders ?? []).map((o) => ({
-        updatedAt: o.updatedAt,
-        configId: o.requisitionConfigId,
-        validFrom: o.validFrom,
-      })),
-      emailEnabled: !!u.applicant,
-    })),
-
+    users: await Promise.all(
+      users.map(async (u) => {
+        const hasApplicant =
+          (await AppDataSource.getRepository(Applicant).count({
+            where: {
+              userId: u.id,
+            },
+          })) > 0;
+        return {
+          name: u.name,
+          id: u.id,
+          role: u.role,
+          active: u.active,
+          orders: (u.orders ?? []).map((o) => ({
+            updatedAt: o.updatedAt,
+            configId: o.requisitionConfigId,
+            validFrom: o.validFrom,
+          })),
+          emailEnabled: hasApplicant,
+        };
+      }),
+    ),
     tokenValidUntil,
   } as GetUserResponse;
 };
