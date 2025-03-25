@@ -24,6 +24,7 @@ import { useUserStore } from "../store/userStore.ts";
 import SeasonText from "../components/styled/SeasonText.vue";
 import { getSeasonPhase } from "../../../shared/src/util/configHelper.ts";
 import SeasonStatusElement from "../components/season/SeasonStatusElement.vue";
+import { SeasonPhase } from "../../../shared/src/enum.ts";
 
 const configStore = useConfigStore();
 const biStore = useBIStore();
@@ -60,7 +61,10 @@ const phase = computed(() => {
       darauf, dass du oben rechts die gewünschte Saison ausgewählt hast.
     </v-card-subtitle>
     <v-card-text>
-      <SeasonStatusElement :phase="phase.orderPhase" />
+      <SeasonStatusElement
+        :phase="phase.orderPhase"
+        v-if="phase.seasonPhase != SeasonPhase.AFTER_SEASON"
+      />
       <SeasonStatusElement :phase="phase.seasonPhase" class="mt-3" />
     </v-card-text>
   </v-card>
