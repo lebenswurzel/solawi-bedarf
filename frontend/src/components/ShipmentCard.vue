@@ -233,14 +233,14 @@ const isSelected = (id: number) => !!selectedShippingItems.value[id];
         </v-row>
       </v-container>
     </v-card-text>
-    <v-card-subtitle v-else-if="props.seasonPhase >= SeasonPhase.SEASON_PHASE">
+    <v-card-subtitle v-else-if="props.seasonPhase >= SeasonPhase.ACTIVE_SEASON">
       {{
         interpolate(t.cards.list.subtitle, {
           kw: getISOWeek(Date.now()).toString(),
         })
       }}</v-card-subtitle
     >
-    <v-card-text v-if="props.seasonPhase >= SeasonPhase.SEASON_PHASE">
+    <v-card-text v-if="props.seasonPhase >= SeasonPhase.ACTIVE_SEASON">
       <p
         v-if="shipment.description"
         style="white-space: normal; max-width: 800px"
