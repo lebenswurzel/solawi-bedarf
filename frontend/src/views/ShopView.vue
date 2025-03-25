@@ -31,6 +31,8 @@ import SeasonText from "../components/styled/SeasonText.vue";
 import { UserWithOrders } from "../../../shared/src/types.ts";
 import { useRoute } from "vue-router";
 import { router } from "../routes.ts";
+import SeasonStatusElement from "../components/season/SeasonStatusElement.vue";
+import { getSeasonPhase } from "../../../shared/src/util/configHelper.ts";
 
 const t = language.pages.shop;
 
@@ -121,7 +123,18 @@ const refresh = async (keepUserId?: boolean) => {
     orderStore.update(requestUserId.value, activeConfigId.value);
   }
 };
-onMounted(refresh);
+onMounted(async () => {
+  await refresh();
+});
+
+const orderPhase = computed(() => {
+  const { orderPhase: orderPhaseValue } = getSeasonPhase(
+    config.value!,
+    new Date(),
+    userStore.currentUser?.active || false,
+  );
+  return orderPhaseValue;
+});
 </script>
 
 <template>
@@ -155,6 +168,7 @@ onMounted(refresh);
         <u>{{ t.cards.header.faq }}</u
         >.
       </a>
+      <SeasonStatusElement :phase="orderPhase" no-button class="mt-3" />
     </v-card-text>
   </v-card>
 

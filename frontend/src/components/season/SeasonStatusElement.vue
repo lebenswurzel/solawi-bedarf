@@ -21,7 +21,7 @@ import { SeasonPhase } from "../../../../shared/src/enum";
 import { useConfigStore } from "../../store/configStore";
 import { interpolate } from "../../../../shared/src/lang/template";
 
-const props = defineProps<{ phase: SeasonPhase }>();
+const props = defineProps<{ phase: SeasonPhase; noButton?: boolean }>();
 
 const configStore = useConfigStore();
 
@@ -81,7 +81,7 @@ const status = computed((): SeasonStatusElement => {
       phase: SeasonPhase.ORDER_CLOSED,
       title: "Bedarfsanmeldung geschlossen",
       description:
-        "Aktuell kann der Bedarf in der gewählten Saison nicht angepasst werden",
+        "Aktuell kann der Bedarf in der gewählten Saison nicht angepasst werden. Du wirst per E-Mail von deiner Solawi darüber informiert, sobald bekannt ist wann eine Bedarfsanpassung möglich ist. Bei Fragen melde dich gerne bei uns.",
       dateBegin: startBiddingRound,
       dateEnd: endBiddingRound,
       addGotoOrderButton: false,
@@ -144,7 +144,10 @@ const status = computed((): SeasonStatusElement => {
           dateEnd: prettyDate(status.dateEnd),
         })
       }}
-      <p v-if="status.addGotoOrderButton" class="justify-center d-flex">
+      <p
+        v-if="status.addGotoOrderButton && !props.noButton"
+        class="justify-center d-flex"
+      >
         <router-link to="/shop">
           <v-btn class="mt-4 my-1" color="secondary" variant="elevated">
             Zur Bedarfsanmeldung
