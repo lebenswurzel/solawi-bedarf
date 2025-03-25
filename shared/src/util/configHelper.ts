@@ -15,10 +15,10 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { SeasonPhase } from "../enum";
-import { RequisitionConfig } from "../types";
+import { ExistingConfig, RequisitionConfig } from "../types";
 
 export const getSeasonPhase = (
-  config: RequisitionConfig,
+  config: RequisitionConfig | ExistingConfig,
   now: Date,
   userActive: boolean
 ): { seasonPhase: SeasonPhase; orderPhase: SeasonPhase } => {
