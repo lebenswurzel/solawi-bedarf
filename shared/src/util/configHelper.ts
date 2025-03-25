@@ -19,27 +19,28 @@ import { RequisitionConfig } from "../types";
 
 export const getSeasonPhase = (
   config: RequisitionConfig,
-  now: Date
-): SeasonPhase => {
+  now: Date,
+  userActive: boolean
+): { seasonPhase: SeasonPhase; orderPhase: SeasonPhase } => {
   const startOrder = config?.startOrder!;
   const startBiddingRound = config?.startBiddingRound!;
   const endBiddingRound = config?.endBiddingRound!;
   const startSeason = config?.validFrom!;
   const endSeason = config?.validTo!;
+
+  let seasonPhase = SeasonPhase.BEFORE_SEASON;
   if (endSeason <= now) {
-    return SeasonPhase.AFTER_SEASON;
+    seasonPhase = SeasonPhase.AFTER_SEASON;
+  } else if (startSeason <= now && now < endSeason) {
+    seasonPhase = SeasonPhase.ACTIVE_SEASON;
   }
-  if (startSeason <= now && now < endSeason) {
-    return SeasonPhase.SEASON_PHASE;
+
+  let orderPhase = SeasonPhase.ORDER_CLOSED;
+  if (userActive && startBiddingRound <= now && now < endBiddingRound) {
+    orderPhase = SeasonPhase.INCREASE_ONLY;
   }
-  if (endBiddingRound <= now && now < startSeason) {
-    return SeasonPhase.BETWEEN_BIDDING_AND_SEASON;
+  if (userActive && startOrder <= now && now < startBiddingRound) {
+    orderPhase = SeasonPhase.FREE_ORDER;
   }
-  if (startBiddingRound <= now && now < endBiddingRound) {
-    return SeasonPhase.BIDDING_PHASE;
-  }
-  if (startOrder <= now && now < startBiddingRound) {
-    return SeasonPhase.ORDER_PHASE;
-  }
-  return SeasonPhase.BEFORE_ORDER;
+  return { seasonPhase, orderPhase };
 };

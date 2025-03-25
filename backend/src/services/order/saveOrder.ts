@@ -54,7 +54,6 @@ import { getRequestUserId, getUserFromContext } from "../getUserFromContext";
 import { getProductCategories } from "../product/getProductCategory";
 import { getOrganizationInfo } from "../text/getOrganizationInfo";
 import { formatDateForFilename } from "../../../../shared/src/util/dateHelper";
-import { getSeasonPhase } from "../../../../shared/src/util/configHelper";
 
 export const saveOrder = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
