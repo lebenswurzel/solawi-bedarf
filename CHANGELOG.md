@@ -165,3 +165,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #207 Darstellung der registrierten Nutzer als Tabelle
 
 # NEW
+
+#210 Überarbeitete Darstellung der Bedarfsanmeldungs-Status auf der Home-Seite
