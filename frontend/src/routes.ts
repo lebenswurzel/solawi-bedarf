@@ -35,7 +35,7 @@ const routes = [
     path: "/employeeshipment",
     component: () => import("./views/EmployeeShipmentView.vue"),
   },
-  { path: "/adminusers", component: AdminUserView },
+  { path: "/adminusers/:userName?", component: AdminUserView },
   { path: "/adminproducts", component: AdminProductsView },
   { path: "/adminregister", component: AdminApplicantView },
   { path: "/admindepot", component: AdminDepotView },

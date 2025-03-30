@@ -180,6 +180,16 @@ const tableItems = computed(() =>
         :items="tableItems"
         :search="search"
       >
+        <template v-slot:item.name="{ item }">
+          <v-btn
+            v-if="props.state == ApplicantState.CONFIRMED"
+            icon="mdi-account"
+            variant="plain"
+            :to="{ path: `/adminusers/${item.name}` }"
+            density="compact"
+          ></v-btn
+          >{{ item.name }}
+        </template>
         <template v-slot:item.contact="{ item }">
           <div v-html="item.contact"></div>
         </template>

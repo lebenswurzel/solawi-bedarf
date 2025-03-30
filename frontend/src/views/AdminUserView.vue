@@ -33,12 +33,14 @@ import { computed } from "@vue/reactivity";
 import { updateUser } from "../requests/user.ts";
 import { useUiFeedback } from "../store/uiFeedbackStore.ts";
 import { prettyDate } from "../../../shared/src/util/dateHelper.ts";
+import { useRoute } from "vue-router";
 
 const t = language.pages.user;
 
 const { setError, setSuccess } = useUiFeedback();
 const configStore = useConfigStore();
 const { externalAuthProvider, activeConfigId } = storeToRefs(configStore);
+const route = useRoute();
 
 const defaultUser: NewUser = {
   role: UserRole.USER,
@@ -98,6 +100,10 @@ const headers = [
 
 onMounted(async () => {
   await userStore.update();
+  // filter for user if route.params.userName is set
+  if (route.params.userName) {
+    search.value = route.params.userName as string;
+  }
 });
 
 const onCreateUser = () => {
