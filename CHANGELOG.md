@@ -168,6 +168,8 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 
 #210 Überarbeitete Darstellung der Bedarfsanmeldungs-Status auf der Home-Seite
 
-# NEW
+# v0.4.27 - 2025-03-30 - Benutzerkommentar eingeblendet
 
 #212 Benutzerdaten: Kommentar-Spalte eingeblendet und Querverweis zur Benutzertabelle (und zurück)
+
+# NEW
