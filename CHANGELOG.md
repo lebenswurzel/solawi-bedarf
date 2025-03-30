@@ -173,3 +173,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #212 Benutzerdaten: Kommentar-Spalte eingeblendet und Querverweis zur Benutzertabelle (und zurück)
 
 # NEW
+
+#214 Bedarf "Gültig ab"-Datum kann jetzt in der Benutzertabelle per Multi-Aktion auch dann gesetzt werden, wenn noch kein Bedarf angemeldet wurde
