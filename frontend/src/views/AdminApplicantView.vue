@@ -20,6 +20,7 @@ import { ApplicantState } from "../../../shared/src/enum";
 import ApplicantTable from "../components/applicant/ApplicantTable.vue";
 import {
   Address,
+  ApplicantExport,
   ImportApplicantRequest,
   ImportApplicantsResponse,
 } from "../../../shared/src/types";
@@ -51,7 +52,7 @@ const applicantOptions = [
   },
 ];
 
-const dummyAddress: Address = {
+const dummyImport: Address = {
   firstname: "",
   lastname: "",
   street: "",
@@ -61,7 +62,13 @@ const dummyAddress: Address = {
   phone: "",
 };
 
-const columns = Object.keys(dummyAddress) as (keyof Address)[];
+const dummyExport: ApplicantExport = {
+  ...dummyImport,
+  comment: "",
+};
+
+const importColumns = Object.keys(dummyImport) as (keyof Address)[];
+const exportColumns = Object.keys(dummyExport) as (keyof ApplicantExport)[];
 
 const onImportData = () => {
   importResponse.value = null;
@@ -124,7 +131,7 @@ const refreshViews = () => {
           <ApplicantTable
             :state="item.value"
             :key="`${item.value}-${refreshKey}`"
-            :export-columns="columns"
+            :export-columns="exportColumns"
             @refresh-all="refreshViews"
           />
         </v-tabs-window-item>
@@ -168,7 +175,7 @@ const refreshViews = () => {
       <CsvImportPanel
         @confirm="importUserData"
         identifier="name"
-        :columns="columns"
+        :columns="importColumns"
       />
     </v-card>
   </v-dialog>

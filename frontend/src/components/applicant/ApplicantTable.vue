@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
-import { Address, Applicant } from "../../../../shared/src/types";
+import { Applicant, ApplicantExport } from "../../../../shared/src/types";
 import { activateApplicant, getApplicants } from "../../requests/applicant";
 import { ApplicantState } from "../../../../shared/src/enum";
 import BusyIndicator from "../BusyIndicator.vue";
@@ -30,7 +30,7 @@ import { escapeHtmlEntities } from "../../../../shared/src/util/stringHelper";
 
 const props = defineProps<{
   state: ApplicantState;
-  exportColumns: (keyof Address)[];
+  exportColumns: (keyof ApplicantExport)[];
 }>();
 const emit = defineEmits<{ (e: "refreshAll"): void }>();
 const busy = ref(true);
@@ -77,7 +77,7 @@ const onExportData = () => {
   const csv = Papa.unparse(
     applicants.value.map((v) => ({
       name: v.name,
-      ...pick(v.address, props.exportColumns),
+      ...pick({ ...v, ...v.address }, props.exportColumns),
     })),
     {
       delimiter: ";",
@@ -97,24 +97,33 @@ const onExportData = () => {
   window.URL.revokeObjectURL(url);
 };
 
-const tableColumns = [
-  { title: "Benutzer", key: "name" },
-  {
-    title: "Name",
-    key: "realName",
-  },
-  {
-    title: "Kontakt",
-    key: "contact",
-  },
-  {
-    title: "Adresse",
-    key: "address",
-  },
-  { title: "Angelegt", key: "createdAt" },
-  { title: "ID", key: "id" },
-  { title: "Aktion", key: "action" },
-];
+const tableColumns = computed(() =>
+  [
+    { title: "Benutzer", key: "name" },
+    {
+      title: "Name",
+      key: "realName",
+    },
+    {
+      title: "Kontakt",
+      key: "contact",
+    },
+    {
+      title: "Adresse",
+      key: "address",
+    },
+    {
+      title: "Kommentar",
+      key: "comment",
+    },
+    { title: "Angelegt", key: "createdAt" },
+    { title: "ID", key: "id" },
+    { title: "Aktion", key: "action" },
+  ].filter(
+    (col) =>
+      !(props.state === ApplicantState.CONFIRMED && col.key === "action"),
+  ),
+);
 
 const tableItems = computed(() =>
   applicants.value.map((a) => ({

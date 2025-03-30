@@ -153,6 +153,10 @@ export interface Applicant {
   createdAt?: string;
 }
 
+export interface ApplicantExport extends Address {
+  comment: string;
+}
+
 export interface ImportApplicantRequest {
   name: string;
   data: Partial<Address>;
