@@ -22,7 +22,8 @@ import { http } from "../../consts/http";
 import { User } from "../../database/User";
 import { AppDataSource } from "../../database/database";
 import { getUserFromContext } from "../getUserFromContext";
-import { Order } from "../../database/Order";
+import { RequisitionConfig } from "../../database/RequisitionConfig";
+import { updateOrderValidFrom } from "./saveUser";
 
 export const updateUser = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -39,7 +40,16 @@ export const updateUser = async (
     id: requestUser.id || 0,
   });
   if (!user) {
-    ctx.throw(http.not_found);
+    ctx.throw(http.not_found, "user not found");
+  }
+
+  const requisitionConfig = await AppDataSource.getRepository(
+    RequisitionConfig,
+  ).findOne({
+    where: { id: requestUser.configId },
+  });
+  if (!requisitionConfig) {
+    ctx.throw(http.not_found, "invalid config id");
   }
 
   ctx.status = http.bad_request;
@@ -50,22 +60,11 @@ export const updateUser = async (
   }
 
   if (requestUser.orderValidFrom !== undefined) {
-    const currentOrder = await AppDataSource.getRepository(Order).findOne({
-      where: {
-        userId: requestUser.id,
-        requisitionConfigId: requestUser.configId,
-      },
-    });
-    // only update if user
-    if (currentOrder) {
-      await AppDataSource.getRepository(Order).update(
-        { userId: requestUser.id, requisitionConfigId: requestUser.configId },
-        {
-          validFrom: requestUser.orderValidFrom,
-          updatedAt: currentOrder.updatedAt, // prevent modification of updatedAt as we use it to indicate whether a user changed his order
-        },
-      );
-    }
+    await updateOrderValidFrom(
+      user,
+      requestUser.orderValidFrom,
+      requestUser.configId,
+    );
     ctx.status = http.no_content;
   }
 };
