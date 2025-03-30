@@ -48,6 +48,7 @@ export type UserOrder = {
   updatedAt: Date;
   configId: number;
   validFrom: Date | null;
+  hasItems: boolean;
 };
 
 export type UserWithOrders = Required<User> & {

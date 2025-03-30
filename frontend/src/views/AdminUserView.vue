@@ -190,8 +190,12 @@ watch(selectedUsers, () => {
 
 const getCurrentSeasonOrder = (
   userOrders?: UserOrder[],
+  ifHasItems = false,
 ): UserOrder | undefined => {
-  return userOrders?.find((o) => o.configId == activeConfigId.value);
+  const order = userOrders?.find((o) => o.configId == activeConfigId.value);
+  if (order && (order.hasItems || !ifHasItems)) {
+    return order;
+  }
 };
 </script>
 
@@ -312,7 +316,11 @@ const getCurrentSeasonOrder = (
                 </v-tooltip>
               </template>
               <template v-slot:item.orderUpdatedAt="{ item }">
-                {{ prettyDate(getCurrentSeasonOrder(item.orders)?.updatedAt) }}
+                {{
+                  prettyDate(
+                    getCurrentSeasonOrder(item.orders, true)?.updatedAt,
+                  )
+                }}
                 <v-btn
                   icon="mdi-eye"
                   variant="plain"
