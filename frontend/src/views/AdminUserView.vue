@@ -263,6 +263,16 @@ const getCurrentSeasonOrder = (
               show-select
               v-model="selectedUsers"
             >
+              <template v-slot:item.name="{ item }">
+                <v-btn
+                  v-if="item.emailEnabled"
+                  icon="mdi-account-arrow-right"
+                  variant="plain"
+                  :to="{ path: `/adminregister/confirmed/${item.name}` }"
+                  density="compact"
+                ></v-btn
+                >{{ item.name }}
+              </template>
               <template v-slot:item.active="{ item }">
                 <v-tooltip text="aktiviert" open-on-click>
                   <template v-slot:activator="{ props }">

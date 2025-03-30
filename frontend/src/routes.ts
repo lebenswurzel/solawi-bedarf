@@ -37,7 +37,7 @@ const routes = [
   },
   { path: "/adminusers/:userName?", component: AdminUserView },
   { path: "/adminproducts", component: AdminProductsView },
-  { path: "/adminregister", component: AdminApplicantView },
+  { path: "/adminregister/:tab?/:userName?", component: AdminApplicantView },
   { path: "/admindepot", component: AdminDepotView },
   { path: "/adminconfig", component: AdminConfigView },
   { path: "/admintext", component: AdminTextView },
