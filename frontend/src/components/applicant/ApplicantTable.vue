@@ -27,12 +27,14 @@ import { pick } from "../../../../shared/src/util/utils";
 import { prettyDate } from "../../../../shared/src/util/dateHelper";
 import { language } from "../../../../shared/src/lang/lang";
 import { escapeHtmlEntities } from "../../../../shared/src/util/stringHelper";
+import { useRoute } from "vue-router";
 
 const props = defineProps<{
   state: ApplicantState;
   exportColumns: (keyof ApplicantExport)[];
 }>();
 const emit = defineEmits<{ (e: "refreshAll"): void }>();
+const route = useRoute();
 const busy = ref(true);
 const search = ref<string>("");
 
@@ -63,7 +65,10 @@ const refresh = async () => {
 };
 
 onMounted(async () => {
-  refresh();
+  await refresh();
+  if (route.params.userName) {
+    search.value = route.params.userName as string;
+  }
 });
 
 const getAddress = ({ address: { street, postalcode, city } }: Applicant) =>
@@ -183,7 +188,7 @@ const tableItems = computed(() =>
         <template v-slot:item.name="{ item }">
           <v-btn
             v-if="props.state == ApplicantState.CONFIRMED"
-            icon="mdi-account"
+            icon="mdi-account-arrow-right"
             variant="plain"
             :to="{ path: `/adminusers/${item.name}` }"
             density="compact"

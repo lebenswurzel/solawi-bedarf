@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import { ApplicantState } from "../../../shared/src/enum";
 import ApplicantTable from "../components/applicant/ApplicantTable.vue";
 import {
@@ -29,6 +29,7 @@ import { importApplicantsData } from "../requests/applicant";
 import { language } from "../../../shared/src/lang/lang";
 import BusyIndicator from "../components/BusyIndicator.vue";
 import { useUiFeedback } from "../store/uiFeedbackStore";
+import { useRoute } from "vue-router";
 
 const currentTab = ref(ApplicantState.NEW);
 const openImportdialog = ref(false);
@@ -36,6 +37,7 @@ const importResponse = ref<ImportApplicantsResponse | null>(null);
 const importBusy = ref(false);
 const refreshKey = ref(0);
 const uiFeedbackStore = useUiFeedback();
+const route = useRoute();
 
 const applicantOptions = [
   {
@@ -93,6 +95,13 @@ const importUserData = async (data: ImportApplicantRequest[]) => {
 const refreshViews = () => {
   refreshKey.value++;
 };
+
+onMounted(() => {
+  if (route.params.tab) {
+    const tab = route.params.tab as string;
+    currentTab.value = tab.toUpperCase() as ApplicantState;
+  }
+});
 </script>
 
 <template>
