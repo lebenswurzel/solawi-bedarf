@@ -28,6 +28,7 @@ export type SerializedUserOrders = {
   validFrom: string;
   configId: number;
   updatedAt: string;
+  hasItems: boolean;
 };
 
 export type SerializedGetUserResponse = {
