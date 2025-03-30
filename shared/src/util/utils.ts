@@ -131,7 +131,12 @@ export function pick<T extends Record<string, any>, K extends keyof T>(
   obj: T,
   keys: K[]
 ): Partial<Pick<T, K>> {
-  return Object.fromEntries(
+  const result = Object.fromEntries(
     Object.entries(obj).filter(([key]) => keys.includes(key as K))
   ) as Partial<Pick<T, K>>;
+
+  // return result sorted by the order in keys
+  return Object.fromEntries(keys.map((key) => [key, result[key]])) as Partial<
+    Pick<T, K>
+  >;
 }
