@@ -136,6 +136,7 @@ function safelySerialize(data: unknown, excludeKeys: string[] = []): any {
         _truncated: true,
         _originalSize: serialized.length,
         _message: "Data too large to log",
+        _preview: serialized.substring(0, 2000), // Include first 2000 bytes
       });
     }
     return sanitized;
