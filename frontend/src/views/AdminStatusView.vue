@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref, computed } from "vue";
 import { getErrorLog } from "../requests/errorLog";
 import { GetErrorLogResponse } from "../../../shared/src/types";
 import { useUiFeedback } from "../store/uiFeedbackStore";
@@ -24,26 +24,30 @@ import { prettyDate } from "../../../shared/src/util/dateHelper";
 const errorLogs = ref<GetErrorLogResponse>([]);
 const loading = ref(false);
 const search = ref("");
+const showExtendedInfo = ref(false);
 const { setError } = useUiFeedback();
 
-const headers = [
+const baseHeaders = [
   {
     title: "Zeitpunkt",
     key: "createdAt",
     align: "start" as const,
     sortable: true,
+    width: "150",
   },
   {
     title: "URL",
     key: "url",
     align: "start" as const,
     sortable: true,
+    width: "150",
   },
   {
     title: "Status",
     key: "status",
     align: "center" as const,
     sortable: true,
+    width: "100",
   },
   {
     title: "Fehler",
@@ -68,8 +72,36 @@ const headers = [
     key: "userId",
     align: "center" as const,
     sortable: true,
+    width: "150",
   },
 ];
+
+const extendedHeaders = [
+  {
+    title: "Request Headers",
+    key: "requestHeaders",
+    align: "start" as const,
+    sortable: false,
+  },
+  {
+    title: "User Agent",
+    key: "userAgent",
+    align: "start" as const,
+    sortable: true,
+    width: "200",
+  },
+  {
+    title: "Benutzer Name",
+    key: "userName",
+    align: "start" as const,
+    sortable: true,
+    width: "150",
+  },
+];
+
+const headers = computed(() =>
+  showExtendedInfo.value ? [...baseHeaders, ...extendedHeaders] : baseHeaders,
+);
 
 const refresh = async () => {
   loading.value = true;
@@ -91,9 +123,14 @@ onMounted(async () => {
   <v-card class="ma-2">
     <v-card-title>Fehlerprotokoll</v-card-title>
     <v-card-text>
+      <v-card-actions>
+        <v-btn @click="refresh" :loading="loading" prepend-icon="mdi-refresh">
+          Aktualisieren
+        </v-btn>
+      </v-card-actions>
       <v-container fluid>
         <v-row no-gutters>
-          <v-col cols="12" class="d-flex align-center">
+          <v-col cols="12" sm="4" class="d-flex align-center pa-2">
             <v-text-field
               prepend-inner-icon="mdi-magnify"
               v-model="search"
@@ -103,6 +140,15 @@ onMounted(async () => {
               single-line
               clearable
               hint="Volltextsuche in allen Spalten"
+            />
+          </v-col>
+          <v-spacer />
+          <v-col cols="12" sm="4" class="d-flex align-center pa-2">
+            <v-switch
+              v-model="showExtendedInfo"
+              label="Erweiterte Informationen anzeigen"
+              density="compact"
+              hide-details
             />
           </v-col>
         </v-row>
@@ -137,16 +183,16 @@ onMounted(async () => {
                   JSON.stringify(item.requestQuery, null, 2)
                 }}</pre>
               </template>
+              <template v-slot:item.requestHeaders="{ item }">
+                <pre v-if="item.requestHeaders">{{
+                  JSON.stringify(item.requestHeaders, null, 2)
+                }}</pre>
+              </template>
             </v-data-table>
           </v-col>
         </v-row>
       </v-container>
     </v-card-text>
-    <v-card-actions>
-      <v-btn @click="refresh" :loading="loading" prepend-icon="mdi-refresh">
-        Aktualisieren
-      </v-btn>
-    </v-card-actions>
   </v-card>
 </template>
 
