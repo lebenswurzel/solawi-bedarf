@@ -176,6 +176,8 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 
 #214 Bedarf "Gültig ab"-Datum kann jetzt in der Benutzertabelle per Multi-Aktion auch dann gesetzt werden, wenn noch kein Bedarf angemeldet wurde
 
-# NEW
+# v0.5.0 - 2025-04-02 - Error logging
 
 #220 Error-Logging damit Admins Nutzer bei Problemen besser unterstützen können
+
+# NEW
