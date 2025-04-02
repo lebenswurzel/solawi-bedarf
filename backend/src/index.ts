@@ -53,6 +53,7 @@ import { getVersion } from "./services/getVersion";
 import { updateUser } from "./services/user/updateUser";
 import { importApplicant } from "./services/applicant/importApplicant";
 import { errorLogger } from "./middleware/errorLogger";
+import { getErrorLog } from "./services/getErrorLog";
 
 const port = config.server.serverPort;
 const app = new Koa();
@@ -130,6 +131,8 @@ router.get("/bi", biHandler);
 router.get("/overview", getOverview);
 
 router.get("/version", getVersion);
+
+router.get("/error-log", getErrorLog);
 
 app.use(bodyParser());
 app.use(router.routes()).use(router.allowedMethods());

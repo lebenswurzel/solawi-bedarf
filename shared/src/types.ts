@@ -404,3 +404,25 @@ export interface PdfTexts {
   packagingListHeader: string;
 }
 export type PdfTextsKeys = FlattenKeys<PdfTexts>;
+
+export interface ErrorLogEntry {
+  id: number;
+  createdAt: Date;
+  method: string;
+  url: string;
+  status: number;
+  error: {
+    name?: string;
+    message: string;
+    stack?: string[];
+  };
+  requestBody?: any;
+  requestQuery?: any;
+  requestHeaders?: any;
+  userAgent?: string;
+  ip?: string;
+  userId?: number;
+  userName?: string;
+}
+
+export type GetErrorLogResponse = ErrorLogEntry[];
