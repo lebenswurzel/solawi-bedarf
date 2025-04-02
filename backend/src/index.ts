@@ -52,10 +52,14 @@ import { deleteProduct } from "./services/product/deleteProduct";
 import { getVersion } from "./services/getVersion";
 import { updateUser } from "./services/user/updateUser";
 import { importApplicant } from "./services/applicant/importApplicant";
+import { errorLogger } from "./middleware/errorLogger";
 
 const port = config.server.serverPort;
 const app = new Koa();
 const router = new Router();
+
+// Add error logger middleware
+app.use(errorLogger);
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
