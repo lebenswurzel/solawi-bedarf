@@ -22,43 +22,126 @@ export const errorLogger = async (ctx: Koa.Context, next: Koa.Next) => {
   try {
     await next();
   } catch (err) {
-    // Create error log entry
-    const errorLog = new ErrorLog();
-    errorLog.method = ctx.method;
-    errorLog.url = ctx.url;
-    errorLog.status = ctx.status;
-    errorLog.error =
-      err instanceof Error
-        ? {
-            name: err.name,
-            message: err.message,
-            stack: err.stack
-              ? err.stack.split("\n").map((line) => line.trim())
-              : undefined,
-          }
-        : { message: String(err) };
-    errorLog.requestBody = ctx.request.body;
-    errorLog.requestQuery = ctx.request.query;
-    errorLog.requestHeaders = ctx.request.headers;
-    errorLog.userAgent = ctx.request.headers["user-agent"] || "unknown";
-    errorLog.ip = ctx.request.ip;
-    errorLog.userId = ctx.state.user?.id;
+    // Ensure we have a valid status code
+    ctx.status = ctx.status || 500;
 
-    console.error("Error Details:", JSON.stringify(errorLog, null, 2));
-
-    // Store error in database
     try {
-      await AppDataSource.getRepository(ErrorLog).save(errorLog);
-    } catch (dbError) {
-      // If we can't store the error in the database, at least log it to console
-      console.error("Failed to store error in database:", dbError);
-      console.error(
-        "Original error details:",
-        JSON.stringify(errorLog, null, 2),
+      // Create error log entry with safe defaults and data sanitization
+      const errorLog = new ErrorLog();
+
+      // Basic request info with fallbacks
+      errorLog.method = ctx.method || "UNKNOWN";
+      errorLog.url = ctx.url || "UNKNOWN";
+      errorLog.status = ctx.status;
+
+      // Safely handle error object
+      errorLog.error = safelyExtractError(err);
+
+      // Safely handle request data with size limits
+      errorLog.requestBody = safelySerialize(ctx.request.body);
+      errorLog.requestQuery = safelySerialize(ctx.request.query);
+      errorLog.requestHeaders = safelySerialize(ctx.request.headers, [
+        "authorization",
+        "cookie",
+      ]); // Exclude sensitive headers
+
+      // Safe string fields with length limits
+      errorLog.userAgent = truncateString(
+        ctx.request.headers["user-agent"] || "unknown",
+        500,
       );
+      errorLog.ip = truncateString(ctx.request.ip || "unknown", 45);
+
+      // Safe user ID handling
+      errorLog.userId =
+        typeof ctx.state?.user?.id === "number" ? ctx.state.user.id : null;
+
+      // Log to console first (in case DB fails)
+      console.error("Error Details:", JSON.stringify(errorLog, null, 2));
+
+      // Store in database with timeout
+      await Promise.race([
+        AppDataSource.getRepository(ErrorLog).save(errorLog),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("Database timeout")), 5000),
+        ),
+      ]);
+    } catch (logError) {
+      // Log but don't throw logging errors
+      console.error("Error logging failed:", logError);
+      console.error("Original error:", err);
     }
 
-    // Re-throw the error to let Koa handle it
+    // Re-throw the original error
     throw err;
   }
 };
+
+// Helper functions for safe error logging
+
+function safelyExtractError(err: unknown): {
+  name?: string;
+  message: string;
+  stack?: string[];
+} {
+  try {
+    if (err instanceof Error) {
+      return {
+        name: truncateString(err.name, 100),
+        message: truncateString(err.message, 1000),
+        stack: err.stack
+          ? err.stack
+              .split("\n")
+              .map((line) => truncateString(line.trim(), 200))
+              .slice(0, 50) // Limit stack trace length
+          : undefined,
+      };
+    }
+    return {
+      message: truncateString(String(err), 1000),
+    };
+  } catch {
+    return { message: "Error parsing failed" };
+  }
+}
+
+function safelySerialize(data: unknown, excludeKeys: string[] = []): any {
+  try {
+    // Remove sensitive data
+    const sanitized =
+      excludeKeys.length > 0 ? removeKeys(data, excludeKeys) : data;
+
+    // Stringify and limit size
+    const serialized = JSON.stringify(sanitized);
+    if (serialized.length > 10000) {
+      // 10KB limit
+      return JSON.stringify({
+        _truncated: true,
+        _originalSize: serialized.length,
+        _message: "Data too large to log",
+      });
+    }
+    return sanitized;
+  } catch {
+    return null;
+  }
+}
+
+function truncateString(str: string, maxLength: number): string {
+  if (str.length <= maxLength) return str;
+  return str.slice(0, maxLength) + "...";
+}
+
+function removeKeys(obj: unknown, keys: string[]): unknown {
+  if (typeof obj !== "object" || obj === null) return obj;
+
+  if (Array.isArray(obj)) {
+    return obj.map((item) => removeKeys(item, keys));
+  }
+
+  return Object.fromEntries(
+    Object.entries(obj)
+      .filter(([key]) => !keys.includes(key.toLowerCase()))
+      .map(([key, value]) => [key, removeKeys(value, keys)]),
+  );
+}
