@@ -18,58 +18,75 @@ import Koa from "koa";
 import { AppDataSource } from "../database/database";
 import { ErrorLog } from "../database/ErrorLog";
 
+// Errors that we don't want to log
+const IGNORED_ERROR_NAMES = [
+  "UnauthorizedError",
+  "Error 401", // Also catch the string version of unauthorized errors
+];
+
 export const errorLogger = async (ctx: Koa.Context, next: Koa.Next) => {
   try {
     await next();
   } catch (err) {
-    // Ensure we have a valid status code
-    ctx.status = ctx.status || 500;
+    // Check if this is an error we want to ignore
+    const errorName = err instanceof Error ? err.name : String(err);
+    const errorMessage = err instanceof Error ? err.message : String(err);
 
-    try {
-      // Create error log entry with safe defaults and data sanitization
-      const errorLog = new ErrorLog();
+    if (
+      !IGNORED_ERROR_NAMES.some(
+        (ignored) =>
+          errorName.includes(ignored) || errorMessage.includes(ignored),
+      )
+    ) {
+      // Ensure we have a valid status code
+      ctx.status = ctx.status || 500;
 
-      // Basic request info with fallbacks
-      errorLog.method = ctx.method || "UNKNOWN";
-      errorLog.url = ctx.url || "UNKNOWN";
-      errorLog.status = ctx.status;
+      try {
+        // Create error log entry with safe defaults and data sanitization
+        const errorLog = new ErrorLog();
 
-      // Safely handle error object
-      errorLog.error = safelyExtractError(err);
+        // Basic request info with fallbacks
+        errorLog.method = ctx.method || "UNKNOWN";
+        errorLog.url = ctx.url || "UNKNOWN";
+        errorLog.status = ctx.status;
 
-      // Safely handle request data with size limits
-      errorLog.requestBody = safelySerialize(ctx.request.body);
-      errorLog.requestQuery = safelySerialize(ctx.request.query);
-      errorLog.requestHeaders = safelySerialize(ctx.request.headers, [
-        "authorization",
-        "cookie",
-      ]); // Exclude sensitive headers
+        // Safely handle error object
+        errorLog.error = safelyExtractError(err);
 
-      // Safe string fields with length limits
-      errorLog.userAgent = truncateString(
-        ctx.request.headers["user-agent"] || "unknown",
-        500,
-      );
-      errorLog.ip = truncateString(ctx.request.ip || "unknown", 45);
+        // Safely handle request data with size limits
+        errorLog.requestBody = safelySerialize(ctx.request.body);
+        errorLog.requestQuery = safelySerialize(ctx.request.query);
+        errorLog.requestHeaders = safelySerialize(ctx.request.headers, [
+          "authorization",
+          "cookie",
+        ]); // Exclude sensitive headers
 
-      // Safe user ID handling
-      errorLog.userId =
-        typeof ctx.state?.user?.id === "number" ? ctx.state.user.id : null;
+        // Safe string fields with length limits
+        errorLog.userAgent = truncateString(
+          ctx.request.headers["user-agent"] || "unknown",
+          500,
+        );
+        errorLog.ip = truncateString(ctx.request.ip || "unknown", 45);
 
-      // Log to console first (in case DB fails)
-      console.error("Error Details:", JSON.stringify(errorLog, null, 2));
+        // Safe user ID handling
+        errorLog.userId =
+          typeof ctx.state?.user?.id === "number" ? ctx.state.user.id : null;
 
-      // Store in database with timeout
-      await Promise.race([
-        AppDataSource.getRepository(ErrorLog).save(errorLog),
-        new Promise((_, reject) =>
-          setTimeout(() => reject(new Error("Database timeout")), 5000),
-        ),
-      ]);
-    } catch (logError) {
-      // Log but don't throw logging errors
-      console.error("Error logging failed:", logError);
-      console.error("Original error:", err);
+        // Log to console first (in case DB fails)
+        console.error("Error Details:", JSON.stringify(errorLog, null, 2));
+
+        // Store in database with timeout
+        await Promise.race([
+          AppDataSource.getRepository(ErrorLog).save(errorLog),
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error("Database timeout")), 5000),
+          ),
+        ]);
+      } catch (logError) {
+        // Log but don't throw logging errors
+        console.error("Error logging failed:", logError);
+        console.error("Original error:", err);
+      }
     }
 
     // Re-throw the original error
