@@ -99,7 +99,7 @@ const mainNavEntries: NavEntry[] = [
 const adminNavEntries: NavEntry[] = [
   {
     title: language.pages.user.title,
-    icon: "mdi-account", // Replace with appropriate icons
+    icon: "mdi-account",
     to: "/adminusers",
   },
   {
@@ -136,6 +136,11 @@ const adminNavEntries: NavEntry[] = [
     title: language.pages.statistics.title,
     icon: "mdi-chart-bar",
     to: "/statistics",
+  },
+  {
+    title: "Fehlerprotokoll",
+    icon: "mdi-alert-circle-outline",
+    to: "/adminstatus",
   },
 ];
 </script>
