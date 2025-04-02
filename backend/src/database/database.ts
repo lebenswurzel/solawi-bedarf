@@ -45,6 +45,8 @@ import { AddMaintenanceMsgText1730887882789 } from "../migrations/1730887882789-
 import { AddProductCategoryType1731067417340 } from "../migrations/1731067417340-add-product-category-type";
 import { OrganizationInfoTextContent1738274522237 } from "../migrations/1738274522237-organization-info-text-content";
 import { PdfTextContent1738317876884 } from "../migrations/1738317876884-pdf-text-content";
+import { ErrorLog } from "./ErrorLog";
+import { ErrorLog1743622159714 } from "../migrations/1743622159714-error-log";
 
 const entities = [
   User,
@@ -61,6 +63,7 @@ const entities = [
   Shipment,
   ShipmentItem,
   AdditionalShipmentItem,
+  ErrorLog,
 ];
 
 // Run the following SQL once if the InitialSetup migration is not in the migrations table
@@ -81,6 +84,7 @@ const migrations = [
   AddProductCategoryType1731067417340,
   OrganizationInfoTextContent1738274522237,
   PdfTextContent1738317876884,
+  ErrorLog1743622159714,
 ];
 
 const configuredPort = config.testing.isTesting
