@@ -54,6 +54,7 @@ const baseHeaders = [
     key: "error",
     align: "start" as const,
     sortable: false,
+    width: "300",
   },
   {
     title: "Request Body",
@@ -67,6 +68,9 @@ const baseHeaders = [
     align: "start" as const,
     sortable: false,
   },
+];
+
+const extendedHeaders = [
   {
     title: "Benutzer ID",
     key: "userId",
@@ -74,9 +78,6 @@ const baseHeaders = [
     sortable: true,
     width: "150",
   },
-];
-
-const extendedHeaders = [
   {
     title: "Request Headers",
     key: "requestHeaders",
@@ -205,9 +206,7 @@ onMounted(async () => {
 
 .stack-trace {
   margin-top: 8px;
-  font-size: 0.8em;
   max-height: 200px;
-  overflow-y: auto;
 }
 
 pre {
@@ -215,7 +214,7 @@ pre {
   word-break: break-word;
   max-height: 200px;
   overflow-y: auto;
-  font-size: 0.8em;
+  font-size: 0.6em;
   margin: 0;
 }
 </style>
