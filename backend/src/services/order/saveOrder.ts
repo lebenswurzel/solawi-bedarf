@@ -120,7 +120,14 @@ export const saveOrder = async (
   }
   const orderItemErrors = body.orderItems
     .map((actualOrderItem) =>
-      isOrderItemValid(order, actualOrderItem, soldByProductId, productsById),
+      isOrderItemValid(
+        order?.orderItems.find(
+          (item) => item.productId === actualOrderItem.productId,
+        )?.value || null,
+        actualOrderItem,
+        soldByProductId,
+        productsById,
+      ),
     )
     .filter((error): error is string => error !== null);
 
