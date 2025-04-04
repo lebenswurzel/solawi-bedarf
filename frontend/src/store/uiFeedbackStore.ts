@@ -34,7 +34,7 @@ export const useUiFeedback = defineStore(
 
     const setError = (message: string, e?: Error) => {
       if (e) {
-        error.value = message + ": " + e.message;
+        error.value = message + "\n" + e.message;
       } else {
         error.value = message;
       }

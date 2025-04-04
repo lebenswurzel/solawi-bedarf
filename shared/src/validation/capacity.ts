@@ -23,6 +23,7 @@ import {
   ProductsById,
   SoldByProductId,
 } from "../types";
+import { getLangUnit } from "../util/unitHelper";
 import { isIncreaseOnly } from "./requisition";
 
 export const getRemainingDepotCapacity = (
@@ -45,19 +46,19 @@ export const isOrderItemValid = (
   actualOrderItem: OrderItem,
   soldByProductId: SoldByProductId,
   productsById: ProductsById
-) => {
+): string | null => {
   if (actualOrderItem.value == 0) {
-    return true;
-  }
-  if (actualOrderItem.value < 0) {
-    return false;
+    return null;
   }
   const product = productsById[actualOrderItem.productId];
   if (!product || !product.active) {
-    return false;
+    return "Produkt nicht verfügbar";
+  }
+  if (actualOrderItem.value < 0) {
+    return `Wert für ${product.name} darf nicht negativ sein`;
   }
   if (product.quantityMin > actualOrderItem.value) {
-    return false;
+    return `Mindestmenge ${product.quantityMin} ${getLangUnit(product.unit)} von ${product.name} nicht erreicht`;
   }
   let remaining =
     soldByProductId[actualOrderItem.productId].quantity -
@@ -77,12 +78,12 @@ export const isOrderItemValid = (
     product.quantityMax
   );
   if (maxAvailable < actualOrderItem.value) {
-    return false;
+    return `Maximal verfügbare Menge ${maxAvailable} ${getLangUnit(product.unit)} von ${product.name} überschritten`;
   }
   if (actualOrderItem.value % product.quantityStep != 0) {
-    return false;
+    return `Menge für ${product.name} muss ein Vielfaches von ${product.quantityStep} ${getLangUnit(product.unit)} sein`;
   }
-  return true;
+  return null;
 };
 
 export const getMaxAvailable = (

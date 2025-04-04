@@ -27,13 +27,24 @@ const { error, success } = storeToRefs(uiFeedbackStore);
     @update:model-value="uiFeedbackStore.clearError"
     color="red"
   >
-    {{ error }}
+    <div v-for="line in error?.split('\n')" :key="line" class="feedback-line">
+      {{ line }}
+    </div>
   </v-snackbar>
   <v-snackbar
     :model-value="!!success"
     @update:model-value="uiFeedbackStore.clearSuccess"
     color="success"
   >
-    {{ success }}
+    <div v-for="line in success?.split('\n')" :key="line" class="feedback-line">
+      {{ line }}
+    </div>
   </v-snackbar>
 </template>
+
+<style scoped>
+div.feedback-line {
+  white-space: pre-wrap;
+  text-align: center;
+}
+</style>

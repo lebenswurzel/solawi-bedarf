@@ -118,18 +118,14 @@ export const saveOrder = async (
   if (remainingDepotCapacity != null && remainingDepotCapacity == 0) {
     ctx.throw(http.bad_request, "no depot capacity left");
   }
-  if (
-    body.orderItems.some(
-      (actualOrderItem) =>
-        !isOrderItemValid(
-          order,
-          actualOrderItem,
-          soldByProductId,
-          productsById,
-        ),
+  const orderItemErrors = body.orderItems
+    .map((actualOrderItem) =>
+      isOrderItemValid(order, actualOrderItem, soldByProductId, productsById),
     )
-  ) {
-    ctx.throw(http.bad_request, "order item invalid");
+    .filter((error): error is string => error !== null);
+
+  if (orderItemErrors.length > 0) {
+    ctx.throw(http.bad_request, `${orderItemErrors.join("\n")}`);
   }
   const msrp = getMsrp(body.category, body.orderItems, productsById);
   if (!isOfferValid(body.offer, msrp.total)) {
