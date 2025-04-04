@@ -67,7 +67,8 @@ const color = computed(() => {
 const maxValueAvailable = computed(() => {
   const savedOrderItem = savedOrderItemsByProductId.value[props.productId];
   return getMaxAvailable(
-    { value: savedOrderItem || 0, productId: props.productId },
+    savedOrderItem || 0,
+    props.productId,
     productsById.value,
     soldByProductId.value,
   );
@@ -77,7 +78,8 @@ const minValueAvailable = computed(() => {
   const savedOrderItem = savedOrderItemsByProductId.value[props.productId];
   if (config.value) {
     return getMinAvailable(
-      { value: savedOrderItem || 0, productId: props.productId },
+      savedOrderItem || 0,
+      props.productId,
       currentUser.value?.role,
       config.value,
       now.value,
