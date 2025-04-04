@@ -27,7 +27,7 @@ export const buildInfo: BuildInfo = {
   git: {
     hash: "dev",
     hashShort: "dev",
-    branch: "local",
+    branch: "main",
     tag: "",
     commitDate: "Do 1. Jan 01:00:00 CET 1970",
   },

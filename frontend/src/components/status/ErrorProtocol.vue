@@ -21,6 +21,8 @@ import { GetErrorLogResponse } from "../../../../shared/src/types";
 import { useUiFeedback } from "../../store/uiFeedbackStore";
 import { prettyDate } from "../../../../shared/src/util/dateHelper";
 import { safeCopyToClipboard } from "../../lib/utils";
+import { appConfig } from "../../../../shared/src/config";
+import { buildInfo } from "../../../../shared/src/buildInfo";
 
 declare const navigator: Navigator;
 
@@ -113,6 +115,20 @@ const extendedHeaders = [
 const headers = computed(() =>
   showExtendedInfo.value ? [...baseHeaders, ...extendedHeaders] : baseHeaders,
 );
+
+const formatStackLine = (line: string): string => {
+  const match = line.match(/\(\/(backend\/src\/.+?):(\d+):(\d+)\)$/);
+  console.log(match, line);
+  if (!match) return line;
+
+  const [_, file, lineNumber] = match;
+  const url = `${appConfig.meta.sourceCodeUrl}/blob/${buildInfo.git.tag || buildInfo.git.branch}/${file}#L${lineNumber}`;
+  return `<a href="${url}" target="_blank" rel="noopener noreferrer">${line}</a>`;
+};
+
+const formatStack = (stack: string[]): string => {
+  return stack.map(formatStackLine).join("\n");
+};
 
 const refresh = async () => {
   loading.value = true;
@@ -207,7 +223,7 @@ onMounted(async () => {
                   </div>
                   <div>{{ item.error.message }}</div>
                   <div v-if="item.error.stack" class="stack-trace">
-                    <pre>{{ item.error.stack.join("\n") }}</pre>
+                    <pre v-html="formatStack(item.error.stack)"></pre>
                   </div>
                 </div>
               </template>
@@ -244,7 +260,7 @@ onMounted(async () => {
       </v-container>
     </v-card-text>
 
-    <v-dialog v-model="showDialog" max-width="800px">
+    <v-dialog v-model="showDialog" max-width="1200px">
       <v-card v-if="selectedError">
         <v-card-title class="text-h5">
           Fehlerdetails
@@ -258,7 +274,7 @@ onMounted(async () => {
         <v-card-text>
           <v-container>
             <v-row>
-              <v-col cols="12" sm="6">
+              <v-col cols="12" sm="4">
                 <v-list-item>
                   <v-list-item-title>Zeitpunkt</v-list-item-title>
                   <v-list-item-subtitle>{{
@@ -296,7 +312,7 @@ onMounted(async () => {
                   }}</v-list-item-subtitle>
                 </v-list-item>
               </v-col>
-              <v-col cols="12" sm="6">
+              <v-col cols="12" sm="8">
                 <v-list-item>
                   <v-list-item-title>Fehler</v-list-item-title>
                   <v-list-item-subtitle class="error-name">{{
@@ -309,7 +325,7 @@ onMounted(async () => {
                     v-if="selectedError.error.stack"
                     class="stack-trace"
                   >
-                    <pre>{{ selectedError.error.stack.join("\n") }}</pre>
+                    <pre v-html="formatStack(selectedError.error.stack)"></pre>
                   </v-list-item-subtitle>
                 </v-list-item>
               </v-col>
@@ -385,5 +401,14 @@ pre {
 .error-name {
   color: rgb(var(--v-theme-error));
   font-weight: bold;
+}
+
+.stack-trace a {
+  color: rgb(var(--v-theme-primary));
+  text-decoration: none;
+}
+
+.stack-trace a:hover {
+  text-decoration: underline;
 }
 </style>
