@@ -96,7 +96,7 @@ const onUpdate = (value: string) => {
 
 const validateValue = (value: number) => {
   const error = isOrderItemValid(
-    null, // savedOrder is not needed for validation
+    savedOrderItemsByProductId.value[props.productId] || null,
     { value, productId: props.productId },
     soldByProductId.value,
     productsById.value,

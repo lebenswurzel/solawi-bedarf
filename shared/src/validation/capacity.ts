@@ -41,8 +41,68 @@ export const getRemainingDepotCapacity = (
   return remainingCapacitiy;
 };
 
+const calculateRemainingQuantity = (
+  productId: number,
+  soldByProductId: SoldByProductId,
+  savedOrderItem?: OrderItem,
+  savedOrder?: Order | null
+): number => {
+  const sold = soldByProductId[productId];
+  let remaining = sold.quantity - sold.sold;
+
+  if (savedOrderItem && savedOrderItem.value > 0) {
+    remaining += sold.frequency * savedOrderItem.value;
+  } else if (savedOrder) {
+    const existingOrderItem = savedOrder.orderItems.find(
+      (orderItem) => orderItem.productId === productId
+    );
+    if (existingOrderItem) {
+      remaining += existingOrderItem.value * sold.frequency;
+    }
+  }
+
+  return remaining;
+};
+
+const calculateMaxAvailable = (
+  productId: number,
+  productsById: ProductsById,
+  soldByProductId: SoldByProductId,
+  savedOrderItem?: OrderItem,
+  savedOrder?: Order | null
+): number => {
+  const product = productsById[productId];
+  const remaining = calculateRemainingQuantity(
+    productId,
+    soldByProductId,
+    savedOrderItem,
+    savedOrder
+  );
+  return Math.min(remaining / product.frequency, product.quantityMax);
+};
+
+const calculateMinAvailable = (
+  productId: number,
+  productsById: ProductsById,
+  userRole?: UserRole,
+  requisitionConfig?: ExistingConfig,
+  now?: Date,
+  savedOrderItem?: OrderItem
+): number => {
+  const product = productsById[productId];
+  if (
+    requisitionConfig &&
+    now &&
+    isIncreaseOnly(userRole, requisitionConfig, now) &&
+    savedOrderItem
+  ) {
+    return Math.max(savedOrderItem.value, product.quantityMin);
+  }
+  return product.quantityMin;
+};
+
 export const isOrderItemValid = (
-  savedOrder: Order | null,
+  savedValue: number | null,
   actualOrderItem: OrderItem,
   soldByProductId: SoldByProductId,
   productsById: ProductsById
@@ -57,29 +117,27 @@ export const isOrderItemValid = (
   if (actualOrderItem.value < 0) {
     return `Wert für ${product.name} darf nicht negativ sein`;
   }
-  if (product.quantityMin > actualOrderItem.value) {
-    return `Mindestmenge ${product.quantityMin} ${getLangUnit(product.unit)} von ${product.name} nicht erreicht`;
+
+  const minAvailable = calculateMinAvailable(
+    actualOrderItem.productId,
+    productsById
+  );
+  if (minAvailable > actualOrderItem.value) {
+    return `Mindestmenge ${minAvailable} ${getLangUnit(product.unit)} von ${product.name} nicht erreicht`;
   }
-  let remaining =
-    soldByProductId[actualOrderItem.productId].quantity -
-    soldByProductId[actualOrderItem.productId].sold;
-  if (savedOrder) {
-    const savedOrderItem = savedOrder.orderItems.find(
-      (orderItem) => orderItem.productId == actualOrderItem.productId
-    );
-    if (savedOrderItem) {
-      remaining +=
-        savedOrderItem.value *
-        soldByProductId[actualOrderItem.productId].frequency;
-    }
-  }
-  let maxAvailable = Math.min(
-    remaining / product.frequency,
-    product.quantityMax
+
+  const maxAvailable = calculateMaxAvailable(
+    actualOrderItem.productId,
+    productsById,
+    soldByProductId,
+    savedValue || 0
+      ? { value: savedValue || 0, productId: actualOrderItem.productId }
+      : undefined
   );
   if (maxAvailable < actualOrderItem.value) {
     return `Maximal verfügbare Menge ${maxAvailable} ${getLangUnit(product.unit)} von ${product.name} überschritten`;
   }
+
   if (actualOrderItem.value % product.quantityStep != 0) {
     return `Menge für ${product.name} muss ein Vielfaches von ${product.quantityStep} ${getLangUnit(product.unit)} sein`;
   }
@@ -91,13 +149,12 @@ export const getMaxAvailable = (
   productsById: ProductsById,
   soldByProductId: SoldByProductId
 ) => {
-  const sold = soldByProductId[savedOrderItem.productId];
-  const product = productsById[savedOrderItem.productId];
-  let remaining = sold.quantity - sold.sold;
-  if (savedOrderItem.value > 0) {
-    remaining += sold.frequency * savedOrderItem.value;
-  }
-  return Math.min(remaining / sold.frequency, product.quantityMax);
+  return calculateMaxAvailable(
+    savedOrderItem.productId,
+    productsById,
+    soldByProductId,
+    savedOrderItem
+  );
 };
 
 export const getMinAvailable = (
@@ -107,11 +164,14 @@ export const getMinAvailable = (
   now: Date,
   productsById: ProductsById
 ) => {
-  const product = productsById[savedOrderItem.productId];
-  if (isIncreaseOnly(userRole, requisitionConfig, now)) {
-    return Math.max(savedOrderItem.value, product.quantityMin);
-  }
-  return product.quantityMin;
+  return calculateMinAvailable(
+    savedOrderItem.productId,
+    productsById,
+    userRole,
+    requisitionConfig,
+    now,
+    savedOrderItem
+  );
 };
 
 export const sanitizeOrderItem = ({
