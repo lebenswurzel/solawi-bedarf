@@ -22,7 +22,7 @@ export default defineConfig({
     coverage: {
       reporter: ["text", "json-summary", "json", "html"],
       reportOnFailure: true,
-      include: ["src/**"],
+      include: ["src/validation/**"],
     },
   },
 });
