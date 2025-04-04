@@ -203,23 +203,6 @@ onMounted(async () => {
                 <div class="error-message">
                   <div class="d-flex align-center">
                     <strong>{{ item.error.name }}</strong>
-                    <v-btn
-                      icon="mdi-content-copy"
-                      size="small"
-                      variant="text"
-                      density="compact"
-                      class="ms-2"
-                      @click="
-                        safeCopyToClipboard(
-                          item.error.name +
-                            '\n' +
-                            item.error.message +
-                            (item.error.stack
-                              ? '\n' + item.error.stack.join('\n')
-                              : ''),
-                        )
-                      "
-                    />
                   </div>
                   <div>{{ item.error.message }}</div>
                   <div v-if="item.error.stack" class="stack-trace">
@@ -230,18 +213,6 @@ onMounted(async () => {
               <template v-slot:item.requestBody="{ item }">
                 <div v-if="item.requestBody" class="d-flex align-start">
                   <pre>{{ JSON.stringify(item.requestBody, null, 2) }}</pre>
-                  <v-btn
-                    icon="mdi-content-copy"
-                    size="small"
-                    variant="text"
-                    density="compact"
-                    class="ms-2"
-                    @click="
-                      safeCopyToClipboard(
-                        JSON.stringify(item.requestBody, null, 2),
-                      )
-                    "
-                  />
                 </div>
               </template>
               <template v-slot:item.requestQuery="{ item }">
@@ -314,7 +285,24 @@ onMounted(async () => {
               </v-col>
               <v-col cols="12" sm="8">
                 <v-list-item>
-                  <v-list-item-title>Fehler</v-list-item-title>
+                  <v-list-item-title
+                    >Fehler
+
+                    <v-btn
+                      icon="mdi-content-copy"
+                      size="small"
+                      variant="text"
+                      density="compact"
+                      class="ms-2"
+                      @click="
+                        safeCopyToClipboard(
+                          selectedError.error.stack
+                            ? '\n' + selectedError.error.stack.join('\n')
+                            : '',
+                        )
+                      "
+                    />
+                  </v-list-item-title>
                   <v-list-item-subtitle class="error-name">{{
                     selectedError.error.name
                   }}</v-list-item-subtitle>
@@ -332,12 +320,24 @@ onMounted(async () => {
             </v-row>
             <v-row>
               <v-col cols="12">
-                <v-expansion-panels>
+                <v-expansion-panels multiple>
                   <v-expansion-panel v-if="selectedError.requestBody">
                     <v-expansion-panel-title
-                      >Request Body</v-expansion-panel-title
-                    >
+                      >Request Body
+                    </v-expansion-panel-title>
                     <v-expansion-panel-text>
+                      <v-btn
+                        icon="mdi-content-copy"
+                        size="small"
+                        variant="text"
+                        density="compact"
+                        class="ms-2"
+                        @click="
+                          safeCopyToClipboard(
+                            JSON.stringify(selectedError.requestBody, null, 2),
+                          )
+                        "
+                      />
                       <pre>{{
                         JSON.stringify(selectedError.requestBody, null, 2)
                       }}</pre>
@@ -358,6 +358,22 @@ onMounted(async () => {
                       >Request Headers</v-expansion-panel-title
                     >
                     <v-expansion-panel-text>
+                      <v-btn
+                        icon="mdi-content-copy"
+                        size="small"
+                        variant="text"
+                        density="compact"
+                        class="ms-2"
+                        @click="
+                          safeCopyToClipboard(
+                            JSON.stringify(
+                              selectedError.requestHeaders,
+                              null,
+                              2,
+                            ),
+                          )
+                        "
+                      />
                       <pre>{{
                         JSON.stringify(selectedError.requestHeaders, null, 2)
                       }}</pre>
