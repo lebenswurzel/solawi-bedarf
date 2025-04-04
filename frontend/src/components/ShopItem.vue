@@ -25,6 +25,7 @@ import {
   getMaxAvailable,
   getMinAvailable,
   sanitizeOrderItem,
+  isOrderItemValid,
 } from "../../../shared/src/validation/capacity.ts";
 import { useUserStore } from "../store/userStore.ts";
 import { useConfigStore } from "../store/configStore.ts";
@@ -87,24 +88,22 @@ const minValueAvailable = computed(() => {
 });
 
 const model = ref<string>();
+const errorMessage = ref<string | null>(null);
 
 const onUpdate = (value: string) => {
   model.value = value;
 };
 
-/*
-const onClear = () => {
-  let value = 0;
-  if (
-    configStore.orderConfig.increaseOnly &&
-    userStore.currentUser?.role != UserRole.ADMIN
-  ) {
-    value = savedOrderItemsByProductKey.value[product.value.id] || 0;
-  }
-  model.value = value.toString();
-  orderStore.updateOrderItem(product.value.id, value);
+const validateValue = (value: number) => {
+  const error = isOrderItemValid(
+    null, // savedOrder is not needed for validation
+    { value, productId: props.productId },
+    soldByProductId.value,
+    productsById.value,
+  );
+  errorMessage.value = error;
+  return error === null;
 };
-*/
 
 const onBlur = (blur: boolean) => {
   if (!blur) {
@@ -123,6 +122,7 @@ const onBlur = (blur: boolean) => {
       step: product.value.quantityStep,
     });
     model.value = value.toString();
+    validateValue(value);
     orderStore.updateOrderItem(product.value.id, value);
   }
 };
@@ -191,7 +191,13 @@ onMounted(() => {
           :step="product.quantityStep"
           :model-value="model"
           :disabled="!product?.active || !submit"
-          @update:model-value="onUpdate"
+          :error-messages="errorMessage"
+          @update:model-value="
+            (v) => {
+              onUpdate(v);
+              validateValue(parseInt(v || '0'));
+            }
+          "
           @update:focused="onBlur"
         ></v-text-field>
       </v-col>
