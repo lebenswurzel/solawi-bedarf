@@ -310,12 +310,12 @@ describe("getMinAvailable", () => {
   const mockConfig: ExistingConfig = {
     id: 1,
     name: "Test Config",
-    startOrder: new Date(),
-    startBiddingRound: new Date(),
-    endBiddingRound: new Date(),
+    startOrder: new Date("2024-01-01"),
+    startBiddingRound: new Date("2024-01-15"),
+    endBiddingRound: new Date("2024-01-31"),
     budget: 1000,
-    validFrom: new Date(),
-    validTo: new Date(),
+    validFrom: new Date("2024-04-01"),
+    validTo: new Date("2025-03-31"),
     public: true,
   };
 
@@ -325,7 +325,7 @@ describe("getMinAvailable", () => {
       1,
       UserRole.USER,
       mockConfig,
-      new Date(),
+      new Date("2024-01-14"),
       mockProductsById
     );
     expect(result).toBe(5);
@@ -337,7 +337,7 @@ describe("getMinAvailable", () => {
       1,
       UserRole.USER,
       mockConfig,
-      new Date(),
+      new Date("2024-01-16"),
       mockProductsById
     );
     expect(result).toBe(10);
@@ -349,7 +349,7 @@ describe("getMinAvailable", () => {
       1,
       UserRole.USER,
       mockConfig,
-      new Date(),
+      new Date("2024-01-16"),
       mockProductsById
     );
     expect(result).toBe(5);
