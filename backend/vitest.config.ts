@@ -20,6 +20,10 @@ import swc from "unplugin-swc";
 export default defineConfig({
   test: {
     setupFiles: ["./testSetup.ts"],
+    include: [
+      "src/**/*.test.ts",
+      "../shared/**/*.test.ts", // Include shared test files
+    ],
     coverage: {
       reporter: ["text", "json-summary", "json", "html"],
       reportOnFailure: true,
@@ -30,6 +34,7 @@ export default defineConfig({
         "**/product",
         "**/text",
         "**/user",
+        "../shared/src/validation/**", // Specifically include validation directory
       ],
     },
     fileParallelism: false, // tests cannot run in parallel because they use the same DB
