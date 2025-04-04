@@ -206,7 +206,13 @@ testAsUser1("bad requests", async ({ userData }: TestUserData) => {
   // order item invalid
   ctx = await _createCtx({}, { userData }, configId, 100);
   await expect(() => saveOrder(ctx)).rejects.toThrowError(
-    "Error 400: order item invalid",
+    "Error 400: Maximal verfügbare Menge 5 Stk. von p1 überschritten",
+  );
+
+  // order item invalid 2
+  ctx = await _createCtx({}, { userData }, configId, -10);
+  await expect(() => saveOrder(ctx)).rejects.toThrowError(
+    "Error 400: Wert für p1 darf nicht negativ sein",
   );
 
   // bid too low
