@@ -96,6 +96,21 @@ Make sure to include all relevant changes and release notes in the `# NEW` secti
 The script will ask for a tag name, release title and will commit, push and create the release in
 Github using the [Github CLI](https://cli.github.com/).
 
+### Versioning Rules
+
+The version number (vX.Y.Z) is automatically suggested based on the following rules:
+
+- If there are any changes in `/backend/src/migrations` since the last release:
+  - Increase the minor version (Y) by one
+  - Reset the bugfix version (Z) to 0
+- Otherwise:
+  - Only increase the bugfix version (Z) by one
+
+For example:
+
+- If the last version was v0.4.28 and there are new migrations, it will suggest v0.5.0
+- If the last version was v0.4.28 and there are no new migrations, it will suggest v0.4.29
+
 ## Glossary
 
 todo

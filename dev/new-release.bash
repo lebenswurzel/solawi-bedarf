@@ -6,6 +6,45 @@ error() {
   echo "$1" >&2
 }
 
+# Function to get the last version from CHANGELOG.md
+get_last_version() {
+    grep "^# v[0-9]\+\.[0-9]\+\.[0-9]\+" CHANGELOG.md | tail -n 1 | sed 's/^# v//;s/ -.*$//'
+}
+
+# Function to check if there are new migrations since last release
+has_new_migrations() {
+    last_version=$(get_last_version)
+    last_tag_date=$(git log -1 --format=%ai "v$last_version" 2>/dev/null || echo "1970-01-01")
+
+    # Check if any migration files were modified after the last release
+    if git ls-files --modified backend/src/migrations/* | grep -q "backend/src/migrations/"; then
+        return 0
+    fi
+
+    # Check if any new migration files were added after the last release
+    if git log --since="$last_tag_date" --name-only --pretty=format: | grep -q "^backend/src/migrations/"; then
+        return 0
+    fi
+
+    return 1
+}
+
+# Function to suggest new version
+suggest_version() {
+    last_version=$(get_last_version)
+    IFS='.' read -r major minor bugfix <<< "$last_version"
+
+    if has_new_migrations; then
+        # Increase minor version and reset bugfix
+        new_minor=$((minor + 1))
+        echo "v$major.$new_minor.0"
+    else
+        # Only increase bugfix version
+        new_bugfix=$((bugfix + 1))
+        echo "v$major.$minor.$new_bugfix"
+    fi
+}
+
 # Step 0: Verify Current Branch is 'main'
 current_branch=$(git rev-parse --abbrev-ref HEAD)
 if [ "$current_branch" != "main" ]; then
@@ -26,8 +65,14 @@ prompt() {
     echo "$input"
 }
 
-# Step 1: Prompt user for the new version
-new_version=$(prompt "Enter the new version (e.g., v1.2.3)")
+# Step 1: Suggest and prompt for the new version
+suggested_version=$(suggest_version)
+new_version=$(prompt "Enter the new version (suggested: $suggested_version)")
+
+# If user didn't enter anything, use the suggested version
+if [[ -z "$new_version" ]]; then
+    new_version=$suggested_version
+fi
 
 # Validate the version format (basic check)
 if [[ ! "$new_version" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
