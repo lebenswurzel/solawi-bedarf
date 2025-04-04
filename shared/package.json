@@ -5,7 +5,9 @@
   "scripts": {
     "lint": "eslint --ext .js,.vue --ignore-path .gitignore --fix src",
     "tsc": "tsc",
-    "format": "prettier .  --write"
+    "format": "prettier .  --write",
+    "test": "vitest",
+    "test-cov": "vitest --coverage"
   },
   "author": "",
   "license": "AGPL-3.0-only",
@@ -22,6 +24,7 @@
     "typescript": "^5.2.2"
   },
   "devDependencies": {
+    "@vitest/coverage-v8": "^3.0.5",
     "vitest": "^3.0.5"
   }
 }
