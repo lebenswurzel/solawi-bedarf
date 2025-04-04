@@ -180,6 +180,8 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 
 #220 Error-Logging damit Admins Nutzer bei Problemen besser unterstützen können
 
-# NEW
+# v0.5.1 - 2025-04-04 - Fehlerhinweise bei Produktauswahl
 
 #222 Besseres Feedback beim Fehleingaben in der Bedarfsanmeldung
+
+# NEW
