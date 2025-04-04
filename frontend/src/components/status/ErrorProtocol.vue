@@ -33,6 +33,37 @@ const showExtendedInfo = ref(false);
 const { setError } = useUiFeedback();
 const showDialog = ref(false);
 const selectedError = ref<GetErrorLogResponse[0] | null>(null);
+const timeFilter = ref<"lastHour" | "today" | "yesterday" | "thisWeek" | "all">(
+  "all",
+);
+
+const filteredErrorLogs = computed(() => {
+  if (timeFilter.value === "all") return errorLogs.value;
+
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const weekStart = new Date(today);
+  weekStart.setDate(weekStart.getDate() - today.getDay());
+  const lastHour = new Date(now.getTime() - 60 * 60 * 1000);
+
+  return errorLogs.value.filter((log) => {
+    const logDate = new Date(log.createdAt);
+    switch (timeFilter.value) {
+      case "lastHour":
+        return logDate >= lastHour;
+      case "today":
+        return logDate >= today;
+      case "yesterday":
+        return logDate >= yesterday && logDate < today;
+      case "thisWeek":
+        return logDate >= weekStart;
+      default:
+        return true;
+    }
+  });
+});
 
 const openErrorDialog = (error: GetErrorLogResponse[0]) => {
   selectedError.value = error;
@@ -157,6 +188,20 @@ onMounted(async () => {
       </v-card-actions>
       <v-container fluid>
         <v-row no-gutters>
+          <v-col cols="12">
+            <v-btn-toggle
+              v-model="timeFilter"
+              mandatory
+              density="compact"
+              class="me-4"
+            >
+              <v-btn value="all">Alle</v-btn>
+              <v-btn value="lastHour">Letzte Stunde</v-btn>
+              <v-btn value="today">Heute</v-btn>
+              <v-btn value="yesterday">Gestern</v-btn>
+              <v-btn value="thisWeek">Diese Woche</v-btn>
+            </v-btn-toggle>
+          </v-col>
           <v-col cols="12" sm="4" class="d-flex align-center pa-2">
             <v-text-field
               prepend-inner-icon="mdi-magnify"
@@ -183,7 +228,7 @@ onMounted(async () => {
           <v-col cols="12">
             <v-data-table
               :headers="headers"
-              :items="errorLogs"
+              :items="filteredErrorLogs"
               :search="search"
               density="compact"
               :loading="loading"
