@@ -20,6 +20,9 @@ import { getErrorLog } from "../requests/errorLog";
 import { GetErrorLogResponse } from "../../../shared/src/types";
 import { useUiFeedback } from "../store/uiFeedbackStore";
 import { prettyDate } from "../../../shared/src/util/dateHelper";
+import { safeCopyToClipboard } from "../lib/utils";
+
+declare const navigator: Navigator;
 
 const errorLogs = ref<GetErrorLogResponse>([]);
 const loading = ref(false);
@@ -167,7 +170,26 @@ onMounted(async () => {
               </template>
               <template v-slot:item.error="{ item }">
                 <div class="error-message">
-                  <strong>{{ item.error.name }}</strong>
+                  <div class="d-flex align-center">
+                    <strong>{{ item.error.name }}</strong>
+                    <v-btn
+                      icon="mdi-content-copy"
+                      size="small"
+                      variant="text"
+                      density="compact"
+                      class="ms-2"
+                      @click="
+                        safeCopyToClipboard(
+                          item.error.name +
+                            '\n' +
+                            item.error.message +
+                            (item.error.stack
+                              ? '\n' + item.error.stack.join('\n')
+                              : ''),
+                        )
+                      "
+                    />
+                  </div>
                   <div>{{ item.error.message }}</div>
                   <div v-if="item.error.stack" class="stack-trace">
                     <pre>{{ item.error.stack.join("\n") }}</pre>
@@ -175,9 +197,21 @@ onMounted(async () => {
                 </div>
               </template>
               <template v-slot:item.requestBody="{ item }">
-                <pre v-if="item.requestBody">{{
-                  JSON.stringify(item.requestBody, null, 2)
-                }}</pre>
+                <div v-if="item.requestBody" class="d-flex align-start">
+                  <pre>{{ JSON.stringify(item.requestBody, null, 2) }}</pre>
+                  <v-btn
+                    icon="mdi-content-copy"
+                    size="small"
+                    variant="text"
+                    density="compact"
+                    class="ms-2"
+                    @click="
+                      safeCopyToClipboard(
+                        JSON.stringify(item.requestBody, null, 2),
+                      )
+                    "
+                  />
+                </div>
               </template>
               <template v-slot:item.requestQuery="{ item }">
                 <pre v-if="item.requestQuery">{{
