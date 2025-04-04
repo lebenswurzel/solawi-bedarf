@@ -20,6 +20,7 @@ import {
   getRemainingDepotCapacity,
   getMaxAvailable,
   getMinAvailable,
+  sanitizeOrderItem,
 } from "./capacity";
 import {
   OrderItem,
@@ -352,5 +353,66 @@ describe("getMinAvailable", () => {
       mockProductsById
     );
     expect(result).toBe(5);
+  });
+});
+
+describe("sanitizeOrderItem", () => {
+  it("should return minValue for undefined or NaN values", () => {
+    const minValue = 5;
+    const maxValue = 20;
+    const step = 1;
+
+    expect(
+      sanitizeOrderItem({ value: undefined, minValue, maxValue, step })
+    ).toBe(minValue);
+    expect(sanitizeOrderItem({ value: NaN, minValue, maxValue, step })).toBe(
+      minValue
+    );
+  });
+
+  it("should set value to minValue if below minimum", () => {
+    const minValue = 5;
+    const maxValue = 20;
+    const step = 1;
+
+    expect(sanitizeOrderItem({ value: 2, minValue, maxValue, step })).toBe(
+      minValue
+    );
+  });
+
+  it("should set value to maxValue if above maximum", () => {
+    const minValue = 5;
+    const maxValue = 20;
+    const step = 1;
+
+    expect(sanitizeOrderItem({ value: 25, minValue, maxValue, step })).toBe(
+      maxValue
+    );
+  });
+
+  it("should round down to nearest step", () => {
+    const minValue = 5;
+    const maxValue = 20;
+    const step = 2;
+
+    expect(sanitizeOrderItem({ value: 7, minValue, maxValue, step })).toBe(6);
+    expect(sanitizeOrderItem({ value: 8, minValue, maxValue, step })).toBe(8);
+  });
+
+  it("should return 0 if rounding down to step makes value less than minValue", () => {
+    const minValue = 5;
+    const maxValue = 20;
+    const step = 3;
+
+    expect(sanitizeOrderItem({ value: 4, minValue, maxValue, step })).toBe(0);
+  });
+
+  it("should handle valid values correctly", () => {
+    const minValue = 5;
+    const maxValue = 20;
+    const step = 1;
+
+    expect(sanitizeOrderItem({ value: 10, minValue, maxValue, step })).toBe(10);
+    expect(sanitizeOrderItem({ value: 15, minValue, maxValue, step })).toBe(15);
   });
 });
