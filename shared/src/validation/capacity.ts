@@ -18,7 +18,6 @@ import { UserRole } from "../enum";
 import {
   Depot,
   ExistingConfig,
-  Order,
   OrderItem,
   ProductsById,
   SoldByProductId,
@@ -44,21 +43,13 @@ export const getRemainingDepotCapacity = (
 const calculateRemainingQuantity = (
   productId: number,
   soldByProductId: SoldByProductId,
-  savedOrderItem?: OrderItem,
-  savedOrder?: Order | null
+  savedValue?: number | null
 ): number => {
   const sold = soldByProductId[productId];
   let remaining = sold.quantity - sold.sold;
 
-  if (savedOrderItem && savedOrderItem.value > 0) {
-    remaining += sold.frequency * savedOrderItem.value;
-  } else if (savedOrder) {
-    const existingOrderItem = savedOrder.orderItems.find(
-      (orderItem) => orderItem.productId === productId
-    );
-    if (existingOrderItem) {
-      remaining += existingOrderItem.value * sold.frequency;
-    }
+  if (savedValue && savedValue > 0) {
+    remaining += sold.frequency * savedValue;
   }
 
   return remaining;
@@ -68,15 +59,13 @@ const calculateMaxAvailable = (
   productId: number,
   productsById: ProductsById,
   soldByProductId: SoldByProductId,
-  savedOrderItem?: OrderItem,
-  savedOrder?: Order | null
+  savedValue?: number | null
 ): number => {
   const product = productsById[productId];
   const remaining = calculateRemainingQuantity(
     productId,
     soldByProductId,
-    savedOrderItem,
-    savedOrder
+    savedValue
   );
   return Math.min(remaining / product.frequency, product.quantityMax);
 };
@@ -87,16 +76,16 @@ const calculateMinAvailable = (
   userRole?: UserRole,
   requisitionConfig?: ExistingConfig,
   now?: Date,
-  savedOrderItem?: OrderItem
+  savedValue?: number | null
 ): number => {
   const product = productsById[productId];
   if (
     requisitionConfig &&
     now &&
     isIncreaseOnly(userRole, requisitionConfig, now) &&
-    savedOrderItem
+    savedValue
   ) {
-    return Math.max(savedOrderItem.value, product.quantityMin);
+    return Math.max(savedValue, product.quantityMin);
   }
   return product.quantityMin;
 };
@@ -120,7 +109,11 @@ export const isOrderItemValid = (
 
   const minAvailable = calculateMinAvailable(
     actualOrderItem.productId,
-    productsById
+    productsById,
+    undefined,
+    undefined,
+    undefined,
+    savedValue
   );
   if (minAvailable > actualOrderItem.value) {
     return `Mindestmenge ${minAvailable} ${getLangUnit(product.unit)} von ${product.name} nicht erreicht`;
@@ -131,8 +124,6 @@ export const isOrderItemValid = (
     productsById,
     soldByProductId,
     savedValue || 0
-      ? { value: savedValue || 0, productId: actualOrderItem.productId }
-      : undefined
   );
   if (maxAvailable < actualOrderItem.value) {
     return `Maximal verfügbare Menge ${maxAvailable} ${getLangUnit(product.unit)} von ${product.name} überschritten`;
@@ -145,32 +136,34 @@ export const isOrderItemValid = (
 };
 
 export const getMaxAvailable = (
-  savedOrderItem: OrderItem,
+  savedValue: number | null,
+  productId: number,
   productsById: ProductsById,
   soldByProductId: SoldByProductId
 ) => {
   return calculateMaxAvailable(
-    savedOrderItem.productId,
+    productId,
     productsById,
     soldByProductId,
-    savedOrderItem
+    savedValue
   );
 };
 
 export const getMinAvailable = (
-  savedOrderItem: OrderItem,
+  savedValue: number | null,
+  productId: number,
   userRole: UserRole | undefined,
   requisitionConfig: ExistingConfig,
   now: Date,
   productsById: ProductsById
 ) => {
   return calculateMinAvailable(
-    savedOrderItem.productId,
+    productId,
     productsById,
     userRole,
     requisitionConfig,
     now,
-    savedOrderItem
+    savedValue
   );
 };
 
