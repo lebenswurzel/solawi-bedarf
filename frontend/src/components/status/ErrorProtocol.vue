@@ -29,6 +29,13 @@ const loading = ref(false);
 const search = ref("");
 const showExtendedInfo = ref(false);
 const { setError } = useUiFeedback();
+const showDialog = ref(false);
+const selectedError = ref<GetErrorLogResponse[0] | null>(null);
+
+const openErrorDialog = (error: GetErrorLogResponse[0]) => {
+  selectedError.value = error;
+  showDialog.value = true;
+};
 
 const baseHeaders = [
   {
@@ -166,6 +173,14 @@ onMounted(async () => {
               :loading="loading"
             >
               <template v-slot:item.createdAt="{ item }">
+                <v-btn
+                  icon="mdi-information"
+                  variant="text"
+                  density="compact"
+                  class="ms-2"
+                  @click="openErrorDialog(item)"
+                />
+                <br />
                 {{ prettyDate(item.createdAt) }}
               </template>
               <template v-slot:item.error="{ item }">
@@ -228,6 +243,121 @@ onMounted(async () => {
         </v-row>
       </v-container>
     </v-card-text>
+
+    <v-dialog v-model="showDialog" max-width="800px">
+      <v-card v-if="selectedError">
+        <v-card-title class="text-h5">
+          Fehlerdetails
+          <v-btn
+            icon="mdi-close"
+            variant="text"
+            class="float-right"
+            @click="showDialog = false"
+          />
+        </v-card-title>
+        <v-card-text>
+          <v-container>
+            <v-row>
+              <v-col cols="12" sm="6">
+                <v-list-item>
+                  <v-list-item-title>Zeitpunkt</v-list-item-title>
+                  <v-list-item-subtitle>{{
+                    prettyDate(selectedError.createdAt)
+                  }}</v-list-item-subtitle>
+                </v-list-item>
+                <v-list-item>
+                  <v-list-item-title>URL</v-list-item-title>
+                  <v-list-item-subtitle>{{
+                    selectedError.url
+                  }}</v-list-item-subtitle>
+                </v-list-item>
+                <v-list-item>
+                  <v-list-item-title>Status</v-list-item-title>
+                  <v-list-item-subtitle>{{
+                    selectedError.status
+                  }}</v-list-item-subtitle>
+                </v-list-item>
+                <v-list-item v-if="selectedError.userId">
+                  <v-list-item-title>Benutzer ID</v-list-item-title>
+                  <v-list-item-subtitle>{{
+                    selectedError.userId
+                  }}</v-list-item-subtitle>
+                </v-list-item>
+                <v-list-item v-if="selectedError.userName">
+                  <v-list-item-title>Benutzer Name</v-list-item-title>
+                  <v-list-item-subtitle>{{
+                    selectedError.userName
+                  }}</v-list-item-subtitle>
+                </v-list-item>
+                <v-list-item v-if="selectedError.userAgent">
+                  <v-list-item-title>User Agent</v-list-item-title>
+                  <v-list-item-subtitle>{{
+                    selectedError.userAgent
+                  }}</v-list-item-subtitle>
+                </v-list-item>
+              </v-col>
+              <v-col cols="12" sm="6">
+                <v-list-item>
+                  <v-list-item-title>Fehler</v-list-item-title>
+                  <v-list-item-subtitle class="error-name">{{
+                    selectedError.error.name
+                  }}</v-list-item-subtitle>
+                  <v-list-item-subtitle>{{
+                    selectedError.error.message
+                  }}</v-list-item-subtitle>
+                  <v-list-item-subtitle
+                    v-if="selectedError.error.stack"
+                    class="stack-trace"
+                  >
+                    <pre>{{ selectedError.error.stack.join("\n") }}</pre>
+                  </v-list-item-subtitle>
+                </v-list-item>
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col cols="12">
+                <v-expansion-panels>
+                  <v-expansion-panel v-if="selectedError.requestBody">
+                    <v-expansion-panel-title
+                      >Request Body</v-expansion-panel-title
+                    >
+                    <v-expansion-panel-text>
+                      <pre>{{
+                        JSON.stringify(selectedError.requestBody, null, 2)
+                      }}</pre>
+                    </v-expansion-panel-text>
+                  </v-expansion-panel>
+                  <v-expansion-panel v-if="selectedError.requestQuery">
+                    <v-expansion-panel-title
+                      >Request Query</v-expansion-panel-title
+                    >
+                    <v-expansion-panel-text>
+                      <pre>{{
+                        JSON.stringify(selectedError.requestQuery, null, 2)
+                      }}</pre>
+                    </v-expansion-panel-text>
+                  </v-expansion-panel>
+                  <v-expansion-panel v-if="selectedError.requestHeaders">
+                    <v-expansion-panel-title
+                      >Request Headers</v-expansion-panel-title
+                    >
+                    <v-expansion-panel-text>
+                      <pre>{{
+                        JSON.stringify(selectedError.requestHeaders, null, 2)
+                      }}</pre>
+                    </v-expansion-panel-text>
+                  </v-expansion-panel>
+                </v-expansion-panels>
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn color="primary" @click="showDialog = false">Schließen</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-card>
 </template>
 
@@ -250,5 +380,10 @@ pre {
   overflow-y: auto;
   font-size: 0.6em;
   margin: 0;
+}
+
+.error-name {
+  color: rgb(var(--v-theme-error));
+  font-weight: bold;
 }
 </style>
