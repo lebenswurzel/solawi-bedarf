@@ -15,9 +15,19 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { describe, it, expect } from "vitest";
-import { checkOrderItemValid } from "./capacity";
-import { OrderItem, ProductWithProductCategoryTyp } from "../types";
-import { Unit, ProductCategoryType } from "../enum";
+import {
+  checkOrderItemValid,
+  getRemainingDepotCapacity,
+  getMaxAvailable,
+  getMinAvailable,
+} from "./capacity";
+import {
+  OrderItem,
+  ProductWithProductCategoryTyp,
+  Depot,
+  ExistingConfig,
+} from "../types";
+import { Unit, ProductCategoryType, UserRole } from "../enum";
 
 describe("checkOrderItemValid", () => {
   const mockProduct: ProductWithProductCategoryTyp = {
@@ -167,5 +177,180 @@ describe("checkOrderItemValid", () => {
       productsById
     );
     expect(result).toBe("Mindestmenge 5 Stk. von Test Product nicht erreicht");
+  });
+});
+
+describe("getRemainingDepotCapacity", () => {
+  it("should return null when depot capacity is null", () => {
+    const depot: Depot = {
+      id: 1,
+      name: "Test Depot",
+      address: "Test Address",
+      openingHours: "Test Hours",
+      comment: null,
+      capacity: null,
+      active: true,
+      rank: 1,
+    };
+    const result = getRemainingDepotCapacity(depot, 0, 1);
+    expect(result).toBeNull();
+  });
+
+  it("should return remaining capacity when not saved depot", () => {
+    const depot: Depot = {
+      id: 1,
+      name: "Test Depot",
+      address: "Test Address",
+      openingHours: "Test Hours",
+      comment: null,
+      capacity: 100,
+      active: true,
+      rank: 1,
+    };
+    const result = getRemainingDepotCapacity(depot, 50, 2);
+    expect(result).toBe(50);
+  });
+
+  it("should add 1 to remaining capacity when saved depot", () => {
+    const depot: Depot = {
+      id: 1,
+      name: "Test Depot",
+      address: "Test Address",
+      openingHours: "Test Hours",
+      comment: null,
+      capacity: 100,
+      active: true,
+      rank: 1,
+    };
+    const result = getRemainingDepotCapacity(depot, 50, 1);
+    expect(result).toBe(51);
+  });
+});
+
+describe("getMaxAvailable", () => {
+  const mockProduct: ProductWithProductCategoryTyp = {
+    id: 1,
+    name: "Test Product",
+    unit: Unit.WEIGHT,
+    active: true,
+    quantityMin: 5,
+    quantityMax: 20,
+    quantityStep: 1,
+    frequency: 1,
+    description: "Test Description",
+    msrp: 10,
+    quantity: 100,
+    productCategoryId: 1,
+    productCategoryType: ProductCategoryType.SELFGROWN,
+  };
+
+  const mockSoldByProductId = {
+    1: {
+      quantity: 100,
+      sold: 50,
+      frequency: 1,
+      soldForShipment: 0,
+    },
+  };
+
+  const mockProductsById = {
+    1: mockProduct,
+  };
+
+  it("should return max available without saved value", () => {
+    const result = getMaxAvailable(
+      null,
+      1,
+      mockProductsById,
+      mockSoldByProductId
+    );
+    expect(result).toBe(20); // (100 - 50) / 1
+  });
+
+  it("should return max available with saved value", () => {
+    const result = getMaxAvailable(
+      10,
+      1,
+      mockProductsById,
+      mockSoldByProductId
+    );
+    expect(result).toBe(20); // (100 - 50 + 10) / 1
+  });
+
+  it("should respect product quantityMax", () => {
+    const productWithLowerMax = { ...mockProduct, quantityMax: 30 };
+    const productsById = { ...mockProductsById, 1: productWithLowerMax };
+    const result = getMaxAvailable(null, 1, productsById, mockSoldByProductId);
+    expect(result).toBe(30); // Limited by quantityMax
+  });
+});
+
+describe("getMinAvailable", () => {
+  const mockProduct: ProductWithProductCategoryTyp = {
+    id: 1,
+    name: "Test Product",
+    unit: Unit.WEIGHT,
+    active: true,
+    quantityMin: 5,
+    quantityMax: 20,
+    quantityStep: 1,
+    frequency: 1,
+    description: "Test Description",
+    msrp: 10,
+    quantity: 100,
+    productCategoryId: 1,
+    productCategoryType: ProductCategoryType.SELFGROWN,
+  };
+
+  const mockProductsById = {
+    1: mockProduct,
+  };
+
+  const mockConfig: ExistingConfig = {
+    id: 1,
+    name: "Test Config",
+    startOrder: new Date(),
+    startBiddingRound: new Date(),
+    endBiddingRound: new Date(),
+    budget: 1000,
+    validFrom: new Date(),
+    validTo: new Date(),
+    public: true,
+  };
+
+  it("should return quantityMin when not increase only", () => {
+    const result = getMinAvailable(
+      null,
+      1,
+      UserRole.USER,
+      mockConfig,
+      new Date(),
+      mockProductsById
+    );
+    expect(result).toBe(5);
+  });
+
+  it("should return saved value when increase only and saved value is higher", () => {
+    const result = getMinAvailable(
+      10,
+      1,
+      UserRole.USER,
+      mockConfig,
+      new Date(),
+      mockProductsById
+    );
+    expect(result).toBe(10);
+  });
+
+  it("should return quantityMin when increase only but saved value is lower", () => {
+    const result = getMinAvailable(
+      1,
+      1,
+      UserRole.USER,
+      mockConfig,
+      new Date(),
+      mockProductsById
+    );
+    expect(result).toBe(5);
   });
 });
