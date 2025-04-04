@@ -181,3 +181,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #220 Error-Logging damit Admins Nutzer bei Problemen besser unterstützen können
 
 # NEW
+
+#222 Besseres Feedback beim Fehleingaben in der Bedarfsanmeldung
