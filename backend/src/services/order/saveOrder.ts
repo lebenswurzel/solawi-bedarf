@@ -26,7 +26,7 @@ import { createDefaultPdf } from "../../../../shared/src/pdf/pdf";
 import { Address, ConfirmedOrder } from "../../../../shared/src/types";
 import {
   getRemainingDepotCapacity,
-  isOrderItemValid,
+  checkOrderItemValid,
 } from "../../../../shared/src/validation/capacity";
 import {
   isCategoryReasonValid,
@@ -120,7 +120,7 @@ export const saveOrder = async (
   }
   const orderItemErrors = body.orderItems
     .map((actualOrderItem) =>
-      isOrderItemValid(
+      checkOrderItemValid(
         order?.orderItems.find(
           (item) => item.productId === actualOrderItem.productId,
         )?.value || null,

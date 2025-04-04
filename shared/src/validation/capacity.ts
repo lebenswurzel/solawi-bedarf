@@ -40,7 +40,7 @@ export const getRemainingDepotCapacity = (
   return remainingCapacitiy;
 };
 
-export const isOrderItemValid = (
+export const checkOrderItemValid = (
   savedValue: number | null,
   actualOrderItem: OrderItem,
   soldByProductId: SoldByProductId,

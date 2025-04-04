@@ -25,7 +25,7 @@ import {
   getMaxAvailable,
   getMinAvailable,
   sanitizeOrderItem,
-  isOrderItemValid,
+  checkOrderItemValid,
 } from "../../../shared/src/validation/capacity.ts";
 import { useUserStore } from "../store/userStore.ts";
 import { useConfigStore } from "../store/configStore.ts";
@@ -97,7 +97,7 @@ const onUpdate = (value: string) => {
 };
 
 const validateValue = (value: number) => {
-  const error = isOrderItemValid(
+  const error = checkOrderItemValid(
     savedOrderItemsByProductId.value[props.productId] || null,
     { value, productId: props.productId },
     soldByProductId.value,
