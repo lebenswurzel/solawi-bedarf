@@ -26,9 +26,10 @@ export const config = {
     secret: process.env.POSTGRES_SECRET || "secret",
   },
   server: {
-    serverPort: "3000",
+    serverPort: process.env.SERVER_PORT || "3000",
     initialUsername: process.env.INITIAL_USERNAME || "admin",
     initialPassword: process.env.INITIAL_PASSWORD || "admin",
+    rateLimitWhitelist: process.env.RATE_LIMIT_WHITELIST?.split(",") || [],
   },
   jwt: {
     secret: process.env.JWT_SECRET || "secret",

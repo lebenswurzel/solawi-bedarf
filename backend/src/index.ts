@@ -54,6 +54,7 @@ import { updateUser } from "./services/user/updateUser";
 import { importApplicant } from "./services/applicant/importApplicant";
 import { errorLogger } from "./middleware/errorLogger";
 import { getErrorLog } from "./services/getErrorLog";
+import { rateLimiter } from "./middleware/rateLimiter";
 
 const port = config.server.serverPort;
 const app = new Koa();
@@ -61,6 +62,9 @@ const router = new Router();
 
 // Add error logger middleware
 app.use(errorLogger);
+
+// Add rate limiter middleware
+app.use(rateLimiter);
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 

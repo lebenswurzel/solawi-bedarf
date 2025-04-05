@@ -53,9 +53,10 @@ const onLogin = async () => {
       setSuccess("Login erfolgreich");
       emit("loginOk");
     })
-    .catch(() => {
+    .catch((e) => {
       setError(
-        "Der Login ist leider fehlgeschlagen. Bitte gib das richtige Passwort ein oder korrigiere gegebenenfalls vorher den Anmeldenamen.",
+        "Der Login ist leider fehlgeschlagen. Bitte gib das richtige Passwort ein oder korrigiere gegebenenfalls vorher den Anmeldenamen." +
+          (e.message ? " " + e.message : ""),
       );
       emit("loginFailed");
     });
