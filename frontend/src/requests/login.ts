@@ -26,9 +26,11 @@ export const login = async (
     query = "?untilMidnight=true";
   }
   const response = await fetch(getUrl("/user/token" + query), {
-    headers: new Headers({
-      Authorization: `Basic ${btoa(`${username}:${password}`)}`,
-    }),
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ username, password }),
   });
   await verifyResponse(response, false);
 };

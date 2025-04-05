@@ -22,7 +22,7 @@ import { config } from "./config";
 import { AppDataSource } from "./database/database";
 import { saveUser } from "./services/user/saveUser";
 import { getUser } from "./services/user/getUser";
-import { login, logout } from "./services/user/login";
+import { login as oldLogin, logout } from "./services/user/login";
 import { getProductCategory } from "./services/product/getProductCategory";
 import { saveProductCategory } from "./services/product/saveProductCategory";
 import { saveProduct } from "./services/product/saveProduct";
@@ -55,6 +55,14 @@ import { importApplicant } from "./services/applicant/importApplicant";
 import { errorLogger } from "./middleware/errorLogger";
 import { getErrorLog } from "./services/getErrorLog";
 import { rateLimiter } from "./middleware/rateLimiter";
+import {
+  initializeAuth,
+  authenticate,
+  authorize,
+  login as passportLogin,
+  logout as passportLogout,
+} from "./middleware/auth";
+import { UserRole } from "../../shared/src/enum";
 
 const port = config.server.serverPort;
 const app = new Koa();
@@ -65,6 +73,9 @@ app.use(errorLogger);
 
 // Add rate limiter middleware
 app.use(rateLimiter);
+
+// Initialize authentication
+app.use(initializeAuth());
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -103,8 +114,9 @@ router.post("/depot", saveDepot);
 router.post("/depot/update", updateDepot);
 
 router.get("/user", getUser);
-router.get("/user/token", login);
-router.delete("/user/token", logout);
+router.get("/user/token", oldLogin);
+router.post("/user/token", passportLogin());
+router.delete("/user/token", passportLogout());
 router.get("/user/data", getOrder);
 router.post("/user", saveUser);
 router.put("/user", updateUser);
@@ -137,6 +149,15 @@ router.get("/overview", getOverview);
 router.get("/version", getVersion);
 
 router.get("/error-log", getErrorLog);
+
+// Protected routes
+const protectedPaths = ["/user", "/config", "/depot"];
+protectedPaths.forEach((path) => {
+  router.use(path, authenticate());
+});
+
+// Admin-only routes
+router.use("/admin", authenticate(), authorize([UserRole.ADMIN]));
 
 app.use(bodyParser());
 app.use(router.routes()).use(router.allowedMethods());
