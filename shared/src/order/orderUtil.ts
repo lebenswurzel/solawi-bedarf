@@ -23,7 +23,11 @@ export const calculateDeliveries = (
 ): { display: string; percentage: number } => {
   const deliveredByDepotId = deliveredByProductIdDepotId[product.id] ?? {};
   const depotIds = Object.keys(deliveredByDepotId).map((key) => parseInt(key));
-  const targetDeliveries = depotIds.length * product.frequency; // fixme: must use only depots with valueForShipment > 0
+  const targetDeliveries =
+    depots
+      .filter((d) => depotIds.includes(d.id))
+      .filter((d) => deliveredByDepotId[d.id].valueForShipment > 0).length *
+    product.frequency;
   const actualDeliveries =
     depots
       .filter((d) => depotIds.includes(d.id))
