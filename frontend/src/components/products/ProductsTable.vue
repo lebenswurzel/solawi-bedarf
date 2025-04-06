@@ -34,6 +34,7 @@ import {
   convertToBigUnit,
   getLangUnit,
 } from "@lebenswurzel/solawi-bedarf-shared/src/util/unitHelper.ts";
+import { calculateDeliveries } from "@lebenswurzel/solawi-bedarf-shared/src/order/orderUtil";
 const t = language.pages.product.dialog;
 
 const props = defineProps<{
@@ -71,7 +72,13 @@ const headers = [
     key: "deliveries",
     sortRaw(a: Product, b: Product) {
       return Math.sign(
-        calculateDeliveries(a).percentage - calculateDeliveries(b).percentage,
+        calculateDeliveries(a, deliveredByProductIdDepotId.value, depots.value)
+          .percentage -
+          calculateDeliveries(
+            b,
+            deliveredByProductIdDepotId.value,
+            depots.value,
+          ).percentage,
       );
     },
   },
@@ -119,25 +126,6 @@ const onCloseProduct = async () => {
   openProduct.value = false;
   await productStore.update(activeConfigId.value);
 };
-
-const calculateDeliveries = (
-  product: Product,
-): { display: string; percentage: number } => {
-  const deliveredByDepotId =
-    deliveredByProductIdDepotId.value[product.id] ?? {};
-  const depotIds = Object.keys(deliveredByDepotId).map((key) => parseInt(key));
-  const targetDeliveries = depotIds.length * product.frequency;
-  const actualDeliveries =
-    depots.value
-      .filter((d) => depotIds.includes(d.id))
-      .map((d) => deliveredByDepotId[d.id].actuallyDelivered)
-      .reduce((sum, value) => sum + value, 0) / 100;
-
-  return {
-    display: `${actualDeliveries}/${targetDeliveries}`,
-    percentage: Math.round((actualDeliveries / (targetDeliveries || 1)) * 100),
-  };
-};
 </script>
 <template>
   <v-card variant="tonal">
@@ -179,7 +167,9 @@ const calculateDeliveries = (
       </template>
 
       <template v-slot:item.deliveries="{ item }">
-        {{ calculateDeliveries(item).display }}
+        {{
+          calculateDeliveries(item, deliveredByProductIdDepotId, depots).display
+        }}
         <!-- {{ deliveredByProductIdDepotId[item.id] }} -->
       </template>
 
