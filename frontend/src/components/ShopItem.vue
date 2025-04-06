@@ -42,7 +42,13 @@ const configStore = useConfigStore();
 
 const { actualOrderItemsByProductId, savedOrderItemsByProductId } =
   storeToRefs(orderStore);
-const { soldByProductId, submit, productsById, now } = storeToRefs(biStore);
+const {
+  soldByProductId,
+  submit,
+  productsById,
+  now,
+  deliveredByProductIdDepotId,
+} = storeToRefs(biStore);
 const { currentUser } = storeToRefs(userStore);
 const { config } = storeToRefs(configStore);
 
@@ -87,6 +93,20 @@ const minValueAvailable = computed(() => {
     );
   }
   return product.value.quantityMin;
+});
+
+const deliveryPercentage = computed(() => {
+  return (
+    Object.values(deliveredByProductIdDepotId.value[props.productId]).reduce(
+      (acc, curr) => {
+        return acc + curr.delivered;
+      },
+      0,
+    ) /
+    product.value.frequency /
+    Object.values(deliveredByProductIdDepotId.value[props.productId]).length /
+    100
+  );
 });
 
 const model = ref<string>();
@@ -155,17 +175,36 @@ onMounted(() => {
         </v-tooltip>
       </v-col>
       <v-col cols="3" sm="2">
-        <v-tooltip
-          :text="
-            interpolate(t.freq, { freq: product.frequency?.toString() || '1' })
-          "
-          open-on-click
-        >
-          <template v-slot:activator="{ props }">
-            <v-icon v-bind="props">mdi-truck-fast-outline</v-icon>
-          </template>
-        </v-tooltip>
-        {{ product.frequency }}
+        <div>
+          <v-tooltip
+            :text="
+              interpolate(t.freq, {
+                freq: product.frequency?.toString() || '1',
+              })
+            "
+            open-on-click
+          >
+            <template v-slot:activator="{ props }">
+              <v-icon v-bind="props">mdi-truck-fast-outline</v-icon>
+            </template>
+          </v-tooltip>
+          {{ product.frequency }}
+        </div>
+        <div class="opacity-50">
+          <v-tooltip
+            :text="
+              interpolate(t.delivery, {
+                percent: Math.round(deliveryPercentage * 100).toString(),
+              })
+            "
+            open-on-click
+          >
+            <template v-slot:activator="{ props }">
+              <v-icon v-bind="props">mdi-truck-delivery-outline</v-icon>
+            </template>
+          </v-tooltip>
+          {{ Math.round(deliveryPercentage * 100) }} %
+        </div>
       </v-col>
       <v-col cols="3" sm="2">
         <v-tooltip
