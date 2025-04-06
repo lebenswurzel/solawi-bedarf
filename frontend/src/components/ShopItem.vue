@@ -31,6 +31,7 @@ import { useUserStore } from "../store/userStore.ts";
 import { useConfigStore } from "../store/configStore.ts";
 import { isIncreaseOnly } from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition.ts";
 import { getLangUnit } from "@lebenswurzel/solawi-bedarf-shared/src/util/unitHelper.ts";
+import { calculateDeliveries } from "@lebenswurzel/solawi-bedarf-shared/src/order/orderUtil.ts";
 
 const t = language.pages.shop.cards.products.item;
 
@@ -50,7 +51,7 @@ const {
   deliveredByProductIdDepotId,
 } = storeToRefs(biStore);
 const { currentUser } = storeToRefs(userStore);
-const { config } = storeToRefs(configStore);
+const { config, depots } = storeToRefs(configStore);
 
 const product = computed(() => productsById.value[props.productId]);
 const sold = computed(() => {
@@ -60,6 +61,14 @@ const unit = computed(() => getLangUnit(product.value.unit));
 
 const percentageSold = computed(() => {
   return Math.round((100 * sold.value.sold) / sold.value.quantity);
+});
+
+const deliveryPercentage = computed(() => {
+  return calculateDeliveries(
+    product.value,
+    deliveredByProductIdDepotId.value,
+    depots.value,
+  ).percentage;
 });
 
 const color = computed(() => {
@@ -93,20 +102,6 @@ const minValueAvailable = computed(() => {
     );
   }
   return product.value.quantityMin;
-});
-
-const deliveryPercentage = computed(() => {
-  return (
-    Object.values(deliveredByProductIdDepotId.value[props.productId]).reduce(
-      (acc, curr) => {
-        return acc + curr.delivered;
-      },
-      0,
-    ) /
-    product.value.frequency /
-    Object.values(deliveredByProductIdDepotId.value[props.productId]).length /
-    100
-  );
 });
 
 const model = ref<string>();
@@ -194,7 +189,7 @@ onMounted(() => {
           <v-tooltip
             :text="
               interpolate(t.delivery, {
-                percent: Math.round(deliveryPercentage * 100).toString(),
+                percent: Math.round(deliveryPercentage).toString(),
               })
             "
             open-on-click
@@ -203,7 +198,8 @@ onMounted(() => {
               <v-icon v-bind="props">mdi-truck-delivery-outline</v-icon>
             </template>
           </v-tooltip>
-          {{ Math.round(deliveryPercentage * 100) }} %
+          {{ Math.round(deliveryPercentage)
+          }}<span class="text-caption">%</span>
         </div>
       </v-col>
       <v-col cols="3" sm="2">
