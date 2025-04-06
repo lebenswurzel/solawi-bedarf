@@ -199,6 +199,8 @@ export const language = {
           offer: "Dein Beitrag: {offer} € pro Monat",
           item: {
             freq: "{freq} vorraussichtliche Häufigkeit (in Wochen)",
+            delivery:
+              "{percent} % der geplanten Lieferungen sind bereits erfolgt",
             stock: "{stock} % verteilt",
             value: "Menge [{unit}]",
           },
