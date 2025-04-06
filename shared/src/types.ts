@@ -266,10 +266,10 @@ export type DeliveredByProductIdDepotId = {
   [key: ProductId]: {
     [key: DepotId]: {
       value: number;
-      delivered: number;
-      actuallyDelivered: number;
-      frequency: number;
-      valueForShipment: number;
+      delivered: number; // number of deliveries including non-active shipments
+      actuallyDelivered: number; // number of deliveries including active shipments
+      frequency: number; // same as product.frequency
+      valueForShipment: number; // amount required for shipment
     };
   };
 };
