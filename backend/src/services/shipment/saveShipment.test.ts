@@ -15,12 +15,17 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { expect, test } from "vitest";
-import { UserRole, Unit } from "../../../../shared/src/enum";
+import { Unit } from "../../../../shared/src/enum";
 import {
+  Id,
   Shipment,
-  ShipmentItem,
-  AdditionalShipmentItem,
+  Shipment as ShipmentType,
 } from "../../../../shared/src/types";
+import {
+  getDepotByName,
+  getProductByName,
+  getRequisitionConfigId,
+} from "../../../test/testHelpers";
 import {
   createBasicTestCtx,
   testAsAdmin,
@@ -29,15 +34,7 @@ import {
 } from "../../../testSetup";
 import { AppDataSource } from "../../database/database";
 import { Shipment as ShipmentEntity } from "../../database/Shipment";
-import { ShipmentItem as ShipmentItemEntity } from "../../database/ShipmentItem";
-import { AdditionalShipmentItem as AdditionalShipmentItemEntity } from "../../database/AdditionalShipmentItem";
 import { saveShipment } from "./saveShipment";
-import {
-  getDepotByName,
-  getProductByName,
-  getRequisitionConfigId,
-  updateRequisition,
-} from "../../../test/testHelpers";
 
 const createTestShipment = async (
   description: string,
@@ -71,35 +68,37 @@ testAsAdmin("create new shipment", async ({ userData }: TestUserData) => {
   const configId = await getRequisitionConfigId();
   const depot = await getDepotByName("d1");
   const product = await getProductByName("p1");
+  const shipmentItems = [
+    {
+      productId: product.id,
+      depotId: depot.id,
+      totalShipedQuantity: 10,
+      isBio: true,
+      unit: Unit.WEIGHT,
+      description: "Test item",
+      multiplicator: 1,
+      conversionFrom: 1, // in requested units
+      conversionTo: 1, // in delivered units
+    },
+  ];
+  const additionalShipmentItems = [
+    {
+      product: "Additional item",
+      depotId: depot.id,
+      unit: Unit.WEIGHT,
+      isBio: true,
+      quantity: 5,
+      totalShipedQuantity: 5,
+      description: "Test additional item",
+    },
+  ];
   const request: Shipment = {
     requisitionConfigId: configId,
     validFrom: new Date(),
-    active: true,
+    active: false,
     description: "Test shipment",
-    shipmentItems: [
-      {
-        productId: product.id,
-        depotId: depot.id,
-        totalShipedQuantity: 10,
-        isBio: true,
-        unit: Unit.WEIGHT,
-        description: "Test item",
-        multiplicator: 1,
-        conversionFrom: 1, // in requested units
-        conversionTo: 1, // in delivered units
-      },
-    ],
-    additionalShipmentItems: [
-      {
-        product: "Additional item",
-        depotId: depot.id,
-        unit: Unit.WEIGHT,
-        isBio: true,
-        quantity: 5,
-        totalShipedQuantity: 5,
-        description: "Test additional item",
-      },
-    ],
+    shipmentItems,
+    additionalShipmentItems,
   };
 
   const ctx = createBasicTestCtx(request, userData.token, undefined);
@@ -109,7 +108,7 @@ testAsAdmin("create new shipment", async ({ userData }: TestUserData) => {
 
   const savedShipment = await AppDataSource.getRepository(
     ShipmentEntity,
-  ).findOne({
+  ).findOneOrFail({
     where: { description: "Test shipment" },
     relations: ["shipmentItems", "additionalShipmentItems"],
   });
@@ -118,6 +117,58 @@ testAsAdmin("create new shipment", async ({ userData }: TestUserData) => {
   expect(savedShipment?.description).toBe("Test shipment");
   expect(savedShipment?.shipmentItems).toHaveLength(1);
   expect(savedShipment?.additionalShipmentItems).toHaveLength(1);
+  // check shipment items
+  expect(savedShipment?.shipmentItems).toMatchObject(shipmentItems);
+  expect(savedShipment?.additionalShipmentItems).toMatchObject(
+    additionalShipmentItems,
+  );
+
+  // test adding items
+  const product2 = await getProductByName("p2");
+  const shipmentItems2 = [
+    ...shipmentItems,
+    {
+      productId: product2.id,
+      depotId: depot.id,
+      totalShipedQuantity: 10,
+      isBio: true,
+      unit: Unit.WEIGHT,
+      description: "Test item 2",
+      multiplicator: 1,
+      conversionFrom: 1, // in requested units
+      conversionTo: 1, // in delivered units
+    },
+  ];
+  const request2: ShipmentType & Id = {
+    ...request,
+    id: savedShipment.id,
+    description: "Test shipment (modified)",
+    updatedAt: new Date(savedShipment.updatedAt.getTime() + 1000),
+    shipmentItems: shipmentItems2,
+    additionalShipmentItems,
+  };
+
+  const ctx2 = createBasicTestCtx(request2, userData.token, undefined);
+
+  await saveShipment(ctx2);
+  expect(ctx2.status).toBe(204);
+
+  const savedShipment2 = await AppDataSource.getRepository(
+    ShipmentEntity,
+  ).findOneOrFail({
+    where: { description: "Test shipment (modified)" },
+    relations: ["shipmentItems", "additionalShipmentItems"],
+  });
+
+  expect(savedShipment2).toBeTruthy();
+  expect(savedShipment2?.description).toBe("Test shipment (modified)");
+  expect(savedShipment2?.shipmentItems).toHaveLength(2);
+  expect(savedShipment2?.additionalShipmentItems).toHaveLength(1);
+  // check shipment items
+  expect(savedShipment2?.shipmentItems).toMatchObject(shipmentItems2);
+  expect(savedShipment2?.additionalShipmentItems).toMatchObject(
+    additionalShipmentItems,
+  );
 });
 
 testAsAdmin("update existing shipment", async ({ userData }: TestUserData) => {

@@ -34,6 +34,7 @@ export default defineConfig({
         "**/product",
         "**/text",
         "**/user",
+        "**/shipment",
         "../shared/src/validation/**", // Specifically include validation directory
       ],
     },
