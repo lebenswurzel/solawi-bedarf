@@ -45,11 +45,11 @@ const clearAllTables = async () => {
 
   // must delete in specific order to prevent foreign key violations
   await AppDataSource.getRepository(OrderItem).delete({});
+  await AppDataSource.getRepository(ShipmentItem).delete({});
   await AppDataSource.getRepository(Product).delete({});
   await AppDataSource.getRepository(ProductCategory).delete({});
   await AppDataSource.getRepository(Order).delete({});
   await AppDataSource.getRepository(AdditionalShipmentItem).delete({});
-  await AppDataSource.getRepository(ShipmentItem).delete({});
   await AppDataSource.getRepository(Shipment).delete({});
   await AppDataSource.getRepository(Depot).delete({});
   await AppDataSource.getRepository(Token).delete({});
