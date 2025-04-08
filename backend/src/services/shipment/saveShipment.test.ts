@@ -32,6 +32,7 @@ import {
   testAsUser1,
   TestUserData,
 } from "../../../testSetup";
+import { genShipment, genShipmentItem } from "../../../../shared/testSetup";
 import { AppDataSource } from "../../database/database";
 import { Shipment as ShipmentEntity } from "../../database/Shipment";
 import { saveShipment } from "./saveShipment";
@@ -68,19 +69,14 @@ testAsAdmin("create new shipment", async ({ userData }: TestUserData) => {
   const configId = await getRequisitionConfigId();
   const depot = await getDepotByName("d1");
   const product = await getProductByName("p1");
+
   const shipmentItems = [
-    {
-      productId: product.id,
-      depotId: depot.id,
+    genShipmentItem(product, depot, {
       totalShipedQuantity: 10,
-      isBio: true,
-      unit: Unit.WEIGHT,
       description: "Test item",
-      multiplicator: 1,
-      conversionFrom: 1, // in requested units
-      conversionTo: 1, // in delivered units
-    },
+    }),
   ];
+
   const additionalShipmentItems = [
     {
       product: "Additional item",
@@ -92,14 +88,15 @@ testAsAdmin("create new shipment", async ({ userData }: TestUserData) => {
       description: "Test additional item",
     },
   ];
-  const request: Shipment = {
+
+  const request = genShipment({
     requisitionConfigId: configId,
     validFrom: new Date(),
     active: false,
     description: "Test shipment",
     shipmentItems,
     additionalShipmentItems,
-  };
+  });
 
   const ctx = createBasicTestCtx(request, userData.token, undefined);
 
@@ -127,18 +124,12 @@ testAsAdmin("create new shipment", async ({ userData }: TestUserData) => {
   const product2 = await getProductByName("p2");
   const shipmentItems2 = [
     ...shipmentItems,
-    {
-      productId: product2.id,
-      depotId: depot.id,
+    genShipmentItem(product2, depot, {
       totalShipedQuantity: 10,
-      isBio: true,
-      unit: Unit.WEIGHT,
       description: "Test item 2",
-      multiplicator: 1,
-      conversionFrom: 1, // in requested units
-      conversionTo: 1, // in delivered units
-    },
+    }),
   ];
+
   const request2: ShipmentType & Id = {
     ...request,
     id: savedShipment.id,
