@@ -59,6 +59,8 @@ const { organizationInfo, pdfTexts } = storeToRefs(textContentStore);
 
 const loading = ref(false);
 const error = ref<string>();
+const editConfirmationDialog = ref(false);
+const editConfirmationDialogMessage = ref("");
 
 const onDeleteAdditionalShipmentItem = (idx: number) => {
   editShipment.value.additionalShipmentItems.splice(idx, 1);
@@ -145,6 +147,19 @@ const onClose = () => {
 };
 
 const onSave = () => {
+  if (
+    savedShipment?.value.active &&
+    new Date(savedShipment?.value.validFrom) < new Date()
+  ) {
+    editConfirmationDialog.value = true;
+    return;
+  }
+  onSaveConfirmed();
+};
+
+const onSaveConfirmed = (revisionMessage?: string) => {
+  editConfirmationDialog.value = false;
+  editConfirmationDialogMessage.value = "";
   loading.value = true;
   editShipment.value.requisitionConfigId = configStore.activeConfigId;
   saveShipment({
@@ -153,7 +168,7 @@ const onSave = () => {
       deliveredByProductIdDepotId.value,
       capacityByDepotId.value,
     ),
-    revisionMessage: "some message",
+    revisionMessage,
   })
     .then(() => {
       loading.value = false;
@@ -296,6 +311,39 @@ const onShipmentOverviewPdfClick = async () => {
         >
           Übersicht
         </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+  <v-dialog v-model="editConfirmationDialog">
+    <v-card
+      max-width="800"
+      class="mx-auto"
+      prepend-icon="mdi-alert-circle-outline"
+    >
+      <template v-slot:title
+        >Änderung einer bereits aktiven Lieferung bestätigen</template
+      >
+      <v-card-text>
+        Die Lieferung liegt in der Vergangenheit und ist bereits aktiv. Eine
+        Änderung ist nur vorgesehen, falls die tatsächliche Lieferung von der
+        zuvor gespeicherten Lieferung abweicht. Um sie speichern zu können,
+        bitte eine Änderungsmeldung eingeben.
+      </v-card-text>
+      <v-card-text>
+        <v-text-field
+          label="Änderungsmeldung"
+          v-model="editConfirmationDialogMessage"
+          :rules="[(v) => !!v.trim() || 'Änderungsmeldung ist erforderlich']"
+        ></v-text-field>
+        <v-alert type="warning" class="mt-2" variant="outlined"
+          >Diese Anpassung kann nur durch Admins erfolgen!</v-alert
+        >
+      </v-card-text>
+      <v-card-actions>
+        <v-btn @click="() => onSaveConfirmed(editConfirmationDialogMessage)"
+          >Speichern</v-btn
+        >
+        <v-btn @click="editConfirmationDialog = false"> Abbrechen </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
