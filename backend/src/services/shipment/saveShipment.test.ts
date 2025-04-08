@@ -39,6 +39,21 @@ import {
   updateRequisition,
 } from "../../../test/testHelpers";
 
+const createTestShipment = async (
+  description: string,
+  active: boolean = false,
+) => {
+  const configId = await getRequisitionConfigId();
+  const shipment = new ShipmentEntity();
+  shipment.requisitionConfigId = configId;
+  shipment.validFrom = new Date();
+  shipment.active = active;
+  shipment.description = description;
+  shipment.updatedAt = new Date();
+  await AppDataSource.getRepository(ShipmentEntity).save(shipment);
+  return shipment;
+};
+
 test("prevent unauthorized access", async () => {
   const ctx = createBasicTestCtx();
   await expect(() => saveShipment(ctx)).rejects.toThrowError("Error 401");
@@ -47,10 +62,7 @@ test("prevent unauthorized access", async () => {
 testAsUser1(
   "prevent access for non-admin/employee",
   async ({ userData }: TestUserData) => {
-    const ctx = createBasicTestCtx(undefined, userData.token, undefined, {
-      id: userData.userId,
-      role: UserRole.USER,
-    });
+    const ctx = createBasicTestCtx(undefined, userData.token, undefined);
     await expect(() => saveShipment(ctx)).rejects.toThrowError("Error 403");
   },
 );
@@ -90,10 +102,7 @@ testAsAdmin("create new shipment", async ({ userData }: TestUserData) => {
     ],
   };
 
-  const ctx = createBasicTestCtx(request, userData.token, undefined, {
-    id: userData.userId,
-    role: UserRole.ADMIN,
-  });
+  const ctx = createBasicTestCtx(request, userData.token, undefined);
 
   await saveShipment(ctx);
   expect(ctx.status).toBe(201);
@@ -114,13 +123,7 @@ testAsAdmin("create new shipment", async ({ userData }: TestUserData) => {
 testAsAdmin("update existing shipment", async ({ userData }: TestUserData) => {
   const configId = await getRequisitionConfigId();
   // First create a shipment
-  const shipment = new ShipmentEntity();
-  shipment.requisitionConfigId = configId;
-  shipment.validFrom = new Date();
-  shipment.active = false;
-  shipment.description = "Original shipment";
-  shipment.updatedAt = new Date();
-  await AppDataSource.getRepository(ShipmentEntity).save(shipment);
+  const shipment = await createTestShipment("Original shipment");
 
   const request: Shipment & { id: number; updatedAt: Date } = {
     id: shipment.id,
@@ -133,10 +136,7 @@ testAsAdmin("update existing shipment", async ({ userData }: TestUserData) => {
     additionalShipmentItems: [],
   };
 
-  const ctx = createBasicTestCtx(request, userData.token, undefined, {
-    id: userData.userId,
-    role: UserRole.ADMIN,
-  });
+  const ctx = createBasicTestCtx(request, userData.token, undefined);
 
   await saveShipment(ctx);
   expect(ctx.status).toBe(204);
@@ -155,13 +155,7 @@ testAsAdmin(
   async ({ userData }: TestUserData) => {
     const configId = await getRequisitionConfigId();
     // Create a shipment
-    const shipment = new ShipmentEntity();
-    shipment.requisitionConfigId = configId;
-    shipment.validFrom = new Date();
-    shipment.active = false;
-    shipment.description = "Original shipment";
-    shipment.updatedAt = new Date();
-    await AppDataSource.getRepository(ShipmentEntity).save(shipment);
+    const shipment = await createTestShipment("Original shipment");
 
     // Try to update with outdated timestamp
     const request: Shipment & { id: number; updatedAt: Date } = {
@@ -175,13 +169,37 @@ testAsAdmin(
       additionalShipmentItems: [],
     };
 
-    const ctx = createBasicTestCtx(request, userData.token, undefined, {
-      id: userData.userId,
-      role: UserRole.ADMIN,
-    });
+    const ctx = createBasicTestCtx(request, userData.token, undefined);
 
     await expect(() => saveShipment(ctx)).rejects.toThrowError(
       "Error 400: outdated shipment",
+    );
+  },
+);
+
+testAsAdmin(
+  "prevent update of active shipment",
+  async ({ userData }: TestUserData) => {
+    const configId = await getRequisitionConfigId();
+    // Create a shipment
+    const shipment = await createTestShipment("Original shipment", true);
+
+    // Try to update the shipment to inactive
+    const request: Shipment & { id: number; updatedAt: Date } = {
+      id: shipment.id,
+      requisitionConfigId: configId,
+      validFrom: new Date(),
+      active: false,
+      description: "Updated shipment",
+      updatedAt: new Date(Date.now() + 10000), // New timestamp
+      shipmentItems: [],
+      additionalShipmentItems: [],
+    };
+
+    const ctx = createBasicTestCtx(request, userData.token, undefined);
+
+    await expect(() => saveShipment(ctx)).rejects.toThrowError(
+      "Error 400: shipment is active",
     );
   },
 );
