@@ -16,11 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { expect, test } from "vitest";
 import { Unit } from "../../../../shared/src/enum";
-import {
-  Id,
-  Shipment,
-  Shipment as ShipmentType,
-} from "../../../../shared/src/types";
+import { Id, ShipmentRequest } from "../../../../shared/src/types";
 import {
   getDepotByName,
   getProductByName,
@@ -34,7 +30,7 @@ import {
 } from "../../../testSetup";
 import { genShipment, genShipmentItem } from "../../../../shared/testSetup";
 import { AppDataSource } from "../../database/database";
-import { Shipment as ShipmentEntity } from "../../database/Shipment";
+import { Shipment, Shipment as ShipmentEntity } from "../../database/Shipment";
 import { saveShipment } from "./saveShipment";
 
 const createTestShipment = async (
@@ -130,7 +126,7 @@ testAsAdmin("create new shipment", async ({ userData }: TestUserData) => {
     }),
   ];
 
-  const request2: ShipmentType & Id = {
+  const request2: ShipmentRequest & Id = {
     ...request,
     id: savedShipment.id,
     description: "Test shipment (modified)",
@@ -167,7 +163,7 @@ testAsAdmin("update existing shipment", async ({ userData }: TestUserData) => {
   // First create a shipment
   const shipment = await createTestShipment("Original shipment");
 
-  const request: Shipment & { id: number; updatedAt: Date } = {
+  const request: ShipmentRequest & Id = {
     id: shipment.id,
     requisitionConfigId: configId,
     validFrom: new Date(),
@@ -200,7 +196,7 @@ testAsAdmin(
     const shipment = await createTestShipment("Original shipment");
 
     // Try to update with outdated timestamp
-    const request: Shipment & { id: number; updatedAt: Date } = {
+    const request: ShipmentRequest & { id: number; updatedAt: Date } = {
       id: shipment.id,
       requisitionConfigId: configId,
       validFrom: new Date(),
@@ -227,7 +223,7 @@ testAsAdmin(
     const shipment = await createTestShipment("Original shipment", true);
 
     // Try to update the shipment to inactive
-    const request: Shipment & { id: number; updatedAt: Date } = {
+    const request: ShipmentRequest & Id = {
       id: shipment.id,
       requisitionConfigId: configId,
       validFrom: new Date(),

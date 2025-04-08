@@ -36,11 +36,13 @@ import {
   Id,
   OptionalId,
   Shipment,
+  ShipmentWithRevisionMessages,
 } from "../../../shared/src/types.ts";
 import { getShipments } from "../requests/shipment.ts";
 import { storeToRefs } from "pinia";
 import SeasonText from "../components/styled/SeasonText.vue";
 import BusyIndicator from "../components/BusyIndicator.vue";
+import { prettyDate } from "../../../shared/src/util/dateHelper.ts";
 
 const t = language.pages.shipment;
 
@@ -53,7 +55,7 @@ const defaultEditShipment: EditShipment = {
   requisitionConfigId: -1,
 };
 
-const shipments = ref<(Shipment & Id)[]>([]);
+const shipments = ref<(ShipmentWithRevisionMessages & Id)[]>([]);
 
 const biStore = useBIStore();
 const configStore = useConfigStore();
@@ -147,6 +149,24 @@ watch(activeConfigId, async () => {
 
           <v-icon v-if="shipment.description" icon="mdi-arrow-right" />
           {{ shipment.description || "" }}
+          <ul v-if="shipment.revisionMessages">
+            <li
+              v-for="revisionMessage in shipment.revisionMessages"
+              :key="revisionMessage.createdAt"
+              variant="tonal"
+              size="small"
+              class="text-caption opacity-70"
+            >
+              Änderung am
+              {{
+                revisionMessage?.createdAt
+                  ? prettyDate(revisionMessage.createdAt, true)
+                  : "?"
+              }}
+              von {{ revisionMessage?.userName || "?" }}:
+              {{ revisionMessage?.message || "?" }}
+            </li>
+          </ul>
         </v-list-item>
       </v-list>
       <p v-else-if="!busy">Keine Verteilungen in <SeasonText /> vorhanden</p>
@@ -154,3 +174,11 @@ watch(activeConfigId, async () => {
   </v-card>
   <ShipmentDialog :open="open" @close="onClose" />
 </template>
+
+<style scoped>
+ul {
+  margin-left: 2rem;
+  list-style-type: none;
+  padding-left: 0;
+}
+</style>

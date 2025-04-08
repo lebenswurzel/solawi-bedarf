@@ -25,19 +25,19 @@ import { AdditionalShipmentItem } from "../../database/AdditionalShipmentItem";
 import { UserRole } from "../../../../shared/src/enum";
 import {
   Id,
-  Shipment as ShipmentType,
   ShipmentItem as ShipmentItemType,
   AdditionalShipmentItem as AdditionalShipmentItemType,
+  ShipmentRequest,
 } from "../../../../shared/src/types";
 
 export const saveShipment = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
 ) => {
-  const { role } = await getUserFromContext(ctx);
+  const { role, userName } = await getUserFromContext(ctx);
   if (![UserRole.ADMIN, UserRole.EMPLOYEE].includes(role)) {
     ctx.throw(http.forbidden);
   }
-  const requestShipment = ctx.request.body as ShipmentType & Id;
+  const requestShipment = ctx.request.body as ShipmentRequest & Id;
   if (requestShipment.id) {
     const shipment = await AppDataSource.getRepository(Shipment).findOne({
       where: {
@@ -66,7 +66,26 @@ export const saveShipment = async (
       ctx.throw(http.bad_request, "outdated shipment");
     }
     if (shipment.active && shipment.validFrom < new Date()) {
-      ctx.throw(http.bad_request, "shipment is active");
+      // allow to update active shipment but only if a revision message is provided
+      if (
+        role !== UserRole.ADMIN ||
+        !requestShipment.revisionMessage ||
+        requestShipment.revisionMessage.trim() === ""
+      ) {
+        ctx.throw(http.bad_request, "shipment is active");
+      }
+    }
+
+    // add revision message
+    if (requestShipment.revisionMessage) {
+      if (!shipment.revisionMessages) {
+        shipment.revisionMessages = [];
+      }
+      shipment.revisionMessages.push({
+        message: requestShipment.revisionMessage,
+        createdAt: new Date().toISOString(),
+        userName,
+      });
     }
 
     // update shipment
