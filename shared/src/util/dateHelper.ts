@@ -43,6 +43,12 @@ export const formatDateForFilename = (date: Date): string => {
   return format(date, "yyyy-MM-dd HH_mm_ss");
 };
 
-export const prettyDate = (date?: Date | string | null): string => {
-  return date ? format(date, "PPp", { locale: de }) : "nie";
+export const prettyDate = (
+  date?: Date | string | null,
+  withSeconds?: boolean
+): string => {
+  return date
+    ? format(date, "PPp", { locale: de }) +
+        (withSeconds ? format(date, ":ss") : "")
+    : "nie";
 };

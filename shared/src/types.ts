@@ -23,6 +23,8 @@ import {
   UserRole,
 } from "./enum";
 
+export type DateString = string;
+
 export interface OptionalId {
   id?: number;
 }
@@ -312,6 +314,13 @@ export interface Shipment {
   updatedAt?: Date;
   requisitionConfigId: number;
 }
+export interface ShipmentRequest extends Shipment {
+  revisionMessage?: string;
+}
+
+export interface ShipmentWithRevisionMessages extends Shipment {
+  revisionMessages: RevisionMessageJson[];
+}
 
 export interface EditShipment
   extends Omit<Shipment, "id" | "shipmentItems" | "additionalShipmentItems"> {
@@ -319,10 +328,10 @@ export interface EditShipment
   additionalShipmentItems: EditAdditionalShipmentItem[];
 }
 
-export interface RevisionMessage {
-  revision: number;
+export interface RevisionMessageJson {
   message: string;
-  createdAt: Date;
+  createdAt: DateString;
+  userName: string;
 }
 
 export interface BuildInfo {

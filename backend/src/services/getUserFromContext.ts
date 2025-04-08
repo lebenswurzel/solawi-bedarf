@@ -26,7 +26,12 @@ import { getNumericQueryParameter } from "../util/requestUtil";
 
 export const getUserFromContext = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
-): Promise<{ id: number; role: UserRole; active: boolean }> => {
+): Promise<{
+  id: number;
+  role: UserRole;
+  active: boolean;
+  userName: string;
+}> => {
   const cookieToken = ctx.cookies.get("token");
   if (cookieToken) {
     const now = new Date();
@@ -41,7 +46,12 @@ export const getUserFromContext = async (
       });
       if (dbToken && dbToken.exp > now) {
         const user = dbToken.user;
-        return { id: user.id, role: user.role, active: user.active };
+        return {
+          id: user.id,
+          role: user.role,
+          active: user.active,
+          userName: user.name,
+        };
       }
     }
   }

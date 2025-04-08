@@ -147,13 +147,14 @@ const onClose = () => {
 const onSave = () => {
   loading.value = true;
   editShipment.value.requisitionConfigId = configStore.activeConfigId;
-  saveShipment(
-    prepareShipment(
+  saveShipment({
+    ...prepareShipment(
       editShipment.value,
       deliveredByProductIdDepotId.value,
       capacityByDepotId.value,
     ),
-  )
+    revisionMessage: "some message",
+  })
     .then(() => {
       loading.value = false;
       emit("close");

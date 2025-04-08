@@ -14,10 +14,15 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { Id, OptionalId, Shipment } from "../../../shared/src/types";
+import {
+  Id,
+  OptionalId,
+  ShipmentRequest,
+  ShipmentWithRevisionMessages,
+} from "../../../shared/src/types";
 import { getUrl, verifyResponse } from "./requests";
 
-export const saveShipment = async (shipment: Shipment & OptionalId) => {
+export const saveShipment = async (shipment: ShipmentRequest & OptionalId) => {
   const response = await fetch(getUrl("/shipment"), {
     method: "POST",
     body: JSON.stringify(shipment),
@@ -32,7 +37,7 @@ export const saveShipment = async (shipment: Shipment & OptionalId) => {
 export const getShipments = async (
   configId: number,
 ): Promise<{
-  shipments: (Shipment & Id)[];
+  shipments: (ShipmentWithRevisionMessages & Id)[];
 }> => {
   const response = await fetch(getUrl(`/shipments?configId=${configId}`));
 
@@ -44,7 +49,7 @@ export const getShipments = async (
 export const getShipment = async (
   userId: number,
   configId: number,
-): Promise<{ shipments: (Shipment & Id)[] }> => {
+): Promise<{ shipments: (ShipmentWithRevisionMessages & Id)[] }> => {
   const response = await fetch(
     getUrl(`/shipment?id=${userId}&configId=${configId}`),
   );

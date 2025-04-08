@@ -22,7 +22,7 @@ import { useUserStore } from "../store/userStore.ts";
 import { getShipment } from "../requests/shipment.ts";
 import { format, getISOWeek } from "date-fns";
 import { useOrderStore } from "../store/orderStore.ts";
-import { Id, Shipment } from "../../../shared/src/types.ts";
+import { Id, ShipmentWithRevisionMessages } from "../../../shared/src/types.ts";
 import { storeToRefs } from "pinia";
 import { SeasonPhase, Unit } from "../../../shared/src/enum.ts";
 import { useBIStore } from "../store/biStore.ts";
@@ -39,7 +39,7 @@ const props = defineProps<{ seasonPhase: SeasonPhase }>();
 const userStore = useUserStore();
 const biStore = useBIStore();
 const orderStore = useOrderStore();
-const shipments = ref<(Shipment & Id)[]>([]);
+const shipments = ref<(ShipmentWithRevisionMessages & Id)[]>([]);
 const configStore = useConfigStore();
 
 const { orderItems, validFrom } = storeToRefs(orderStore);
