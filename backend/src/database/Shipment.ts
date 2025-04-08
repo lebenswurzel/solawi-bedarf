@@ -25,6 +25,7 @@ import { BaseEntity } from "./BaseEntity";
 import { ShipmentItem } from "./ShipmentItem";
 import { AdditionalShipmentItem } from "./AdditionalShipmentItem";
 import { RequisitionConfig } from "./RequisitionConfig";
+import { RevisionMessage } from "../../../shared/src/types";
 
 @Entity()
 export class Shipment extends BaseEntity {
@@ -57,4 +58,7 @@ export class Shipment extends BaseEntity {
 
   @ManyToOne(() => RequisitionConfig, { nullable: false })
   requisitionConfig: RequisitionConfig;
+
+  @Column({ type: "json", nullable: true })
+  revisionMessages: RevisionMessage[] | null;
 }

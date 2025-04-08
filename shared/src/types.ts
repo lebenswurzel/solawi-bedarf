@@ -319,6 +319,12 @@ export interface EditShipment
   additionalShipmentItems: EditAdditionalShipmentItem[];
 }
 
+export interface RevisionMessage {
+  revision: number;
+  message: string;
+  createdAt: Date;
+}
+
 export interface BuildInfo {
   buildDate: string;
   git: {
