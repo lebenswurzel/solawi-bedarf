@@ -47,6 +47,7 @@ import { OrganizationInfoTextContent1738274522237 } from "../migrations/17382745
 import { PdfTextContent1738317876884 } from "../migrations/1738317876884-pdf-text-content";
 import { ErrorLog } from "./ErrorLog";
 import { ErrorLog1743622159714 } from "../migrations/1743622159714-error-log";
+import { ShipmentRevisions1744143625480 } from "../migrations/1744143625480-shipment-revisions";
 
 const entities = [
   User,
@@ -85,6 +86,7 @@ const migrations = [
   OrganizationInfoTextContent1738274522237,
   PdfTextContent1738317876884,
   ErrorLog1743622159714,
+  ShipmentRevisions1744143625480,
 ];
 
 const configuredPort = config.testing.isTesting
