@@ -36,6 +36,7 @@ import {
   Id,
   OptionalId,
   Shipment,
+  ShipmentFullInformation,
   ShipmentWithRevisionMessages,
 } from "../../../shared/src/types.ts";
 import { getShipments } from "../requests/shipment.ts";
@@ -43,6 +44,7 @@ import { storeToRefs } from "pinia";
 import SeasonText from "../components/styled/SeasonText.vue";
 import BusyIndicator from "../components/BusyIndicator.vue";
 import { prettyDate } from "../../../shared/src/util/dateHelper.ts";
+import { useUiFeedback } from "../store/uiFeedbackStore.ts";
 
 const t = language.pages.shipment;
 
@@ -54,8 +56,9 @@ const defaultEditShipment: EditShipment = {
   active: false,
   requisitionConfigId: -1,
 };
+const { setError } = useUiFeedback();
 
-const shipments = ref<(ShipmentWithRevisionMessages & Id)[]>([]);
+const shipmentsWithoutItems = ref<ShipmentWithRevisionMessages[]>([]);
 
 const biStore = useBIStore();
 const configStore = useConfigStore();
@@ -77,9 +80,21 @@ const onCreateShipment = () => {
   open.value = true;
 };
 
-const onEditShipment = (dialogShipment: Shipment & Id) => {
+const onEditShipment = async (
+  selectedShipment: ShipmentWithRevisionMessages & Id,
+) => {
+  const shipmentWithItemsResponse: ShipmentFullInformation[] = (
+    await getShipments(activeConfigId.value, selectedShipment.id, true)
+  ).shipments;
+
+  if (shipmentWithItemsResponse.length !== 1) {
+    setError(`Keine Verteilung mit ID=${selectedShipment.id} gefunden`);
+    return;
+  }
+  const shipmentWithItems = shipmentWithItemsResponse[0];
+
   const shipmentItems: EditShipmentItem[] = (
-    dialogShipment.shipmentItems || []
+    shipmentWithItems.shipmentItems || []
   ).map((item) => {
     return {
       ...item,
@@ -89,7 +104,7 @@ const onEditShipment = (dialogShipment: Shipment & Id) => {
   });
 
   const additionalShipmentItems: EditAdditionalShipmentItem[] = (
-    dialogShipment.additionalShipmentItems || []
+    shipmentWithItems.additionalShipmentItems || []
   ).map((item) => {
     return {
       ...item,
@@ -99,25 +114,29 @@ const onEditShipment = (dialogShipment: Shipment & Id) => {
   });
 
   shipment.value = {
-    ...dialogShipment,
+    ...shipmentWithItems,
     shipmentItems: shipmentItems,
     additionalShipmentItems: additionalShipmentItems,
   };
-  savedShipment.value = dialogShipment;
+  savedShipment.value = shipmentWithItems;
   open.value = true;
 };
 
 const onClose = async () => {
   open.value = false;
   await biStore.update(activeConfigId.value);
-  shipments.value = (await getShipments(activeConfigId.value)).shipments;
+  shipmentsWithoutItems.value = (
+    await getShipments(activeConfigId.value, undefined, false)
+  ).shipments;
 };
 
 const refresh = async () => {
   busy.value = true;
   await productStore.update(activeConfigId.value);
   await biStore.update(activeConfigId.value);
-  shipments.value = (await getShipments(activeConfigId.value)).shipments;
+  shipmentsWithoutItems.value = (
+    await getShipments(activeConfigId.value, undefined, false)
+  ).shipments;
   busy.value = false;
 };
 
@@ -147,8 +166,8 @@ watch(activeConfigId, async () => {
         >
       </v-card-actions>
       <v-data-table
-        v-if="shipments.length > 0"
-        :items="shipments.slice().reverse()"
+        v-if="shipmentsWithoutItems.length > 0"
+        :items="shipmentsWithoutItems.slice().reverse()"
         :headers="[
           { title: 'Datum der Verteilung', key: 'validFrom', sortable: true },
           { title: 'Beschreibung', key: 'description', sortable: true },

@@ -21,7 +21,11 @@ import { http } from "../../consts/http";
 import { AppDataSource } from "../../database/database";
 import { getUserFromContext } from "../getUserFromContext";
 import { UserRole } from "../../../../shared/src/enum";
-import { getConfigIdFromQuery } from "../../util/requestUtil";
+import {
+  getConfigIdFromQuery,
+  getIncludeItemsFromQuery,
+  getNumericQueryParameter,
+} from "../../util/requestUtil";
 
 export const getShipments = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -31,16 +35,23 @@ export const getShipments = async (
     ctx.throw(http.forbidden);
   }
   const configId = getConfigIdFromQuery(ctx);
+  const includeItems = getIncludeItemsFromQuery(ctx);
+  const shipmentId = getNumericQueryParameter(
+    ctx.request.query,
+    "shipmentId",
+    0,
+  );
   const shipments = await AppDataSource.getRepository(Shipment).find({
     relations: {
-      shipmentItems: true,
-      additionalShipmentItems: true,
+      shipmentItems: includeItems,
+      additionalShipmentItems: includeItems,
     },
     order: {
       validFrom: "ASC",
     },
     where: {
       requisitionConfigId: configId,
+      ...(shipmentId ? { id: shipmentId } : {}),
     },
   });
   ctx.body = { shipments };
