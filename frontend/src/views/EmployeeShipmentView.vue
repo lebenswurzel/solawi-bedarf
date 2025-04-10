@@ -131,6 +131,9 @@ const onClose = async () => {
 };
 
 const refresh = async () => {
+  if (activeConfigId.value === -1) {
+    return;
+  }
   busy.value = true;
   await productStore.update(activeConfigId.value);
   await biStore.update(activeConfigId.value);
