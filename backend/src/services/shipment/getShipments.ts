@@ -54,5 +54,25 @@ export const getShipments = async (
       ...(shipmentId ? { id: shipmentId } : {}),
     },
   });
-  ctx.body = { shipments };
+  ctx.body = {
+    shipments: shipments.map((s) => ({
+      ...s,
+      shipmentItems: s.shipmentItems
+        ? s.shipmentItems.sort((a, b) => {
+            if (a.productId !== b.productId) {
+              return a.productId - b.productId;
+            }
+            return a.depotId - b.depotId;
+          })
+        : [],
+      additionalShipmentItems: s.additionalShipmentItems
+        ? s.additionalShipmentItems.sort((a, b) => {
+            if (a.product !== b.product) {
+              return a.product.localeCompare(b.product);
+            }
+            return a.depotId - b.depotId;
+          })
+        : [],
+    })),
+  };
 };

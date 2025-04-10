@@ -83,43 +83,47 @@ const onCreateShipment = () => {
 const onEditShipment = async (
   selectedShipment: ShipmentWithRevisionMessages & Id,
 ) => {
-  const shipmentWithItemsResponse: ShipmentFullInformation[] = (
-    await getShipments(activeConfigId.value, selectedShipment.id, true)
-  ).shipments;
+  try {
+    const shipmentWithItemsResponse: ShipmentFullInformation[] = (
+      await getShipments(activeConfigId.value, selectedShipment.id, true)
+    ).shipments;
 
-  if (shipmentWithItemsResponse.length !== 1) {
-    setError(`Keine Verteilung mit ID=${selectedShipment.id} gefunden`);
-    return;
+    if (shipmentWithItemsResponse.length !== 1) {
+      setError(`Keine Verteilung mit ID=${selectedShipment.id} gefunden`);
+      return;
+    }
+    const shipmentWithItems = shipmentWithItemsResponse[0];
+
+    const shipmentItems: EditShipmentItem[] = (
+      shipmentWithItems.shipmentItems || []
+    ).map((item) => {
+      return {
+        ...item,
+        showItem: true,
+        depotIds: [item.depotId],
+      };
+    });
+
+    const additionalShipmentItems: EditAdditionalShipmentItem[] = (
+      shipmentWithItems.additionalShipmentItems || []
+    ).map((item) => {
+      return {
+        ...item,
+        showItem: true,
+        depotIds: [item.depotId],
+      };
+    });
+
+    shipment.value = {
+      ...shipmentWithItems,
+      shipmentItems: shipmentItems,
+      additionalShipmentItems: additionalShipmentItems,
+    };
+    savedShipment.value = shipmentWithItems;
+    open.value = true;
+  } catch (error) {
+    setError("Fehler beim Laden der Verteilung", error as Error);
   }
-  const shipmentWithItems = shipmentWithItemsResponse[0];
-
-  const shipmentItems: EditShipmentItem[] = (
-    shipmentWithItems.shipmentItems || []
-  ).map((item) => {
-    return {
-      ...item,
-      showItem: true,
-      depotIds: [item.depotId],
-    };
-  });
-
-  const additionalShipmentItems: EditAdditionalShipmentItem[] = (
-    shipmentWithItems.additionalShipmentItems || []
-  ).map((item) => {
-    return {
-      ...item,
-      showItem: true,
-      depotIds: [item.depotId],
-    };
-  });
-
-  shipment.value = {
-    ...shipmentWithItems,
-    shipmentItems: shipmentItems,
-    additionalShipmentItems: additionalShipmentItems,
-  };
-  savedShipment.value = shipmentWithItems;
-  open.value = true;
 };
 
 const onClose = async () => {

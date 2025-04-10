@@ -149,7 +149,6 @@ const headers = computed(() =>
 
 const formatStackLine = (line: string): string => {
   const match = line.match(/\(\/(backend\/src\/.+?):(\d+):(\d+)\)$/);
-  console.log(match, line);
   if (!match) return line;
 
   const [_, file, lineNumber] = match;
