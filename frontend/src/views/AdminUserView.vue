@@ -201,6 +201,20 @@ const getCurrentSeasonOrder = (
     return order;
   }
 };
+
+const tableItems = computed(() => {
+  return users.value.map((user) => {
+    const currentOrder = getCurrentSeasonOrder(user.orders);
+    const currentOrderWithItems = getCurrentSeasonOrder(user.orders, true);
+
+    return {
+      ...user,
+      orderUpdatedAt: currentOrderWithItems?.updatedAt,
+      orderValidFrom: currentOrder?.validFrom,
+      depotName: currentOrder?.depotName,
+    };
+  });
+});
 </script>
 
 <template>
@@ -265,7 +279,7 @@ const getCurrentSeasonOrder = (
           <v-col cols="12">
             <v-data-table
               :headers="headers"
-              :items="users"
+              :items="tableItems"
               density="compact"
               :search="search"
               show-select
@@ -320,11 +334,7 @@ const getCurrentSeasonOrder = (
                 </v-tooltip>
               </template>
               <template v-slot:item.orderUpdatedAt="{ item }">
-                {{
-                  prettyDate(
-                    getCurrentSeasonOrder(item.orders, true)?.updatedAt,
-                  )
-                }}
+                {{ prettyDate(item.orderUpdatedAt) }}
                 <v-btn
                   icon="mdi-eye"
                   variant="plain"
@@ -332,10 +342,10 @@ const getCurrentSeasonOrder = (
                 ></v-btn>
               </template>
               <template v-slot:item.orderValidFrom="{ item }">
-                {{ prettyDate(getCurrentSeasonOrder(item.orders)?.validFrom) }}
+                {{ prettyDate(item.orderValidFrom) }}
               </template>
               <template v-slot:item.depotName="{ item }">
-                {{ getCurrentSeasonOrder(item.orders)?.depotName }}
+                {{ item.depotName }}
               </template>
               <template v-slot:item.edit="{ item }">
                 <v-btn
