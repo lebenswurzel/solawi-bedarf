@@ -148,9 +148,10 @@ const onClose = () => {
 
 const onSave = () => {
   if (
-    savedShipment?.value.active &&
+    savedShipment?.value?.active &&
     new Date(savedShipment?.value.validFrom) < new Date()
   ) {
+    // if the shipment is active and the validFrom is in the past, we need to confirm the change
     editConfirmationDialog.value = true;
     return;
   }
