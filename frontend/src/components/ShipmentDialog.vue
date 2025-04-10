@@ -121,6 +121,13 @@ const usedAdditionalShipmentDepotIdsByProduct = computed(() => {
   return tmp;
 });
 
+const shouldAddMargin = (idx: number) => {
+  if (idx === 0) return false;
+  const currentItem = editShipment.value.shipmentItems[idx];
+  const previousItem = editShipment.value.shipmentItems[idx - 1];
+  return currentItem.productId !== previousItem.productId;
+};
+
 const canSave = computed(() => {
   return (
     editShipment.value.shipmentItems.every(
@@ -256,7 +263,11 @@ const onShipmentOverviewPdfClick = async () => {
         </v-row>
         <v-list class="ma-0 pa-0">
           <template v-for="(item, idx) in editShipment.shipmentItems">
-            <v-list-item class="ma-0 pa-0" v-if="item.showItem">
+            <v-list-item
+              class="ma-0 pa-0"
+              v-if="item.showItem"
+              :class="{ 'mt-8': shouldAddMargin(idx) }"
+            >
               <ShipmentItem
                 :shipment-item="item"
                 :used-depot-ids-by-product-id="usedShipmentDepotIdsByProductId"
