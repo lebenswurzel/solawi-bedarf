@@ -73,6 +73,7 @@ provide("savedShipment", savedShipment);
 
 const onCreateShipment = () => {
   shipment.value = JSON.parse(JSON.stringify(defaultEditShipment));
+  savedShipment.value = undefined;
   open.value = true;
 };
 
