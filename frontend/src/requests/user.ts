@@ -29,6 +29,8 @@ export type SerializedUserOrders = {
   configId: number;
   updatedAt: string;
   hasItems: boolean;
+  depotId: number;
+  depotName: string;
 };
 
 export type SerializedGetUserResponse = {
@@ -56,6 +58,8 @@ export const getUser = async (): Promise<GetUserResponse> => {
         ...userOrder,
         updatedAt: parseISO(userOrder.updatedAt),
         validFrom: userOrder.validFrom ? parseISO(userOrder.validFrom) : null,
+        depotId: userOrder.depotId,
+        depotName: userOrder.depotName,
       })),
     })),
   };

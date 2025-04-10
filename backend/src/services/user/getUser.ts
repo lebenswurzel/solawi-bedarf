@@ -48,6 +48,7 @@ export const getUser = async (
           relations: {
             orders: {
               orderItems: true,
+              depot: true,
             },
           },
         }
@@ -78,6 +79,8 @@ export const getUser = async (
             configId: o.requisitionConfigId,
             validFrom: o.validFrom,
             hasItems: o.orderItems?.length > 0,
+            depotId: o.depotId,
+            depotName: o.depot?.name,
           })),
           emailEnabled: hasApplicant,
         };

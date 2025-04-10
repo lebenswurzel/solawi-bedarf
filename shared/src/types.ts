@@ -51,6 +51,8 @@ export type UserOrder = {
   configId: number;
   validFrom: Date | null;
   hasItems: boolean;
+  depotId: number;
+  depotName: string;
 };
 
 export type UserWithOrders = Required<User> & {
