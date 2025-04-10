@@ -299,7 +299,7 @@ export const language = {
         subtitle: "Mitarbeiter",
       },
       action: {
-        createShipment: "Verteilung",
+        createShipment: "Verteilung erstellen",
         createShipmentItem: "Verteilung",
         createAdditionalShipmentItem: "Verteilung",
       },

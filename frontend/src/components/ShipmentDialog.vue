@@ -299,8 +299,10 @@ const onShipmentOverviewPdfClick = async () => {
         </v-list>
       </v-card-text>
       <v-card-actions>
-        <v-btn @click="onAddShipmentItem"> Produkt </v-btn>
-        <v-btn @click="onAddAdditionalShipmentItem"> Zusatz </v-btn>
+        <v-btn @click="onAddShipmentItem"> Produkt hinzufügen </v-btn>
+        <v-btn @click="onAddAdditionalShipmentItem">
+          Zusatzprodukt hinzufügen
+        </v-btn>
         <v-btn @click="onClose"> {{ language.app.actions.close }} </v-btn>
         <v-btn :loading="loading" @click="onSave" :disabled="!canSave">
           {{ language.app.actions.save }}
