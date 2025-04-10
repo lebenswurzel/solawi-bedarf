@@ -46,7 +46,7 @@ export const useVersionInfoStore = defineStore("versionInfo", () => {
       .finally(() => {
         // cyclically check server status
         if (startTimer) {
-          setTimeout(() => update(true), 60000);
+          setTimeout(() => update(true), serverError.value ? 10000 : 60000);
         }
       });
   };
