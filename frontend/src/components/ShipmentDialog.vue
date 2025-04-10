@@ -230,10 +230,6 @@ const onShipmentOverviewPdfClick = async () => {
         {{ t.title }} KW {{ getISOWeek(editShipment.validFrom).toString() }}
       </v-card-title>
       <v-card-text style="overflow-y: auto">
-        <v-alert type="info" class="mb-2" variant="outlined"
-          >Hinweis: Die Anzahl Lieferungen je Depot beinhalten jetzt nur noch
-          'aktiv' geschaltete Verteilungen.</v-alert
-        >
         <v-row align="start" justify="center">
           <v-col cols="3">
             <v-text-field
@@ -247,16 +243,16 @@ const onShipmentOverviewPdfClick = async () => {
               "
             ></v-text-field>
           </v-col>
-          <v-col cols="8">
+          <v-col cols="7">
             <v-text-field
               label="Beschreibung"
               v-model="editShipment.description"
               clearable
             ></v-text-field>
           </v-col>
-          <v-col cols="1">
+          <v-col cols="2">
             <v-checkbox
-              label="aktive"
+              label="veröffentlicht"
               v-model="editShipment.active"
             ></v-checkbox>
           </v-col>
@@ -333,13 +329,13 @@ const onShipmentOverviewPdfClick = async () => {
       prepend-icon="mdi-alert-circle-outline"
     >
       <template v-slot:title
-        >Änderung einer bereits aktiven Lieferung bestätigen</template
+        >Änderung einer bereits veröffentlichten Lieferung bestätigen</template
       >
       <v-card-text>
-        Die Lieferung liegt in der Vergangenheit und ist bereits aktiv. Eine
-        Änderung ist nur vorgesehen, falls die tatsächliche Lieferung von der
-        zuvor gespeicherten Lieferung abweicht. Um sie speichern zu können,
-        bitte eine Änderungsmeldung eingeben.
+        Die Lieferung liegt in der Vergangenheit und ist bereits veröffentlicht.
+        Eine Änderung ist nur vorgesehen, falls die tatsächliche Lieferung von
+        der zuvor veröffentlichten Lieferung abweicht. Um sie speichern zu
+        können, bitte eine Änderungsmeldung eingeben.
       </v-card-text>
       <v-card-text>
         <v-text-field
