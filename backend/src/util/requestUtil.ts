@@ -91,3 +91,10 @@ export const getStringQueryParameter = (
   const requestValue = requestQuery[name];
   return requestValue && !Array.isArray(requestValue) ? requestValue : fallback;
 };
+
+export const getIncludeItemsFromQuery = (
+  ctx: Koa.ParameterizedContext,
+): boolean => {
+  const includeItems = ctx.query.includeItems;
+  return includeItems === "true";
+};

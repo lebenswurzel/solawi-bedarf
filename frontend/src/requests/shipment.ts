@@ -15,10 +15,9 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import {
-  Id,
   OptionalId,
+  ShipmentFullInformation,
   ShipmentRequest,
-  ShipmentWithRevisionMessages,
 } from "../../../shared/src/types";
 import { getUrl, verifyResponse } from "./requests";
 
@@ -36,10 +35,17 @@ export const saveShipment = async (shipment: ShipmentRequest & OptionalId) => {
 
 export const getShipments = async (
   configId: number,
+  shipmentId?: number,
+  includeItems: boolean = false,
 ): Promise<{
-  shipments: (ShipmentWithRevisionMessages & Id)[];
+  shipments: ShipmentFullInformation[];
 }> => {
-  const response = await fetch(getUrl(`/shipments?configId=${configId}`));
+  const shipmentIdParam = shipmentId ? `&shipmentId=${shipmentId}` : "";
+  const response = await fetch(
+    getUrl(
+      `/shipments?configId=${configId}&includeItems=${includeItems}${shipmentIdParam}`,
+    ),
+  );
 
   await verifyResponse(response);
 
@@ -49,7 +55,7 @@ export const getShipments = async (
 export const getShipment = async (
   userId: number,
   configId: number,
-): Promise<{ shipments: (ShipmentWithRevisionMessages & Id)[] }> => {
+): Promise<{ shipments: ShipmentFullInformation[] }> => {
   const response = await fetch(
     getUrl(`/shipment?id=${userId}&configId=${configId}`),
   );

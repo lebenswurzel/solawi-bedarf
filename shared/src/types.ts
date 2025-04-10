@@ -305,20 +305,29 @@ export interface EditAdditionalShipmentItem
   showItem: boolean;
 }
 
-export interface Shipment {
+export interface ShipmentMainInformation {
   description: string | null;
   validFrom: Date;
-  shipmentItems: ShipmentItem[];
-  additionalShipmentItems: AdditionalShipmentItem[];
   active: boolean;
   updatedAt?: Date;
   requisitionConfigId: number;
+}
+
+export interface Shipment extends ShipmentMainInformation {
+  shipmentItems: ShipmentItem[];
+  additionalShipmentItems: AdditionalShipmentItem[];
 }
 export interface ShipmentRequest extends Shipment {
   revisionMessage?: string;
 }
 
-export interface ShipmentWithRevisionMessages extends Shipment {
+export interface ShipmentWithRevisionMessages extends ShipmentMainInformation {
+  id: number;
+  revisionMessages: RevisionMessageJson[];
+}
+
+export interface ShipmentFullInformation extends Shipment {
+  id: number;
   revisionMessages: RevisionMessageJson[];
 }
 
