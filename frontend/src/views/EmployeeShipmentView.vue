@@ -120,6 +120,14 @@ const refresh = async () => {
   shipments.value = (await getShipments(activeConfigId.value)).shipments;
   busy.value = false;
 };
+
+const onRowClick = (
+  _event: MouseEvent,
+  { item }: { item: ShipmentWithRevisionMessages & Id },
+) => {
+  onEditShipment(item);
+};
+
 onMounted(refresh);
 watch(activeConfigId, async () => {
   refresh();
@@ -138,48 +146,57 @@ watch(activeConfigId, async () => {
           >{{ t.action.createShipment }}</v-btn
         >
       </v-card-actions>
-      <v-list v-if="shipments.length > 0">
-        <v-list-item
-          v-for="shipment in shipments.slice().reverse()"
-          @click="() => onEditShipment(shipment)"
-        >
-          <v-icon :icon="shipment.active ? 'mdi-truck-check' : 'mdi-sprout'" />
-
-          {{ format(shipment.validFrom, "dd.MM.yyyy") }} - KW
-          {{ getISOWeek(shipment.validFrom).toString() }}
-
-          <v-icon v-if="shipment.description" icon="mdi-arrow-right" />
-          {{ shipment.description || "" }}
-          <ul v-if="shipment.revisionMessages">
-            <li
-              v-for="revisionMessage in shipment.revisionMessages"
-              :key="revisionMessage.createdAt"
-              variant="tonal"
-              size="small"
-              class="text-caption opacity-70"
-            >
-              Änderung am
-              {{
-                revisionMessage?.createdAt
-                  ? prettyDate(revisionMessage.createdAt, true)
-                  : "?"
-              }}
-              von {{ revisionMessage?.userName || "?" }}:
-              {{ revisionMessage?.message || "?" }}
-            </li>
-          </ul>
-        </v-list-item>
-      </v-list>
+      <v-data-table
+        v-if="shipments.length > 0"
+        :items="shipments.slice().reverse()"
+        :headers="[
+          { title: 'Datum der Verteilung', key: 'validFrom', sortable: true },
+          { title: 'Beschreibung', key: 'description', sortable: true },
+          { title: 'Letzte Änderung', key: 'updatedAt', sortable: true },
+          {
+            title: 'Änderungshinweise',
+            key: 'revisionMessages',
+            sortable: false,
+          },
+        ]"
+        @click:row="onRowClick"
+      >
+        <template v-slot:item.validFrom="{ item }">
+          <div class="d-flex align-center">
+            <v-icon
+              :icon="item.active ? 'mdi-check-circle' : 'mdi-circle-outline'"
+              class="mr-2"
+            />
+            {{ format(item.validFrom, "dd.MM.yyyy") }} - KW
+            {{ getISOWeek(item.validFrom).toString() }}
+          </div>
+        </template>
+        <template v-slot:item.description="{ item }">
+          {{ item.description || "-" }}
+        </template>
+        <template v-slot:item.updatedAt="{ item }">
+          {{ prettyDate(item.updatedAt, true) }}
+        </template>
+        <template v-slot:item.revisionMessages="{ item }">
+          <p
+            v-for="revisionMessage in item.revisionMessages"
+            :key="revisionMessage.createdAt"
+            class="text-caption opacity-60"
+          >
+            {{
+              revisionMessage?.createdAt
+                ? prettyDate(revisionMessage.createdAt, true)
+                : "?"
+            }}
+            von {{ revisionMessage?.userName || "?" }}:
+            {{ revisionMessage?.message || "?" }}
+          </p>
+        </template>
+      </v-data-table>
       <p v-else-if="!busy">Keine Verteilungen in <SeasonText /> vorhanden</p>
     </v-card-text>
   </v-card>
   <ShipmentDialog :open="open" @close="onClose" />
 </template>
 
-<style scoped>
-ul {
-  margin-left: 2rem;
-  list-style-type: none;
-  padding-left: 0;
-}
-</style>
+<style scoped></style>
