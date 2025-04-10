@@ -46,8 +46,17 @@ const privacyNotice = ref(false);
       </v-row>
       <v-row justify="center" dense>
         <v-col class="text-center smaller" sm="6" cols="12">
-          Version: {{ buildInfo.git.tag || buildInfo.git.branch }},
-          {{ buildInfo.git.hashShort }},
+          Version:
+          <a
+            :href="`${appConfig.meta.sourceCodeUrl}/tree/${buildInfo.git.tag || buildInfo.git.branch}`"
+            target="_blank"
+            >{{ buildInfo.git.tag || buildInfo.git.branch }}</a
+          >,
+          <a
+            :href="`${appConfig.meta.sourceCodeUrl}/commit/${buildInfo.git.hashShort}`"
+            target="_blank"
+            >{{ buildInfo.git.hashShort }}</a
+          >,
           {{ buildInfo.buildDate }}
         </v-col>
         <v-col class="text-center smaller" sm="6" cols="12">
