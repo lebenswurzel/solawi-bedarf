@@ -94,6 +94,10 @@ const headers = [
       );
     },
   },
+  {
+    title: "Depot",
+    key: "depotName",
+  },
   { title: "ID", key: "id" },
   { title: "Bearbeiten", key: "edit" },
 ];
@@ -329,6 +333,9 @@ const getCurrentSeasonOrder = (
               </template>
               <template v-slot:item.orderValidFrom="{ item }">
                 {{ prettyDate(getCurrentSeasonOrder(item.orders)?.validFrom) }}
+              </template>
+              <template v-slot:item.depotName="{ item }">
+                {{ getCurrentSeasonOrder(item.orders)?.depotName }}
               </template>
               <template v-slot:item.edit="{ item }">
                 <v-btn
