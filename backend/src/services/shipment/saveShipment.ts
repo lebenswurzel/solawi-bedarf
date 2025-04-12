@@ -38,155 +38,168 @@ export const saveShipment = async (
     ctx.throw(http.forbidden);
   }
   const requestShipment = ctx.request.body as ShipmentRequest & Id;
-  if (requestShipment.id) {
-    const shipment = await AppDataSource.getRepository(Shipment).findOne({
-      where: {
-        id: requestShipment.id,
-      },
-      relations: {
-        shipmentItems: true,
-        additionalShipmentItems: true,
-      },
-    });
 
-    // check error conditions
-    if (!shipment) {
-      ctx.throw(http.bad_request, "shipment not found");
-    }
-    if (shipment.requisitionConfigId != requestShipment.requisitionConfigId) {
-      ctx.throw(
-        http.bad_request,
-        `shipment configId=${shipment.requisitionConfigId} does not match request shipment configId=${requestShipment.requisitionConfigId}`,
-      );
-    }
-    if (
-      !requestShipment.updatedAt ||
-      new Date(requestShipment.updatedAt) < shipment.updatedAt
-    ) {
-      ctx.throw(http.bad_request, "outdated shipment");
-    }
-    if (shipment.active && shipment.validFrom < new Date()) {
-      // allow to update active shipment but only if a revision message is provided
+  await AppDataSource.transaction(async (transactionalEntityManager) => {
+    if (requestShipment.id) {
+      const shipment = await transactionalEntityManager
+        .getRepository(Shipment)
+        .findOne({
+          where: {
+            id: requestShipment.id,
+          },
+          relations: {
+            shipmentItems: true,
+            additionalShipmentItems: true,
+          },
+        });
+
+      // check error conditions
+      if (!shipment) {
+        ctx.throw(http.bad_request, "shipment not found");
+      }
+      if (shipment.requisitionConfigId != requestShipment.requisitionConfigId) {
+        ctx.throw(
+          http.bad_request,
+          `shipment configId=${shipment.requisitionConfigId} does not match request shipment configId=${requestShipment.requisitionConfigId}`,
+        );
+      }
       if (
-        role !== UserRole.ADMIN ||
-        !requestShipment.revisionMessage ||
-        requestShipment.revisionMessage.trim() === ""
+        !requestShipment.updatedAt ||
+        new Date(requestShipment.updatedAt) < shipment.updatedAt
       ) {
-        ctx.throw(http.bad_request, "shipment is active");
+        ctx.throw(http.bad_request, "outdated shipment");
       }
-    }
-
-    // add revision message
-    if (requestShipment.revisionMessage) {
-      if (!shipment.revisionMessages) {
-        shipment.revisionMessages = [];
+      if (shipment.active && shipment.validFrom < new Date()) {
+        // allow to update active shipment but only if a revision message is provided
+        if (
+          role !== UserRole.ADMIN ||
+          !requestShipment.revisionMessage ||
+          requestShipment.revisionMessage.trim() === ""
+        ) {
+          ctx.throw(http.bad_request, "shipment is active");
+        }
       }
-      shipment.revisionMessages.push({
-        message: requestShipment.revisionMessage,
-        createdAt: new Date().toISOString(),
-        userName,
-      });
-    }
 
-    // update shipment
-    shipment.validFrom = requestShipment.validFrom;
-    shipment.active = requestShipment.active;
-    shipment.description = requestShipment.description;
-    shipment.updatedAt = new Date();
-    await AppDataSource.getRepository(Shipment).save(shipment);
-    // new items
-    for (let requestItem of requestShipment.shipmentItems) {
-      if (
-        !shipment.shipmentItems.some(
-          (item) =>
+      // add revision message
+      if (requestShipment.revisionMessage) {
+        if (!shipment.revisionMessages) {
+          shipment.revisionMessages = [];
+        }
+        shipment.revisionMessages.push({
+          message: requestShipment.revisionMessage,
+          createdAt: new Date().toISOString(),
+          userName,
+        });
+      }
+
+      // update shipment
+      shipment.validFrom = requestShipment.validFrom;
+      shipment.active = requestShipment.active;
+      shipment.description = requestShipment.description;
+      shipment.updatedAt = new Date();
+      await transactionalEntityManager.getRepository(Shipment).save(shipment);
+      // new items
+      for (let requestItem of requestShipment.shipmentItems) {
+        if (
+          !shipment.shipmentItems.some(
+            (item) =>
+              item.depotId == requestItem.depotId &&
+              item.productId == requestItem.productId,
+          )
+        ) {
+          const shipmentItem = getNewShipmentItem(requestItem);
+          shipmentItem.shipment = shipment;
+          await transactionalEntityManager
+            .getRepository(ShipmentItem)
+            .save(shipmentItem);
+        }
+      }
+      // update item
+      for (let item of shipment.shipmentItems) {
+        const requestItem = requestShipment.shipmentItems.find(
+          (requestItem) =>
             item.depotId == requestItem.depotId &&
             item.productId == requestItem.productId,
-        )
-      ) {
-        const shipmentItem = getNewShipmentItem(requestItem);
-        shipmentItem.shipment = shipment;
-        await AppDataSource.getRepository(ShipmentItem).save(shipmentItem);
+        );
+        if (requestItem) {
+          const shipmentItem = updateShipmentItem(item, requestItem);
+          await transactionalEntityManager
+            .getRepository(ShipmentItem)
+            .save(shipmentItem);
+        } else {
+          await transactionalEntityManager.getRepository(ShipmentItem).delete({
+            id: item.id,
+          });
+        }
       }
-    }
-    // update item
-    for (let item of shipment.shipmentItems) {
-      const requestItem = requestShipment.shipmentItems.find(
-        (requestItem) =>
-          item.depotId == requestItem.depotId &&
-          item.productId == requestItem.productId,
-      );
-      if (requestItem) {
-        const shipmentItem = updateShipmentItem(item, requestItem);
-        await AppDataSource.getRepository(ShipmentItem).save(shipmentItem);
-      } else {
-        await AppDataSource.getRepository(ShipmentItem).delete({
-          id: item.id,
-        });
+      // new items
+      for (let requestItem of requestShipment.additionalShipmentItems) {
+        if (
+          !shipment.additionalShipmentItems.some(
+            (item) =>
+              item.depotId == requestItem.depotId &&
+              item.product.trim() == requestItem.product.trim(),
+          )
+        ) {
+          const additionalShipmentItem =
+            getNewAdditionalShipmentItem(requestItem);
+          additionalShipmentItem.shipment = shipment;
+          await transactionalEntityManager
+            .getRepository(AdditionalShipmentItem)
+            .save(additionalShipmentItem);
+        }
       }
-    }
-    // new items
-    for (let requestItem of requestShipment.additionalShipmentItems) {
-      if (
-        !shipment.additionalShipmentItems.some(
-          (item) =>
+      // update item
+      for (let item of shipment.additionalShipmentItems) {
+        const requestItem = requestShipment.additionalShipmentItems.find(
+          (requestItem) =>
             item.depotId == requestItem.depotId &&
             item.product.trim() == requestItem.product.trim(),
-        )
-      ) {
-        const additionalShipmentItem =
-          getNewAdditionalShipmentItem(requestItem);
+        );
+        if (requestItem) {
+          const additionalShipmentItem = updateAdditionalShipmentItem(
+            item,
+            requestItem,
+          );
+          await transactionalEntityManager
+            .getRepository(AdditionalShipmentItem)
+            .save(additionalShipmentItem);
+        } else {
+          await transactionalEntityManager
+            .getRepository(AdditionalShipmentItem)
+            .delete({
+              id: item.id,
+            });
+        }
+      }
+      ctx.status = http.no_content;
+    } else {
+      const shipment = new Shipment();
+      shipment.validFrom = requestShipment.validFrom;
+      shipment.active = requestShipment.active;
+      shipment.description = requestShipment.description;
+      shipment.requisitionConfigId = requestShipment.requisitionConfigId;
+      shipment.updatedAt = new Date();
+      await transactionalEntityManager.getRepository(Shipment).save(shipment);
+      for (let requestShipmentItem of requestShipment.shipmentItems) {
+        const shipmentItem = getNewShipmentItem(requestShipmentItem);
+        shipmentItem.shipment = shipment;
+        await transactionalEntityManager
+          .getRepository(ShipmentItem)
+          .save(shipmentItem);
+      }
+      for (let requestAdditionalShipmentItem of requestShipment.additionalShipmentItems) {
+        const additionalShipmentItem = getNewAdditionalShipmentItem(
+          requestAdditionalShipmentItem,
+        );
         additionalShipmentItem.shipment = shipment;
-        await AppDataSource.getRepository(AdditionalShipmentItem).save(
-          additionalShipmentItem,
-        );
+        await transactionalEntityManager
+          .getRepository(AdditionalShipmentItem)
+          .save(additionalShipmentItem);
       }
+      ctx.status = http.created;
     }
-    // update item
-    for (let item of shipment.additionalShipmentItems) {
-      const requestItem = requestShipment.additionalShipmentItems.find(
-        (requestItem) =>
-          item.depotId == requestItem.depotId &&
-          item.product.trim() == requestItem.product.trim(),
-      );
-      if (requestItem) {
-        const additionalShipmentItem = updateAdditionalShipmentItem(
-          item,
-          requestItem,
-        );
-        await AppDataSource.getRepository(AdditionalShipmentItem).save(
-          additionalShipmentItem,
-        );
-      } else {
-        await AppDataSource.getRepository(AdditionalShipmentItem).delete({
-          id: item.id,
-        });
-      }
-    }
-    ctx.status = http.no_content;
-  } else {
-    const shipment = new Shipment();
-    shipment.validFrom = requestShipment.validFrom;
-    shipment.active = requestShipment.active;
-    shipment.description = requestShipment.description;
-    shipment.requisitionConfigId = requestShipment.requisitionConfigId;
-    shipment.updatedAt = new Date();
-    await AppDataSource.getRepository(Shipment).save(shipment);
-    for (let requestShipmentItem of requestShipment.shipmentItems) {
-      const shipmentItem = getNewShipmentItem(requestShipmentItem);
-      shipmentItem.shipment = shipment;
-      await AppDataSource.getRepository(ShipmentItem).save(shipmentItem);
-    }
-    for (let requestAdditionalShipmentItem of requestShipment.additionalShipmentItems) {
-      const additionalShipmentItem = getNewAdditionalShipmentItem(
-        requestAdditionalShipmentItem,
-      );
-      additionalShipmentItem.shipment = shipment;
-      await AppDataSource.getRepository(AdditionalShipmentItem).save(
-        additionalShipmentItem,
-      );
-    }
-    ctx.status = http.created;
-  }
+  });
 };
 
 const getNewShipmentItem = (item: ShipmentItemType) => {
