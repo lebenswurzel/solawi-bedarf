@@ -184,7 +184,9 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 
 #222 Besseres Feedback beim Fehleingaben in der Bedarfsanmeldung
 
-# NEW
+# v0.6.0 - 2025-04-12 - Verbesserte Verteilungen
 
 #229 Admins können vergangene Verteilungen korrigieren
 #229 Verbesserung der Nutzerfreundlichkeit der Verteilungsansicht und -dialog
+
+# NEW
