@@ -36,6 +36,7 @@ import { useProductStore } from "../store/productStore";
 import AdditionalShipmentItem from "./AdditionalShipmentItem.vue";
 import ShipmentItem from "./ShipmentItem.vue";
 import { useTextContentStore } from "../store/textContentStore.ts";
+import { prettyDateWithDayName } from "../../../shared/src/util/dateHelper.ts";
 
 const t = language.pages.shipment.dialog;
 
@@ -225,10 +226,15 @@ const onShipmentOverviewPdfClick = async () => {
 
 <template>
   <v-dialog :model-value="open" @update:model-value="onClose">
-    <v-card>
-      <v-card-title>
-        {{ t.title }} KW {{ getISOWeek(editShipment.validFrom).toString() }}
-      </v-card-title>
+    <v-card
+      :prepend-icon="
+        editShipment.active ? 'mdi-check-circle' : 'mdi-circle-outline'
+      "
+    >
+      <template v-slot:title>
+        {{ t.title }} {{ prettyDateWithDayName(editShipment.validFrom) }} (KW
+        {{ getISOWeek(editShipment.validFrom).toString() }})
+      </template>
       <v-card-text style="overflow-y: auto">
         <v-row align="start" justify="center">
           <v-col cols="3">
