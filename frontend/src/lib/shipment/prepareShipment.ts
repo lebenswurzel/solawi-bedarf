@@ -36,7 +36,7 @@ export const prepareShipment = (
   editShipment.shipmentItems.forEach((s) => {
     const deliveredByDepotId = deliveredByProductIdDepotId[s.productId!];
     const neededValue = s.depotIds.map((depotId) => ({
-      id: depotId,
+      depotId,
       value: valueToDelivered({
         value: deliveredByDepotId[depotId].valueForShipment,
         multiplicator: s.multiplicator,
@@ -48,14 +48,15 @@ export const prepareShipment = (
     const reducedTotal = Math.round(s.totalShipedQuantity / conversion);
     const totalByDepot = splitTotal(neededValue, reducedTotal);
 
-    s.depotIds.forEach((d) => {
+    s.depotIds.forEach((depotId) => {
       shipmentItems.push({
         productId: s.productId!,
         description: s.description,
         unit: s.unit!,
-        depotId: d,
+        depotId,
         totalShipedQuantity:
-          totalByDepot.find((v) => v.id == d)!.value * conversion,
+          (totalByDepot.find((v) => v.depotId == depotId)?.value || 0) *
+          conversion,
         conversionFrom: s.conversionFrom,
         conversionTo: s.conversionTo,
         isBio: s.isBio,
@@ -68,21 +69,21 @@ export const prepareShipment = (
   const additionalShipmentItems: AdditionalShipmentItem[] = [];
   editShipment.additionalShipmentItems.forEach((s) => {
     const neededValue = s.depotIds.map((depotId) => ({
-      id: depotId,
+      depotId,
       value: capacityByDepotId[depotId].reserved * s.quantity,
     }));
     const conversion = appConfig.shipment.totalQuantityRound[s.unit!];
     const reducedTotal = Math.round(s.totalShipedQuantity / conversion);
     const totalByDepot = splitTotal(neededValue, reducedTotal);
 
-    s.depotIds.forEach((d) => {
+    s.depotIds.forEach((depotId) => {
       additionalShipmentItems.push({
         product: s.product!,
         description: s.description,
         unit: s.unit!,
-        depotId: d,
+        depotId,
         totalShipedQuantity:
-          totalByDepot.find((v) => v.id == d)!.value * conversion,
+          totalByDepot.find((v) => v.depotId == depotId)!.value * conversion,
         isBio: s.isBio,
         quantity: s.quantity,
       });

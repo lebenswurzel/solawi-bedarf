@@ -52,16 +52,22 @@ function shuffleArray<T>(array: T[]): T[] {
 }
 
 export const splitTotal = (
-  values: { id: number; value: number }[],
+  values: { depotId: number; value: number }[],
   total: number,
 ) => {
   const totalValue = values.reduce((acc, cur) => acc + cur.value, 0);
+  if (totalValue === 0) {
+    return values.map((v) => ({
+      depotId: v.depotId,
+      value: 0,
+    }));
+  }
   const splitedValues = values.map((v) => {
     const splited = (total * v.value) / totalValue;
     const iPart = Math.floor(splited);
     const fPart = splited - iPart;
     return {
-      id: v.id,
+      depotId: v.depotId,
       iPart,
       fPart,
     };
@@ -78,7 +84,7 @@ export const splitTotal = (
   const remainingTotal =
     total - shuffledSortedArray.reduce((acc, cur) => acc + cur.iPart, 0);
   return shuffledSortedArray.map((v, i) => ({
-    id: v.id,
+    depotId: v.depotId,
     value: v.iPart + (i < remainingTotal ? 1 : 0),
   }));
 };
