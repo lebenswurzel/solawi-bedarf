@@ -53,7 +53,7 @@ export class ShipmentItem extends BaseEntity {
     nullable: false,
     default: 100,
   })
-  multiplicator: number;
+  multiplicator: number; // amount delivered where 100 means 100% of the required amount for the depot
 
   @Column({
     type: "enum",
