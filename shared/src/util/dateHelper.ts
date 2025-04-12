@@ -52,3 +52,7 @@ export const prettyDate = (
         (withSeconds ? format(date, ":ss") : "")
     : "nie";
 };
+
+export const prettyDateWithDayName = (date?: Date | string | null): string => {
+  return date ? format(date, "EEEE, d. MMMM yyyy", { locale: de }) : "nie";
+};
