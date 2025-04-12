@@ -30,7 +30,7 @@ import {
 } from "../../../testSetup";
 import { genShipment, genShipmentItem } from "../../../../shared/testSetup";
 import { AppDataSource } from "../../database/database";
-import { Shipment, Shipment as ShipmentEntity } from "../../database/Shipment";
+import { Shipment as ShipmentEntity } from "../../database/Shipment";
 import { saveShipment } from "./saveShipment";
 
 const createTestShipment = async (
@@ -239,5 +239,62 @@ testAsAdmin(
     await expect(() => saveShipment(ctx)).rejects.toThrowError(
       "Error 400: shipment is active",
     );
+  },
+);
+
+testAsAdmin(
+  "transaction rollback on invalid data",
+  async ({ userData }: TestUserData) => {
+    const configId = await getRequisitionConfigId();
+    const depot = await getDepotByName("d1");
+    const product = await getProductByName("p1");
+
+    // Create a valid shipment first
+    const shipment = await createTestShipment("Original shipment");
+
+    // Try to update with an invalid additional shipment item (missing required totalShipedQuantity)
+    const request: ShipmentRequest & Id = {
+      id: shipment.id,
+      requisitionConfigId: configId,
+      validFrom: new Date(),
+      active: false,
+      description: "Updated shipment",
+      updatedAt: new Date(Date.now() + 10000),
+      shipmentItems: [
+        genShipmentItem(product, depot, {
+          totalShipedQuantity: 10,
+          description: "Test item",
+        }),
+      ],
+      additionalShipmentItems: [
+        {
+          product: "Invalid item",
+          depotId: depot.id,
+          unit: Unit.WEIGHT,
+          isBio: true,
+          quantity: 5,
+          // totalShipedQuantity is intentionally omitted to test transaction rollback
+          description: "Test invalid item",
+        } as any, // Type assertion to allow omitting required field for testing
+      ],
+    };
+
+    const ctx = createBasicTestCtx(request, userData.token, undefined);
+
+    // The transaction should fail and roll back
+    await expect(() => saveShipment(ctx)).rejects.toThrow();
+
+    // Verify that the original shipment is unchanged
+    const unchangedShipment = await AppDataSource.getRepository(
+      ShipmentEntity,
+    ).findOne({
+      where: { id: shipment.id },
+      relations: ["shipmentItems", "additionalShipmentItems"],
+    });
+
+    expect(unchangedShipment).toBeTruthy();
+    expect(unchangedShipment?.description).toBe("Original shipment");
+    expect(unchangedShipment?.shipmentItems).toHaveLength(0);
+    expect(unchangedShipment?.additionalShipmentItems).toHaveLength(0);
   },
 );
