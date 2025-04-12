@@ -185,3 +185,6 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #222 Besseres Feedback beim Fehleingaben in der Bedarfsanmeldung
 
 # NEW
+
+#229 Admins können vergangene Verteilungen korrigieren
+#229 Verbesserung der Nutzerfreundlichkeit der Verteilungsansicht und -dialog
