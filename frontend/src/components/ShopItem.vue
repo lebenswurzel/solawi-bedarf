@@ -68,7 +68,7 @@ const deliveryPercentage = computed(() => {
     product.value,
     deliveredByProductIdDepotId.value,
     depots.value,
-  ).percentage;
+  );
 });
 
 const color = computed(() => {
@@ -189,7 +189,7 @@ onMounted(() => {
           <v-tooltip
             :text="
               interpolate(t.delivery, {
-                percent: Math.round(deliveryPercentage).toString(),
+                percent: Math.round(deliveryPercentage.percentage).toString(),
               })
             "
             open-on-click
@@ -198,8 +198,10 @@ onMounted(() => {
               <v-icon v-bind="props">mdi-truck-delivery-outline</v-icon>
             </template>
           </v-tooltip>
-          {{ Math.round(deliveryPercentage)
-          }}<span class="text-caption">%</span>
+          {{ Math.round(deliveryPercentage.percentage)
+          }}<span class="text-caption">%</span> &dash;
+          {{ deliveryPercentage.actualDeliveries }} von
+          {{ deliveryPercentage.targetDeliveries }}
         </div>
       </v-col>
       <v-col cols="3" sm="2">
