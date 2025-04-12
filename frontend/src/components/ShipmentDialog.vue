@@ -62,6 +62,8 @@ const loading = ref(false);
 const error = ref<string>();
 const editConfirmationDialog = ref(false);
 const editConfirmationDialogMessage = ref("");
+const showShipmentItems = ref(true);
+const showAdditionalShipmentItems = ref(true);
 
 const onDeleteAdditionalShipmentItem = (idx: number) => {
   editShipment.value.additionalShipmentItems.splice(idx, 1);
@@ -80,6 +82,7 @@ const onAddAdditionalShipmentItem = () => {
     description: null,
     showItem: true,
   });
+  showAdditionalShipmentItems.value = true;
 };
 
 const onAddShipmentItem = () => {
@@ -93,6 +96,7 @@ const onAddShipmentItem = () => {
     conversionTo: 1,
     showItem: true,
   });
+  showShipmentItems.value = true;
 };
 
 const usedShipmentDepotIdsByProductId = computed(() => {
@@ -263,7 +267,22 @@ const onShipmentOverviewPdfClick = async () => {
             ></v-checkbox>
           </v-col>
         </v-row>
-        <v-list class="ma-0 pa-0">
+        <div class="text-h5">
+          <v-icon v-if="showShipmentItems" @click="showShipmentItems = false"
+            >mdi-collapse-all</v-icon
+          >
+          <v-icon v-else @click="showShipmentItems = true"
+            >mdi-expand-all</v-icon
+          >Produkte ({{ editShipment.shipmentItems.length }})
+        </div>
+        <v-list class="ma-0 pa-0" v-if="showShipmentItems">
+          <v-list-item
+            v-if="!editShipment.shipmentItems.length"
+            class="opacity-50"
+          >
+            <v-icon>mdi-information-outline</v-icon>
+            Bisher keine Produkte hinzugefügt
+          </v-list-item>
           <template v-for="(item, idx) in editShipment.shipmentItems">
             <v-list-item
               class="ma-0 pa-0"
@@ -284,7 +303,24 @@ const onShipmentOverviewPdfClick = async () => {
             </v-list-item>
           </template>
         </v-list>
-        <v-list class="ma-0 pa-0">
+        <div class="text-h5">
+          <v-icon
+            v-if="showAdditionalShipmentItems"
+            @click="showAdditionalShipmentItems = false"
+            >mdi-collapse-all</v-icon
+          >
+          <v-icon v-else @click="showAdditionalShipmentItems = true"
+            >mdi-expand-all</v-icon
+          >Zusatzprodukte ({{ editShipment.additionalShipmentItems.length }})
+        </div>
+        <v-list class="ma-0 pa-0" v-if="showAdditionalShipmentItems">
+          <v-list-item
+            v-if="!editShipment.additionalShipmentItems.length"
+            class="opacity-50"
+          >
+            <v-icon>mdi-information-outline</v-icon>
+            Bisher keine Zusatzprodukte hinzugefügt
+          </v-list-item>
           <template v-for="(item, idx) in editShipment.additionalShipmentItems">
             <v-list-item class="ma-0 pa-0" v-if="item.showItem">
               <AdditionalShipmentItem
