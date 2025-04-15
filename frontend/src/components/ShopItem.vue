@@ -31,6 +31,7 @@ import { useUserStore } from "../store/userStore.ts";
 import { useConfigStore } from "../store/configStore.ts";
 import { isIncreaseOnly } from "../../../shared/src/validation/requisition";
 import { getLangUnit } from "../../../shared/src/util/unitHelper.ts";
+import { calculateDeliveries } from "../../../shared/src/order/orderUtil.ts";
 
 const t = language.pages.shop.cards.products.item;
 
@@ -42,9 +43,15 @@ const configStore = useConfigStore();
 
 const { actualOrderItemsByProductId, savedOrderItemsByProductId } =
   storeToRefs(orderStore);
-const { soldByProductId, submit, productsById, now } = storeToRefs(biStore);
+const {
+  soldByProductId,
+  submit,
+  productsById,
+  now,
+  deliveredByProductIdDepotId,
+} = storeToRefs(biStore);
 const { currentUser } = storeToRefs(userStore);
-const { config } = storeToRefs(configStore);
+const { config, depots } = storeToRefs(configStore);
 
 const product = computed(() => productsById.value[props.productId]);
 const sold = computed(() => {
@@ -54,6 +61,14 @@ const unit = computed(() => getLangUnit(product.value.unit));
 
 const percentageSold = computed(() => {
   return Math.round((100 * sold.value.sold) / sold.value.quantity);
+});
+
+const deliveryPercentage = computed(() => {
+  return calculateDeliveries(
+    product.value,
+    deliveredByProductIdDepotId.value,
+    depots.value,
+  );
 });
 
 const color = computed(() => {
@@ -155,17 +170,39 @@ onMounted(() => {
         </v-tooltip>
       </v-col>
       <v-col cols="3" sm="2">
-        <v-tooltip
-          :text="
-            interpolate(t.freq, { freq: product.frequency?.toString() || '1' })
-          "
-          open-on-click
-        >
-          <template v-slot:activator="{ props }">
-            <v-icon v-bind="props">mdi-truck-fast-outline</v-icon>
-          </template>
-        </v-tooltip>
-        {{ product.frequency }}
+        <div>
+          <v-tooltip
+            :text="
+              interpolate(t.freq, {
+                freq: product.frequency?.toString() || '1',
+              })
+            "
+            open-on-click
+          >
+            <template v-slot:activator="{ props }">
+              <v-icon v-bind="props">mdi-truck-fast-outline</v-icon>
+            </template>
+          </v-tooltip>
+          {{ product.frequency }}
+        </div>
+        <div class="opacity-50">
+          <v-tooltip
+            :text="
+              interpolate(t.delivery, {
+                percent: Math.round(deliveryPercentage.percentage).toString(),
+              })
+            "
+            open-on-click
+          >
+            <template v-slot:activator="{ props }">
+              <v-icon v-bind="props">mdi-truck-delivery-outline</v-icon>
+            </template>
+          </v-tooltip>
+          {{ Math.round(deliveryPercentage.percentage)
+          }}<span class="text-caption">%</span> &dash;
+          {{ deliveryPercentage.actualDeliveries }} von
+          {{ deliveryPercentage.targetDeliveries }}
+        </div>
       </v-col>
       <v-col cols="3" sm="2">
         <v-tooltip

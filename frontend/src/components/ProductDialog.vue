@@ -184,6 +184,14 @@ const onSave = () => {
             ></v-text-field>
           </v-col>
         </v-row>
+        <v-row dense>
+          <v-col cols="12"
+            >ID:
+            {{
+              "id" in dialogProduct ? dialogProduct.id : "nicht gespeichert"
+            }}</v-col
+          >
+        </v-row>
       </v-card-text>
       <v-card-actions>
         <v-btn @click="onClose">

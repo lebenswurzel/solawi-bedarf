@@ -121,6 +121,7 @@ export const bi = async (configId: number) => {
           delivered: 0,
           actuallyDelivered: 0,
           frequency: product.frequency,
+          deliveryCount: 0,
         };
       }
       deliveredByProductIdDepotId[orderItem.productId][order.depotId].value +=
@@ -160,6 +161,7 @@ export const bi = async (configId: number) => {
           delivered: 0,
           actuallyDelivered: 0,
           frequency: product.frequency,
+          deliveryCount: 0,
         };
       }
       deliveredByProductIdDepotId[shipmentItem.productId][
@@ -169,6 +171,9 @@ export const bi = async (configId: number) => {
         deliveredByProductIdDepotId[shipmentItem.productId][
           shipmentItem.depotId
         ].actuallyDelivered += shipmentItem.multiplicator;
+        deliveredByProductIdDepotId[shipmentItem.productId][
+          shipmentItem.depotId
+        ].deliveryCount++;
       }
     });
   });
