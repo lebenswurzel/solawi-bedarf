@@ -190,3 +190,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #229 Verbesserung der Nutzerfreundlichkeit der Verteilungsansicht und -dialog
 
 # NEW
+
+#232 Umformulierung zur Berechnung des Orientierungswerts

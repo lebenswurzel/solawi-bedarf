@@ -91,17 +91,17 @@ export const language = {
       orderUserCategories: {
         [UserCategory.CAT130]: {
           title: "stilles Solawi-Mitglied",
-          subtitle:
-            "keine Mitarbeit, (Orientierungswert mit ca. 15% Aufschlag als Ausgleich für fehlende Beteiligung)",
+          subtitle: "Keine Mitarbeit, Orientierungswert ca. 15% erhöht.",
         },
         [UserCategory.CAT115]: {
           title: "aktives Mitglied",
-          subtitle: "Mitarbeit mindestens 5 h/Monat",
+          subtitle:
+            "Mitarbeit mindestens 5 h/Monat, regulärer Orientierungswert.",
         },
         [UserCategory.CAT100]: {
           title: "engagiertes Mitglied",
           subtitle:
-            "Mitarbeit mindestens 10 h/Monat, (Orientierungswert mit ca. 15% Ermäßigung als Wertschätzung für zusätzliches Engagement)",
+            "Mitarbeit mindestens 10 h/Monat, Orientierungswert ca. 15% reduziert.",
         },
       },
       productCategoryTyps: {
