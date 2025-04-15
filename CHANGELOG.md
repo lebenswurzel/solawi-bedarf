@@ -189,6 +189,8 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #229 Admins können vergangene Verteilungen korrigieren
 #229 Verbesserung der Nutzerfreundlichkeit der Verteilungsansicht und -dialog
 
-# NEW
+# v0.6.1 - 2025-04-15 - Umformulierung Orientierungswert
 
 #232 Umformulierung zur Berechnung des Orientierungswerts
+
+# NEW
