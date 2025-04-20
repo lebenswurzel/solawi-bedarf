@@ -215,7 +215,7 @@ const usedAdditionalShipmentDepotIdsByProduct = computed(() => {
 });
 
 const shouldAddMargin = (idx: number) => {
-  if (idx === 0) return false;
+  if (idx === 0) return true;
   const currentItem = editShipment.value.shipmentItems[idx];
   const previousItem = editShipment.value.shipmentItems[idx - 1];
   return currentItem.productId !== previousItem.productId;
@@ -393,11 +393,10 @@ watchEffect(async () => {
             Die Produkte sind standardmäßig ausgeblendet und können über die
             nachfolgenden Schaltflächen eingeblendet werden
           </div>
-          <v-chip-group class="mb-2" column>
+          <v-chip-group class="mb-2" column multiple>
             <v-chip
               v-for="(visible, productId) in productVisibility"
               :key="productId"
-              :color="visible ? 'primary' : 'grey'"
               @click="productVisibility[productId] = !visible"
             >
               <v-icon start>{{ visible ? "mdi-eye" : "" }}</v-icon>
@@ -422,8 +421,14 @@ watchEffect(async () => {
                   ? productVisibility[item.productId] !== false
                   : true)
               "
-              :class="{ 'mt-8': shouldAddMargin(idx) }"
             >
+              <div v-if="shouldAddMargin(idx)" class="text-h6 mb-4">
+                {{
+                  item.productId
+                    ? productsById[item.productId].name
+                    : "Neues Produkt"
+                }}
+              </div>
               <ShipmentItem
                 :shipment-item="item"
                 :used-depot-ids-by-product-id="usedShipmentDepotIdsByProductId"
