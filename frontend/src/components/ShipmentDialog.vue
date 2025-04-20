@@ -34,7 +34,10 @@ import {
   Shipment,
   ShipmentFullInformation,
 } from "../../../shared/src/types.ts";
-import { prettyDateWithDayName } from "../../../shared/src/util/dateHelper.ts";
+import {
+  prettyDate,
+  prettyDateWithDayName,
+} from "../../../shared/src/util/dateHelper.ts";
 import { dateToString, stringToDate } from "../lib/convert.ts";
 import { prepareShipment } from "../lib/shipment/prepareShipment.ts";
 import { createShipmentOverviewPdf } from "../lib/shipment/shipmentOverviewPdf.ts";
@@ -67,7 +70,7 @@ const defaultEditShipment: EditShipment = {
 const editShipment = ref<EditShipment & OptionalId>(defaultEditShipment);
 const savedShipment = ref<(Shipment & Id) | undefined>();
 
-const { setError } = useUiFeedback();
+const { setError, setSuccess } = useUiFeedback();
 
 const biStore = useBIStore();
 const configStore = useConfigStore();
@@ -80,7 +83,6 @@ const { productCategories } = storeToRefs(productStore);
 const { organizationInfo, pdfTexts } = storeToRefs(textContentStore);
 
 const loading = ref(false);
-const error = ref<string>();
 const editConfirmationDialog = ref(false);
 const editConfirmationDialogMessage = ref("");
 const showShipmentItems = ref(true);
@@ -92,8 +94,8 @@ const updateProductVisibility = () => {
   const newVisibility: { [key: number]: boolean } = {};
   editShipment.value.shipmentItems.forEach((item) => {
     if (item.productId) {
-      console.log("new item visibility for ", item.productId);
-      newVisibility[item.productId] = false;
+      newVisibility[item.productId] =
+        productVisibility.value[item.productId] ?? false;
     }
   });
   productVisibility.value = newVisibility;
@@ -155,6 +157,7 @@ const onDeleteAdditionalShipmentItem = (idx: number) => {
 
 const onDeleteShipmentItem = (idx: number) => {
   editShipment.value.shipmentItems.splice(idx, 1);
+  updateProductVisibility();
 };
 
 const onAddAdditionalShipmentItem = () => {
@@ -270,11 +273,16 @@ const onSaveConfirmed = (revisionMessage?: string) => {
   })
     .then(() => {
       loading.value = false;
-      emit("close");
+      setSuccess(language.app.uiFeedback.saving.success);
+      if (savedShipment.value !== undefined) {
+        onEditShipment(savedShipment.value.id);
+      } else {
+        emit("close");
+      }
     })
     .catch((e: Error) => {
       console.log(e);
-      error.value = e.message;
+      setError(language.app.uiFeedback.saving.failed, e);
       loading.value = false;
     });
 };
@@ -330,9 +338,14 @@ watchEffect(async () => {
       "
     >
       <template v-slot:title>
+        {{ savedShipment === undefined ? "[NEU] " : "" }}
         {{ t.title }} {{ prettyDateWithDayName(editShipment.validFrom) }} (KW
         {{ getISOWeek(editShipment.validFrom).toString() }})
       </template>
+      <template v-slot:subtitle
+        >zuletzt gespeichert:
+        {{ prettyDate(savedShipment?.updatedAt, true) }}</template
+      >
       <v-card-text style="overflow-y: auto">
         <v-row align="start" justify="center">
           <v-col cols="3">
@@ -369,17 +382,29 @@ watchEffect(async () => {
             >mdi-expand-all</v-icon
           >Produkte ({{ editShipment.shipmentItems.length }})
         </div>
-        <v-chip-group v-if="showShipmentItems" class="mb-2" column>
-          <v-chip
-            v-for="(visible, productId) in productVisibility"
-            :key="productId"
-            :color="visible ? 'primary' : 'grey'"
-            @click="productVisibility[productId] = !visible"
+        <template v-if="showShipmentItems">
+          <div
+            class="text-caption"
+            v-if="
+              editShipment.shipmentItems.length &&
+              Object.values(productVisibility).length
+            "
           >
-            <v-icon start>{{ visible ? "mdi-eye" : "" }}</v-icon>
-            {{ productsById[productId]?.name }}
-          </v-chip>
-        </v-chip-group>
+            Die Produkte sind standardmäßig ausgeblendet und können über die
+            nachfolgenden Schaltflächen eingeblendet werden
+          </div>
+          <v-chip-group class="mb-2" column>
+            <v-chip
+              v-for="(visible, productId) in productVisibility"
+              :key="productId"
+              :color="visible ? 'primary' : 'grey'"
+              @click="productVisibility[productId] = !visible"
+            >
+              <v-icon start>{{ visible ? "mdi-eye" : "" }}</v-icon>
+              {{ productsById[productId]?.name }}
+            </v-chip>
+          </v-chip-group>
+        </template>
         <v-list class="ma-0 pa-0" v-if="showShipmentItems">
           <v-list-item
             v-if="!editShipment.shipmentItems.length"
@@ -413,6 +438,14 @@ watchEffect(async () => {
             </v-list-item>
           </template>
         </v-list>
+        <v-btn
+          @click="onAddShipmentItem"
+          variant="text"
+          class="mb-6"
+          prepend-icon="mdi-plus"
+        >
+          Produkt hinzufügen
+        </v-btn>
         <div class="text-h5">
           <v-icon
             v-if="showAdditionalShipmentItems"
@@ -449,12 +482,16 @@ watchEffect(async () => {
             </v-list-item>
           </template>
         </v-list>
-      </v-card-text>
-      <v-card-actions>
-        <v-btn @click="onAddShipmentItem"> Produkt hinzufügen </v-btn>
-        <v-btn @click="onAddAdditionalShipmentItem">
+        <v-btn
+          @click="onAddAdditionalShipmentItem"
+          variant="text"
+          class="mb-6"
+          prepend-icon="mdi-plus"
+        >
           Zusatzprodukt hinzufügen
         </v-btn>
+      </v-card-text>
+      <v-card-actions>
         <v-btn @click="onClose"> {{ language.app.actions.close }} </v-btn>
         <v-btn :loading="loading" @click="onSave" :disabled="!canSave">
           {{ language.app.actions.save }}
@@ -509,11 +546,4 @@ watchEffect(async () => {
       </v-card-actions>
     </v-card>
   </v-dialog>
-  <v-snackbar
-    :model-value="!!error"
-    color="red"
-    @update:model-value="() => (error = undefined)"
-  >
-    {{ error }}
-  </v-snackbar>
 </template>
