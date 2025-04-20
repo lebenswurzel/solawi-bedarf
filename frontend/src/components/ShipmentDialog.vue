@@ -86,6 +86,19 @@ const editConfirmationDialogMessage = ref("");
 const showShipmentItems = ref(true);
 const showAdditionalShipmentItems = ref(true);
 
+const productVisibility = ref<{ [key: number]: boolean }>({});
+
+const updateProductVisibility = () => {
+  const newVisibility: { [key: number]: boolean } = {};
+  editShipment.value.shipmentItems.forEach((item) => {
+    if (item.productId) {
+      console.log("new item visibility for ", item.productId);
+      newVisibility[item.productId] = false;
+    }
+  });
+  productVisibility.value = newVisibility;
+};
+
 const onEditShipment = async (shipmentId: number) => {
   try {
     const shipmentWithItemsResponse: ShipmentFullInformation[] = (
@@ -124,6 +137,7 @@ const onEditShipment = async (shipmentId: number) => {
       additionalShipmentItems,
     };
     savedShipment.value = serverSavedShipment;
+    updateProductVisibility();
   } catch (error) {
     setError("Fehler beim Laden der Verteilung", error as Error);
   }
@@ -132,6 +146,7 @@ const onEditShipment = async (shipmentId: number) => {
 const onResetShipment = async () => {
   editShipment.value = JSON.parse(JSON.stringify(defaultEditShipment));
   savedShipment.value = undefined;
+  productVisibility.value = {};
 };
 
 const onDeleteAdditionalShipmentItem = (idx: number) => {
@@ -166,6 +181,7 @@ const onAddShipmentItem = () => {
     showItem: true,
   });
   showShipmentItems.value = true;
+  updateProductVisibility();
 };
 
 const usedShipmentDepotIdsByProductId = computed(() => {
@@ -353,6 +369,17 @@ watchEffect(async () => {
             >mdi-expand-all</v-icon
           >Produkte ({{ editShipment.shipmentItems.length }})
         </div>
+        <v-chip-group v-if="showShipmentItems" class="mb-2" column>
+          <v-chip
+            v-for="(visible, productId) in productVisibility"
+            :key="productId"
+            :color="visible ? 'primary' : 'grey'"
+            @click="productVisibility[productId] = !visible"
+          >
+            <v-icon start>{{ visible ? "mdi-eye" : "" }}</v-icon>
+            {{ productsById[productId]?.name }}
+          </v-chip>
+        </v-chip-group>
         <v-list class="ma-0 pa-0" v-if="showShipmentItems">
           <v-list-item
             v-if="!editShipment.shipmentItems.length"
@@ -364,7 +391,12 @@ watchEffect(async () => {
           <template v-for="(item, idx) in editShipment.shipmentItems">
             <v-list-item
               class="ma-0 pa-0"
-              v-if="item.showItem"
+              v-if="
+                item.showItem &&
+                (item.productId
+                  ? productVisibility[item.productId] !== false
+                  : true)
+              "
               :class="{ 'mt-8': shouldAddMargin(idx) }"
             >
               <ShipmentItem
