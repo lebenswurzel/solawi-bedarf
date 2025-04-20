@@ -15,38 +15,59 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { getISOWeek } from "date-fns";
-import { storeToRefs } from "pinia";
-import { Ref, computed, inject, ref } from "vue";
 import {
+  addDays,
+  getISOWeek,
+  setHours,
+  setMinutes,
+  setSeconds,
+} from "date-fns";
+import { storeToRefs } from "pinia";
+import { computed, ref, watchEffect } from "vue";
+import { language } from "../../../shared/src/lang/lang.ts";
+import {
+  EditAdditionalShipmentItem,
   EditShipment,
+  EditShipmentItem,
   Id,
   OptionalId,
   Shipment,
+  ShipmentFullInformation,
 } from "../../../shared/src/types.ts";
-import { language } from "../../../shared/src/lang/lang.ts";
+import { prettyDateWithDayName } from "../../../shared/src/util/dateHelper.ts";
 import { dateToString, stringToDate } from "../lib/convert.ts";
+import { prepareShipment } from "../lib/shipment/prepareShipment.ts";
 import { createShipmentOverviewPdf } from "../lib/shipment/shipmentOverviewPdf.ts";
 import { createShipmentPackagingPdfs } from "../lib/shipment/shipmentPackagingPdf.ts";
-import { prepareShipment } from "../lib/shipment/prepareShipment.ts";
-import { saveShipment } from "../requests/shipment.ts";
+import { getShipments, saveShipment } from "../requests/shipment.ts";
 import { useBIStore } from "../store/biStore";
 import { useConfigStore } from "../store/configStore";
 import { useProductStore } from "../store/productStore";
+import { useTextContentStore } from "../store/textContentStore.ts";
+import { useUiFeedback } from "../store/uiFeedbackStore.ts";
 import AdditionalShipmentItem from "./AdditionalShipmentItem.vue";
 import ShipmentItem from "./ShipmentItem.vue";
-import { useTextContentStore } from "../store/textContentStore.ts";
-import { prettyDateWithDayName } from "../../../shared/src/util/dateHelper.ts";
 
 const t = language.pages.shipment.dialog;
 
-defineProps<{ open: boolean }>();
+const { open, editShipmentId } = defineProps<{
+  open: boolean;
+  editShipmentId: number | undefined;
+}>();
 const emit = defineEmits<{ (e: "close"): void }>();
 
-const editShipment = inject<Ref<EditShipment & OptionalId>>(
-  "dialogShipment",
-) as Ref<EditShipment & OptionalId>;
-const savedShipment = inject<Ref<Shipment & Id>>("savedShipment");
+const defaultEditShipment: EditShipment = {
+  description: null,
+  validFrom: addDays(setHours(setMinutes(setSeconds(new Date(), 0), 0), 12), 1),
+  shipmentItems: [],
+  additionalShipmentItems: [],
+  active: false,
+  requisitionConfigId: -1,
+};
+const editShipment = ref<EditShipment & OptionalId>(defaultEditShipment);
+const savedShipment = ref<(Shipment & Id) | undefined>();
+
+const { setError } = useUiFeedback();
 
 const biStore = useBIStore();
 const configStore = useConfigStore();
@@ -54,7 +75,7 @@ const productStore = useProductStore();
 const textContentStore = useTextContentStore();
 const { productsById, deliveredByProductIdDepotId, capacityByDepotId } =
   storeToRefs(biStore);
-const { depots } = storeToRefs(configStore);
+const { depots, activeConfigId } = storeToRefs(configStore);
 const { productCategories } = storeToRefs(productStore);
 const { organizationInfo, pdfTexts } = storeToRefs(textContentStore);
 
@@ -64,6 +85,54 @@ const editConfirmationDialog = ref(false);
 const editConfirmationDialogMessage = ref("");
 const showShipmentItems = ref(true);
 const showAdditionalShipmentItems = ref(true);
+
+const onEditShipment = async (shipmentId: number) => {
+  try {
+    const shipmentWithItemsResponse: ShipmentFullInformation[] = (
+      await getShipments(activeConfigId.value, shipmentId, true)
+    ).shipments;
+
+    if (shipmentWithItemsResponse.length !== 1) {
+      setError(`Keine Verteilung mit ID=${shipmentId} gefunden`);
+      return;
+    }
+    const serverSavedShipment = shipmentWithItemsResponse[0];
+
+    const shipmentItems: EditShipmentItem[] = (
+      serverSavedShipment.shipmentItems || []
+    ).map((item) => {
+      return {
+        ...item,
+        showItem: true,
+        depotIds: [item.depotId],
+      };
+    });
+
+    const additionalShipmentItems: EditAdditionalShipmentItem[] = (
+      serverSavedShipment.additionalShipmentItems || []
+    ).map((item) => {
+      return {
+        ...item,
+        showItem: true,
+        depotIds: [item.depotId],
+      };
+    });
+
+    editShipment.value = {
+      ...serverSavedShipment,
+      shipmentItems,
+      additionalShipmentItems,
+    };
+    savedShipment.value = serverSavedShipment;
+  } catch (error) {
+    setError("Fehler beim Laden der Verteilung", error as Error);
+  }
+};
+
+const onResetShipment = async () => {
+  editShipment.value = JSON.parse(JSON.stringify(defaultEditShipment));
+  savedShipment.value = undefined;
+};
 
 const onDeleteAdditionalShipmentItem = (idx: number) => {
   editShipment.value.additionalShipmentItems.splice(idx, 1);
@@ -226,6 +295,15 @@ const onShipmentOverviewPdfClick = async () => {
     loading.value = false;
   });
 };
+
+watchEffect(async () => {
+  console.log("edit shipment id", editShipmentId);
+  if (editShipmentId) {
+    await onEditShipment(editShipmentId);
+  } else {
+    await onResetShipment();
+  }
+});
 </script>
 
 <template>

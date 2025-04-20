@@ -15,48 +15,21 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { onMounted, provide, ref, watch } from "vue";
-import { language } from "../../../shared/src/lang/lang.ts";
-import { useBIStore } from "../store/biStore.ts";
-import ShipmentDialog from "../components/ShipmentDialog.vue";
-import { useConfigStore } from "../store/configStore.ts";
-import {
-  addDays,
-  format,
-  getISOWeek,
-  setHours,
-  setMinutes,
-  setSeconds,
-} from "date-fns";
-import { useProductStore } from "../store/productStore.ts";
-import {
-  EditAdditionalShipmentItem,
-  EditShipment,
-  EditShipmentItem,
-  Id,
-  OptionalId,
-  Shipment,
-  ShipmentFullInformation,
-  ShipmentWithRevisionMessages,
-} from "../../../shared/src/types.ts";
-import { getShipments } from "../requests/shipment.ts";
+import { format, getISOWeek } from "date-fns";
 import { storeToRefs } from "pinia";
-import SeasonText from "../components/styled/SeasonText.vue";
-import BusyIndicator from "../components/BusyIndicator.vue";
+import { onMounted, ref, watch } from "vue";
+import { language } from "../../../shared/src/lang/lang.ts";
+import { Id, ShipmentWithRevisionMessages } from "../../../shared/src/types.ts";
 import { prettyDate } from "../../../shared/src/util/dateHelper.ts";
-import { useUiFeedback } from "../store/uiFeedbackStore.ts";
+import BusyIndicator from "../components/BusyIndicator.vue";
+import ShipmentDialog from "../components/ShipmentDialog.vue";
+import SeasonText from "../components/styled/SeasonText.vue";
+import { getShipments } from "../requests/shipment.ts";
+import { useBIStore } from "../store/biStore.ts";
+import { useConfigStore } from "../store/configStore.ts";
+import { useProductStore } from "../store/productStore.ts";
 
 const t = language.pages.shipment;
-
-const defaultEditShipment: EditShipment = {
-  description: null,
-  validFrom: addDays(setHours(setMinutes(setSeconds(new Date(), 0), 0), 12), 1),
-  shipmentItems: [],
-  additionalShipmentItems: [],
-  active: false,
-  requisitionConfigId: -1,
-};
-const { setError } = useUiFeedback();
 
 const shipmentsWithoutItems = ref<ShipmentWithRevisionMessages[]>([]);
 
@@ -65,68 +38,17 @@ const configStore = useConfigStore();
 const productStore = useProductStore();
 
 const { activeConfigId } = storeToRefs(configStore);
-
-const shipment = ref<EditShipment & OptionalId>(defaultEditShipment);
-const savedShipment = ref<Shipment & Id>();
 const open = ref(false);
 const busy = ref<boolean>(true);
-
-provide("dialogShipment", shipment);
-provide("savedShipment", savedShipment);
+const editShipmentId = ref<number | undefined>();
 
 const onCreateShipment = () => {
-  shipment.value = JSON.parse(JSON.stringify(defaultEditShipment));
-  savedShipment.value = undefined;
+  editShipmentId.value = undefined;
   open.value = true;
 };
 
-const onEditShipment = async (
-  selectedShipment: ShipmentWithRevisionMessages & Id,
-) => {
-  try {
-    const shipmentWithItemsResponse: ShipmentFullInformation[] = (
-      await getShipments(activeConfigId.value, selectedShipment.id, true)
-    ).shipments;
-
-    if (shipmentWithItemsResponse.length !== 1) {
-      setError(`Keine Verteilung mit ID=${selectedShipment.id} gefunden`);
-      return;
-    }
-    const shipmentWithItems = shipmentWithItemsResponse[0];
-
-    const shipmentItems: EditShipmentItem[] = (
-      shipmentWithItems.shipmentItems || []
-    ).map((item) => {
-      return {
-        ...item,
-        showItem: true,
-        depotIds: [item.depotId],
-      };
-    });
-
-    const additionalShipmentItems: EditAdditionalShipmentItem[] = (
-      shipmentWithItems.additionalShipmentItems || []
-    ).map((item) => {
-      return {
-        ...item,
-        showItem: true,
-        depotIds: [item.depotId],
-      };
-    });
-
-    shipment.value = {
-      ...shipmentWithItems,
-      shipmentItems: shipmentItems,
-      additionalShipmentItems: additionalShipmentItems,
-    };
-    savedShipment.value = shipmentWithItems;
-    open.value = true;
-  } catch (error) {
-    setError("Fehler beim Laden der Verteilung", error as Error);
-  }
-};
-
 const onClose = async () => {
+  editShipmentId.value = undefined;
   open.value = false;
   await biStore.update(activeConfigId.value);
   shipmentsWithoutItems.value = (
@@ -151,7 +73,8 @@ const onRowClick = (
   _event: MouseEvent,
   { item }: { item: ShipmentWithRevisionMessages & Id },
 ) => {
-  onEditShipment(item);
+  editShipmentId.value = item.id;
+  open.value = true;
 };
 
 onMounted(refresh);
@@ -222,7 +145,11 @@ watch(activeConfigId, async () => {
       <p v-else-if="!busy">Keine Verteilungen in <SeasonText /> vorhanden</p>
     </v-card-text>
   </v-card>
-  <ShipmentDialog :open="open" @close="onClose" />
+  <ShipmentDialog
+    :open="open"
+    :edit-shipment-id="editShipmentId"
+    @close="onClose"
+  />
 </template>
 
 <style scoped></style>
