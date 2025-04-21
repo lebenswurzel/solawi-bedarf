@@ -95,7 +95,7 @@ const updateProductVisibility = () => {
   editShipment.value.shipmentItems.forEach((item) => {
     if (item.productId) {
       newVisibility[item.productId] =
-        productVisibility.value[item.productId] ?? false;
+        productVisibility.value[item.productId] ?? (item.isNew || false);
     }
   });
   productVisibility.value = newVisibility;
@@ -276,6 +276,7 @@ const onSaveConfirmed = (revisionMessage?: string) => {
       loading.value = false;
       setSuccess(language.app.uiFeedback.saving.success);
       if (savedShipment.value !== undefined) {
+        updateProductVisibility();
         onEditShipment(savedShipment.value.id);
       } else {
         emit("close");
