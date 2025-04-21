@@ -16,6 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import JSZip from "jszip";
 import { TCreatedPdf } from "pdfmake/build/pdfmake";
+import { PDFDocument, PDFPage } from "pdf-lib";
 
 export class Zip {
   private jszip: JSZip;
@@ -29,6 +30,22 @@ export class Zip {
       pdf.getBlob((blob) => resolve(blob));
     });
     this.jszip.file(filename, blob, { binary: true });
+  }
+
+  public async mergePdfs(pdfs: TCreatedPdf[], mergedFilename: string) {
+    const mergedPdf = await PDFDocument.create();
+
+    for (const pdf of pdfs) {
+      const buffer = await new Promise<Uint8Array>((resolve) => {
+        pdf.getBuffer((buffer) => resolve(buffer));
+      });
+      const pdfDoc = await PDFDocument.load(buffer);
+      const pages = await mergedPdf.copyPages(pdfDoc, pdfDoc.getPageIndices());
+      pages.forEach((page: PDFPage) => mergedPdf.addPage(page));
+    }
+
+    const mergedPdfBytes = await mergedPdf.save();
+    this.jszip.file(mergedFilename, mergedPdfBytes, { binary: true });
   }
 
   public download(filename: string) {
