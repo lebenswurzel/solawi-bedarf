@@ -40,6 +40,7 @@ import {
   PdfTable,
 } from "../../../../shared/src/pdf/pdf.ts";
 import { Zip } from "../../../../shared/src/pdf/zip.ts";
+import { TCreatedPdf } from "pdfmake/build/pdfmake";
 
 type ProductRow = [string, string, string];
 type GroupedProducts = Map<string, ProductRow[]>;
@@ -175,7 +176,7 @@ export async function createShipmentPackagingPdfs(
   headerText: string,
   footerText: string,
 ) {
-  const pdfs = createShipmentPackagingPdfSpecs(
+  const pdfSpecs = createShipmentPackagingPdfSpecs(
     shipment,
     depots,
     productsById,
@@ -184,13 +185,20 @@ export async function createShipmentPackagingPdfs(
     footerText,
   );
 
+  const prettyDate = format(shipment.validFrom, "yyyy-MM-dd");
   const zip = new Zip();
-  for (const pdf of pdfs) {
-    await zip.addPdf(
-      createDefaultPdf(pdf, organizationInfo),
-      `${sanitizeFileName(pdf.receiver)}.pdf`,
-    );
+
+  // Create individual PDFs for each depot
+  const pdfs: TCreatedPdf[] = [];
+  for (const pdfSpec of pdfSpecs) {
+    const pdf = createDefaultPdf(pdfSpec, organizationInfo);
+    pdfs.push(pdf);
+    await zip.addPdf(pdf, `${sanitizeFileName(pdfSpec.receiver)}.pdf`);
   }
 
-  zip.download(`shipments-${format(shipment.validFrom, "yyyy-MM-dd")}.zip`);
+  // Create and add merged PDF
+  await zip.mergePdfs(pdfs, "Alle Depots.pdf");
+
+  // Download the zip file
+  zip.download(`shipments-${prettyDate}.zip`);
 }
