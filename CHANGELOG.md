@@ -193,6 +193,8 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 
 #232 Umformulierung zur Berechnung des Orientierungswerts
 
-# NEW
+# v0.6.2 - 2025-04-21 - Depotbelegung korrigiert
 
 #234 Fehler bei Depotauswahl behoben wenn leere Bedarfsanmeldungen ein Depot belegen
+
+# NEW
