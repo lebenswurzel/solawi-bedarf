@@ -95,7 +95,7 @@ const updateProductVisibility = () => {
   editShipment.value.shipmentItems.forEach((item) => {
     if (item.productId) {
       newVisibility[item.productId] =
-        productVisibility.value[item.productId] ?? (item.isNew || false);
+        item.isNew ?? productVisibility.value[item.productId] ?? false;
     }
   });
   productVisibility.value = newVisibility;
