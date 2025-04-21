@@ -100,14 +100,14 @@ const getAvailableDepotsForProduct = (productId?: number) => {
 };
 
 const depotOptions = computed(() => {
-  return getAvailableDepotsForProduct(props.shipmentItem.productId)?.map(
-    (dd) => ({
+  return getAvailableDepotsForProduct(props.shipmentItem.productId)
+    ?.map((dd) => ({
       title: `${dd.depot.name} (${dd.delivered.actuallyDelivered / 100}/${
         dd.delivered.frequency
       })`,
       value: dd.depot.id,
-    }),
-  );
+    }))
+    .sort((a, b) => a.title.localeCompare(b.title));
 });
 
 const onProductIdChange = (val: number) => {
