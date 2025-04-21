@@ -182,6 +182,7 @@ const onAddShipmentItem = () => {
     conversionFrom: 1,
     conversionTo: 1,
     showItem: true,
+    isNew: true,
   });
   showShipmentItems.value = true;
   updateProductVisibility();
@@ -416,13 +417,15 @@ watchEffect(async () => {
             <v-list-item
               class="ma-0 pa-0"
               v-if="
-                item.showItem &&
-                (item.productId
-                  ? productVisibility[item.productId] !== false
-                  : true)
+                item.isNew ||
+                (item.showItem &&
+                  (item.productId
+                    ? productVisibility[item.productId] !== false
+                    : true))
               "
             >
               <div v-if="shouldAddMargin(idx)" class="text-h6 mb-4">
+                {{ item.isNew ? "NEU: " : "" }}
                 {{
                   item.productId
                     ? productsById[item.productId].name
