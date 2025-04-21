@@ -135,7 +135,11 @@ export const bi = async (configId: number) => {
 
   orders.forEach((order) => {
     if (order.depotId) {
-      if (!capacityByDepotId[order.depotId].userIds.includes(order.userId)) {
+      if (
+        !capacityByDepotId[order.depotId].userIds.includes(order.userId) &&
+        order.orderItems.length > 0
+      ) {
+        // only consider orders that actually have items when counting depot occupancy
         capacityByDepotId[order.depotId].userIds.push(order.userId);
       }
     }

@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { computed, inject, onMounted, ref, Ref } from "vue";
+import { computed, inject, onMounted, ref, Ref, watchEffect } from "vue";
 import { language } from "../../../shared/src/lang/lang.ts";
 import { interpolate } from "../../../shared/src/lang/template.ts";
 import { useConfigStore } from "../store/configStore.ts";
@@ -90,7 +90,7 @@ const depotOptions = computed(() => {
         return true;
       } else {
         let remainingCapacity =
-          d.capacity - capacityByDepotId.value[d.id].reserved;
+          d.capacity - (capacityByDepotId.value[d.id]?.reserved ?? 0);
         if (depotId.value.saved && d.id == depotId.value.saved) {
           remainingCapacity += 1;
         }
@@ -102,6 +102,18 @@ const depotOptions = computed(() => {
       value: d.id,
       subtitle: `${d.address} | ${d.openingHours}`,
     }));
+});
+
+watchEffect(() => {
+  if (
+    alternateDepotId.value &&
+    !depotOptions.value
+      .map((d) => d.value)
+      .includes(alternateDepotId.value || -1)
+  ) {
+    // unset alternate depot in case the currently selected depot is not available (because it's full)
+    alternateDepotId.value = null;
+  }
 });
 
 const modelInt = computed(() => {
