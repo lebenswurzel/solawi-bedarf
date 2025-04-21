@@ -194,3 +194,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #232 Umformulierung zur Berechnung des Orientierungswerts
 
 # NEW
+
+#234 Fehler bei Depotauswahl behoben wenn leere Bedarfsanmeldungen ein Depot belegen
