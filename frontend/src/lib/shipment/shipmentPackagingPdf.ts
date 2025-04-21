@@ -104,8 +104,8 @@ export function createShipmentPackagingPdfSpecs(
     );
     const description = item.description ? item.description : "";
     rows.push([
-      `${product.name}${item.isBio ? " [BIO]" : ""}`,
       `${item.totalShipedQuantity} ${getLangUnit(item.unit)}`,
+      `${product.name}${item.isBio ? " [BIO]" : ""}`,
       joinStrings(formatQuantityChange(item, product), description),
     ]);
   }
@@ -125,8 +125,8 @@ export function createShipmentPackagingPdfSpecs(
     );
     const description = item.description || "";
     rows.push([
-      `${item.product}${item.isBio ? " [BIO]" : ""}`,
       `${item.totalShipedQuantity} ${getLangUnit(item.unit)}`,
+      `${item.product}${item.isBio ? " [BIO]" : ""}`,
       `${description}`,
     ]);
   }
@@ -156,8 +156,8 @@ export function createShipmentPackagingPdfSpecs(
           ([name, tableData]) =>
             ({
               name,
-              headers: ["Bezeichnung", "Menge", "Bemerkung"],
-              widths: ["50%", "15%", "35%"],
+              headers: ["Menge", "Bezeichnung", "Bemerkung"],
+              widths: ["15%", "50%", "35%"],
               rows: tableData.sort(byKey((row) => row[0], inLocaleOrder)),
             }) as PdfTable,
         ).sort(byKey((table) => table.name, inLocaleOrder)),
