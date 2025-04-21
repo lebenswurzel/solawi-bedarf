@@ -291,6 +291,7 @@ export interface EditShipmentItem
   depotIds: number[];
   unit?: Unit;
   showItem: boolean;
+  isNew?: boolean;
 }
 
 export interface AdditionalShipmentItem extends BaseShipmentItem {
