@@ -107,7 +107,6 @@ const activeProducts = computed((): Array<number> => {
     .map((visible, index) => ({ visible, index }))
     .filter(({ visible }) => visible)
     .map(({ index }) => index);
-  console.log(indices);
   return indices;
 });
 
@@ -493,7 +492,7 @@ watchEffect(async () => {
             >mdi-expand-all</v-icon
           >Zusatzprodukte ({{ editShipment.additionalShipmentItems.length }})
         </div>
-        <div class="text-caption">
+        <div class="text-caption mb-2">
           Als Zusatzprodukt gelten Lebensmittel, die nicht direkt bestellt
           wurden, die aber verfügbar sind und frei an die Depots verteilt
           werden.
