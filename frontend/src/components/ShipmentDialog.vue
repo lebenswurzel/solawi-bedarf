@@ -50,6 +50,7 @@ import { useTextContentStore } from "../store/textContentStore.ts";
 import { useUiFeedback } from "../store/uiFeedbackStore.ts";
 import AdditionalShipmentItem from "./AdditionalShipmentItem.vue";
 import ShipmentItem from "./ShipmentItem.vue";
+import { ProductCategoryType } from "../../../shared/src/enum.ts";
 
 const t = language.pages.shipment.dialog;
 
@@ -100,6 +101,15 @@ const updateProductVisibility = () => {
   });
   productVisibility.value = newVisibility;
 };
+
+const activeProducts = computed((): Array<number> => {
+  const indices = Object.values(productVisibility.value)
+    .map((visible, index) => ({ visible, index }))
+    .filter(({ visible }) => visible)
+    .map(({ index }) => index);
+  console.log(indices);
+  return indices;
+});
 
 const onEditShipment = async (shipmentId: number) => {
   try {
@@ -395,11 +405,29 @@ watchEffect(async () => {
             Die Produkte sind standardmäßig ausgeblendet und können über die
             nachfolgenden Schaltflächen eingeblendet werden
           </div>
-          <v-chip-group class="mb-2" column multiple>
+          <v-chip-group
+            :model-value="activeProducts"
+            class="mb-2"
+            column
+            multiple
+          >
             <v-chip
               v-for="(visible, productId) in productVisibility"
               :key="productId"
               @click="productVisibility[productId] = !visible"
+              :color="
+                productsById[productId].productCategoryType ==
+                ProductCategoryType.SELFGROWN
+                  ? 'green'
+                  : 'blue'
+              "
+              size="small"
+              :variant="
+                productsById[productId].productCategoryType ==
+                ProductCategoryType.SELFGROWN
+                  ? 'tonal'
+                  : 'outlined'
+              "
             >
               <v-icon start>{{ visible ? "mdi-eye" : "" }}</v-icon>
               {{ productsById[productId]?.name }}
@@ -464,6 +492,11 @@ watchEffect(async () => {
           <v-icon v-else @click="showAdditionalShipmentItems = true"
             >mdi-expand-all</v-icon
           >Zusatzprodukte ({{ editShipment.additionalShipmentItems.length }})
+        </div>
+        <div class="text-caption">
+          Als Zusatzprodukt gelten Lebensmittel, die nicht direkt bestellt
+          wurden, die aber verfügbar sind und frei an die Depots verteilt
+          werden.
         </div>
         <v-list class="ma-0 pa-0" v-if="showAdditionalShipmentItems">
           <v-list-item
