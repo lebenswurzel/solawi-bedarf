@@ -28,6 +28,7 @@ import { getShipments } from "../requests/shipment.ts";
 import { useBIStore } from "../store/biStore.ts";
 import { useConfigStore } from "../store/configStore.ts";
 import { useProductStore } from "../store/productStore.ts";
+import DeliveryOverview from "../components/shipment/DeliveryOverview.vue";
 
 const t = language.pages.shipment;
 
@@ -41,6 +42,7 @@ const { activeConfigId } = storeToRefs(configStore);
 const open = ref(false);
 const busy = ref<boolean>(true);
 const editShipmentId = ref<number | undefined>();
+const currentTab = ref("shipments");
 
 const onCreateShipment = () => {
   editShipmentId.value = undefined;
@@ -87,63 +89,97 @@ watch(activeConfigId, async () => {
   <v-card class="ma-2">
     <BusyIndicator :busy="busy" />
     <v-card-title> {{ t.title }} </v-card-title>
-    <v-card-text>
-      <v-card-actions>
-        <v-btn
-          @click="onCreateShipment"
-          prepend-icon="mdi-account-plus-outline"
-          >{{ t.action.createShipment }}</v-btn
-        >
-      </v-card-actions>
-      <v-data-table
-        v-if="shipmentsWithoutItems.length > 0"
-        :items="shipmentsWithoutItems.slice().reverse()"
-        :headers="[
-          { title: 'Datum der Verteilung', key: 'validFrom', sortable: true },
-          { title: 'Beschreibung', key: 'description', sortable: true },
-          { title: 'Letzte Änderung', key: 'updatedAt', sortable: true },
-          {
-            title: 'Änderungshinweise',
-            key: 'revisionMessages',
-            sortable: false,
-          },
-        ]"
-        @click:row="onRowClick"
-      >
-        <template v-slot:item.validFrom="{ item }">
-          <div class="d-flex align-center">
-            <v-icon
-              :icon="item.active ? 'mdi-check-circle' : 'mdi-circle-outline'"
-              class="mr-2"
-            />
-            {{ format(item.validFrom, "dd.MM.yyyy") }} - KW
-            {{ getISOWeek(item.validFrom).toString() }}
-          </div>
-        </template>
-        <template v-slot:item.description="{ item }">
-          {{ item.description || "-" }}
-        </template>
-        <template v-slot:item.updatedAt="{ item }">
-          {{ prettyDate(item.updatedAt, true) }}
-        </template>
-        <template v-slot:item.revisionMessages="{ item }">
-          <p
-            v-for="revisionMessage in item.revisionMessages"
-            :key="revisionMessage.createdAt"
-            class="text-caption opacity-60"
+    <v-tabs v-model="currentTab">
+      <v-tab value="shipments">Verteilungen</v-tab>
+      <v-tab value="overview">Übersicht</v-tab>
+    </v-tabs>
+    <v-tabs-window v-model="currentTab">
+      <v-tabs-window-item value="shipments">
+        <v-card-text>
+          <v-card-actions>
+            <v-btn
+              @click="onCreateShipment"
+              prepend-icon="mdi-account-plus-outline"
+              >{{ t.action.createShipment }}</v-btn
+            >
+          </v-card-actions>
+          <v-data-table
+            v-if="shipmentsWithoutItems.length > 0"
+            :items="shipmentsWithoutItems.slice().reverse()"
+            :headers="[
+              {
+                title: 'Datum der Verteilung',
+                key: 'validFrom',
+                sortable: true,
+              },
+              { title: 'Beschreibung', key: 'description', sortable: true },
+              { title: 'Letzte Änderung', key: 'updatedAt', sortable: true },
+              {
+                title: 'Änderungshinweise',
+                key: 'revisionMessages',
+                sortable: false,
+              },
+            ]"
+            @click:row="onRowClick"
           >
-            {{
-              revisionMessage?.createdAt
-                ? prettyDate(revisionMessage.createdAt, true)
-                : "?"
-            }}
-            von {{ revisionMessage?.userName || "?" }}:
-            {{ revisionMessage?.message || "?" }}
+            <template v-slot:item.validFrom="{ item }">
+              <div class="d-flex align-center">
+                <v-icon
+                  :icon="
+                    item.active ? 'mdi-check-circle' : 'mdi-circle-outline'
+                  "
+                  class="mr-2"
+                />
+                {{ format(item.validFrom, "dd.MM.yyyy") }} - KW
+                {{ getISOWeek(item.validFrom).toString() }}
+              </div>
+            </template>
+            <template v-slot:item.description="{ item }">
+              {{ item.description || "-" }}
+            </template>
+            <template v-slot:item.updatedAt="{ item }">
+              {{ prettyDate(item.updatedAt, true) }}
+            </template>
+            <template v-slot:item.revisionMessages="{ item }">
+              <p
+                v-for="revisionMessage in item.revisionMessages"
+                :key="revisionMessage.createdAt"
+                class="text-caption opacity-60"
+              >
+                {{
+                  revisionMessage?.createdAt
+                    ? prettyDate(revisionMessage.createdAt, true)
+                    : "?"
+                }}
+                von {{ revisionMessage?.userName || "?" }}:
+                {{ revisionMessage?.message || "?" }}
+              </p>
+            </template>
+          </v-data-table>
+          <p v-else-if="!busy">
+            Keine Verteilungen in <SeasonText /> vorhanden
           </p>
-        </template>
-      </v-data-table>
-      <p v-else-if="!busy">Keine Verteilungen in <SeasonText /> vorhanden</p>
-    </v-card-text>
+        </v-card-text>
+      </v-tabs-window-item>
+      <v-tabs-window-item value="overview">
+        <v-card-text>
+          <v-expansion-panels>
+            <v-expansion-panel
+              v-for="productCategory in productStore.productCategories"
+            >
+              <v-expansion-panel-title>
+                {{ productCategory.name }}
+              </v-expansion-panel-title>
+              <v-expansion-panel-text>
+                <DeliveryOverview
+                  :product-category-with-products="productCategory"
+                />
+              </v-expansion-panel-text>
+            </v-expansion-panel>
+          </v-expansion-panels>
+        </v-card-text>
+      </v-tabs-window-item>
+    </v-tabs-window>
   </v-card>
   <ShipmentDialog
     :open="open"
