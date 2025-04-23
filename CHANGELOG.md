@@ -198,3 +198,6 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #234 Fehler bei Depotauswahl behoben wenn leere Bedarfsanmeldungen ein Depot belegen
 
 # NEW
+
+#233 Verbesserungen im Verteilungsdialog (Performance, Übersichtlichkeit)
+#233 Übersicht über erfolgte Verteilungen je Produkt und Depot
