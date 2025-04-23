@@ -108,48 +108,46 @@ const deliveryInfoCache = computed(() => {
 </script>
 
 <template>
-  <v-card>
-    <div class="opacity-80">
-      Übersicht über bereits erfolgte Verteilungen in dieser Kategorie. In die
-      Berechnung mit einbezogen sind alle Lieferungen dieser Saison, die
-      veröffentlicht sind und deren Lieferdatum in der Vergangenheit liegt.
-    </div>
-    <v-text-field
-      prepend-inner-icon="mdi-magnify"
-      v-model="search"
-      variant="underlined"
-      label="Suche nach Produkt"
-      hide-details
-      single-line
-      clearable
-      class="mb-2"
-    />
-    <v-data-table
-      :headers="headers"
-      :items="tableData"
-      :item-value="(item) => item"
-      :items-per-page="10"
-      :search="search"
-      :header-props="{ class: 'text-caption' }"
-    >
-      <template v-slot:item="{ item }">
-        <tr>
-          <td class="text-caption">{{ item.name }}</td>
-          <td v-for="depot in sortedDepots" :key="depot.id">
-            <template v-if="deliveryInfoCache[item.id]?.[depot.id]">
-              <div
-                :class="
-                  deliveryInfoCache[item.id][depot.id].isMaximum
-                    ? 'opacity-80'
-                    : 'font-weight-bold'
-                "
-              >
-                {{ deliveryInfoCache[item.id][depot.id].label }}
-              </div>
-            </template>
-          </td>
-        </tr>
-      </template>
-    </v-data-table>
-  </v-card>
+  <div class="opacity-80">
+    Übersicht über bereits erfolgte Verteilungen in dieser Kategorie. In die
+    Berechnung mit einbezogen sind alle Lieferungen dieser Saison, die
+    veröffentlicht sind und deren Lieferdatum in der Vergangenheit liegt.
+  </div>
+  <v-text-field
+    prepend-inner-icon="mdi-magnify"
+    v-model="search"
+    variant="underlined"
+    label="Suche nach Produkt"
+    hide-details
+    single-line
+    clearable
+    class="mb-2"
+  />
+  <v-data-table
+    :headers="headers"
+    :items="tableData"
+    :item-value="(item) => item"
+    :items-per-page="10"
+    :search="search"
+    :header-props="{ class: 'text-caption' }"
+  >
+    <template v-slot:item="{ item }">
+      <tr>
+        <td class="text-caption">{{ item.name }}</td>
+        <td v-for="depot in sortedDepots" :key="depot.id">
+          <template v-if="deliveryInfoCache[item.id]?.[depot.id]">
+            <div
+              :class="
+                deliveryInfoCache[item.id][depot.id].isMaximum
+                  ? 'opacity-80'
+                  : 'font-weight-bold'
+              "
+            >
+              {{ deliveryInfoCache[item.id][depot.id].label }}
+            </div>
+          </template>
+        </td>
+      </tr>
+    </template>
+  </v-data-table>
 </template>
