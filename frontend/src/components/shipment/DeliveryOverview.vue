@@ -31,13 +31,23 @@ const { depots } = storeToRefs(configStore);
 const { deliveredByProductIdDepotId } = storeToRefs(biStore);
 const search = ref<string>("");
 
-const headers = computed(() => {
-  const baseHeaders = [{ title: "Produkt", key: "name" }];
-  const depotHeaders = depots.value
-    .filter((d) => d.active)
+const sortedDepots = computed(() => {
+  const relevantDepots = Object.values(deliveredByProductIdDepotId.value)
+    .flatMap((productDeliveries) => Object.keys(productDeliveries))
+    .map(Number)
+    .filter((value, index, self) => self.indexOf(value) === index);
+  console.log(relevantDepots);
+  return depots.value
     .sort((a, b) => {
       return a.rank - b.rank;
     })
+    .filter((d) => relevantDepots.includes(d.id));
+});
+
+const headers = computed(() => {
+  const baseHeaders = [{ title: "Produkt", key: "name" }];
+  const depotHeaders = sortedDepots.value
+    .filter((d) => d.active)
     .map((depot) => ({
       title: depot.name,
       key: `depot_${depot.id}`,
@@ -47,12 +57,19 @@ const headers = computed(() => {
 
 const getDeliveryInfo = (productId: number, depotId: number) => {
   const deliveryInfo = deliveredByProductIdDepotId.value[productId]?.[depotId];
-  if (!deliveryInfo) return "0/0";
+  if (!deliveryInfo) {
+    console.log(
+      `depot ${depotId}`,
+      sortedDepots.value.find((d) => d.id == depotId),
+      deliveredByProductIdDepotId.value[productId],
+    );
+    return "";
+  }
 
   const product = props.productCategoryWithProducts?.products.find(
     (p) => p.id === productId,
   );
-  if (!product) return "0/0";
+  if (!product) return "?";
 
   return `${deliveryInfo.actuallyDelivered / 100}/${product.frequency}`;
 };
@@ -92,7 +109,7 @@ const tableData = computed(() => {
       <template v-slot:item="{ item }">
         <tr>
           <td>{{ item.name }}</td>
-          <td v-for="depot in depots" :key="depot.id">
+          <td v-for="depot in sortedDepots" :key="depot.id">
             {{ getDeliveryInfo(item.id, depot.id) }}
           </td>
         </tr>
