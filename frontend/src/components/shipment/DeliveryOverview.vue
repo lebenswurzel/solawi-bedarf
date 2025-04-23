@@ -63,15 +63,26 @@ const getDeliveryInfo = (productId: number, depotId: number) => {
       sortedDepots.value.find((d) => d.id == depotId),
       deliveredByProductIdDepotId.value[productId],
     );
-    return "";
+    return { label: "", isMaximum: true };
   }
 
   const product = props.productCategoryWithProducts?.products.find(
     (p) => p.id === productId,
   );
-  if (!product) return "?";
+  if (!product) {
+    return { label: "", isMaximum: true };
+  }
 
-  return `${deliveryInfo.actuallyDelivered / 100}/${product.frequency}`;
+  const deliveredMaximum = Math.max(
+    ...Object.values(deliveredByProductIdDepotId.value[productId]).map(
+      (p) => p.actuallyDelivered,
+    ),
+  );
+
+  return {
+    label: `${deliveryInfo.actuallyDelivered / 100}/${product.frequency}`,
+    isMaximum: deliveredMaximum == deliveryInfo.actuallyDelivered,
+  };
 };
 
 const tableData = computed(() => {
@@ -110,7 +121,15 @@ const tableData = computed(() => {
         <tr>
           <td>{{ item.name }}</td>
           <td v-for="depot in sortedDepots" :key="depot.id">
-            {{ getDeliveryInfo(item.id, depot.id) }}
+            <div
+              :class="
+                getDeliveryInfo(item.id, depot.id).isMaximum
+                  ? 'opacity-80'
+                  : 'font-weight-bold'
+              "
+            >
+              {{ getDeliveryInfo(item.id, depot.id).label }}
+            </div>
           </td>
         </tr>
       </template>
