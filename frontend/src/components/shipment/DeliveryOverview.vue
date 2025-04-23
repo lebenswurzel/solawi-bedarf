@@ -91,6 +91,20 @@ const tableData = computed(() => {
   }
   return [...props.productCategoryWithProducts.products];
 });
+
+const deliveryInfoCache = computed(() => {
+  const cache: Record<
+    number,
+    Record<number, ReturnType<typeof getDeliveryInfo>>
+  > = {};
+  tableData.value.forEach((product) => {
+    cache[product.id] = {};
+    sortedDepots.value.forEach((depot) => {
+      cache[product.id][depot.id] = getDeliveryInfo(product.id, depot.id);
+    });
+  });
+  return cache;
+});
 </script>
 
 <template>
@@ -98,7 +112,7 @@ const tableData = computed(() => {
     <div>
       Übersicht über bereits erfolgte Verteilungen in der Kategorie "{{
         props.productCategoryWithProducts?.name
-      }}"
+      }}".
     </div>
     <v-text-field
       prepend-inner-icon="mdi-magnify"
@@ -121,15 +135,17 @@ const tableData = computed(() => {
         <tr>
           <td>{{ item.name }}</td>
           <td v-for="depot in sortedDepots" :key="depot.id">
-            <div
-              :class="
-                getDeliveryInfo(item.id, depot.id).isMaximum
-                  ? 'opacity-80'
-                  : 'font-weight-bold'
-              "
-            >
-              {{ getDeliveryInfo(item.id, depot.id).label }}
-            </div>
+            <template v-if="deliveryInfoCache[item.id]?.[depot.id]">
+              <div
+                :class="
+                  deliveryInfoCache[item.id][depot.id].isMaximum
+                    ? 'opacity-80'
+                    : 'font-weight-bold'
+                "
+              >
+                {{ deliveryInfoCache[item.id][depot.id].label }}
+              </div>
+            </template>
           </td>
         </tr>
       </template>
