@@ -276,7 +276,7 @@ const isSelected = (id: number) => !!selectedShippingItems.value[id];
           <v-card-text
             v-if="shipment.description"
             style="white-space: normal; max-width: 800px"
-            class="mx-auto mb-2"
+            class="mx-auto"
           >
             {{ shipment.description }}
           </v-card-text>
@@ -293,7 +293,7 @@ const isSelected = (id: number) => !!selectedShippingItems.value[id];
                   :key="item.id"
                   @click="toggleSelection(item.id)"
                 >
-                  <template v-slot:append>
+                  <template v-slot:prepend>
                     <v-icon v-if="isSelected(item.id)" color="primary"
                       >mdi-check-circle</v-icon
                     >
