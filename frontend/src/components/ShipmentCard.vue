@@ -242,13 +242,6 @@ const isSelected = (id: number) => !!selectedShippingItems.value[id];
     >
     <v-card-text v-if="props.seasonPhase >= SeasonPhase.ACTIVE_SEASON">
       <p
-        v-if="shipment.description"
-        style="white-space: normal; max-width: 800px"
-        class="opacity-70 mx-auto mb-2"
-      >
-        {{ shipment.description }}
-      </p>
-      <p
         v-if="
           (additionalShipmentItems.length == 0 && shipmentItems.length == 0) ||
           (validFrom && validFrom > now)
@@ -280,6 +273,13 @@ const isSelected = (id: number) => !!selectedShippingItems.value[id];
               }}
             </div>
           </template>
+          <v-card-text
+            v-if="shipment.description"
+            style="white-space: normal; max-width: 800px"
+            class="mx-auto mb-2"
+          >
+            {{ shipment.description }}
+          </v-card-text>
           <v-card-text class="pa-2">
             <div class="mx-auto" style="max-width: 700px">
               <v-list
