@@ -109,10 +109,10 @@ const deliveryInfoCache = computed(() => {
 
 <template>
   <v-card>
-    <div>
-      Übersicht über bereits erfolgte Verteilungen in der Kategorie "{{
-        props.productCategoryWithProducts?.name
-      }}".
+    <div class="opacity-80">
+      Übersicht über bereits erfolgte Verteilungen in dieser Kategorie. In die
+      Berechnung mit einbezogen sind alle Lieferungen dieser Saison, die
+      veröffentlicht sind und deren Lieferdatum in der Vergangenheit liegt.
     </div>
     <v-text-field
       prepend-inner-icon="mdi-magnify"
@@ -130,10 +130,11 @@ const deliveryInfoCache = computed(() => {
       :item-value="(item) => item"
       :items-per-page="10"
       :search="search"
+      :header-props="{ class: 'text-caption' }"
     >
       <template v-slot:item="{ item }">
         <tr>
-          <td>{{ item.name }}</td>
+          <td class="text-caption">{{ item.name }}</td>
           <td v-for="depot in sortedDepots" :key="depot.id">
             <template v-if="deliveryInfoCache[item.id]?.[depot.id]">
               <div
