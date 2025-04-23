@@ -44,11 +44,13 @@ const depotOptions = computed(() => {
 const getAvailableDepotsForProduct = (product?: string) => {
   if (product) {
     const usedDepotIds = props.usedDepotIdsByProduct[product];
-    return depots.value.filter(
-      (d) =>
-        !usedDepotIds.includes(d.id) ||
-        props.additionalShipmentItem.depotIds.includes(d.id),
-    );
+    return depots.value
+      .filter(
+        (d) =>
+          !usedDepotIds.includes(d.id) ||
+          props.additionalShipmentItem.depotIds.includes(d.id),
+      )
+      .sort((a, b) => a.rank - b.rank);
   }
 };
 

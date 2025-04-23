@@ -35,6 +35,9 @@ const headers = computed(() => {
   const baseHeaders = [{ title: "Produkt", key: "name" }];
   const depotHeaders = depots.value
     .filter((d) => d.active)
+    .sort((a, b) => {
+      return a.rank - b.rank;
+    })
     .map((depot) => ({
       title: depot.name,
       key: `depot_${depot.id}`,

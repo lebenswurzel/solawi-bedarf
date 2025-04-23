@@ -95,19 +95,20 @@ const getAvailableDepotsForProduct = (productId?: number) => {
           props.shipmentItem.depotIds.includes(d.id),
       )
       .filter((d) => deliveredByDepotId[d.id].valueForShipment > 0)
+      .sort((a, b) => a.rank - b.rank)
       .map((d) => ({ depot: d, delivered: deliveredByDepotId[d.id] }));
   }
 };
 
 const depotOptions = computed(() => {
-  return getAvailableDepotsForProduct(props.shipmentItem.productId)
-    ?.map((dd) => ({
+  return getAvailableDepotsForProduct(props.shipmentItem.productId)?.map(
+    (dd) => ({
       title: `${dd.depot.name} (${dd.delivered.actuallyDelivered / 100}/${
         dd.delivered.frequency
       })`,
       value: dd.depot.id,
-    }))
-    .sort((a, b) => a.title.localeCompare(b.title));
+    }),
+  );
 });
 
 const onProductIdChange = (val: number) => {
