@@ -36,7 +36,6 @@ const sortedDepots = computed(() => {
     .flatMap((productDeliveries) => Object.keys(productDeliveries))
     .map(Number)
     .filter((value, index, self) => self.indexOf(value) === index);
-  console.log(relevantDepots);
   return depots.value
     .sort((a, b) => {
       return a.rank - b.rank;
@@ -58,11 +57,6 @@ const headers = computed(() => {
 const getDeliveryInfo = (productId: number, depotId: number) => {
   const deliveryInfo = deliveredByProductIdDepotId.value[productId]?.[depotId];
   if (!deliveryInfo) {
-    console.log(
-      `depot ${depotId}`,
-      sortedDepots.value.find((d) => d.id == depotId),
-      deliveredByProductIdDepotId.value[productId],
-    );
     return { label: "", isMaximum: true };
   }
 
@@ -108,11 +102,6 @@ const deliveryInfoCache = computed(() => {
 </script>
 
 <template>
-  <div class="opacity-80">
-    Übersicht über bereits erfolgte Verteilungen in dieser Kategorie. In die
-    Berechnung mit einbezogen sind alle Lieferungen dieser Saison, die
-    veröffentlicht sind und deren Lieferdatum in der Vergangenheit liegt.
-  </div>
   <v-text-field
     prepend-inner-icon="mdi-magnify"
     v-model="search"

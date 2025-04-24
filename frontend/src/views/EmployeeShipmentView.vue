@@ -91,7 +91,9 @@ watch(activeConfigId, async () => {
     <v-card-title> {{ t.title }} </v-card-title>
     <v-tabs v-model="currentTab">
       <v-tab value="shipments">Verteilungen</v-tab>
-      <v-tab value="overview">Übersicht</v-tab>
+      <v-tab value="overview">
+        <v-badge content="neu" color="grey"> Übersicht&nbsp;&nbsp; </v-badge>
+      </v-tab>
     </v-tabs>
     <v-tabs-window v-model="currentTab">
       <v-tabs-window-item value="shipments">
@@ -163,6 +165,14 @@ watch(activeConfigId, async () => {
       </v-tabs-window-item>
       <v-tabs-window-item value="overview">
         <v-card-text>
+          <v-alert class="mb-2" type="info" variant="tonal">
+            Übersichten über bereits erfolgte Verteilungen in der jeweiligen
+            Kategorie. In die Berechnung mit einbezogen sind alle Lieferungen
+            dieser Saison, die veröffentlicht sind und deren Lieferdatum in der
+            Vergangenheit liegt. Hervorgehobenene Werte zeigen an, dass das
+            jeweilige Produkt in dem entsprechenden Depot bisher seltener
+            geliefert wurde als in anderen Depots.
+          </v-alert>
           <v-expansion-panels>
             <v-expansion-panel
               v-for="productCategory in productStore.productCategories"

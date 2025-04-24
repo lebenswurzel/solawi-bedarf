@@ -376,6 +376,7 @@ watchEffect(async () => {
               label="Beschreibung"
               v-model="editShipment.description"
               clearable
+              hint="Die Beschreibung wird den Ernteteilern in ihrer Verteilungsansicht angezeigt"
             ></v-text-field>
           </v-col>
           <v-col cols="2">
@@ -394,16 +395,24 @@ watchEffect(async () => {
           >Produkte ({{ editShipment.shipmentItems.length }})
         </div>
         <template v-if="showShipmentItems">
-          <div
+          <v-alert
+            type="info"
             class="text-caption"
+            density="compact"
+            variant="tonal"
             v-if="
               editShipment.shipmentItems.length &&
               Object.values(productVisibility).length
             "
           >
             Die Produkte sind standardmäßig ausgeblendet und können über die
-            nachfolgenden Schaltflächen eingeblendet werden
-          </div>
+            nachfolgenden Schaltflächen eingeblendet werden. Die
+            unterschiedliche Darstellung kennzeichnet Produkte aus
+            <v-chip color="green" size="small">Selbstanbau</v-chip> und
+            <v-chip color="blue" variant="outlined" size="small"
+              >Kooperationen</v-chip
+            >.
+          </v-alert>
           <v-chip-group
             :model-value="activeProducts"
             class="mb-2"
@@ -492,12 +501,12 @@ watchEffect(async () => {
             >mdi-expand-all</v-icon
           >Zusatzprodukte ({{ editShipment.additionalShipmentItems.length }})
         </div>
-        <div class="text-caption mb-2">
-          Als Zusatzprodukt gelten Lebensmittel, die nicht direkt bestellt
-          wurden, die aber verfügbar sind und frei an die Depots verteilt
-          werden.
-        </div>
         <v-list class="ma-0 pa-0" v-if="showAdditionalShipmentItems">
+          <div class="text-caption mb-2">
+            Als Zusatzprodukt gelten Lebensmittel, die nicht direkt bestellt
+            wurden, die aber verfügbar sind und frei an die Depots verteilt
+            werden.
+          </div>
           <v-list-item
             v-if="!editShipment.additionalShipmentItems.length"
             class="opacity-50"
