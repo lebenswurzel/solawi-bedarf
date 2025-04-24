@@ -28,6 +28,7 @@ import { prettyDate } from "../../../../shared/src/util/dateHelper";
 import { language } from "../../../../shared/src/lang/lang";
 import { escapeHtmlEntities } from "../../../../shared/src/util/stringHelper";
 import { useRoute } from "vue-router";
+import ApplicantMap from "./ApplicantMap.vue";
 
 const props = defineProps<{
   state: ApplicantState;
@@ -40,6 +41,8 @@ const search = ref<string>("");
 
 const uiFeedbackStore = useUiFeedback();
 const applicants = ref<Applicant[]>([]);
+
+const showMap = ref(false);
 
 const activate = async (id: number, name?: string) => {
   busy.value = true;
@@ -164,6 +167,12 @@ const tableItems = computed(() =>
           </v-col>
           <v-spacer></v-spacer>
           <v-col cols="auto">
+            <v-btn
+              icon="mdi-map-marker"
+              variant="plain"
+              @click="showMap = !showMap"
+              :color="showMap ? 'primary' : undefined"
+            ></v-btn>
             <v-menu v-if="props.state === ApplicantState.CONFIRMED">
               <template v-slot:activator="{ props }">
                 <v-btn variant="plain" icon="mdi-dots-vertical" v-bind="props">
@@ -180,7 +189,9 @@ const tableItems = computed(() =>
           </v-col>
         </v-row>
       </v-container>
+      <ApplicantMap v-if="showMap" :applicants="applicants" />
       <v-data-table
+        v-else
         :headers="tableColumns"
         :items="tableItems"
         :search="search"
