@@ -24,6 +24,8 @@ import "./styles/animation.css";
 import { createVuetify } from "vuetify";
 import { md3 } from "vuetify/blueprints";
 import { router } from "./routes";
+import { LMap, LTileLayer, LMarker, LPopup } from "@vue-leaflet/vue-leaflet";
+import "leaflet/dist/leaflet.css";
 
 const vuetify = createVuetify({
   blueprint: md3,
@@ -38,4 +40,11 @@ const app = createApp(App);
 app.use(vuetify);
 app.use(pinia);
 app.use(router);
+
+// Register Leaflet components
+app.component("LMap", LMap);
+app.component("LTileLayer", LTileLayer);
+app.component("LMarker", LMarker);
+app.component("LPopup", LPopup);
+
 app.mount("#app");
