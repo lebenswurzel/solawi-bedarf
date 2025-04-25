@@ -257,10 +257,9 @@ watch(relevantDepots, () => {
         layer-type="base"
         name="OpenStreetMap"
       />
-      <template v-for="marker in markers">
+      <template v-for="marker in markers" :key="marker.address">
         <LMarker
           v-if="selectedDepots.includes(marker?.depotId)"
-          :key="marker.address"
           :lat-lng="marker.position"
           :icon="createMarkerIcon(getDepotColor(marker.depotId))"
         >
@@ -288,12 +287,8 @@ watch(relevantDepots, () => {
           </LPopup>
         </LMarker>
       </template>
-      <template v-for="marker in depotMarkers">
-        <LMarker
-          v-if="selectedDepots.includes(marker.depotId)"
-          :key="`depot-${marker.depotId}`"
-          :lat-lng="marker.position"
-        >
+      <template v-for="marker in depotMarkers" :key="`depot-${marker.depotId}`">
+        <LMarker :lat-lng="marker.position">
           <LIcon
             :icon-url="''"
             :icon-size="[32, 32]"
