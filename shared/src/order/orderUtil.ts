@@ -26,11 +26,6 @@ export const calculateDeliveries = (
   targetDeliveries: number;
   actualDeliveries: number;
 } => {
-  console.log(
-    product.name,
-    deliveredByProductIdDepotId,
-    deliveredByProductIdDepotId[product.id]
-  );
   const deliveredByDepotId = deliveredByProductIdDepotId[product.id] ?? {};
   const depotIds = Object.keys(deliveredByDepotId).map((key) => parseInt(key));
   const targetDeliveries =
@@ -44,11 +39,11 @@ export const calculateDeliveries = (
       .map((d) => deliveredByDepotId[d.id].actuallyDelivered)
       .reduce((sum, value) => sum + value, 0) / 100;
 
-  console.log(product.name, depotIds, actualDeliveries, targetDeliveries);
-
   return {
     display: `${actualDeliveries}/${targetDeliveries}`,
-    percentage: Math.round((actualDeliveries / (targetDeliveries || 1)) * 100),
+    percentage: !targetDeliveries
+      ? 0
+      : Math.round((actualDeliveries / targetDeliveries) * 100),
     targetDeliveries,
     actualDeliveries,
   };

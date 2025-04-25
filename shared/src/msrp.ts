@@ -16,9 +16,18 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { appConfig } from "./config";
 import { ProductCategoryType, Unit, UserCategory } from "./enum";
-import { Msrp, OrderItem, Product, ProductsById } from "./types";
+import { calculateDeliveries } from "./order/orderUtil";
+import {
+  DeliveredByProductIdDepotId,
+  Depot,
+  Msrp,
+  OrderItem,
+  Product,
+  ProductId,
+  ProductsById,
+} from "./types";
 
-export const getBaseMsrp = (orderItem: OrderItem, product: Product) => {
+const getBaseMsrp = (orderItem: OrderItem, product: Product) => {
   if (product) {
     const conversion = product.unit == Unit.PIECE ? 100 : 100000; // convert ct/kg & ct/pcs too €/g & €/pcs
     return (
@@ -28,7 +37,7 @@ export const getBaseMsrp = (orderItem: OrderItem, product: Product) => {
   return 0;
 };
 
-export const adjustMsrp = (baseMsrp: number, category: UserCategory) => {
+const adjustMsrp = (baseMsrp: number, category: UserCategory) => {
   if (baseMsrp > 0) {
     return (
       appConfig.msrp[category].absolute +
@@ -41,11 +50,15 @@ export const adjustMsrp = (baseMsrp: number, category: UserCategory) => {
 export const getMsrp = (
   category: UserCategory,
   orderItems: OrderItem[],
-  productById: ProductsById
+  productById: ProductsById,
+  productMsrpWeights?: { [key: ProductId]: number }
 ): Msrp => {
+  console.log(productMsrpWeights);
   const baseMsrp = orderItems.reduce(
     (acc, orderItem) =>
-      acc + getBaseMsrp(orderItem, productById[orderItem.productId]),
+      acc +
+      getBaseMsrp(orderItem, productById[orderItem.productId]) *
+        (productMsrpWeights ? productMsrpWeights[orderItem.productId] : 1),
     0
   );
   const selfgrownMsrp = orderItems.reduce(
@@ -53,7 +66,8 @@ export const getMsrp = (
       acc +
       (productById[orderItem.productId]?.productCategoryType ==
       ProductCategoryType.SELFGROWN
-        ? getBaseMsrp(orderItem, productById[orderItem.productId])
+        ? getBaseMsrp(orderItem, productById[orderItem.productId]) *
+          (productMsrpWeights ? productMsrpWeights[orderItem.productId] : 1)
         : 0),
     0
   );
@@ -64,4 +78,20 @@ export const getMsrp = (
     selfgrown: adjustedSelfgrown,
     cooperation: adjustedTotal - adjustedSelfgrown,
   };
+};
+
+export const calculateMsrpWeights = (
+  productsById: ProductsById,
+  deliveredByProductIdDepotId: DeliveredByProductIdDepotId,
+  depots: Depot[]
+): { [key: ProductId]: number } => {
+  return Object.fromEntries(
+    Object.values(productsById).map((product) => [
+      product.id,
+      1 -
+        calculateDeliveries(product, deliveredByProductIdDepotId, depots)
+          .percentage /
+          100,
+    ])
+  );
 };

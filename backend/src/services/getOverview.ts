@@ -22,7 +22,7 @@ import { getUserFromContext } from "./getUserFromContext";
 import { AppDataSource } from "../database/database";
 import { MoreThan } from "typeorm";
 import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
-import { getMsrp } from "@lebenswurzel/solawi-bedarf-shared/src/msrp";
+import { calculateMsrpWeights, getMsrp } from "@lebenswurzel/solawi-bedarf-shared/src/msrp";
 import { bi } from "./bi/bi";
 import {
   getConfigIdFromQuery,

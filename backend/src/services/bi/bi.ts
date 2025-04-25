@@ -29,17 +29,33 @@ import { ProductCategory } from "../../database/ProductCategory";
 import { Shipment } from "../../database/Shipment";
 import { AppDataSource } from "../../database/database";
 import { getUserFromContext } from "../getUserFromContext";
-import { getConfigIdFromQuery } from "../../util/requestUtil";
+import {
+  getConfigIdFromQuery,
+  getNumericQueryParameter,
+} from "../../util/requestUtil";
+import { LessThan } from "typeorm";
 
 export const biHandler = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
 ) => {
   await getUserFromContext(ctx);
   const configId = getConfigIdFromQuery(ctx);
-  ctx.body = await bi(configId);
+  const includeShipmentsBeforeTimestamp = getNumericQueryParameter(
+    ctx.request.query,
+    "includeShipmentsBeforeTimestamp",
+    -1,
+  );
+  let includeShipmentsBeforeDate = undefined;
+  if (includeShipmentsBeforeTimestamp > 0) {
+    includeShipmentsBeforeDate = new Date(includeShipmentsBeforeTimestamp);
+  }
+  ctx.body = await bi(configId, includeShipmentsBeforeDate);
 };
 
-export const bi = async (configId: number) => {
+export const bi = async (
+  configId: number,
+  includeShipmentsBeforeDate?: Date,
+) => {
   const now = new Date();
   const depots = await AppDataSource.getRepository(Depot).find();
 
@@ -66,10 +82,19 @@ export const bi = async (configId: number) => {
     where: { requisitionConfigId: configId },
   });
 
+  let extendedShipmentsWhere = {};
+  console.log("validFrom", includeShipmentsBeforeDate);
+  if (includeShipmentsBeforeDate) {
+    extendedShipmentsWhere = {
+      validFrom: LessThan(includeShipmentsBeforeDate),
+    };
+  }
+
   const shipments = await AppDataSource.getRepository(Shipment).find({
     relations: { shipmentItems: true },
     where: {
       requisitionConfigId: configId,
+      ...extendedShipmentsWhere,
     },
   });
 
