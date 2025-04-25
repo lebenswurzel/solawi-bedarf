@@ -56,3 +56,43 @@ export const prettyDate = (
 export const prettyDateWithDayName = (date?: Date | string | null): string => {
   return date ? format(date, "EEEE, d. MMMM yyyy", { locale: de }) : "nie";
 };
+
+export const countThursdaysBetweenDates = (
+  earlierDate: Date,
+  laterDate: Date
+) => {
+  // Normalize dates to start of day to avoid time-of-day issues
+  const start = new Date(
+    earlierDate.getFullYear(),
+    earlierDate.getMonth(),
+    earlierDate.getDate()
+  );
+  const end = new Date(
+    laterDate.getFullYear(),
+    laterDate.getMonth(),
+    laterDate.getDate()
+  );
+
+  // Get day of week (0 = Sunday, 4 = Thursday)
+  const startDay = start.getDay();
+
+  // Calculate days until first Thursday
+  const daysToThursday = (4 - startDay + 7) % 7;
+
+  // Add days to get to first Thursday
+  const firstThursday = new Date(start);
+  firstThursday.setDate(start.getDate() + daysToThursday);
+
+  // If first Thursday is after end date, return 0
+  if (firstThursday > end) {
+    return 0;
+  }
+
+  // Calculate number of weeks between first Thursday and end date
+  const days = Math.floor(
+    (end.getTime() - firstThursday.getTime()) / (1000 * 60 * 60 * 24)
+  );
+  const thursdays = Math.floor(days / 7) + 1; // Add 1 to include first Thursday
+
+  return thursdays;
+};
