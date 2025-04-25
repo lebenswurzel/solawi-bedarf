@@ -58,8 +58,8 @@ export const prettyDateWithDayName = (date?: Date | string | null): string => {
 };
 
 export const countThursdaysBetweenDates = (
-  earlierDate: Date,
-  laterDate: Date
+  earlierDate: Date, // included if Thursday
+  laterDate: Date // excluded if Thursday
 ) => {
   // Normalize dates to start of day to avoid time-of-day issues
   const start = new Date(
@@ -92,7 +92,21 @@ export const countThursdaysBetweenDates = (
   const days = Math.floor(
     (end.getTime() - firstThursday.getTime()) / (1000 * 60 * 60 * 24)
   );
-  const thursdays = Math.floor(days / 7) + 1; // Add 1 to include first Thursday
+  const excludeLastThursday = end.getDay() == 4 ? 0 : 1;
+  const thursdays = Math.floor(days / 7) + excludeLastThursday; // don't include if end date is a Thursday
 
+  console.log(earlierDate, laterDate, thursdays);
   return thursdays;
+};
+
+export const getSameOrNextThursday = (date: Date): Date => {
+  const dateOnly = new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate()
+  );
+  const day = dateOnly.getDay();
+
+  const daysToThursday = (4 - day + 7) % 7;
+  return addDays(dateOnly, daysToThursday);
 };
