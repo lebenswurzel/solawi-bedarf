@@ -24,10 +24,8 @@ import { useConfigStore } from "../../store/configStore";
 import { getOrder } from "../../requests/shop";
 import { storeToRefs } from "pinia";
 import { useUserStore } from "../../store/userStore";
-
-const props = defineProps<{
-  applicants: Applicant[];
-}>();
+import { getApplicants } from "../../requests/applicant";
+import { ApplicantState } from "../../../../shared/src/enum";
 
 const mapCenter = ref([51.0504, 13.7373] as [number, number]); // Center of Dresden
 const zoom = ref(10);
@@ -42,6 +40,7 @@ const activeUsers = ref<Applicant[]>([]);
 const processedUsers = ref(0);
 const isProcessing = ref(false);
 const isFullscreen = ref(false);
+const allApplicants = ref<Applicant[]>([]);
 
 const mapRef = ref<InstanceType<typeof LMap> | null>(null);
 
@@ -115,9 +114,11 @@ onMounted(async () => {
   isProcessing.value = true;
   processedUsers.value = 0;
 
+  allApplicants.value = await getApplicants(ApplicantState.CONFIRMED);
+
   // Filter applicants to only those with active orders
   const activeApplicants = await Promise.all(
-    props.applicants.map(async (applicant) => {
+    allApplicants.value.map(async (applicant) => {
       processedUsers.value++;
       // Find matching user by name
       const matchingUser = userOptions.value.find(
@@ -186,8 +187,9 @@ onMounted(async () => {
 
 <template>
   <div class="map-container" :class="{ fullscreen: isFullscreen }">
-    <div v-if="isProcessing" class="loading-overlay" color="blue">
-      Lade aktive Nutzer... ({{ processedUsers }} von {{ applicants.length }})
+    <div v-if="isProcessing" class="loading-overlay">
+      Lade aktive Nutzer... ({{ processedUsers }} von
+      {{ allApplicants.length }})
     </div>
     <div v-else-if="loadingProgress" class="loading-overlay">
       {{ loadingProgress }}
@@ -195,7 +197,7 @@ onMounted(async () => {
     <v-btn
       icon="mdi-fullscreen"
       variant="plain"
-      class="fullscreen-btn mt-10"
+      class="fullscreen-btn"
       @click="toggleFullscreen"
     ></v-btn>
     <LMap
@@ -245,8 +247,9 @@ onMounted(async () => {
   left: 0;
   width: 100vw;
   height: 100vh;
-  z-index: 9999;
+  z-index: 999;
   margin: 0;
+  margin-top: 64px;
 }
 
 .map {
@@ -255,6 +258,7 @@ onMounted(async () => {
 }
 
 .loading-overlay {
+  color: #333;
   position: absolute;
   top: 10px;
   left: 50%;
