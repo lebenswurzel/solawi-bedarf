@@ -20,6 +20,7 @@ import { de } from "date-fns/locale";
 import { computed } from "vue";
 import { useConfigStore } from "../../store/configStore";
 import { storeToRefs } from "pinia";
+import { countThursdaysBetweenDates } from "../../../../shared/src/util/dateHelper";
 
 const configStore = useConfigStore();
 const { config } = storeToRefs(configStore);
@@ -50,18 +51,18 @@ const endDate = computed(() => {
   return props.validTo || configStore.config?.validTo;
 });
 
-const weeks = computed(() => {
+const deliveries = computed(() => {
   if (endDate.value && beginDate.value) {
-    return Math.floor(
-      (endDate.value.getTime() - beginDate.value.getTime()) /
-        1000 /
-        60 /
-        60 /
-        24 /
-        7,
-    );
+    return countThursdaysBetweenDates(beginDate.value, endDate.value);
   }
   return 0;
+});
+
+const deliveriesBeforeFirstDelivery = computed(() => {
+  if (!beginDate.value) {
+    return 0;
+  }
+  return countThursdaysBetweenDates(new Date(), beginDate.value);
 });
 </script>
 <template>
@@ -70,8 +71,14 @@ const weeks = computed(() => {
       >Gültigkeitszeitraum der Bedarfsanmeldung</v-card-subtitle
     >
     <v-card-text class="py-1"
-      >{{ prettyDate(beginDate) }} bis {{ prettyDate(endDate) }} (ca.
-      {{ weeks }} Wochen)</v-card-text
+      >{{ prettyDate(beginDate) }} bis {{ prettyDate(endDate) }} ({{
+        deliveries
+      }}
+      Verteilungen)</v-card-text
     >
+    <v-card-text class="py-1" v-if="deliveriesBeforeFirstDelivery > 0"
+      >Es stehen noch {{ deliveriesBeforeFirstDelivery }} Verteilungen vor
+      deiner ersten Verteilung aus.
+    </v-card-text>
   </v-card>
 </template>

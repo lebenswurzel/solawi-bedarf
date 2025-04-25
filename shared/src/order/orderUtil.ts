@@ -26,6 +26,11 @@ export const calculateDeliveries = (
   targetDeliveries: number;
   actualDeliveries: number;
 } => {
+  console.log(
+    product.name,
+    deliveredByProductIdDepotId,
+    deliveredByProductIdDepotId[product.id]
+  );
   const deliveredByDepotId = deliveredByProductIdDepotId[product.id] ?? {};
   const depotIds = Object.keys(deliveredByDepotId).map((key) => parseInt(key));
   const targetDeliveries =
@@ -33,10 +38,13 @@ export const calculateDeliveries = (
       .filter((d) => depotIds.includes(d.id))
       .filter((d) => deliveredByDepotId[d.id].valueForShipment > 0).length *
     product.frequency;
-  const actualDeliveries = depots
-    .filter((d) => depotIds.includes(d.id))
-    .map((d) => deliveredByDepotId[d.id].deliveryCount)
-    .reduce((sum, value) => sum + value, 0);
+  const actualDeliveries =
+    depots
+      .filter((d) => depotIds.includes(d.id))
+      .map((d) => deliveredByDepotId[d.id].actuallyDelivered)
+      .reduce((sum, value) => sum + value, 0) / 100;
+
+  console.log(product.name, depotIds, actualDeliveries, targetDeliveries);
 
   return {
     display: `${actualDeliveries}/${targetDeliveries}`,

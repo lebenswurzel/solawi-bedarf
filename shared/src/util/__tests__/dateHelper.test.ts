@@ -1,0 +1,191 @@
+/*
+This file is part of the SoLawi Bedarf app
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+import { describe, it, expect } from "vitest";
+import {
+  addYears,
+  addDays,
+  addWeeks,
+  addMonths,
+  formatDateForFilename,
+  prettyDate,
+  prettyDateWithDayName,
+  countThursdaysBetweenDates,
+} from "../dateHelper";
+
+describe("dateHelper", () => {
+  describe("addYears", () => {
+    it("should add positive years", () => {
+      const date = new Date("2024-01-01");
+      const result = addYears(date, 2);
+      expect(result.getFullYear()).toBe(2026);
+    });
+
+    it("should add negative years", () => {
+      const date = new Date("2024-01-01");
+      const result = addYears(date, -2);
+      expect(result.getFullYear()).toBe(2022);
+    });
+  });
+
+  describe("addDays", () => {
+    it("should add positive days", () => {
+      const date = new Date("2024-01-01");
+      const result = addDays(date, 5);
+      expect(result.getDate()).toBe(6);
+    });
+
+    it("should add negative days", () => {
+      const date = new Date("2024-01-10");
+      const result = addDays(date, -5);
+      expect(result.getDate()).toBe(5);
+    });
+
+    it("should handle month boundaries", () => {
+      const date = new Date("2024-01-31");
+      const result = addDays(date, 1);
+      expect(result.getMonth()).toBe(1); // February
+      expect(result.getDate()).toBe(1);
+    });
+  });
+
+  describe("addWeeks", () => {
+    it("should add positive weeks", () => {
+      const date = new Date("2024-01-01");
+      const result = addWeeks(date, 2);
+      expect(result.getDate()).toBe(15);
+    });
+
+    it("should add negative weeks", () => {
+      const date = new Date("2024-01-15");
+      const result = addWeeks(date, -2);
+      expect(result.getDate()).toBe(1);
+    });
+  });
+
+  describe("addMonths", () => {
+    it("should add positive months", () => {
+      const date = new Date("2024-01-01");
+      const result = addMonths(date, 2);
+      expect(result.getMonth()).toBe(2); // March
+    });
+
+    it("should add negative months", () => {
+      const date = new Date("2024-03-01");
+      const result = addMonths(date, -2);
+      expect(result.getMonth()).toBe(0); // January
+    });
+
+    it("should handle year boundaries", () => {
+      const date = new Date("2024-12-01");
+      const result = addMonths(date, 1);
+      expect(result.getFullYear()).toBe(2025);
+      expect(result.getMonth()).toBe(0); // January
+    });
+  });
+
+  describe("formatDateForFilename", () => {
+    it("should format date correctly", () => {
+      const date = new Date("2024-01-01T12:34:56");
+      const result = formatDateForFilename(date);
+      expect(result).toBe("2024-01-01 12_34_56");
+    });
+  });
+
+  describe("prettyDate", () => {
+    it("should format date with seconds", () => {
+      const date = new Date("2024-01-01T12:34:56");
+      const result = prettyDate(date, true);
+      expect(result).toContain("1. Jan. 2024");
+      expect(result).toContain(":56");
+    });
+
+    it("should format date without seconds", () => {
+      const date = new Date("2024-01-01T12:34:56");
+      const result = prettyDate(date);
+      expect(result).toContain("1. Jan. 2024");
+      expect(result).not.toContain(":56");
+    });
+
+    it("should handle null input", () => {
+      const result = prettyDate(null);
+      expect(result).toBe("nie");
+    });
+  });
+
+  describe("prettyDateWithDayName", () => {
+    it("should format date with day name", () => {
+      const date = new Date("2024-01-01");
+      const result = prettyDateWithDayName(date);
+      expect(result).toBe("Montag, 1. Januar 2024");
+    });
+
+    it("should handle null input", () => {
+      const result = prettyDateWithDayName(null);
+      expect(result).toBe("nie");
+    });
+  });
+
+  describe("countThursdaysBetweenDates", () => {
+    it("should count Thursdays between dates", () => {
+      const start = new Date("2024-01-01"); // Monday
+      const end = new Date("2024-01-31"); // Wednesday
+      const result = countThursdaysBetweenDates(start, end);
+      expect(result).toBe(4); // Jan 4, 11, 18, 25
+    });
+
+    it("should count Thursdays between dates, starting on Thursday", () => {
+      const start = new Date("2024-01-04"); // Thursday
+      const end = new Date("2024-01-31"); // Wednesday
+      const result = countThursdaysBetweenDates(start, end);
+      expect(result).toBe(4); // Jan 4, 11, 18, 25
+    });
+
+    it("should count Thursdays between dates, ending on Thursday", () => {
+      const start = new Date("2024-01-01"); // Monday
+      const end = new Date("2024-01-25"); // Thursday
+      const result = countThursdaysBetweenDates(start, end);
+      expect(result).toBe(4); // Jan 4, 11, 18, 25
+    });
+
+    it("should count Thursdays between dates, starting on Friday", () => {
+      const start = new Date("2024-01-05"); // Friday
+      const end = new Date("2024-01-25"); // Thursday
+      const result = countThursdaysBetweenDates(start, end);
+      expect(result).toBe(3); // Jan 11, 18, 25
+    });
+
+    it("should return 0 if no Thursdays in range", () => {
+      const start = new Date("2024-01-01"); // Monday
+      const end = new Date("2024-01-03"); // Wednesday
+      const result = countThursdaysBetweenDates(start, end);
+      expect(result).toBe(0);
+    });
+
+    it("should handle same day", () => {
+      const date = new Date("2024-01-04"); // Thursday
+      const result = countThursdaysBetweenDates(date, date);
+      expect(result).toBe(1);
+    });
+
+    it("should handle dates in reverse order", () => {
+      const start = new Date("2024-01-31"); // Wednesday
+      const end = new Date("2024-01-01"); // Monday
+      const result = countThursdaysBetweenDates(start, end);
+      expect(result).toBe(0);
+    });
+  });
+});
