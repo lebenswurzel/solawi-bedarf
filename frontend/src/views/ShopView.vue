@@ -33,6 +33,8 @@ import { useRoute } from "vue-router";
 import { router } from "../routes.ts";
 import SeasonStatusElement from "../components/season/SeasonStatusElement.vue";
 import { getSeasonPhase } from "@lebenswurzel/solawi-bedarf-shared/src/util/configHelper.ts";
+import OrderRangeDisplay from "../components/shop/OrderRangeDisplay.vue";
+import MsrpDisplay from "../components/shop/MsrpDisplay.vue";
 
 const t = language.pages.shop;
 
@@ -42,7 +44,7 @@ const userStore = useUserStore();
 const orderStore = useOrderStore();
 const biStore = useBIStore();
 
-const { depot, msrp, submit } = storeToRefs(biStore);
+const { depot, submit } = storeToRefs(biStore);
 const { userId } = storeToRefs(userStore);
 const { productCategories } = storeToRefs(productStore);
 const { activeConfigId, config } = storeToRefs(configStore);
@@ -174,26 +176,20 @@ const orderPhase = computed(() => {
 
   <v-card class="ma-2">
     <v-card-title>{{ t.cards.products.title }} für <SeasonText /></v-card-title>
-    <v-card-subtitle class="text-wrap">
-      {{
-        interpolate(t.cards.products.msrp, {
-          total: msrp.total.toString(),
-          selfgrown: msrp.selfgrown.toString(),
-          cooperation: msrp.cooperation.toString(),
-        })
-      }}
-      <v-tooltip :text="t.cards.products.msrpTooltip" open-on-click>
-        <template v-slot:activator="{ props }">
-          <v-icon v-bind="props">mdi-information-outline</v-icon>
-        </template>
-      </v-tooltip>
-      <br />
-      {{
-        interpolate(t.cards.products.offer, {
-          offer: orderStore.offer.toString(),
-        })
-      }}
-    </v-card-subtitle>
+    <v-container fluid class="py-0">
+      <v-row dense>
+        <v-col cols="12" sm="6">
+          <v-card-text class="pa-1">
+            <MsrpDisplay :offer="orderStore.offer" />
+          </v-card-text>
+        </v-col>
+        <v-col cols="12" sm="6">
+          <v-card-text class="pa-1">
+            <OrderRangeDisplay :validFrom="orderStore.validFrom" />
+          </v-card-text>
+        </v-col>
+      </v-row>
+    </v-container>
     <v-card-text>
       <v-expansion-panels class="pa-0">
         <v-expansion-panel
