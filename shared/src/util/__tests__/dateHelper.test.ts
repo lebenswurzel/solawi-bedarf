@@ -60,6 +60,14 @@ describe("dateHelper", () => {
       expect(result.getMonth()).toBe(1); // February
       expect(result.getDate()).toBe(1);
     });
+
+    it("should handle year boundaries", () => {
+      const date = new Date("2024-01-02");
+      const result = addDays(date, -3);
+      expect(result.getMonth()).toBe(11); // December
+      expect(result.getDate()).toBe(30);
+      expect(result.getFullYear()).toBe(2023);
+    });
   });
 
   describe("addWeeks", () => {
@@ -154,18 +162,18 @@ describe("dateHelper", () => {
       expect(result).toBe(4); // Jan 4, 11, 18, 25
     });
 
-    it("should count Thursdays between dates, ending on Thursday", () => {
+    it("should count Thursdays between dates, ending on Thursday (excluded!)", () => {
       const start = new Date("2024-01-01"); // Monday
       const end = new Date("2024-01-25"); // Thursday
       const result = countThursdaysBetweenDates(start, end);
-      expect(result).toBe(4); // Jan 4, 11, 18, 25
+      expect(result).toBe(3); // Jan 4, 11, 18
     });
 
     it("should count Thursdays between dates, starting on Friday", () => {
       const start = new Date("2024-01-05"); // Friday
       const end = new Date("2024-01-25"); // Thursday
       const result = countThursdaysBetweenDates(start, end);
-      expect(result).toBe(3); // Jan 11, 18, 25
+      expect(result).toBe(2); // Jan 11, 18
     });
 
     it("should return 0 if no Thursdays in range", () => {
@@ -175,10 +183,24 @@ describe("dateHelper", () => {
       expect(result).toBe(0);
     });
 
-    it("should handle same day", () => {
+    it("should return 1 if start and end is Thursdays, one week apart", () => {
+      const start = new Date("2024-01-04"); // Thursday
+      const end = new Date("2024-01-11"); // Thursday
+      const result = countThursdaysBetweenDates(start, end);
+      expect(result).toBe(1);
+    });
+
+    it("should return 0 if no Thursdays in range and end is Thursday", () => {
+      const start = new Date("2024-01-01"); // Monday
+      const end = new Date("2024-01-04"); // Thursday
+      const result = countThursdaysBetweenDates(start, end);
+      expect(result).toBe(0);
+    });
+
+    it("should handle same day -> excluded", () => {
       const date = new Date("2024-01-04"); // Thursday
       const result = countThursdaysBetweenDates(date, date);
-      expect(result).toBe(1);
+      expect(result).toBe(0);
     });
 
     it("should handle dates in reverse order", () => {
