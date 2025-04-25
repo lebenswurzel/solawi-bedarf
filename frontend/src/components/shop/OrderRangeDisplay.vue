@@ -20,7 +20,10 @@ import { de } from "date-fns/locale";
 import { computed } from "vue";
 import { useConfigStore } from "../../store/configStore";
 import { storeToRefs } from "pinia";
-import { countThursdaysBetweenDates } from "../../../../shared/src/util/dateHelper";
+import {
+  countThursdaysBetweenDates,
+  getSameOrNextThursday,
+} from "../../../../shared/src/util/dateHelper";
 
 const configStore = useConfigStore();
 const { config } = storeToRefs(configStore);
@@ -37,12 +40,12 @@ const prettyDate = (date?: Date | string | null): string => {
   return "nie";
 };
 
-const beginDate = computed(() => {
+const firstThursdayOfDelivery = computed(() => {
   if (
     props.validFrom &&
     props.validFrom.getTime() > (config.value?.validFrom?.getTime() || 0)
   ) {
-    return props.validFrom || config.value?.validTo;
+    return getSameOrNextThursday(props.validFrom);
   }
   return config.value?.validFrom;
 });
@@ -52,33 +55,49 @@ const endDate = computed(() => {
 });
 
 const deliveries = computed(() => {
-  if (endDate.value && beginDate.value) {
-    return countThursdaysBetweenDates(beginDate.value, endDate.value);
+  if (endDate.value && firstThursdayOfDelivery.value) {
+    return countThursdaysBetweenDates(
+      firstThursdayOfDelivery.value,
+      endDate.value,
+    );
   }
   return 0;
 });
 
+const isFirstDeliveryInThePast = computed(() => {
+  if (!firstThursdayOfDelivery.value) {
+    return false;
+  }
+  return new Date().getTime() - firstThursdayOfDelivery.value.getTime() > 0;
+});
+
 const deliveriesBeforeFirstDelivery = computed(() => {
-  if (!beginDate.value) {
+  if (!firstThursdayOfDelivery.value) {
     return 0;
   }
-  return countThursdaysBetweenDates(new Date(), beginDate.value);
+  return countThursdaysBetweenDates(new Date(), firstThursdayOfDelivery.value);
 });
 </script>
 <template>
   <v-card variant="outlined" color="primary">
     <v-card-subtitle class="pt-1"
-      >Gültigkeitszeitraum der Bedarfsanmeldung</v-card-subtitle
+      ><strong
+        >Gültigkeitszeitraum der Bedarfsanmeldung</strong
+      ></v-card-subtitle
     >
     <v-card-text class="py-1"
-      >{{ prettyDate(beginDate) }} bis {{ prettyDate(endDate) }} ({{
-        deliveries
-      }}
-      Verteilungen)</v-card-text
+      >{{ prettyDate(firstThursdayOfDelivery) }} bis
+      {{ prettyDate(endDate) }} ({{ deliveries }} Verteilungen)</v-card-text
     >
     <v-card-text class="py-1" v-if="deliveriesBeforeFirstDelivery > 0"
-      >Es stehen noch {{ deliveriesBeforeFirstDelivery }} Verteilungen vor
-      deiner ersten Verteilung aus.
+      >Es stehen noch {{ deliveriesBeforeFirstDelivery }} Lieferungen vor deiner
+      ersten Verteilung aus. Der genaue Orientierungswert wird erst kurz vor
+      deiner ersten Lieferung berechnet.
     </v-card-text>
+    <v-card-text class="py-1" v-else-if="!isFirstDeliveryInThePast"
+      >Deine erste Lieferung steht kurz bevor. Dein Orientierungswert wurde auf
+      Grundlage der in den verbleibenden Lieferungen geschätzten Liefermengen
+      berechnet.</v-card-text
+    >
   </v-card>
 </template>

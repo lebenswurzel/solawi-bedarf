@@ -32,7 +32,8 @@ const props = defineProps<{
 <template>
   <v-card variant="outlined" color="blue-grey">
     <v-card-subtitle class="pt-1 text-wrap"
-      >Zusammensetzung des Orientierungswerts (Werte auf volle Euros gerundet)
+      ><strong>Zusammensetzung des Orientierungswerts</strong> (Werte auf volle
+      Euros gerundet)
 
       <v-tooltip :text="t.cards.products.msrpTooltip" open-on-click>
         <template v-slot:activator="{ props }">
