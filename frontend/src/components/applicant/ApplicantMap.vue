@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { Applicant } from "../../../../shared/src/types";
 import { LMap, LTileLayer, LMarker, LPopup } from "@vue-leaflet/vue-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -50,6 +50,8 @@ const isProcessing = ref(false);
 const isFullscreen = ref(false);
 const allApplicants = ref<Applicant[]>([]);
 const failedAddressQueries = ref<Marker[]>([]);
+const selectedDepots = ref<number[]>([]);
+const selectAllDepots = ref<boolean>(true);
 
 const mapRef = ref<InstanceType<typeof LMap> | null>(null);
 
@@ -64,14 +66,12 @@ const markerColors = [
   "grey",
   "black",
   "gold",
-  "cadetblue",
-  "darkred",
-  "darkgreen",
 ];
 
 // Get color based on depot ID
 const getDepotColor = (depotId: number): string => {
-  return markerColors[depotId % markerColors.length];
+  const depotIndex = relevantDepots.value.map((d) => d.id).indexOf(depotId);
+  return markerColors[depotIndex % markerColors.length];
 };
 
 const createMarkerIcon = (color: string) => {
@@ -97,6 +97,14 @@ const markers = computed((): Marker[] => {
         "Unbekannt",
     };
   });
+});
+
+const relevantDepots = computed(() => {
+  const dd = depots.value.filter((d) =>
+    markers.value.map((m) => m.depotId).includes(d.id),
+  );
+  console.log(dd, dd[0]?.name);
+  return [...dd];
 });
 
 const getCachedCoordinates = (address: string): LatLngTuple | null => {
@@ -171,14 +179,12 @@ onMounted(async () => {
         marker.position = cachedCoords;
         continue;
       }
-
       const response = await fetch(
         `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
           marker.address,
         )}`,
       );
       const data = await response.json();
-      console.log(data);
       if (data && data[0]) {
         const coords: LatLngTuple = [
           parseFloat(data[0].lat),
@@ -187,7 +193,6 @@ onMounted(async () => {
         marker.position = coords;
         cacheCoordinates(marker.address, coords);
       } else {
-        console.log("failed", marker);
         failedAddressQueries.value.push(marker);
       }
     } catch (error) {
@@ -195,6 +200,20 @@ onMounted(async () => {
     }
   }
   loadingProgress.value = null;
+});
+
+const toggleAllDepots = () => {
+  if (selectAllDepots.value) {
+    selectedDepots.value = [];
+    selectAllDepots.value = false;
+  } else {
+    selectedDepots.value = [...relevantDepots.value.map((d) => d.id)];
+    selectAllDepots.value = true;
+  }
+};
+
+watch(relevantDepots, () => {
+  selectedDepots.value = relevantDepots.value.map((d) => d.id);
 });
 </script>
 
@@ -225,25 +244,50 @@ onMounted(async () => {
         layer-type="base"
         name="OpenStreetMap"
       />
-      <LMarker
-        v-for="marker in markers"
-        :key="marker.address"
-        :lat-lng="marker.position"
-        :icon="createMarkerIcon(getDepotColor(marker.depotId))"
-      >
-        <LPopup>
-          <div>
-            <strong>{{ marker.name }}</strong>
-            <br />
-            {{ marker.address }}
-            <br />
-            <strong>Depot:</strong> {{ marker.depotName }}
-          </div>
-        </LPopup>
-      </LMarker>
+      <template v-for="marker in markers">
+        <LMarker
+          v-if="selectedDepots.includes(marker?.depotId)"
+          :key="marker.address"
+          :lat-lng="marker.position"
+          :icon="createMarkerIcon(getDepotColor(marker.depotId))"
+        >
+          <LPopup>
+            <div>
+              <strong>{{ marker.name }}</strong>
+              <br />
+              {{ marker.address }}
+              <br />
+              <strong>Depot:</strong> {{ marker.depotName }}
+            </div>
+          </LPopup>
+        </LMarker>
+      </template>
     </LMap>
   </div>
-  <v-alert color="warning" title="Fehlgeschlagene Addressabfragen">
+  <v-select
+    v-model="selectedDepots"
+    :items="relevantDepots"
+    multiple
+    item-title="name"
+    item-value="id"
+    density="compact"
+  >
+    <template v-slot:prepend-item>
+      <v-list-item title="Alle auswählen" @click="toggleAllDepots">
+        <template v-slot:prepend>
+          <v-checkbox-btn :model-value="selectAllDepots"></v-checkbox-btn>
+        </template>
+      </v-list-item>
+
+      <v-divider class="mt-2"></v-divider>
+    </template>
+  </v-select>
+  <v-alert
+    v-if="failedAddressQueries.length > 0"
+    color="warning"
+    title="Fehlgeschlagene Addressabfragen"
+    class="text-caption"
+  >
     <p v-for="failedQuery in failedAddressQueries">
       {{ failedQuery.name }}: {{ failedQuery.address }}
     </p>
