@@ -26,6 +26,7 @@ import { storeToRefs } from "pinia";
 import { useUserStore } from "../../store/userStore";
 import { getApplicants } from "../../requests/applicant";
 import { ApplicantState } from "../../../../shared/src/enum";
+import { getAddressCoordinates } from "../../lib/addressUtils";
 
 const mapCenter = ref([51.0504, 13.7373] as [number, number]); // Center of Dresden
 const zoom = ref(10);
@@ -84,6 +85,43 @@ const createMarkerIcon = (color: string) => {
   });
 };
 
+const depotMarkers = ref<Marker[]>([]);
+
+const createDepotMarkerIcon = () => {
+  return icon({
+    iconUrl:
+      "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-black.png",
+    shadowUrl:
+      "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+  });
+};
+
+const updateDepotMarkers = async () => {
+  console.log("updateDepotMarkers");
+  const markers: Marker[] = [];
+  for (const depot of relevantDepots.value) {
+    console.log(depot.address);
+    if (depot.address) {
+      const coords = await getAddressCoordinates(depot.address);
+      const marker = {
+        position: coords || [0, 0],
+        address: depot.address,
+        name: depot.name,
+        depotId: depot.id,
+        depotName: depot.name,
+      };
+      if (coords) {
+        markers.push(marker);
+      } else {
+        failedAddressQueries.value.push(marker);
+      }
+    }
+  }
+  depotMarkers.value = markers;
+};
+
 const markers = computed((): Marker[] => {
   return activeUsers.value.map((applicant) => {
     const address = `${applicant.address.street}, ${applicant.address.postalcode} ${applicant.address.city}, Germany`;
@@ -107,18 +145,6 @@ const relevantDepots = computed(() => {
   return [...dd];
 });
 
-const getCachedCoordinates = (address: string): LatLngTuple | null => {
-  const cached = localStorage.getItem(`geo_${address}`);
-  if (cached) {
-    return JSON.parse(cached);
-  }
-  return null;
-};
-
-const cacheCoordinates = (address: string, coordinates: LatLngTuple) => {
-  localStorage.setItem(`geo_${address}`, JSON.stringify(coordinates));
-};
-
 const toggleFullscreen = () => {
   isFullscreen.value = !isFullscreen.value;
   // Wait for the transition to complete before triggering resize
@@ -126,6 +152,10 @@ const toggleFullscreen = () => {
     mapRef.value?.leafletObject?.invalidateSize();
   }, 300);
 };
+
+watch(relevantDepots, () => {
+  updateDepotMarkers();
+});
 
 onMounted(async () => {
   isProcessing.value = true;
@@ -173,25 +203,9 @@ onMounted(async () => {
       current++;
       loadingProgress.value = `Lade Adresse ${current} von ${total}`;
 
-      // Check cache first
-      const cachedCoords = getCachedCoordinates(marker.address);
-      if (cachedCoords) {
-        marker.position = cachedCoords;
-        continue;
-      }
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-          marker.address,
-        )}`,
-      );
-      const data = await response.json();
-      if (data && data[0]) {
-        const coords: LatLngTuple = [
-          parseFloat(data[0].lat),
-          parseFloat(data[0].lon),
-        ];
+      const coords = await getAddressCoordinates(marker.address);
+      if (coords) {
         marker.position = coords;
-        cacheCoordinates(marker.address, coords);
       } else {
         failedAddressQueries.value.push(marker);
       }
@@ -199,6 +213,8 @@ onMounted(async () => {
       console.error("Error geocoding address:", error);
     }
   }
+
+  await updateDepotMarkers();
   loadingProgress.value = null;
 });
 
@@ -258,6 +274,22 @@ watch(relevantDepots, () => {
               {{ marker.address }}
               <br />
               <strong>Depot:</strong> {{ marker.depotName }}
+            </div>
+          </LPopup>
+        </LMarker>
+      </template>
+      <template v-for="marker in depotMarkers">
+        <LMarker
+          v-if="selectedDepots.includes(marker.depotId)"
+          :key="`depot-${marker.depotId}`"
+          :lat-lng="marker.position"
+          :icon="createDepotMarkerIcon()"
+        >
+          <LPopup>
+            <div>
+              <strong>Depot: {{ marker.name }}</strong>
+              <br />
+              {{ marker.address }}
             </div>
           </LPopup>
         </LMarker>
