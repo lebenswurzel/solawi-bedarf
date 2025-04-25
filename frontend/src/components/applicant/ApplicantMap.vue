@@ -41,6 +41,7 @@ interface Marker {
   position: LatLngTuple;
   address: string;
   name: string;
+  realName: string;
   depotId: number;
   depotName: string;
 }
@@ -103,6 +104,7 @@ const updateDepotMarkers = async () => {
         position: coords || [0, 0],
         address: depot.address,
         name: depot.name,
+        realName: depot.name,
         depotId: depot.id,
         depotName: depot.name,
       };
@@ -122,7 +124,8 @@ const markers = computed((): Marker[] => {
     return {
       position: [0, 0] as LatLngTuple, // Will be updated after geocoding
       address,
-      name: `${applicant.address.firstname} ${applicant.address.lastname} - ${applicant.name}`,
+      name: applicant.name || "",
+      realName: `${applicant.address.firstname} ${applicant.address.lastname}`,
       depotId: (applicant as any).depotId,
       depotName:
         depots.value.find((d) => d.id === (applicant as any).depotId)?.name ||
@@ -263,6 +266,19 @@ watch(relevantDepots, () => {
         >
           <LPopup>
             <div>
+              <v-btn
+                icon="mdi-account-arrow-right"
+                variant="plain"
+                :to="{ path: `/adminregister/confirmed/${marker.name}` }"
+                density="compact"
+              ></v-btn>
+              <strong>{{ marker.realName }} - </strong>
+              <v-btn
+                icon="mdi-account-arrow-right"
+                variant="plain"
+                :to="{ path: `/adminusers/${marker.name}` }"
+                density="compact"
+              ></v-btn>
               <strong>{{ marker.name }}</strong>
               <br />
               {{ marker.address }}
@@ -330,7 +346,15 @@ watch(relevantDepots, () => {
     class="text-caption"
   >
     <p v-for="failedQuery in failedAddressQueries">
-      {{ failedQuery.name }}: {{ failedQuery.address }}
+      <v-btn
+        v-if="failedQuery.name.indexOf('LW') == 0"
+        icon="mdi-account-arrow-right"
+        variant="plain"
+        :to="{ path: `/adminregister/confirmed/${failedQuery.name}` }"
+        density="compact"
+      ></v-btn>
+      {{ failedQuery.realName }} - {{ failedQuery.name }}:
+      {{ failedQuery.address }}
     </p>
   </v-alert>
 </template>
