@@ -17,7 +17,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from "vue";
 import { Applicant } from "../../../../shared/src/types";
-import { LMap, LTileLayer, LMarker, LPopup } from "@vue-leaflet/vue-leaflet";
+import {
+  LMap,
+  LTileLayer,
+  LMarker,
+  LPopup,
+  LIcon,
+} from "@vue-leaflet/vue-leaflet";
 import "leaflet/dist/leaflet.css";
 import { icon, LatLngTuple } from "leaflet";
 import { useConfigStore } from "../../store/configStore";
@@ -87,22 +93,10 @@ const createMarkerIcon = (color: string) => {
 
 const depotMarkers = ref<Marker[]>([]);
 
-const createDepotMarkerIcon = () => {
-  return icon({
-    iconUrl:
-      "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-black.png",
-    shadowUrl:
-      "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-  });
-};
-
 const updateDepotMarkers = async () => {
   console.log("updateDepotMarkers");
   const markers: Marker[] = [];
   for (const depot of relevantDepots.value) {
-    console.log(depot.address);
     if (depot.address) {
       const coords = await getAddressCoordinates(depot.address);
       const marker = {
@@ -283,8 +277,23 @@ watch(relevantDepots, () => {
           v-if="selectedDepots.includes(marker.depotId)"
           :key="`depot-${marker.depotId}`"
           :lat-lng="marker.position"
-          :icon="createDepotMarkerIcon()"
         >
+          <LIcon
+            :icon-url="''"
+            :icon-size="[32, 32]"
+            :icon-anchor="[16, 16]"
+            class="depot-icon"
+          >
+            <template #default>
+              <div class="depot-marker">
+                <v-icon
+                  icon="mdi-store"
+                  :color="getDepotColor(marker.depotId)"
+                  size="32"
+                ></v-icon>
+              </div>
+            </template>
+          </LIcon>
           <LPopup>
             <div>
               <strong>Depot: {{ marker.name }}</strong>
