@@ -23,6 +23,7 @@ import { useConfigStore } from "../store/configStore.ts";
 import { useUserStore } from "../store/userStore.ts";
 import { language } from "../../../shared/src/lang/lang.ts";
 import OrderStatistics from "../components/statistics/OrderStatistics.vue";
+import ApplicantMap from "../components/applicant/ApplicantMap.vue";
 
 const configStore = useConfigStore();
 const biStore = useBIStore();
@@ -50,6 +51,11 @@ onMounted(async () => {
 
         {{ language.pages.statistics.tabs.orders }}
       </v-tab>
+      <v-tab value="map">
+        <v-icon icon="mdi-map"></v-icon>
+
+        {{ language.pages.statistics.tabs.map }}
+      </v-tab>
     </v-tabs>
     <v-tabs-window v-model="tab">
       <v-tabs-window-item value="products">
@@ -57,6 +63,9 @@ onMounted(async () => {
       </v-tabs-window-item>
       <v-tabs-window-item value="orders">
         <OrderStatistics />
+      </v-tabs-window-item>
+      <v-tabs-window-item value="map">
+        <ApplicantMap />
       </v-tabs-window-item>
     </v-tabs-window>
   </v-card>

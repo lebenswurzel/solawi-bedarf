@@ -28,7 +28,6 @@ import { prettyDate } from "../../../../shared/src/util/dateHelper";
 import { language } from "../../../../shared/src/lang/lang";
 import { escapeHtmlEntities } from "../../../../shared/src/util/stringHelper";
 import { useRoute } from "vue-router";
-import ApplicantMap from "./ApplicantMap.vue";
 
 const props = defineProps<{
   state: ApplicantState;
@@ -189,9 +188,8 @@ const tableItems = computed(() =>
           </v-col>
         </v-row>
       </v-container>
-      <ApplicantMap v-if="showMap" :applicants="applicants" />
+
       <v-data-table
-        v-else
         :headers="tableColumns"
         :items="tableItems"
         :search="search"

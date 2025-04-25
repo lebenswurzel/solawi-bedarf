@@ -445,6 +445,7 @@ export const language = {
       tabs: {
         products: "Produkte",
         orders: "Bedarfsanmeldungen",
+        map: "Karte",
       },
       navigation: {
         subtitle: "Admin",
