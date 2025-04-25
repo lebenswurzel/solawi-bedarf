@@ -30,6 +30,14 @@ import { ApplicantState } from "../../../../shared/src/enum";
 const mapCenter = ref([51.0504, 13.7373] as [number, number]); // Center of Dresden
 const zoom = ref(10);
 
+interface Marker {
+  position: LatLngTuple;
+  address: string;
+  name: string;
+  depotId: number;
+  depotName: string;
+}
+
 const loadingProgress = ref<string | null>(null);
 const configStore = useConfigStore();
 const userStore = useUserStore();
@@ -41,6 +49,7 @@ const processedUsers = ref(0);
 const isProcessing = ref(false);
 const isFullscreen = ref(false);
 const allApplicants = ref<Applicant[]>([]);
+const failedAddressQueries = ref<Marker[]>([]);
 
 const mapRef = ref<InstanceType<typeof LMap> | null>(null);
 
@@ -75,7 +84,7 @@ const createMarkerIcon = (color: string) => {
   });
 };
 
-const markers = computed(() => {
+const markers = computed((): Marker[] => {
   return activeUsers.value.map((applicant) => {
     const address = `${applicant.address.street}, ${applicant.address.postalcode} ${applicant.address.city}, Germany`;
     return {
@@ -169,6 +178,7 @@ onMounted(async () => {
         )}`,
       );
       const data = await response.json();
+      console.log(data);
       if (data && data[0]) {
         const coords: LatLngTuple = [
           parseFloat(data[0].lat),
@@ -176,6 +186,9 @@ onMounted(async () => {
         ];
         marker.position = coords;
         cacheCoordinates(marker.address, coords);
+      } else {
+        console.log("failed", marker);
+        failedAddressQueries.value.push(marker);
       }
     } catch (error) {
       console.error("Error geocoding address:", error);
@@ -230,6 +243,11 @@ onMounted(async () => {
       </LMarker>
     </LMap>
   </div>
+  <v-alert color="warning" title="Fehlgeschlagene Addressabfragen">
+    <p v-for="failedQuery in failedAddressQueries">
+      {{ failedQuery.name }}: {{ failedQuery.address }}
+    </p>
+  </v-alert>
 </template>
 
 <style scoped>
