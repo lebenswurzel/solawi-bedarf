@@ -21,12 +21,13 @@ import { useOrderStore } from "./orderStore";
 import {
   CapacityByDepotId,
   DeliveredByProductIdDepotId,
+  ProductId,
   ProductsById,
   SoldByProductId,
 } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { getBI } from "../requests/bi.ts";
 import { useUserStore } from "./userStore.ts";
-import { getMsrp } from "@lebenswurzel/solawi-bedarf-shared/src/msrp.ts";
+import { calculateMsrpWeights, getMsrp } from "@lebenswurzel/solawi-bedarf-shared/src/msrp.ts";
 import {
   isIncreaseOnly,
   isRequisitionActive,
@@ -39,7 +40,7 @@ export const useBIStore = defineStore("bi", () => {
   const userStore = useUserStore();
 
   const { depots, config } = storeToRefs(configStore);
-  const { depotId, category, actualOrderItemsByProductId } =
+  const { depotId, category, actualOrderItemsByProductId, validFrom } =
     storeToRefs(orderStore);
   const { currentUser } = storeToRefs(userStore);
 
@@ -68,12 +69,26 @@ export const useBIStore = defineStore("bi", () => {
     false;
   });
 
+  const productMsrpWeights = computed((): { [key: ProductId]: number } => {
+    console.log(validFrom.value);
+    return calculateMsrpWeights(
+      productsById.value,
+      deliveredByProductIdDepotId.value,
+      depots.value,
+    );
+  });
+
   const msrp = computed(() => {
     const actualOrderItems = Object.entries(
       actualOrderItemsByProductId.value,
     ).map(([key, value]) => ({ productId: parseInt(key), value }));
 
-    return getMsrp(category.value, actualOrderItems, productsById.value);
+    return getMsrp(
+      category.value,
+      actualOrderItems,
+      productsById.value,
+      productMsrpWeights.value,
+    );
   });
 
   const depot = computed(() => {
@@ -87,7 +102,7 @@ export const useBIStore = defineStore("bi", () => {
       capacityByDepotId: requestCapacityByDepotId,
       productsById: requestedProductsById,
       offers: requestOffers,
-    } = await getBI(configId);
+    } = await getBI(configId, orderStore.validFrom);
     soldByProductId.value = requestSoldByProductId;
     capacityByDepotId.value = requestCapacityByDepotId;
     productsById.value = requestedProductsById;

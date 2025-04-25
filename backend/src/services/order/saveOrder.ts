@@ -20,7 +20,7 @@ import Koa from "koa";
 import Router from "koa-router";
 import { LessThan } from "typeorm";
 import { appConfig } from "@lebenswurzel/solawi-bedarf-shared/src/config";
-import { getMsrp } from "@lebenswurzel/solawi-bedarf-shared/src/msrp";
+import { calculateMsrpWeights, getMsrp } from "@lebenswurzel/solawi-bedarf-shared/src/msrp";
 import { generateUserData } from "@lebenswurzel/solawi-bedarf-shared/src/pdf/overviewPdfs";
 import { createDefaultPdf } from "@lebenswurzel/solawi-bedarf-shared/src/pdf/pdf";
 import {
@@ -110,9 +110,12 @@ export const saveOrder = async (
   ) {
     ctx.throw(http.bad_request, "not valid in bidding round");
   }
-  const { soldByProductId, capacityByDepotId, productsById } = await bi(
-    requisitionConfig.id,
-  );
+  const {
+    soldByProductId,
+    capacityByDepotId,
+    productsById,
+    deliveredByProductIdDepotId,
+  } = await bi(requisitionConfig.id);
   const remainingDepotCapacity = getRemainingDepotCapacity(
     depot,
     capacityByDepotId[body.depotId].reserved,
@@ -137,7 +140,12 @@ export const saveOrder = async (
   if (orderItemErrors.length > 0) {
     ctx.throw(http.bad_request, `${orderItemErrors.join("\n")}`);
   }
-  const msrp = getMsrp(body.category, body.orderItems, productsById);
+  const msrp = getMsrp(
+    body.category,
+    body.orderItems,
+    productsById,
+    calculateMsrpWeights(productsById, deliveredByProductIdDepotId, [depot]), // fixme depots!
+  );
   if (!isOfferValid(body.offer, msrp.total)) {
     ctx.throw(http.bad_request, "bid too low");
   }
