@@ -39,6 +39,21 @@ export const addMonths = (date: Date, monthsDiff: number): Date => {
   return result;
 };
 
+export const dayDifference = (earlierDate: Date, laterDate: Date): number => {
+  const start = new Date(
+    earlierDate.getFullYear(),
+    earlierDate.getMonth(),
+    earlierDate.getDate()
+  );
+  const end = new Date(
+    laterDate.getFullYear(),
+    laterDate.getMonth(),
+    laterDate.getDate()
+  );
+  const diffTime = end.getTime() - start.getTime();
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+};
+
 export const formatDateForFilename = (date: Date): string => {
   return format(date, "yyyy-MM-dd HH_mm_ss");
 };
@@ -95,7 +110,6 @@ export const countThursdaysBetweenDates = (
   const excludeLastThursday = end.getDay() == 4 ? 0 : 1;
   const thursdays = Math.floor(days / 7) + excludeLastThursday; // don't include if end date is a Thursday
 
-  console.log(earlierDate, laterDate, thursdays);
   return thursdays;
 };
 

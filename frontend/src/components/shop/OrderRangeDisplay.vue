@@ -22,6 +22,7 @@ import { useConfigStore } from "../../store/configStore";
 import { storeToRefs } from "pinia";
 import {
   countThursdaysBetweenDates,
+  dayDifference,
   getSameOrNextThursday,
 } from "../../../../shared/src/util/dateHelper";
 
@@ -89,15 +90,23 @@ const deliveriesBeforeFirstDelivery = computed(() => {
       >{{ prettyDate(firstThursdayOfDelivery) }} bis
       {{ prettyDate(endDate) }} ({{ deliveries }} Verteilungen)</v-card-text
     >
-    <v-card-text class="py-1" v-if="deliveriesBeforeFirstDelivery > 0"
-      >Es stehen noch {{ deliveriesBeforeFirstDelivery }} Lieferungen vor deiner
-      ersten Verteilung aus. Der genaue Orientierungswert wird erst kurz vor
-      deiner ersten Lieferung berechnet.
-    </v-card-text>
-    <v-card-text class="py-1" v-else-if="!isFirstDeliveryInThePast"
-      >Deine erste Lieferung steht kurz bevor. Dein Orientierungswert wurde auf
-      Grundlage der in den verbleibenden Lieferungen geschätzten Liefermengen
-      berechnet.</v-card-text
-    >
+    <template v-if="!isFirstDeliveryInThePast">
+      <v-card-text class="py-1" v-if="deliveriesBeforeFirstDelivery > 0"
+        >Es stehen noch {{ deliveriesBeforeFirstDelivery }} Lieferungen vor
+        deiner ersten Verteilung aus. Der genaue Orientierungswert wird erst
+        kurz vor deiner ersten Lieferung berechnet.
+      </v-card-text>
+      <v-card-text class="py-1" v-else
+        >Deine erste Lieferung steht kurz bevor. Dein Orientierungswert wurde
+        auf Grundlage der in den verbleibenden Lieferungen geschätzten
+        Liefermengen berechnet.</v-card-text
+      >
+      <v-card-text class="py-1"
+        >Tage bis zur ersten Lieferung:
+        {{
+          dayDifference(new Date(), firstThursdayOfDelivery || new Date())
+        }}</v-card-text
+      >
+    </template>
   </v-card>
 </template>
