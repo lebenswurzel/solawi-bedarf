@@ -53,7 +53,6 @@ export const getMsrp = (
   productById: ProductsById,
   productMsrpWeights?: { [key: ProductId]: number }
 ): Msrp => {
-  console.log(productMsrpWeights);
   const baseMsrp = orderItems.reduce(
     (acc, orderItem) =>
       acc +
