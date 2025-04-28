@@ -40,7 +40,7 @@ export const useBIStore = defineStore("bi", () => {
   const userStore = useUserStore();
 
   const { depots, config } = storeToRefs(configStore);
-  const { depotId, category, actualOrderItemsByProductId, validFrom } =
+  const { depotId, category, actualOrderItemsByProductId } =
     storeToRefs(orderStore);
   const { currentUser } = storeToRefs(userStore);
 
@@ -70,18 +70,24 @@ export const useBIStore = defineStore("bi", () => {
   });
 
   const productMsrpWeights = computed((): { [key: ProductId]: number } => {
-    console.log(validFrom.value);
-    return calculateMsrpWeights(
+    const result = calculateMsrpWeights(
       productsById.value,
       deliveredByProductIdDepotId.value,
       depots.value,
     );
+    console.log("calculated productMsrpWeights: ", result);
+    return result;
   });
 
   const msrp = computed(() => {
     const actualOrderItems = Object.entries(
       actualOrderItemsByProductId.value,
     ).map(([key, value]) => ({ productId: parseInt(key), value }));
+    console.log(
+      "recalc msrp",
+      actualOrderItems.length,
+      productMsrpWeights.value[157],
+    );
 
     return getMsrp(
       category.value,
@@ -95,14 +101,18 @@ export const useBIStore = defineStore("bi", () => {
     return depots.value.find((d) => d.id == depotId.value.actual);
   });
 
-  const update = async (configId: number) => {
+  const update = async (configId: number, includeShipmentsValidFrom?: Date) => {
+    console.log("getBI", includeShipmentsValidFrom, orderStore.orderUserId);
+    if (includeShipmentsValidFrom === undefined) {
+      console.error("stop");
+    }
     const {
       soldByProductId: requestSoldByProductId,
       deliveredByProductIdDepotId: requestDeliveredByProductIdDepotId,
       capacityByDepotId: requestCapacityByDepotId,
       productsById: requestedProductsById,
       offers: requestOffers,
-    } = await getBI(configId, orderStore.validFrom);
+    } = await getBI(configId, includeShipmentsValidFrom);
     soldByProductId.value = requestSoldByProductId;
     capacityByDepotId.value = requestCapacityByDepotId;
     productsById.value = requestedProductsById;
