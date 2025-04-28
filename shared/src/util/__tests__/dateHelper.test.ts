@@ -256,13 +256,13 @@ describe("dateHelper", () => {
 
     it("should handle time zone", () => {
       const date1 = new Date("2023-01-01T23:00:00Z");
-      const date2 = new Date("2023-01-02T00:00:00");
+      const date2 = new Date("2023-01-02T00:00:00+01:00");
       expect(dayDifference(date1, date2)).toBe(0);
     });
 
     it("should handle time zone reverse", () => {
-      const date1 = new Date("2023-01-01T23:50:00Z");
-      const date2 = new Date("2023-01-01T22:59:59");
+      const date1 = new Date("2023-01-02T00:50:00Z");
+      const date2 = new Date("2023-01-01T22:59:59+01:00");
       expect(dayDifference(date1, date2)).toBe(-1);
     });
   });
