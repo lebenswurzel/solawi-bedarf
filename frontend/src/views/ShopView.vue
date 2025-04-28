@@ -120,9 +120,12 @@ const refresh = async (keepUserId?: boolean) => {
     requestUserId.value = userIdParam;
   }
   if (requestUserId.value && activeConfigId.value != -1) {
-    productStore.update(configStore.activeConfigId);
-    biStore.update(configStore.activeConfigId);
-    orderStore.update(requestUserId.value, activeConfigId.value);
+    await productStore.update(configStore.activeConfigId);
+    await orderStore.update(requestUserId.value, activeConfigId.value);
+    await biStore.update(
+      configStore.activeConfigId,
+      orderStore.validFrom || undefined,
+    );
   }
 };
 onMounted(async () => {
