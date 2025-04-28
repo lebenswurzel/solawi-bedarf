@@ -24,6 +24,7 @@ import {
   prettyDate,
   prettyDateWithDayName,
   countThursdaysBetweenDates,
+  dayDifference,
 } from "../dateHelper";
 
 describe("dateHelper", () => {
@@ -208,6 +209,61 @@ describe("dateHelper", () => {
       const end = new Date("2024-01-01"); // Monday
       const result = countThursdaysBetweenDates(start, end);
       expect(result).toBe(0);
+    });
+  });
+
+  describe("dayDifference", () => {
+    it("should return 0 for same day", () => {
+      const date = new Date("2023-01-01");
+      expect(dayDifference(date, date)).toBe(0);
+    });
+
+    it("should return 1 for consecutive days", () => {
+      const date1 = new Date("2023-01-01");
+      const date2 = new Date("2023-01-02");
+      expect(dayDifference(date1, date2)).toBe(1);
+    });
+
+    it("should handle dates in reverse order", () => {
+      const date1 = new Date("2023-01-01");
+      const date2 = new Date("2023-01-02");
+      expect(dayDifference(date2, date1)).toBe(-1);
+    });
+
+    it("should handle month boundaries", () => {
+      const date1 = new Date("2023-01-31");
+      const date2 = new Date("2023-02-01");
+      expect(dayDifference(date1, date2)).toBe(1);
+    });
+
+    it("should handle year boundaries", () => {
+      const date1 = new Date("2023-12-31");
+      const date2 = new Date("2024-01-01");
+      expect(dayDifference(date1, date2)).toBe(1);
+    });
+
+    it("should handle leap years", () => {
+      const date1 = new Date("2024-02-28");
+      const date2 = new Date("2024-02-29");
+      expect(dayDifference(date1, date2)).toBe(1);
+    });
+
+    it("should ignore time components", () => {
+      const date1 = new Date("2023-01-01T00:00:00");
+      const date2 = new Date("2023-01-01T23:59:59");
+      expect(dayDifference(date1, date2)).toBe(0);
+    });
+
+    it("should handle time zone", () => {
+      const date1 = new Date("2023-01-01T23:00:00Z");
+      const date2 = new Date("2023-01-02T00:00:00");
+      expect(dayDifference(date1, date2)).toBe(0);
+    });
+
+    it("should handle time zone reverse", () => {
+      const date1 = new Date("2023-01-01T23:50:00Z");
+      const date2 = new Date("2023-01-01T22:59:59");
+      expect(dayDifference(date1, date2)).toBe(-1);
     });
   });
 });
