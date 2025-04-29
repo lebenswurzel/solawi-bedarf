@@ -203,3 +203,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #233 Übersicht über erfolgte Verteilungen je Produkt und Depot
 
 # NEW
+
+#237 Kartenansicht für Admins (unter Statistiken)
