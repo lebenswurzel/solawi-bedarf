@@ -202,6 +202,8 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #233 Verbesserungen im Verteilungsdialog (Performance, Übersichtlichkeit)
 #233 Übersicht über erfolgte Verteilungen je Produkt und Depot
 
-# NEW
+# v0.6.4 - 2025-04-29 - Kartenansicht
 
 #237 Kartenansicht für Admins (unter Statistiken)
+
+# NEW
