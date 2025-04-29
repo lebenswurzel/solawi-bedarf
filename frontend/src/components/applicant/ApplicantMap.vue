@@ -17,13 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from "vue";
 import { Applicant } from "../../../../shared/src/types";
-import {
-  LMap,
-  LTileLayer,
-  LMarker,
-  LPopup,
-  LIcon,
-} from "@vue-leaflet/vue-leaflet";
+import { LMap, LTileLayer, LMarker, LPopup } from "@vue-leaflet/vue-leaflet";
 import "leaflet/dist/leaflet.css";
 import { icon, LatLngTuple } from "leaflet";
 import { useConfigStore } from "../../store/configStore";
@@ -74,6 +68,10 @@ const markerColors = [
   "grey",
   "black",
   "gold",
+  "purple",
+  "cyan",
+  "chocolate",
+  "greenyellow",
 ];
 
 // Get color based on depot ID
@@ -83,23 +81,48 @@ const getDepotColor = (depotId: number): string => {
 };
 
 const createMarkerIcon = (color: string) => {
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+      <path fill="${color}" stroke="#666" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+    </svg>
+  `;
+
   return icon({
-    iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-${color}.png`,
-    shadowUrl:
-      "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
+    iconUrl: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
+    iconSize: [24, 24],
+    iconAnchor: [12, 24],
+    popupAnchor: [0, -24],
+  });
+};
+
+const createDepotIcon = (color: string) => {
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="36" height="36">
+      <rect x="0" y="0" width="24" height="24" fill="white" stroke="#888888" stroke-width="1"/>
+      <path fill="${color}" d="M20 4H4v2h16V4zm1 10v-2l-1-5H4l-1 5v2h1v6h10v-6h4v6h2v-6h1zm-9 4H6v-4h6v4z"/>
+    </svg>
+  `;
+  return icon({
+    iconUrl: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
+    popupAnchor: [0, -12],
   });
 };
 
 const depotMarkers = ref<Marker[]>([]);
 
 const updateDepotMarkers = async () => {
-  console.log("updateDepotMarkers");
   const markers: Marker[] = [];
   for (const depot of relevantDepots.value) {
     if (depot.address) {
-      const coords = await getAddressCoordinates(depot.address);
+      let address = depot.address;
+      if (depot.address.includes(":")) {
+        // remove district name
+        address = depot.address.split(":")[1].trim();
+      }
+      console.log(depot, address);
+      const coords = await getAddressCoordinates(address);
       const marker = {
         position: coords || [0, 0],
         address: depot.address,
@@ -288,23 +311,10 @@ watch(relevantDepots, () => {
         </LMarker>
       </template>
       <template v-for="marker in depotMarkers" :key="`depot-${marker.depotId}`">
-        <LMarker :lat-lng="marker.position">
-          <LIcon
-            :icon-url="''"
-            :icon-size="[32, 32]"
-            :icon-anchor="[16, 16]"
-            class="depot-icon"
-          >
-            <template #default>
-              <div class="depot-marker">
-                <v-icon
-                  icon="mdi-store"
-                  :color="getDepotColor(marker.depotId)"
-                  size="32"
-                ></v-icon>
-              </div>
-            </template>
-          </LIcon>
+        <LMarker
+          :lat-lng="marker.position"
+          :icon="createDepotIcon(getDepotColor(marker.depotId))"
+        >
           <LPopup>
             <div>
               <strong>Depot: {{ marker.name }}</strong>
@@ -334,6 +344,7 @@ watch(relevantDepots, () => {
       <v-divider class="mt-2"></v-divider>
     </template>
   </v-select>
+
   <v-alert
     v-if="failedAddressQueries.length > 0"
     color="warning"
