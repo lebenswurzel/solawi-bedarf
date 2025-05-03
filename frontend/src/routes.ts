@@ -26,14 +26,19 @@ import AdminApplicantView from "./views/AdminApplicantView.vue";
 import AdminDepotView from "./views/AdminDepotView.vue";
 import FAQView from "./views/FAQView.vue";
 import AdminTextView from "./views/AdminTextView.vue";
+import EmployeeNewShipmentView from "./views/EmployeeNewShipmentView.vue";
 
 const routes = [
   { path: "/register", component: RegisterView },
   { path: "/shop/:userId?", component: ShopView },
   { path: "/faq", component: FAQView },
   {
-    path: "/employeeshipment",
-    component: () => import("./views/EmployeeShipmentView.vue"),
+    path: "/employee/shipments",
+    component: () => import("./views/EmployeeShipmentsView.vue"),
+  },
+  {
+    path: "/employee/shipment/:shipmentId",
+    component: EmployeeNewShipmentView,
   },
   { path: "/adminusers/:userName?", component: AdminUserView },
   { path: "/adminproducts", component: AdminProductsView },

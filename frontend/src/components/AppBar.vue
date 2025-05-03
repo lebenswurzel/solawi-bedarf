@@ -200,7 +200,7 @@ const adminNavEntries: NavEntry[] = [
         <v-list-subheader class="ml-2">{{
           language.navigation.employees
         }}</v-list-subheader>
-        <v-list-item to="/employeeshipment" prepend-icon="mdi-truck">
+        <v-list-item to="/employee/shipments" prepend-icon="mdi-truck">
           <v-list-item-title>{{
             language.pages.shipment.title
           }}</v-list-item-title>
