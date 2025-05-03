@@ -121,6 +121,12 @@ watch(activeConfigId, async () => {
                 key: 'revisionMessages',
                 sortable: false,
               },
+              {
+                title: 'Aktionen',
+                key: 'actions',
+                align: 'end',
+                sortable: false,
+              },
             ]"
             @click:row="onRowClick"
           >
@@ -156,6 +162,17 @@ watch(activeConfigId, async () => {
                 von {{ revisionMessage?.userName || "?" }}:
                 {{ revisionMessage?.message || "?" }}
               </p>
+            </template>
+            <template v-slot:item.actions="{ item }">
+              <v-btn
+                :to="`/employee/shipment/${item.id}`"
+                icon="mdi-format-list-text"
+                variant="flat"
+                density="comfortable"
+                size="small"
+                :title="t.action.showInListView"
+              >
+              </v-btn>
             </template>
           </v-data-table>
           <p v-else-if="!busy">

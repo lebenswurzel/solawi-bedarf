@@ -302,10 +302,20 @@ export const language = {
         createShipment: "Verteilung erstellen",
         createShipmentItem: "Verteilung",
         createAdditionalShipmentItem: "Verteilung",
+        showInListView: "In neuer Listenansicht anzeigen",
       },
       dialog: {
         title: "Verteilung",
       },
+    },
+    singleShipment: {
+      title: "Verteilung: KW {kw}",
+      depo: "Depo",
+      product: "Product",
+      bio: "BIO",
+      totalShipedQuantity: "Quantity",
+      description: "Description",
+      quantityChange: "Quantity Change",
     },
     product: {
       title: "Nahrungsmittel",
