@@ -1,0 +1,7 @@
+{
+  "name": "@lebenswurzel/solawi-bedarf",
+  "private": true,
+  "workspaces": [
+    "backend", "frontend", "shared"
+  ]
+}

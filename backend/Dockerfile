@@ -1,17 +1,23 @@
 FROM node:18-alpine
 
-# Install backend dependencies
-COPY shared/package.json ./shared/
-COPY shared/package-lock.json ./shared/
-COPY shared/tsconfig.json ./shared/
-COPY ./backend/package.json ./backend/
-COPY ./backend/package-lock.json ./backend/
-RUN cd backend && npm ci && cd ..
+ARG SOLAWI_BEDARF_HOME=/opt/solawi-bedarf
 
-COPY ./backend/tsconfig.json ./backend/
-COPY ./backend/src ./backend/src
-COPY ./shared/src ./shared/src
-COPY buildInfo.ts ./shared/src/buildInfo.ts
+RUN mkdir "$SOLAWI_BEDARF_HOME"
+WORKDIR "$SOLAWI_BEDARF_HOME"
+
+# Install backend dependencies
+COPY package.json ./
+COPY package-lock.json ./
+COPY shared/package.json shared/
+COPY backend/package.json backend/
+RUN npm --workspace=backend ci
+
+COPY shared/tsconfig.json shared/
+COPY backend/tsconfig.json backend/
+COPY backend/src backend/src
+COPY shared/src shared/src
+COPY buildInfo.ts shared/src/buildInfo.ts
 
 EXPOSE 3000
-CMD cd backend && npm run start
+WORKDIR "$SOLAWI_BEDARF_HOME/backend"
+CMD npm run start
