@@ -24,13 +24,16 @@ import {
   OrganizationInfoKeys,
   PdfTextsKeys,
   TextContent,
-} from "../../../shared/src/types";
-import { TextContentCategory, TextContentTyp } from "../../../shared/src/enum";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
+import {
+  TextContentCategory,
+  TextContentTyp,
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import {
   langOrganizationInfo,
   langPdfTexts,
   language,
-} from "../../../shared/src/lang/lang";
+} from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
 
 const defaultTextContent: NewTextContent = {
   title: "Beispieltitel",
@@ -221,7 +224,6 @@ const onClose = async () => {
   </v-card>
   <TextContentDialog :open="open" @close="onClose" />
 </template>
-../store/textContetnStore../../../shared/src/types
 
 <style>
 span.keyword {

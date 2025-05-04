@@ -22,11 +22,11 @@ import { http } from "../../consts/http";
 import Koa from "koa";
 import Router from "koa-router";
 import { invalidateTokenForUser } from "../../token";
-import { UserRole } from "../../../../shared/src/enum";
+import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import { Order } from "../../database/Order";
-import { appConfig } from "../../../../shared/src/config";
+import { appConfig } from "@lebenswurzel/solawi-bedarf-shared/src/config";
 import { RequisitionConfig } from "../../database/RequisitionConfig";
-import { SaveUserRequest } from "../../../../shared/src/types";
+import { SaveUserRequest } from "@lebenswurzel/solawi-bedarf-shared/src/types";
 
 export const saveUser = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,

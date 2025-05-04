@@ -24,7 +24,7 @@ import {
 import { ProductCategory } from "./ProductCategory";
 import { BaseEntity } from "./BaseEntity";
 import { OrderItem } from "./OrderItem";
-import { Unit } from "../../../shared/src/enum";
+import { Unit } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 
 @Entity()
 export class Product extends BaseEntity {

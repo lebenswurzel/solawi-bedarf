@@ -14,9 +14,9 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { TextContentCategory } from "../../../../shared/src/enum";
-import { makeOrganizationInfo } from "../../../../shared/src/text/textContent";
-import { OrganizationInfo } from "../../../../shared/src/types";
+import { TextContentCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import { makeOrganizationInfo } from "@lebenswurzel/solawi-bedarf-shared/src/text/textContent";
+import { OrganizationInfo } from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import { AppDataSource } from "../../database/database";
 import { TextContent } from "../../database/TextContent";
 

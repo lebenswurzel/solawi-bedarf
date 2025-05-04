@@ -20,8 +20,8 @@ import {
   TextContentCategory,
   TextContentTyp,
   UserRole,
-} from "../../../../shared/src/enum";
-import { SaveTextContentRequest } from "../../../../shared/src/types";
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import { SaveTextContentRequest } from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import { http } from "../../consts/http";
 import { AppDataSource } from "../../database/database";
 import { TextContent } from "../../database/TextContent";

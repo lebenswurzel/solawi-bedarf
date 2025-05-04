@@ -16,8 +16,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
 import { computed, inject, onMounted, ref, Ref, watchEffect } from "vue";
-import { language } from "../../../shared/src/lang/lang.ts";
-import { interpolate } from "../../../shared/src/lang/template.ts";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
+import { interpolate } from "@lebenswurzel/solawi-bedarf-shared/src/lang/template.ts";
 import { useConfigStore } from "../store/configStore.ts";
 import { saveOrder } from "../requests/shop.ts";
 import { useOrderStore } from "../store/orderStore.ts";
@@ -32,11 +32,11 @@ import {
   needsCategoryReason,
   needsOfferReason,
   minOffer,
-} from "../../../shared/src/validation/reason.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/validation/reason.ts";
 import SeasonText from "./styled/SeasonText.vue";
 import { useUiFeedback } from "../store/uiFeedbackStore.ts";
-import { UserCategory } from "../../../shared/src/enum.ts";
-import { UserWithOrders } from "../../../shared/src/types.ts";
+import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
+import { UserWithOrders } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { useTextContentStore } from "../store/textContentStore.ts";
 
 defineProps(["open"]);

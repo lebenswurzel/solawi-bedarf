@@ -17,13 +17,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <script setup lang="ts">
 import { inject, Ref, ref } from "vue";
 import { saveProduct } from "../requests/product.ts";
-import { language } from "../../../shared/src/lang/lang.ts";
-import { interpolate } from "../../../shared/src/lang/template.ts";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
+import { interpolate } from "@lebenswurzel/solawi-bedarf-shared/src/lang/template.ts";
 import { useProductStore } from "../store/productStore.ts";
 import { computed } from "@vue/reactivity";
-import { NewProduct, OptionalId, Product } from "../../../shared/src/types.ts";
-import { Unit } from "../../../shared/src/enum.ts";
-import { getLangUnit } from "../../../shared/src/util/unitHelper.ts";
+import {
+  NewProduct,
+  OptionalId,
+  Product,
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
+import { Unit } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
+import { getLangUnit } from "@lebenswurzel/solawi-bedarf-shared/src/util/unitHelper.ts";
 const t = language.pages.product.dialog;
 
 defineProps<{ open: boolean }>();

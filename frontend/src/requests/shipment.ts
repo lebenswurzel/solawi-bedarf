@@ -18,7 +18,7 @@ import {
   OptionalId,
   ShipmentFullInformation,
   ShipmentRequest,
-} from "../../../shared/src/types";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { getUrl, verifyResponse } from "./requests";
 
 export const saveShipment = async (shipment: ShipmentRequest & OptionalId) => {

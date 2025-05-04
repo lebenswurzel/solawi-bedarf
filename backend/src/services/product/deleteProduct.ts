@@ -16,8 +16,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import Koa from "koa";
 import Router from "koa-router";
-import { UserRole } from "../../../../shared/src/enum";
-import { Id } from "../../../../shared/src/types";
+import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import { Id } from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import { http } from "../../consts/http";
 import { AppDataSource } from "../../database/database";
 import { OrderItem } from "../../database/OrderItem";

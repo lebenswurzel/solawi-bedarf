@@ -19,7 +19,7 @@ import { Product } from "./Product";
 import { BaseEntity } from "./BaseEntity";
 import { Shipment } from "./Shipment";
 import { Depot } from "./Depot";
-import { Unit } from "../../../shared/src/enum";
+import { Unit } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 
 @Entity()
 export class ShipmentItem extends BaseEntity {

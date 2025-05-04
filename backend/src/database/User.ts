@@ -24,7 +24,7 @@ import {
 import { Token } from "./Token";
 import { Order } from "./Order";
 import { BaseEntity } from "./BaseEntity";
-import { UserRole } from "../../../shared/src/enum";
+import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import { Applicant } from "./Applicant";
 
 @Entity()

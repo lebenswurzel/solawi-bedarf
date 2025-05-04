@@ -22,13 +22,13 @@ import { AppDataSource } from "../../database/database";
 import { Shipment } from "../../database/Shipment";
 import { ShipmentItem } from "../../database/ShipmentItem";
 import { AdditionalShipmentItem } from "../../database/AdditionalShipmentItem";
-import { UserRole } from "../../../../shared/src/enum";
+import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import {
   Id,
   ShipmentItem as ShipmentItemType,
   AdditionalShipmentItem as AdditionalShipmentItemType,
   ShipmentRequest,
-} from "../../../../shared/src/types";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types";
 
 export const saveShipment = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,

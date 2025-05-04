@@ -14,7 +14,10 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { NewProductCategory, OptionalId } from "../../../shared/src/types";
+import {
+  NewProductCategory,
+  OptionalId,
+} from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import { AppDataSource } from "../database/database";
 import { Product } from "../database/Product";
 import { ProductCategory } from "../database/ProductCategory";

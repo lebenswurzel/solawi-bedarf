@@ -17,8 +17,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { _UnwrapAll, defineStore } from "pinia";
 import { computed, ref } from "vue";
 import { getOrder } from "../requests/shop.ts";
-import { UserCategory } from "../../../shared/src/enum.ts";
-import { appConfig } from "../../../shared/src/config.ts";
+import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
+import { appConfig } from "@lebenswurzel/solawi-bedarf-shared/src/config.ts";
 
 export const useOrderStore = defineStore("orderStore", () => {
   const savedOrderItemsByProductId = ref<{

@@ -16,12 +16,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
 import { onMounted, watch } from "vue";
-import { language } from "../../../shared/src/lang/lang.ts";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
 import { useConfigStore } from "../store/configStore.ts";
 import { ref } from "vue";
 import { deleteConfig, saveConfig } from "../requests/config.ts";
 import { stringToDate, dateToString } from "../lib/convert.ts";
-import { ExistingConfig } from "../../../shared/src/types.ts";
+import { ExistingConfig } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { useUiFeedback } from "../store/uiFeedbackStore.ts";
 import NewSeasonDialog from "../components/NewSeasonDialog.vue";
 const t = language.pages.config;

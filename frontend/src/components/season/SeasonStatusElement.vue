@@ -17,9 +17,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <script setup lang="ts">
 import { format } from "date-fns/format";
 import { computed } from "vue";
-import { SeasonPhase } from "../../../../shared/src/enum";
+import { SeasonPhase } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import { useConfigStore } from "../../store/configStore";
-import { interpolate } from "../../../../shared/src/lang/template";
+import { interpolate } from "@lebenswurzel/solawi-bedarf-shared/src/lang/template.ts";
 
 const props = defineProps<{ phase: SeasonPhase; noButton?: boolean }>();
 

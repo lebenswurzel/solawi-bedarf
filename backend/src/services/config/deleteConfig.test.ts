@@ -29,7 +29,10 @@ import {
 import { AppDataSource } from "../../database/database";
 import { deleteConfig } from "./deleteConfig";
 import { createConfig } from "./createConfig";
-import { CreateConfigRequest, NewConfig } from "../../../../shared/src/types";
+import {
+  CreateConfigRequest,
+  NewConfig,
+} from "@lebenswurzel/solawi-bedarf-shared/src/types";
 
 test("prevent unauthorized access", async () => {
   const ctx = createBasicTestCtx();

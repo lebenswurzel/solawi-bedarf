@@ -20,15 +20,15 @@ import {
   OrganizationInfo,
   PdfTexts,
   TextContent,
-} from "../../../shared/src/types.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { getTextContent } from "../requests/textcontent.ts";
 import { marked } from "marked";
-import { TextContentCategory } from "../../../shared/src/enum.ts";
+import { TextContentCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import { faqAlphabeticalDown } from "../lib/compare.ts";
 import {
   makeOrganizationInfo,
   makePdfTexts,
-} from "../../../shared/src/text/textContent.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/text/textContent.ts";
 
 export const useTextContentStore = defineStore("textContent", () => {
   const textContent = ref<TextContent[]>([]);

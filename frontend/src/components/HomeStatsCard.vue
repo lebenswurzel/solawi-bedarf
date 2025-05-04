@@ -16,11 +16,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
 import { useConfigStore } from "../store/configStore.ts";
-import { language } from "../../../shared/src/lang/lang.ts";
-import { interpolate } from "../../../shared/src/lang/template.ts";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
+import { interpolate } from "@lebenswurzel/solawi-bedarf-shared/src/lang/template.ts";
 import { computed } from "vue";
 import { useBIStore } from "../store/biStore";
-import { ProductCategoryType } from "../../../shared/src/enum.ts";
+import { ProductCategoryType } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import SeasonText from "../components/styled/SeasonText.vue";
 
 const t = language.pages.home;

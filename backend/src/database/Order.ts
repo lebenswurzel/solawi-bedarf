@@ -25,7 +25,7 @@ import { User } from "./User";
 import { Depot } from "./Depot";
 import { OrderItem } from "./OrderItem";
 import { BaseEntity } from "./BaseEntity";
-import { UserCategory } from "../../../shared/src/enum";
+import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import { RequisitionConfig } from "./RequisitionConfig";
 
 @Entity()

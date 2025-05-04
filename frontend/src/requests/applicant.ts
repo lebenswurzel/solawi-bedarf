@@ -14,12 +14,12 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { ApplicantState } from "../../../shared/src/enum.ts";
+import { ApplicantState } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import {
   Applicant,
   ImportApplicantRequest,
   ImportApplicantsResponse,
-} from "../../../shared/src/types.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { getUrl, verifyResponse } from "./requests.ts";
 
 export const saveApplicant = async (applicant: Applicant) => {

@@ -18,12 +18,12 @@ import { expect, test } from "vitest";
 import {
   TextContentCategory,
   TextContentTyp,
-} from "../../../../shared/src/enum";
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import {
   Id,
   SaveTextContentRequest,
   TextContent as TextContentType,
-} from "../../../../shared/src/types";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import {
   TestUserData,
   createBasicTestCtx,

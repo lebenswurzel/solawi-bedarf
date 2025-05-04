@@ -18,7 +18,7 @@ import {
   ConfigResponse,
   CreateConfigRequest,
   ExistingConfig,
-} from "../../../shared/src/types.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { getUrl, verifyResponse } from "./requests.ts";
 
 export const getConfig = async (

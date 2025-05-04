@@ -16,20 +16,20 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
 import { computed, inject, Ref, ref } from "vue";
-import { language } from "../../../../shared/src/lang/lang.ts";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
 import { deleteTextContent, saveTextContent } from "../../requests/textcontent";
 import {
   NewTextContent,
   OptionalId,
   TextContent,
   isIdType,
-} from "../../../../shared/src/types";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { marked } from "marked";
 import {
   TextContentCategory,
   TextContentTyp,
-} from "../../../../shared/src/enum";
-import { escapeHtmlEntities } from "../../../../shared/src/util/stringHelper.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
+import { escapeHtmlEntities } from "@lebenswurzel/solawi-bedarf-shared/src/util/stringHelper.ts";
 
 defineProps(["open"]);
 const emit = defineEmits(["close"]);
@@ -134,4 +134,3 @@ ol {
   list-style-position: inside;
 }
 </style>
-../../../shared/src/types.ts

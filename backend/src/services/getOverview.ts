@@ -14,15 +14,15 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { http } from "..//consts/http";
+import { http } from "../consts/http";
 import Koa from "koa";
 import Router from "koa-router";
 import { Order } from "../database/Order";
 import { getUserFromContext } from "./getUserFromContext";
 import { AppDataSource } from "../database/database";
 import { MoreThan } from "typeorm";
-import { UserRole } from "../../../shared/src/enum";
-import { getMsrp } from "../../../shared/src/msrp";
+import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import { getMsrp } from "@lebenswurzel/solawi-bedarf-shared/src/msrp";
 import { bi } from "./bi/bi";
 import {
   getConfigIdFromQuery,
@@ -32,7 +32,7 @@ import {
   Address,
   OrderOverviewApplicant,
   OrderOverviewWithApplicantItem,
-} from "../../../shared/src/types";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import { Applicant } from "../database/Applicant";
 
 export const getOverview = async (

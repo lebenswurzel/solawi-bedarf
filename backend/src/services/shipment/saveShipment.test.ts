@@ -15,8 +15,11 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { expect, test } from "vitest";
-import { Unit } from "../../../../shared/src/enum";
-import { Id, ShipmentRequest } from "../../../../shared/src/types";
+import { Unit } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import {
+  Id,
+  ShipmentRequest,
+} from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import {
   getDepotByName,
   getProductByName,
@@ -28,7 +31,10 @@ import {
   testAsUser1,
   TestUserData,
 } from "../../../testSetup";
-import { genShipment, genShipmentItem } from "../../../../shared/testSetup";
+import {
+  genShipment,
+  genShipmentItem,
+} from "@lebenswurzel/solawi-bedarf-shared/testSetup";
 import { AppDataSource } from "../../database/database";
 import { Shipment as ShipmentEntity } from "../../database/Shipment";
 import { saveShipment } from "./saveShipment";

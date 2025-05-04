@@ -22,9 +22,9 @@ import { useBIStore } from "../store/biStore";
 import { useConfigStore } from "../store/configStore.ts";
 import { useUserStore } from "../store/userStore.ts";
 import SeasonText from "../components/styled/SeasonText.vue";
-import { getSeasonPhase } from "../../../shared/src/util/configHelper.ts";
+import { getSeasonPhase } from "@lebenswurzel/solawi-bedarf-shared/src/util/configHelper.ts";
 import SeasonStatusElement from "../components/season/SeasonStatusElement.vue";
-import { SeasonPhase } from "../../../shared/src/enum.ts";
+import { SeasonPhase } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 
 const configStore = useConfigStore();
 const biStore = useBIStore();

@@ -20,7 +20,7 @@ import {
   SaveUserRequest,
   UpdateUserRequest,
   UserWithOrders,
-} from "../../../shared/src/types.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { getUrl, verifyResponse } from "./requests.ts";
 
 // auxiliary types that allow receiving the date as string for later conversion to a Date object

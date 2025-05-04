@@ -20,9 +20,9 @@ import {
   NewProduct,
   Product,
   ProductCategoryWithProducts,
-} from "../../../../shared/src/types";
-import { language } from "../../../../shared/src/lang/lang";
-import { interpolate } from "../../../../shared/src/lang/template";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
+import { interpolate } from "@lebenswurzel/solawi-bedarf-shared/src/lang/template.ts";
 import ProductDialog from "../ProductDialog.vue";
 import { useConfigStore } from "../../store/configStore";
 import { useProductStore } from "../../store/productStore";
@@ -33,7 +33,7 @@ import { useUiFeedback } from "../../store/uiFeedbackStore";
 import {
   convertToBigUnit,
   getLangUnit,
-} from "../../../../shared/src/util/unitHelper";
+} from "@lebenswurzel/solawi-bedarf-shared/src/util/unitHelper.ts";
 const t = language.pages.product.dialog;
 
 const props = defineProps<{

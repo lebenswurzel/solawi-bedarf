@@ -19,7 +19,7 @@ import {
   DeliveredByProductIdDepotId,
   ProductsById,
   SoldByProductId,
-} from "../../../shared/src/types.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { getUrl, verifyResponse } from "./requests.ts";
 
 export const getBI = async (

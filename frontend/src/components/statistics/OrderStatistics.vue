@@ -16,12 +16,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
-import { language } from "../../../../shared/src/lang/lang.ts";
-import { Msrp, SavedOrder } from "../../../../shared/src/types.ts";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
+import {
+  Msrp,
+  SavedOrder,
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { getOrder } from "../../requests/shop.ts";
 import { useConfigStore } from "../../store/configStore.ts";
 import { useUserStore } from "../../store/userStore.ts";
-import { UserCategory } from "../../../../shared/src/enum.ts";
+import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import { storeToRefs } from "pinia";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
@@ -30,7 +33,7 @@ import DistributionPlot, {
   DistributionDataItem,
 } from "./DistributionPlot.vue";
 import SeasonText from "../styled/SeasonText.vue";
-import { getMsrp } from "../../../../shared/src/msrp.ts";
+import { getMsrp } from "@lebenswurzel/solawi-bedarf-shared/src/msrp.ts";
 import { useBIStore } from "../../store/biStore.ts";
 
 const t = language.pages.statistics;

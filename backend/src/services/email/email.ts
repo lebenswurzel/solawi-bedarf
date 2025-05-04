@@ -16,8 +16,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import nodemailer from "nodemailer";
 import { config } from "../../config";
-import { appConfig } from "../../../../shared/src/config";
-import { escapeHtmlEntities } from "../../../../shared/src/util/stringHelper";
+import { appConfig } from "@lebenswurzel/solawi-bedarf-shared/src/config";
+import { escapeHtmlEntities } from "@lebenswurzel/solawi-bedarf-shared/src/util/stringHelper";
 import { Attachment } from "nodemailer/lib/mailer";
 import { getOrganizationInfo } from "../text/getOrganizationInfo";
 

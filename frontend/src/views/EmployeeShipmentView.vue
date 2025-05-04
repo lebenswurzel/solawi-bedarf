@@ -18,9 +18,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { format, getISOWeek } from "date-fns";
 import { storeToRefs } from "pinia";
 import { onMounted, ref, watch } from "vue";
-import { language } from "../../../shared/src/lang/lang.ts";
-import { Id, ShipmentWithRevisionMessages } from "../../../shared/src/types.ts";
-import { prettyDate } from "../../../shared/src/util/dateHelper.ts";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
+import {
+  Id,
+  ShipmentWithRevisionMessages,
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
+import { prettyDate } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper.ts";
 import BusyIndicator from "../components/BusyIndicator.vue";
 import ShipmentDialog from "../components/ShipmentDialog.vue";
 import SeasonText from "../components/styled/SeasonText.vue";

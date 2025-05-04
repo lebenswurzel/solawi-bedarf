@@ -16,8 +16,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
 import { computed, onMounted, provide, ref, watch } from "vue";
-import { language } from "../../../shared/src/lang/lang.ts";
-import { interpolate } from "../../../shared/src/lang/template.ts";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
+import { interpolate } from "@lebenswurzel/solawi-bedarf-shared/src/lang/template.ts";
 import ShopItem from "../components/ShopItem.vue";
 import { useProductStore } from "../store/productStore.ts";
 import { useUserStore } from "../store/userStore.ts";
@@ -28,11 +28,11 @@ import { useBIStore } from "../store/biStore";
 import { storeToRefs } from "pinia";
 import { useConfigStore } from "../store/configStore.ts";
 import SeasonText from "../components/styled/SeasonText.vue";
-import { UserWithOrders } from "../../../shared/src/types.ts";
+import { UserWithOrders } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { useRoute } from "vue-router";
 import { router } from "../routes.ts";
 import SeasonStatusElement from "../components/season/SeasonStatusElement.vue";
-import { getSeasonPhase } from "../../../shared/src/util/configHelper.ts";
+import { getSeasonPhase } from "@lebenswurzel/solawi-bedarf-shared/src/util/configHelper.ts";
 
 const t = language.pages.shop;
 

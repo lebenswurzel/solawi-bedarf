@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from "vue";
-import { Applicant } from "../../../../shared/src/types";
+import { Applicant } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { LMap, LTileLayer, LMarker, LPopup } from "@vue-leaflet/vue-leaflet";
 import "leaflet/dist/leaflet.css";
 import { icon, LatLngTuple } from "leaflet";
@@ -25,7 +25,7 @@ import { getOrder } from "../../requests/shop";
 import { storeToRefs } from "pinia";
 import { useUserStore } from "../../store/userStore";
 import { getApplicants } from "../../requests/applicant";
-import { ApplicantState } from "../../../../shared/src/enum";
+import { ApplicantState } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import { getAddressCoordinates } from "../../lib/addressUtils";
 
 const mapCenter = ref([51.0504, 13.7373] as [number, number]); // Center of Dresden

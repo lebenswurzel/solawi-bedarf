@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { appConfig } from "../../../../shared/src/config";
+import { appConfig } from "@lebenswurzel/solawi-bedarf-shared/src/config.ts";
 import {
   AdditionalShipmentItem,
   CapacityByDepotId,
@@ -23,7 +23,7 @@ import {
   OptionalId,
   Shipment,
   ShipmentItem,
-} from "../../../../shared/src/types";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { splitTotal, valueToDelivered } from "../convert";
 
 export const prepareShipment = (

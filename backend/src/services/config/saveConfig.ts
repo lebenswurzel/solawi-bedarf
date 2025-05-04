@@ -19,8 +19,8 @@ import { getUserFromContext } from "../getUserFromContext";
 import Koa from "koa";
 import Router from "koa-router";
 import { http } from "../../consts/http";
-import { UserRole } from "../../../../shared/src/enum";
-import { ExistingConfig } from "../../../../shared/src/types";
+import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import { ExistingConfig } from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import { RequisitionConfig } from "../../database/RequisitionConfig";
 
 export const saveConfig = async (
