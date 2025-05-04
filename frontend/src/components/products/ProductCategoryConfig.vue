@@ -19,18 +19,18 @@ import { ref } from "vue";
 import {
   ProductCategory,
   ProductCategoryWithProducts,
-} from "../../../../shared/src/types";
-import { language } from "../../../../shared/src/lang/lang";
-import { interpolate } from "../../../../shared/src/lang/template";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
+import { interpolate } from "@lebenswurzel/solawi-bedarf-shared/src/lang/template.ts";
 import ProductCategoryDialog from "../ProductCategoryDialog.vue";
 import ProductsTable from "./ProductsTable.vue";
 import { deleteProductCategory } from "../../requests/productCategory";
 import { useUiFeedback } from "../../store/uiFeedbackStore";
 import { useConfigStore } from "../../store/configStore";
 import { useProductStore } from "../../store/productStore";
-import { sanitizeFileName } from "../../../../shared/src/util/fileHelper";
-import { objectToCsv } from "../../../../shared/src/pdf/overviewPdfs";
-import { ProductCategoryType } from "../../../../shared/src/enum";
+import { sanitizeFileName } from "@lebenswurzel/solawi-bedarf-shared/src/util/fileHelper.ts";
+import { objectToCsv } from "@lebenswurzel/solawi-bedarf-shared/src/pdf/overviewPdfs.ts";
+import { ProductCategoryType } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 const t = language.pages.product;
 
 const props = defineProps<{

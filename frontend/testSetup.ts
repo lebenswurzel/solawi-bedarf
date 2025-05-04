@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { beforeEach } from "vitest";
-import { resetIds } from "../shared/testSetup";
+import { resetIds } from "@lebenswurzel/solawi-bedarf-shared/testSetup";
 
 beforeEach(() => {
   resetIds();

@@ -21,7 +21,7 @@ import Koa from "koa";
 import Router from "koa-router";
 import { Depot } from "../../database/Depot";
 import { Order } from "../../database/Order";
-import { UserRole } from "../../../../shared/src/enum";
+import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import { DepotInfo } from "./depotTypes";
 
 export const saveDepot = async (

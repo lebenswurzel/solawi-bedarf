@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { defineStore } from "pinia";
 import { computed, ref } from "vue";
-import type { ProductCategoryWithProducts } from "../../../shared/src/types.ts";
+import type { ProductCategoryWithProducts } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { getProductCategory } from "../requests/productCategory.ts";
 
 export const useProductStore = defineStore("productStore", () => {

@@ -14,7 +14,10 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { Applicant, User } from "../../../shared/src/types";
+import {
+  Applicant,
+  User,
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 
 export const applicantCreatedAtDown = (a: Applicant, b: Applicant) => {
   if (a.createdAt && b.createdAt) {

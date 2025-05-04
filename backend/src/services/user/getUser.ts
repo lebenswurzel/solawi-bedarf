@@ -20,8 +20,8 @@ import { AppDataSource } from "../../database/database";
 import { getTokenValidity, getUserFromContext } from "../getUserFromContext";
 import Koa from "koa";
 import Router from "koa-router";
-import { UserRole } from "../../../../shared/src/enum";
-import { GetUserResponse } from "../../../../shared/src/types";
+import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import { GetUserResponse } from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import { Applicant } from "../../database/Applicant";
 
 export const getUser = async (

@@ -16,13 +16,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { EditShipmentItem } from "../../../shared/src/types";
+import { EditShipmentItem } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { useConfigStore } from "../store/configStore";
 import { useBIStore } from "../store/biStore";
 import { storeToRefs } from "pinia";
 import { valueToDelivered } from "../lib/convert";
 import { unitDict, multiplicatorOptions } from "../lib/options";
-import { getLangUnit } from "../../../shared/src/util/unitHelper";
+import { getLangUnit } from "@lebenswurzel/solawi-bedarf-shared/src/util/unitHelper.ts";
 
 const props = defineProps<{
   shipmentItem: EditShipmentItem;

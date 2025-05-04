@@ -22,8 +22,11 @@ import { http } from "../../consts/http";
 import { Applicant } from "../../database/Applicant";
 import { User } from "../../database/User";
 import { FindOptionsWhere, IsNull, Not } from "typeorm";
-import { ApplicantState, UserRole } from "../../../../shared/src/enum";
-import { Address } from "../../../../shared/src/types";
+import {
+  ApplicantState,
+  UserRole,
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import { Address } from "@lebenswurzel/solawi-bedarf-shared/src/types";
 
 const getWhere = (
   applicantState: ApplicantState,

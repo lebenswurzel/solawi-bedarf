@@ -21,7 +21,7 @@ import { config } from "../config";
 import { AppDataSource } from "../database/database";
 import { Token } from "../database/Token";
 import { http } from "../consts/http";
-import { UserRole } from "../../../shared/src/enum";
+import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import { getNumericQueryParameter } from "../util/requestUtil";
 
 export const getUserFromContext = async (

@@ -18,8 +18,8 @@ import { getUserFromContext } from "../getUserFromContext";
 import { http } from "../../consts/http";
 import Koa from "koa";
 import Router from "koa-router";
-import { UserRole } from "../../../../shared/src/enum";
-import { UpdateDepot } from "../../../../shared/src/types";
+import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import { UpdateDepot } from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import { AppDataSource } from "../../database/database";
 import { Depot } from "../../database/Depot";
 

@@ -20,7 +20,7 @@ import {
   ConfirmedOrder,
   CreateConfigRequest,
   NewConfig,
-} from "../../../../shared/src/types";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import {
   TestAdminAndUserData,
   TestUserData,
@@ -37,7 +37,7 @@ import { AppDataSource } from "../../database/database";
 import { getConfig } from "./getConfig";
 import { createConfig } from "./createConfig";
 import { getDepotByName } from "../../../test/testHelpers";
-import { UserCategory } from "../../../../shared/src/enum";
+import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import { saveOrder } from "../order/saveOrder";
 import { Order } from "../../database/Order";
 

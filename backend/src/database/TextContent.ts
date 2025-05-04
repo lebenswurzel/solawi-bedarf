@@ -16,7 +16,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { Entity, Column, PrimaryGeneratedColumn } from "typeorm";
 import { BaseEntity } from "./BaseEntity";
-import { TextContentCategory, TextContentTyp } from "../../../shared/src/enum";
+import {
+  TextContentCategory,
+  TextContentTyp,
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 
 @Entity()
 export class TextContent extends BaseEntity {

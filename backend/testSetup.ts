@@ -21,7 +21,7 @@ import { initDb } from "./src/services/initDb";
 import { login } from "./src/services/user/login";
 import { afterEach, beforeAll, test } from "vitest";
 import { saveUser } from "./src/services/user/saveUser";
-import { UserRole } from "../shared/src/enum";
+import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import { Order } from "./src/database/Order";
 import { User } from "./src/database/User";
 import {

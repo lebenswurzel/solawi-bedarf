@@ -19,7 +19,7 @@ import Koa from "koa";
 import Router from "koa-router";
 import { AppDataSource } from "../../database/database";
 import { Order } from "../../database/Order";
-import { Order as OrderType } from "../../../../shared/src/types";
+import { Order as OrderType } from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import {
   getConfigIdFromQuery,
   getStringQueryParameter,

@@ -20,7 +20,7 @@ import Koa from "koa";
 import Router from "koa-router";
 import { http } from "../../consts/http";
 import { Product } from "../../database/Product";
-import { UserRole } from "../../../../shared/src/enum";
+import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 
 export const saveProduct = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,

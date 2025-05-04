@@ -16,13 +16,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import Koa from "koa";
 import Router from "koa-router";
-import { Unit } from "../../../../shared/src/enum";
+import { Unit } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import {
   CapacityByDepotId,
   DeliveredByProductIdDepotId,
   ProductsById,
   SoldByProductId,
-} from "../../../../shared/src/types";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import { Depot } from "../../database/Depot";
 import { Order } from "../../database/Order";
 import { ProductCategory } from "../../database/ProductCategory";

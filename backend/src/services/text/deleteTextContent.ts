@@ -20,7 +20,10 @@ import Koa from "koa";
 import Router from "koa-router";
 import { http } from "../../consts/http";
 import { TextContent } from "../../database/TextContent";
-import { TextContentCategory, UserRole } from "../../../../shared/src/enum";
+import {
+  TextContentCategory,
+  UserRole,
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 
 export const deleteTextContent = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,

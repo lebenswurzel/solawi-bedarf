@@ -25,7 +25,7 @@ import { BaseEntity } from "./BaseEntity";
 import { ShipmentItem } from "./ShipmentItem";
 import { AdditionalShipmentItem } from "./AdditionalShipmentItem";
 import { RequisitionConfig } from "./RequisitionConfig";
-import { RevisionMessageJson } from "../../../shared/src/types";
+import { RevisionMessageJson } from "@lebenswurzel/solawi-bedarf-shared/src/types";
 
 @Entity()
 export class Shipment extends BaseEntity {

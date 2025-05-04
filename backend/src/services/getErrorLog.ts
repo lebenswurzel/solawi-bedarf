@@ -16,12 +16,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import Koa from "koa";
 import Router from "koa-router";
-import { UserRole } from "../../../shared/src/enum";
+import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import { http } from "../consts/http";
 import { ErrorLog } from "../database/ErrorLog";
 import { AppDataSource } from "../database/database";
 import { getUserFromContext } from "./getUserFromContext";
-import { GetErrorLogResponse } from "../../../shared/src/types";
+import { GetErrorLogResponse } from "@lebenswurzel/solawi-bedarf-shared/src/types";
 
 export const getErrorLog = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,

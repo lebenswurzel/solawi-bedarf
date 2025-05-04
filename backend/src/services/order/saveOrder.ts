@@ -19,24 +19,27 @@ import { toZonedTime } from "date-fns-tz";
 import Koa from "koa";
 import Router from "koa-router";
 import { LessThan } from "typeorm";
-import { appConfig } from "../../../../shared/src/config";
-import { getMsrp } from "../../../../shared/src/msrp";
-import { generateUserData } from "../../../../shared/src/pdf/overviewPdfs";
-import { createDefaultPdf } from "../../../../shared/src/pdf/pdf";
-import { Address, ConfirmedOrder } from "../../../../shared/src/types";
+import { appConfig } from "@lebenswurzel/solawi-bedarf-shared/src/config";
+import { getMsrp } from "@lebenswurzel/solawi-bedarf-shared/src/msrp";
+import { generateUserData } from "@lebenswurzel/solawi-bedarf-shared/src/pdf/overviewPdfs";
+import { createDefaultPdf } from "@lebenswurzel/solawi-bedarf-shared/src/pdf/pdf";
+import {
+  Address,
+  ConfirmedOrder,
+} from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import {
   getRemainingDepotCapacity,
   checkOrderItemValid,
-} from "../../../../shared/src/validation/capacity";
+} from "@lebenswurzel/solawi-bedarf-shared/src/validation/capacity";
 import {
   isCategoryReasonValid,
   isOfferReasonValid,
   isOfferValid,
-} from "../../../../shared/src/validation/reason";
+} from "@lebenswurzel/solawi-bedarf-shared/src/validation/reason";
 import {
   isRequisitionActive,
   isValidBiddingOrder,
-} from "../../../../shared/src/validation/requisition";
+} from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition";
 import { config } from "../../config";
 import { http } from "../../consts/http";
 import { AppDataSource } from "../../database/database";
@@ -53,7 +56,7 @@ import { getUserOrderOverview } from "../getOverview";
 import { getRequestUserId, getUserFromContext } from "../getUserFromContext";
 import { getProductCategories } from "../product/getProductCategory";
 import { getOrganizationInfo } from "../text/getOrganizationInfo";
-import { formatDateForFilename } from "../../../../shared/src/util/dateHelper";
+import { formatDateForFilename } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper";
 
 export const saveOrder = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,

@@ -23,23 +23,23 @@ import {
   ProductsById,
   Shipment,
   ShipmentItem,
-} from "../../../../shared/src/types";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { multiplicatorOptions } from "../options";
 import { format } from "date-fns";
-import { sanitizeFileName } from "../../../../shared/src/util/fileHelper";
+import { sanitizeFileName } from "@lebenswurzel/solawi-bedarf-shared/src/util/fileHelper.ts";
 import {
   byKey,
   findDepotNameById,
   getOrCompute,
   inLocaleOrder,
-} from "../../../../shared/src/util/utils.ts";
-import { getLangUnit } from "../../../../shared/src/util/unitHelper.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/util/utils.ts";
+import { getLangUnit } from "@lebenswurzel/solawi-bedarf-shared/src/util/unitHelper.ts";
 import {
   createDefaultPdf,
   PdfSpec,
   PdfTable,
-} from "../../../../shared/src/pdf/pdf.ts";
-import { Zip } from "../../../../shared/src/pdf/zip.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/pdf/pdf.ts";
+import { Zip } from "@lebenswurzel/solawi-bedarf-shared/src/pdf/zip.ts";
 import { TCreatedPdf } from "pdfmake/build/pdfmake";
 
 type ProductRow = [string, string, string];

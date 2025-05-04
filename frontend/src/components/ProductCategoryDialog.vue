@@ -20,13 +20,13 @@ import {
   NewProductCategory,
   OptionalId,
   ProductCategory,
-} from "../../../shared/src/types.ts";
-import { language } from "../../../shared/src/lang/lang.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
 import { useUiFeedback } from "../store/uiFeedbackStore.ts";
 import { ref, watch } from "vue";
 import { useConfigStore } from "../store/configStore.ts";
 import { useProductStore } from "../store/productStore.ts";
-import { ProductCategoryType } from "../../../shared/src/enum.ts";
+import { ProductCategoryType } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 const t = language.pages.product.dialog;
 
 const uiFeedback = useUiFeedback();
@@ -128,4 +128,3 @@ const onSave = async () => {
     </v-card>
   </v-dialog>
 </template>
-../../../shared/src/types.ts

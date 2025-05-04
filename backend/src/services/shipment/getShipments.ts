@@ -20,7 +20,7 @@ import { Shipment } from "../../database/Shipment";
 import { http } from "../../consts/http";
 import { AppDataSource } from "../../database/database";
 import { getUserFromContext } from "../getUserFromContext";
-import { UserRole } from "../../../../shared/src/enum";
+import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import {
   getConfigIdFromQuery,
   getIncludeItemsFromQuery,

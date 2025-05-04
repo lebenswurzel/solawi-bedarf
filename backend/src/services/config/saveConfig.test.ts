@@ -20,7 +20,7 @@ import {
   CreateConfigRequest,
   ExistingConfig,
   NewConfig,
-} from "../../../../shared/src/types";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import {
   TestUserData,
   createBasicTestCtx,

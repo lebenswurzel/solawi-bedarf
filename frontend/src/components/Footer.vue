@@ -18,9 +18,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { ref } from "vue";
 import ImprintDialog from "./ImprintDialog.vue";
 import PrivacyNoticeDialog from "./PrivacyNoticeDialog.vue";
-import { appConfig } from "../../../shared/src/config";
-import { language } from "../../../shared/src/lang/lang";
-import { buildInfo } from "../../../shared/src/buildInfo";
+import { appConfig } from "@lebenswurzel/solawi-bedarf-shared/src/config.ts";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
+import { buildInfo } from "@lebenswurzel/solawi-bedarf-shared/src/buildInfo.ts";
 
 const imprint = ref(false);
 const privacyNotice = ref(false);

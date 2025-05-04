@@ -23,14 +23,14 @@ import {
   DeliveredByProductIdDepotId,
   ProductsById,
   SoldByProductId,
-} from "../../../shared/src/types.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { getBI } from "../requests/bi.ts";
 import { useUserStore } from "./userStore.ts";
-import { getMsrp } from "../../../shared/src/msrp.ts";
+import { getMsrp } from "@lebenswurzel/solawi-bedarf-shared/src/msrp.ts";
 import {
   isIncreaseOnly,
   isRequisitionActive,
-} from "../../../shared/src/validation/requisition.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition.ts";
 
 export const useBIStore = defineStore("bi", () => {
   const now = ref<Date>(new Date());

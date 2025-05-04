@@ -1,5 +1,5 @@
 {
-  "name": "backend",
+  "name": "@lebenswurzel/solawi-bedarf-backend",
   "version": "1.0.0",
   "description": "",
   "main": "index.ts",
@@ -39,7 +39,8 @@
     "prettier": "^3.0.3",
     "reflect-metadata": "^0.2.1",
     "ts-node": "^10.9.1",
-    "typeorm": "^0.3.17"
+    "typeorm": "^0.3.17",
+    "@lebenswurzel/solawi-bedarf-shared":  "file:../shared"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^3.0.5",

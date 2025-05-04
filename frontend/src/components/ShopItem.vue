@@ -15,8 +15,8 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { language } from "../../../shared/src/lang/lang.ts";
-import { interpolate } from "../../../shared/src/lang/template.ts";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
+import { interpolate } from "@lebenswurzel/solawi-bedarf-shared/src/lang/template.ts";
 import { useOrderStore } from "../store/orderStore.ts";
 import { computed, onMounted, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
@@ -26,11 +26,11 @@ import {
   getMinAvailable,
   sanitizeOrderItem,
   checkOrderItemValid,
-} from "../../../shared/src/validation/capacity.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/validation/capacity.ts";
 import { useUserStore } from "../store/userStore.ts";
 import { useConfigStore } from "../store/configStore.ts";
-import { isIncreaseOnly } from "../../../shared/src/validation/requisition";
-import { getLangUnit } from "../../../shared/src/util/unitHelper.ts";
+import { isIncreaseOnly } from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition.ts";
+import { getLangUnit } from "@lebenswurzel/solawi-bedarf-shared/src/util/unitHelper.ts";
 
 const t = language.pages.shop.cards.products.item;
 

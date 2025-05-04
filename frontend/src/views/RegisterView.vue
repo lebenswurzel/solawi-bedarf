@@ -30,7 +30,7 @@ import {
   streetRules,
   cityRules,
 } from "../lib/validation";
-import { Address } from "../../../shared/src/types";
+import { Address } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { useTextContentStore } from "../store/textContentStore.js";
 import { storeToRefs } from "pinia";
 
@@ -227,4 +227,3 @@ const click = async () => {
     </div>
   </div>
 </template>
-../../../shared/src/types.js

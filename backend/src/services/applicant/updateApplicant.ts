@@ -22,7 +22,7 @@ import { Applicant } from "../../database/Applicant";
 import { getUserFromContext } from "../getUserFromContext";
 import { User } from "../../database/User";
 import { UserAddress } from "../../database/UserAddress";
-import { UserRole } from "../../../../shared/src/enum";
+import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 
 export const updateApplicant = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,

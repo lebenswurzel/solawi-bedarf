@@ -18,12 +18,12 @@ import { marked } from "marked";
 import { AppDataSource } from "../../database/database";
 import { Order } from "../../database/Order";
 import { User } from "../../database/User";
-import { language } from "../../../../shared/src/lang/lang";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang";
 import { RequisitionConfig } from "../../database/RequisitionConfig";
-import { interpolate } from "../../../../shared/src/lang/template";
+import { interpolate } from "@lebenswurzel/solawi-bedarf-shared/src/lang/template";
 import { format } from "date-fns";
-import { UserCategory } from "../../../../shared/src/enum";
-import { OrganizationInfo } from "../../../../shared/src/types";
+import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import { OrganizationInfo } from "@lebenswurzel/solawi-bedarf-shared/src/types";
 
 const emailHtmlTemplate = `<html>
   <head>

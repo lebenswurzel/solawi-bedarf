@@ -1,5 +1,5 @@
 {
-  "name": "frontend",
+  "name": "@lebenswurzel/solawi-bedarf-frontend",
   "version": "1.0.0",
   "description": "",
   "type": "module",
@@ -36,7 +36,8 @@
     "vue-leaflet": "^0.1.0",
     "vue-router": "^4.2.4",
     "vue-tsc": "^2.0.6",
-    "vuetify": "^3.5.11"
+    "vuetify": "^3.5.11",
+    "@lebenswurzel/solawi-bedarf-shared":  "file:../shared"
   },
   "devDependencies": {
     "@types/papaparse": "^5.3.15",

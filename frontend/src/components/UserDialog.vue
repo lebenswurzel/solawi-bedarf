@@ -17,9 +17,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <script setup lang="ts">
 import { saveUser } from "../requests/user.ts";
 import { inject, Ref, ref, watchEffect } from "vue";
-import { language } from "../../../shared/src/lang/lang.ts";
-import { isIdType, NewUser, User } from "../../../shared/src/types.ts";
-import { UserRole } from "../../../shared/src/enum.ts";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
+import {
+  isIdType,
+  NewUser,
+  User,
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
+import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import { storeToRefs } from "pinia";
 import { useConfigStore } from "../store/configStore";
 import { getOrder } from "../requests/shop";

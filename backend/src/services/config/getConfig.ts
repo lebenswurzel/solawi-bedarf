@@ -21,9 +21,12 @@ import { Depot } from "../../database/Depot";
 import { RequisitionConfig } from "../../database/RequisitionConfig";
 import { AppDataSource } from "../../database/database";
 import { getUserFromContext } from "../getUserFromContext";
-import { AvailableConfig, ConfigResponse } from "../../../../shared/src/types";
+import {
+  AvailableConfig,
+  ConfigResponse,
+} from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import { getNumericQueryParameter } from "../../util/requestUtil";
-import { UserRole } from "../../../../shared/src/enum";
+import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import { User } from "../../database/User";
 import { Order } from "../../database/Order";
 

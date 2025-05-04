@@ -2,6 +2,10 @@ FROM node:18-alpine AS builder
 
 WORKDIR /build_frontend
 
+COPY shared/package.json ./shared/
+COPY shared/package-lock.json ./shared/
+COPY shared/tsconfig.json ./shared/
+
 COPY frontend/package.json ./frontend/
 COPY frontend/package-lock.json ./frontend/
 COPY frontend/tsconfig.json ./frontend/
@@ -9,12 +13,6 @@ COPY frontend/tsconfig.node.json ./frontend/
 COPY frontend/vite.config.ts ./frontend/
 
 RUN cd frontend && npm ci && cd ..
-
-# Install shared dependencies
-COPY shared/package.json ./shared/
-COPY shared/package-lock.json ./shared/
-COPY shared/tsconfig.json ./shared/
-RUN cd shared && npm ci && cd ..
 
 # Copy code
 COPY frontend/public ./frontend/public

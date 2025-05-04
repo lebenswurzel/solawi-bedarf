@@ -16,17 +16,20 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
-import { Applicant, ApplicantExport } from "../../../../shared/src/types";
+import {
+  Applicant,
+  ApplicantExport,
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { activateApplicant, getApplicants } from "../../requests/applicant";
-import { ApplicantState } from "../../../../shared/src/enum";
+import { ApplicantState } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import BusyIndicator from "../BusyIndicator.vue";
 import { useUiFeedback } from "../../store/uiFeedbackStore";
 import Papa from "papaparse";
-import { sanitizeFileName } from "../../../../shared/src/util/fileHelper";
-import { pick } from "../../../../shared/src/util/utils";
-import { prettyDate } from "../../../../shared/src/util/dateHelper";
-import { language } from "../../../../shared/src/lang/lang";
-import { escapeHtmlEntities } from "../../../../shared/src/util/stringHelper";
+import { sanitizeFileName } from "@lebenswurzel/solawi-bedarf-shared/src/util/fileHelper.ts";
+import { pick } from "@lebenswurzel/solawi-bedarf-shared/src/util/utils.ts";
+import { prettyDate } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper.ts";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
+import { escapeHtmlEntities } from "@lebenswurzel/solawi-bedarf-shared/src/util/stringHelper.ts";
 import { useRoute } from "vue-router";
 
 const props = defineProps<{

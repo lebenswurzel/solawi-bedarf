@@ -19,9 +19,12 @@ import { getUserFromContext } from "../getUserFromContext";
 import Koa from "koa";
 import Router from "koa-router";
 import { http } from "../../consts/http";
-import { UserRole } from "../../../../shared/src/enum";
+import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import { RequisitionConfig } from "../../database/RequisitionConfig";
-import { CreateConfigRequest, NewConfig } from "../../../../shared/src/types";
+import {
+  CreateConfigRequest,
+  NewConfig,
+} from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import { copyProductCategories } from "../../util/productUtil";
 
 export const createConfig = async (

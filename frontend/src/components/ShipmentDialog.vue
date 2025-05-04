@@ -24,7 +24,7 @@ import {
 } from "date-fns";
 import { storeToRefs } from "pinia";
 import { computed, ref, watchEffect } from "vue";
-import { language } from "../../../shared/src/lang/lang.ts";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
 import {
   EditAdditionalShipmentItem,
   EditShipment,
@@ -33,11 +33,11 @@ import {
   OptionalId,
   Shipment,
   ShipmentFullInformation,
-} from "../../../shared/src/types.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import {
   prettyDate,
   prettyDateWithDayName,
-} from "../../../shared/src/util/dateHelper.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper.ts";
 import { dateToString, stringToDate } from "../lib/convert.ts";
 import { prepareShipment } from "../lib/shipment/prepareShipment.ts";
 import { createShipmentOverviewPdf } from "../lib/shipment/shipmentOverviewPdf.ts";
@@ -50,7 +50,7 @@ import { useTextContentStore } from "../store/textContentStore.ts";
 import { useUiFeedback } from "../store/uiFeedbackStore.ts";
 import AdditionalShipmentItem from "./AdditionalShipmentItem.vue";
 import ShipmentItem from "./ShipmentItem.vue";
-import { ProductCategoryType } from "../../../shared/src/enum.ts";
+import { ProductCategoryType } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 
 const t = language.pages.shipment.dialog;
 

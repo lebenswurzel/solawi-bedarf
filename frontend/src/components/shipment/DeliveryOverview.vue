@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { ProductCategoryWithProducts } from "../../../../shared/src/types";
+import { ProductCategoryWithProducts } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { useConfigStore } from "../../store/configStore";
 import { useBIStore } from "../../store/biStore";
 import { storeToRefs } from "pinia";

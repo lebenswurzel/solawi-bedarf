@@ -24,7 +24,7 @@ import { UserAddress } from "../../database/UserAddress";
 import { sendEmail } from "../email/email";
 import { config } from "../../config";
 import { getOrganizationInfo } from "../text/getOrganizationInfo";
-import { Address } from "../../../../shared/src/types";
+import { Address } from "@lebenswurzel/solawi-bedarf-shared/src/types";
 
 export const saveApplicant = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,

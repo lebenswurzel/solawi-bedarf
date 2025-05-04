@@ -22,16 +22,16 @@ import {
   generateDepotData,
   generateOverviewCsv,
   generateUserData,
-} from "../../../shared/src/pdf/overviewPdfs.ts";
-import { sanitizeFileName } from "../../../shared/src/util/fileHelper";
+} from "@lebenswurzel/solawi-bedarf-shared/src/pdf/overviewPdfs.ts";
+import { sanitizeFileName } from "@lebenswurzel/solawi-bedarf-shared/src/util/fileHelper.ts";
 import { useConfigStore } from "../store/configStore.ts";
 import { useUiFeedback } from "../store/uiFeedbackStore.ts";
-import { Zip } from "../../../shared/src/pdf/zip.ts";
-import { createDefaultPdf } from "../../../shared/src/pdf/pdf.ts";
+import { Zip } from "@lebenswurzel/solawi-bedarf-shared/src/pdf/zip.ts";
+import { createDefaultPdf } from "@lebenswurzel/solawi-bedarf-shared/src/pdf/pdf.ts";
 import { useTextContentStore } from "../store/textContentStore.ts";
 import { storeToRefs } from "pinia";
-import { formatDateForFilename } from "../../../shared/src/util/dateHelper.ts";
-import { language } from "../../../shared/src/lang/lang.ts";
+import { formatDateForFilename } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper.ts";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
 
 const loading = ref({
   csv: false,

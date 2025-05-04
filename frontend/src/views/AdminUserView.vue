@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <script setup lang="ts">
 import { onMounted, provide, ref, watch } from "vue";
 import UserDialog from "../components/UserDialog.vue";
-import { language } from "../../../shared/src/lang/lang.ts";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
 import { useUserStore } from "../store/userStore.ts";
 import { storeToRefs } from "pinia";
 import { useConfigStore } from "../store/configStore";
@@ -27,12 +27,12 @@ import {
   User,
   UserOrder,
   UserWithOrders,
-} from "../../../shared/src/types";
-import { UserRole } from "../../../shared/src/enum";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
+import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import { computed } from "@vue/reactivity";
 import { updateUser } from "../requests/user.ts";
 import { useUiFeedback } from "../store/uiFeedbackStore.ts";
-import { prettyDate } from "../../../shared/src/util/dateHelper.ts";
+import { prettyDate } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper.ts";
 import { useRoute } from "vue-router";
 
 const t = language.pages.user;
@@ -395,4 +395,3 @@ const tableItems = computed(() => {
     </v-card>
   </v-dialog>
 </template>
-../../../shared/src/types.ts

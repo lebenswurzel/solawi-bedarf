@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { MigrationInterface, QueryRunner } from "typeorm";
-import { ProductCategoryType } from "../../../shared/src/enum";
+import { ProductCategoryType } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 
 export class AddProductCategoryType1731067417340 implements MigrationInterface {
   name = "AddProductCategoryType1731067417340";

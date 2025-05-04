@@ -26,12 +26,12 @@ import {
   MILK_PRODUCTS,
   TOMATO,
   VEGETABLES,
-} from "../../../../shared/testSetup.ts";
-import { grouping } from "../../../../shared/src/util/utils.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/testSetup";
+import { grouping } from "@lebenswurzel/solawi-bedarf-shared/src/util/utils";
 import {
   ProductCategoryWithProducts,
   ProductsById,
-} from "../../../../shared/src/types.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import { createShipmentOverviewPdfSpec } from "./shipmentOverviewPdf.ts";
 
 function getProductsById(

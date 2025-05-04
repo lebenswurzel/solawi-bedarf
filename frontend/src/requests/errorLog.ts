@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { GetErrorLogResponse } from "../../../shared/src/types.ts";
+import { GetErrorLogResponse } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { getUrl, verifyResponse } from "./requests.ts";
 
 // auxiliary type that allows receiving the date as string for later conversion to a Date object

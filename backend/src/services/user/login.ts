@@ -28,7 +28,7 @@ import { getUserFromContext } from "../getUserFromContext";
 import { invalidateTokenForUser } from "../../token";
 import http from "http";
 import { verifyLDAP } from "../ldap/ldap";
-import { UserRole } from "../../../../shared/src/enum";
+import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import { fromZonedTime, toZonedTime } from "date-fns-tz";
 
 export const login = async (

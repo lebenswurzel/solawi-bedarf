@@ -28,14 +28,14 @@ import {
   TextContentCategory,
   TextContentTyp,
   isMultiContentCategory,
-} from "../../../shared/src/enum";
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import {
   basicOrganizationInfo,
   organizationInfoKeys,
   pdfTextsDefaults,
   pdfTextsKeys,
-} from "../../../shared/src/config";
-import { getOrganizationInfoValueByKey } from "../../../shared/src/text/textContent";
+} from "@lebenswurzel/solawi-bedarf-shared/src/config";
+import { getOrganizationInfoValueByKey } from "@lebenswurzel/solawi-bedarf-shared/src/text/textContent";
 
 export const initDb = async () => {
   const userCount = await AppDataSource.getRepository(User).count();

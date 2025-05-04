@@ -18,7 +18,7 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from "typeorm";
 import { BaseEntity } from "./BaseEntity";
 import { Shipment } from "./Shipment";
 import { Depot } from "./Depot";
-import { Unit } from "../../../shared/src/enum";
+import { Unit } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 
 @Entity()
 export class AdditionalShipmentItem extends BaseEntity {

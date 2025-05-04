@@ -15,8 +15,8 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { EditAdditionalShipmentItem } from "../../../shared/src/types";
-import { Unit } from "../../../shared/src/enum";
+import { EditAdditionalShipmentItem } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
+import { Unit } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import { useConfigStore } from "../store/configStore";
 import { storeToRefs } from "pinia";
 import { useBIStore } from "../store/biStore";

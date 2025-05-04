@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { language } from "../../../shared/src/lang/lang.ts";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
 import { computed, onMounted, ref } from "vue";
 import { useUserStore } from "../store/userStore.ts";
 import { storeToRefs } from "pinia";
@@ -24,7 +24,7 @@ import { useRouter } from "vue-router";
 import { useConfigStore } from "../store/configStore.ts";
 import { useProductStore } from "../store/productStore.ts";
 import { useOrderStore } from "../store/orderStore.ts";
-import { UserRole } from "../../../shared/src/enum";
+import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import { useTheme } from "vuetify";
 import SeasonSelector from "./SeasonSelector.vue";
 

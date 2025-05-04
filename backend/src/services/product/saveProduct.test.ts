@@ -15,8 +15,11 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { expect, test } from "vitest";
-import { NewProduct, OptionalId } from "../../../../shared/src/types";
-import { genProduct } from "../../../../shared/testSetup";
+import {
+  NewProduct,
+  OptionalId,
+} from "@lebenswurzel/solawi-bedarf-shared/src/types";
+import { genProduct } from "@lebenswurzel/solawi-bedarf-shared/testSetup";
 import { createTestProductCategory } from "../../../test/testHelpers";
 import {
   createBasicTestCtx,

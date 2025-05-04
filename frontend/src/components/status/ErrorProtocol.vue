@@ -17,12 +17,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <script setup lang="ts">
 import { onMounted, ref, computed } from "vue";
 import { getErrorLog } from "../../requests/errorLog";
-import { GetErrorLogResponse } from "../../../../shared/src/types";
+import { GetErrorLogResponse } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { useUiFeedback } from "../../store/uiFeedbackStore";
-import { prettyDate } from "../../../../shared/src/util/dateHelper";
+import { prettyDate } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper.ts";
 import { safeCopyToClipboard } from "../../lib/utils";
-import { appConfig } from "../../../../shared/src/config";
-import { buildInfo } from "../../../../shared/src/buildInfo";
+import { appConfig } from "@lebenswurzel/solawi-bedarf-shared/src/config.ts";
+import { buildInfo } from "@lebenswurzel/solawi-bedarf-shared/src/buildInfo.ts";
 
 declare const navigator: Navigator;
 

@@ -18,8 +18,8 @@ import { MigrationInterface, QueryRunner } from "typeorm";
 import {
   basicOrganizationInfo,
   organizationInfoKeys,
-} from "../../../shared/src/config";
-import { getOrganizationInfoValueByKey } from "../../../shared/src/text/textContent";
+} from "@lebenswurzel/solawi-bedarf-shared/src/config";
+import { getOrganizationInfoValueByKey } from "@lebenswurzel/solawi-bedarf-shared/src/text/textContent";
 
 export class OrganizationInfoTextContent1738274522237
   implements MigrationInterface

@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { defineStore } from "pinia";
 import { computed, onUnmounted, ref } from "vue";
-import type { UserWithOrders } from "../../../shared/src/types.ts";
+import type { UserWithOrders } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { getUser } from "../requests/user.ts";
 
 export enum LoginState {

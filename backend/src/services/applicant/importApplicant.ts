@@ -18,12 +18,12 @@ import { http } from "../../consts/http";
 import Koa from "koa";
 import Router from "koa-router";
 import { getUserFromContext } from "../getUserFromContext";
-import { UserRole } from "../../../../shared/src/enum";
+import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import {
   Address,
   ImportApplicantRequest,
   ImportApplicantsResponse,
-} from "../../../../shared/src/types";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import { AppDataSource } from "../../database/database";
 import { Applicant } from "../../database/Applicant";
 import { User } from "../../database/User";

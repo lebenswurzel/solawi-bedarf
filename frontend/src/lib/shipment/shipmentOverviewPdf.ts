@@ -21,14 +21,14 @@ import {
   ProductCategoryWithProducts,
   ProductsById,
   Shipment,
-} from "../../../../shared/src/types";
-import { sanitizeFileName } from "../../../../shared/src/util/fileHelper";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
+import { sanitizeFileName } from "@lebenswurzel/solawi-bedarf-shared/src/util/fileHelper.ts";
 import { format } from "date-fns/format";
-import { getLangUnit } from "../../../../shared/src/util/unitHelper";
+import { getLangUnit } from "@lebenswurzel/solawi-bedarf-shared/src/util/unitHelper.ts";
 import {
   generateOverviewPdf,
   HeaderSortKeys,
-} from "../../../../shared/src/pdf/pdf";
+} from "@lebenswurzel/solawi-bedarf-shared/src/pdf/pdf.ts";
 
 type DepotKey = string;
 type ProductCategoryKey = string;
