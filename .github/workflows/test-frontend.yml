@@ -9,7 +9,7 @@ jobs:
   test-frontend:
     if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
-    container: node:18
+    container: node:22
 
     steps:
       - uses: actions/checkout@v4
