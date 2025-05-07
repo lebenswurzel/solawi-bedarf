@@ -20,7 +20,7 @@ jobs:
 
       - uses: GuillaumeFalourd/wait-sleep-action@v1
         with:
-          time: "10"
+          time: "20"
 
       - name: Smoke test backend connection
         run: ./dev/ci/backend-smoke-test.bash
