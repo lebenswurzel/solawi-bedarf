@@ -48,6 +48,8 @@ function genOrder(
     category: UserCategory.CAT115,
     categoryReason: "Just do it :)",
     items: [],
+    identifier: "abc",
+    seasonName: "xyz",
   };
   return { ...base, ...overwrite };
 }
