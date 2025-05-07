@@ -39,6 +39,21 @@ export const addMonths = (date: Date, monthsDiff: number): Date => {
   return result;
 };
 
+export const dayDifference = (earlierDate: Date, laterDate: Date): number => {
+  const start = new Date(
+    earlierDate.getFullYear(),
+    earlierDate.getMonth(),
+    earlierDate.getDate()
+  );
+  const end = new Date(
+    laterDate.getFullYear(),
+    laterDate.getMonth(),
+    laterDate.getDate()
+  );
+  const diffTime = end.getTime() - start.getTime();
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+};
+
 export const formatDateForFilename = (date: Date): string => {
   return format(date, "yyyy-MM-dd HH_mm_ss");
 };
@@ -55,4 +70,57 @@ export const prettyDate = (
 
 export const prettyDateWithDayName = (date?: Date | string | null): string => {
   return date ? format(date, "EEEE, d. MMMM yyyy", { locale: de }) : "nie";
+};
+
+export const countThursdaysBetweenDates = (
+  earlierDate: Date, // included if Thursday
+  laterDate: Date // excluded if Thursday
+) => {
+  // Normalize dates to start of day to avoid time-of-day issues
+  const start = new Date(
+    earlierDate.getFullYear(),
+    earlierDate.getMonth(),
+    earlierDate.getDate()
+  );
+  const end = new Date(
+    laterDate.getFullYear(),
+    laterDate.getMonth(),
+    laterDate.getDate()
+  );
+
+  // Get day of week (0 = Sunday, 4 = Thursday)
+  const startDay = start.getDay();
+
+  // Calculate days until first Thursday
+  const daysToThursday = (4 - startDay + 7) % 7;
+
+  // Add days to get to first Thursday
+  const firstThursday = new Date(start);
+  firstThursday.setDate(start.getDate() + daysToThursday);
+
+  // If first Thursday is after end date, return 0
+  if (firstThursday > end) {
+    return 0;
+  }
+
+  // Calculate number of weeks between first Thursday and end date
+  const days = Math.floor(
+    (end.getTime() - firstThursday.getTime()) / (1000 * 60 * 60 * 24)
+  );
+  const excludeLastThursday = end.getDay() == 4 ? 0 : 1;
+  const thursdays = Math.floor(days / 7) + excludeLastThursday; // don't include if end date is a Thursday
+
+  return thursdays;
+};
+
+export const getSameOrNextThursday = (date: Date): Date => {
+  const dateOnly = new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate()
+  );
+  const day = dateOnly.getDay();
+
+  const daysToThursday = (4 - day + 7) % 7;
+  return addDays(dateOnly, daysToThursday);
 };
