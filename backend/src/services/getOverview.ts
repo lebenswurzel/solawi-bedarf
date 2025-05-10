@@ -22,7 +22,11 @@ import { getUserFromContext } from "./getUserFromContext";
 import { AppDataSource } from "../database/database";
 import { MoreThan } from "typeorm";
 import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
-import { calculateMsrpWeights, getMsrp } from "@lebenswurzel/solawi-bedarf-shared/src/msrp";
+import {
+  calculateMsrpWeights,
+  calculateOrderValidMonths,
+  getMsrp,
+} from "@lebenswurzel/solawi-bedarf-shared/src/msrp";
 import { bi } from "./bi/bi";
 import {
   getConfigIdFromQuery,
@@ -34,6 +38,7 @@ import {
   OrderOverviewWithApplicantItem,
 } from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import { Applicant } from "../database/Applicant";
+import { config } from "../config";
 
 export const getOverview = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -154,7 +159,16 @@ export const getUserOrderOverview = async (
 
   return Promise.all(
     orders.map(async (order) => {
-      const msrp = getMsrp(order.category, order.orderItems, productsById);
+      const msrp = getMsrp(
+        order.category,
+        order.orderItems,
+        productsById,
+        calculateOrderValidMonths(
+          order.validFrom,
+          order.requisitionConfig.validTo,
+          config.timezone,
+        ),
+      );
 
       const applicantData = await getApplicantAddress(order.user.id);
       return {
@@ -166,7 +180,7 @@ export const getUserOrderOverview = async (
         ),
         depot: order.depot.name,
         alternateDepot: order.alternateDepot?.name,
-        msrp: msrp.total,
+        msrp: msrp.monthly.total,
         offer: order.offer,
         offerReason: order.offerReason || "",
         category: order.category,

@@ -26,8 +26,9 @@ import {
   ProductId,
   ProductsById,
 } from "./types";
+import { countCalendarMonths, getSameOrNextThursday } from "./util/dateHelper";
 
-const getBaseMsrp = (orderItem: OrderItem, product: Product) => {
+const getYearlyBaseMsrp = (orderItem: OrderItem, product: Product) => {
   if (product) {
     const conversion = product.unit == Unit.PIECE ? 100 : 100000; // convert ct/kg & ct/pcs too €/g & €/pcs
     return (
@@ -37,11 +38,15 @@ const getBaseMsrp = (orderItem: OrderItem, product: Product) => {
   return 0;
 };
 
-const adjustMsrp = (baseMsrp: number, category: UserCategory) => {
+const adjustMsrp = (
+  baseMsrp: number,
+  category: UserCategory,
+  months: number
+) => {
   if (baseMsrp > 0) {
     return (
       appConfig.msrp[category].absolute +
-      Math.ceil((appConfig.msrp[category].relative * baseMsrp) / 12)
+      Math.ceil((appConfig.msrp[category].relative * baseMsrp) / months)
     );
   }
   return 0;
@@ -51,12 +56,13 @@ export const getMsrp = (
   category: UserCategory,
   orderItems: OrderItem[],
   productById: ProductsById,
+  months: number,
   productMsrpWeights?: { [key: ProductId]: number }
 ): Msrp => {
   const baseMsrp = orderItems.reduce(
     (acc, orderItem) =>
       acc +
-      getBaseMsrp(orderItem, productById[orderItem.productId]) *
+      getYearlyBaseMsrp(orderItem, productById[orderItem.productId]) *
         (productMsrpWeights ? productMsrpWeights[orderItem.productId] : 1),
     0
   );
@@ -65,17 +71,26 @@ export const getMsrp = (
       acc +
       (productById[orderItem.productId]?.productCategoryType ==
       ProductCategoryType.SELFGROWN
-        ? getBaseMsrp(orderItem, productById[orderItem.productId]) *
+        ? getYearlyBaseMsrp(orderItem, productById[orderItem.productId]) *
           (productMsrpWeights ? productMsrpWeights[orderItem.productId] : 1)
         : 0),
     0
   );
-  const adjustedTotal = adjustMsrp(baseMsrp, category);
-  const adjustedSelfgrown = adjustMsrp(selfgrownMsrp, category);
+
+  const adjustedMonthlyTotal = adjustMsrp(baseMsrp, category, months);
+  const adjustedMonthlySelfgrown = adjustMsrp(selfgrownMsrp, category, months);
   return {
-    total: adjustedTotal,
-    selfgrown: adjustedSelfgrown,
-    cooperation: adjustedTotal - adjustedSelfgrown,
+    monthly: {
+      total: adjustedMonthlyTotal,
+      selfgrown: adjustedMonthlySelfgrown,
+      cooperation: adjustedMonthlyTotal - adjustedMonthlySelfgrown,
+    },
+    yearly: {
+      total: adjustedMonthlyTotal * months,
+      selfgrown: adjustedMonthlySelfgrown * months,
+      cooperation: (adjustedMonthlyTotal - adjustedMonthlySelfgrown) * months,
+    },
+    months,
   };
 };
 
@@ -93,4 +108,21 @@ export const calculateMsrpWeights = (
           100,
     ])
   );
+};
+
+export const calculateOrderValidMonths = (
+  orderValidFrom?: Date | null,
+  seasonValidTo?: Date,
+  timezone?: string
+): number => {
+  console.log("calc order valid months", orderValidFrom, seasonValidTo);
+  if (orderValidFrom && seasonValidTo) {
+    let firstShipment = getSameOrNextThursday(orderValidFrom);
+    console.log("first shipment", firstShipment);
+    return Math.min(
+      countCalendarMonths(firstShipment, seasonValidTo, timezone),
+      12
+    );
+  }
+  return 12;
 };

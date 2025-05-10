@@ -71,13 +71,6 @@ const isFirstDeliveryInThePast = computed(() => {
   }
   return new Date().getTime() - firstThursdayOfDelivery.value.getTime() > 0;
 });
-
-const deliveriesBeforeFirstDelivery = computed(() => {
-  if (!firstThursdayOfDelivery.value) {
-    return 0;
-  }
-  return countThursdaysBetweenDates(new Date(), firstThursdayOfDelivery.value);
-});
 </script>
 <template>
   <v-card variant="outlined" color="primary">
@@ -91,21 +84,10 @@ const deliveriesBeforeFirstDelivery = computed(() => {
       {{ prettyDate(endDate) }} ({{ deliveries }} Verteilungen)</v-card-text
     >
     <template v-if="!isFirstDeliveryInThePast">
-      <v-card-text class="py-1" v-if="deliveriesBeforeFirstDelivery > 0"
-        >Es stehen noch {{ deliveriesBeforeFirstDelivery }} Lieferungen vor
-        deiner ersten Verteilung aus. Der genaue Orientierungswert wird erst
-        kurz vor deiner ersten Lieferung berechnet.
-      </v-card-text>
-      <v-card-text class="py-1" v-else
-        >Deine erste Lieferung steht kurz bevor. Dein Orientierungswert wurde
-        auf Grundlage der in den verbleibenden Lieferungen geschätzten
-        Liefermengen berechnet.</v-card-text
-      >
       <v-card-text class="py-1"
-        >Tage bis zur ersten Lieferung:
-        {{
-          dayDifference(new Date(), firstThursdayOfDelivery || new Date())
-        }}</v-card-text
+        >Noch
+        {{ dayDifference(new Date(), firstThursdayOfDelivery || new Date()) }}
+        Tage bis zu deiner ersten Verteilung.</v-card-text
       >
     </template>
   </v-card>

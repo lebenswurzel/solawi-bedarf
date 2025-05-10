@@ -15,6 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { format } from "date-fns";
+import { toZonedTime } from "date-fns-tz";
 import { de } from "date-fns/locale";
 
 export const addYears = (date: Date, yearsDiff: number): Date => {
@@ -123,4 +124,28 @@ export const getSameOrNextThursday = (date: Date): Date => {
 
   const daysToThursday = (4 - day + 7) % 7;
   return addDays(dateOnly, daysToThursday);
+};
+
+export const countCalendarMonths = (
+  date1: Date,
+  date2: Date,
+  timezone?: string
+) => {
+  let earlierDate = date1.getTime() < date2.getTime() ? date1 : date2;
+  let laterDate = date1.getTime() < date2.getTime() ? date2 : date1;
+  if (timezone) {
+    earlierDate = toZonedTime(earlierDate, timezone);
+    laterDate = toZonedTime(laterDate, timezone);
+  }
+
+  const earlierYear = earlierDate.getFullYear();
+  const earlierMonth = earlierDate.getMonth();
+
+  const laterYear = laterDate.getFullYear();
+  const laterMonth = laterDate.getMonth();
+
+  const monthDiff =
+    (laterYear - earlierYear) * 12 + (laterMonth - earlierMonth) + 1;
+
+  return monthDiff;
 };
