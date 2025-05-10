@@ -33,7 +33,7 @@ const props = defineProps<{
   <v-card variant="outlined" color="blue-grey">
     <v-card-subtitle class="pt-1 text-wrap"
       ><strong>Zusammensetzung des Orientierungswerts</strong> (Werte auf volle
-      Euros gerundet)
+      Euros gerundet, bezogen auf {{ msrp.months }} Kalendermonate)
 
       <v-tooltip :text="t.cards.products.msrpTooltip" open-on-click>
         <template v-slot:activator="{ props }">
@@ -44,20 +44,20 @@ const props = defineProps<{
     <v-card-text class="py-0">
       {{
         interpolate(t.cards.products.msrp, {
-          total: msrp.total.toString(),
+          total: msrp.monthly.total.toString(),
         })
       }}
       <div class="pl-5">
         {{
           interpolate(t.cards.products.msrpSelfgrown, {
-            selfgrown: msrp.selfgrown.toString(),
+            selfgrown: msrp.monthly.selfgrown.toString(),
           })
         }}
       </div>
       <div class="pl-5">
         {{
           interpolate(t.cards.products.msrpCooperation, {
-            cooperation: msrp.cooperation.toString(),
+            cooperation: msrp.monthly.cooperation.toString(),
           })
         }}
       </div>

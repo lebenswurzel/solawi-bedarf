@@ -25,6 +25,7 @@ import {
   prettyDateWithDayName,
   countThursdaysBetweenDates,
   dayDifference,
+  countCalendarMonths,
 } from "../dateHelper";
 
 describe("dateHelper", () => {
@@ -264,6 +265,50 @@ describe("dateHelper", () => {
       const date1 = new Date("2023-01-02T00:50:00Z");
       const date2 = new Date("2023-01-01T22:59:59+01:00");
       expect(dayDifference(date1, date2)).toBe(-1);
+    });
+  });
+
+  describe("countCalendarMonths", () => {
+    it("should return 1 for same month", () => {
+      const date = new Date("2023-01-01");
+      expect(countCalendarMonths(date, date, "UTC")).toBe(1);
+    });
+
+    it("should return 1 for full month", () => {
+      const date1 = new Date("2023-01-01");
+      const date2 = new Date("2023-01-31");
+      expect(countCalendarMonths(date1, date2, "UTC")).toBe(1);
+    });
+
+    it("should return 2 for month before", () => {
+      const date1 = new Date("2023-01-01");
+      const date2 = new Date("2022-12-31");
+      expect(countCalendarMonths(date1, date2, "UTC")).toBe(2);
+    });
+
+    it("should return 2 for December to January", () => {
+      const date1 = new Date("2022-12-31");
+      const date2 = new Date("2023-01-01");
+      expect(countCalendarMonths(date1, date2, "UTC")).toBe(2);
+    });
+
+    it("should return 14 for 2 months and 2 years before", () => {
+      const date1 = new Date("2023-01-11");
+      const date2 = new Date("2021-11-03");
+      expect(countCalendarMonths(date1, date2, "UTC")).toBe(15);
+      expect(countCalendarMonths(date2, date1, "UTC")).toBe(15);
+    });
+
+    it("should return 12 for Solawi year - UTC", () => {
+      const date1 = new Date("2025-04-01T00:00:00Z");
+      const date2 = new Date("2026-03-31T23:59:59Z");
+      expect(countCalendarMonths(date1, date2, "UTC")).toBe(12);
+    });
+
+    it("should return 12 for Solawi year - Europe/Berlin", () => {
+      const date1 = new Date("2025-04-01T00:00:00+02:00");
+      const date2 = new Date("2026-03-31T23:59:59+02:00");
+      expect(countCalendarMonths(date1, date2, "Europe/Berlin")).toBe(12);
     });
   });
 });

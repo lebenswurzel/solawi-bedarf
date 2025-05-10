@@ -33,14 +33,19 @@ import DistributionPlot, {
   DistributionDataItem,
 } from "./DistributionPlot.vue";
 import SeasonText from "../styled/SeasonText.vue";
-import { getMsrp } from "@lebenswurzel/solawi-bedarf-shared/src/msrp.ts";
+import {
+  calculateOrderValidMonths,
+  getMsrp,
+} from "@lebenswurzel/solawi-bedarf-shared/src/msrp.ts";
 import { useBIStore } from "../../store/biStore.ts";
+import { useVersionInfoStore } from "../../store/versionInfoStore.ts";
 
 const t = language.pages.statistics;
 const userStore = useUserStore();
 const configStore = useConfigStore();
 const { depots } = storeToRefs(configStore);
 const biStore = useBIStore();
+const versionInfoStore = useVersionInfoStore();
 
 interface OrderExt extends SavedOrder {
   userName: string;
@@ -60,7 +65,7 @@ const headers = [
     title: "Orientierungswert",
     key: "msrp",
     sortRaw(a: OrderExt, b: OrderExt) {
-      return a.offer / a.msrp.total - b.offer / b.msrp.total;
+      return a.offer / a.msrp.monthly.total - b.offer / b.msrp.monthly.total;
     },
   },
   { title: "Angelegt", key: "createdAt" },
@@ -103,7 +108,16 @@ onMounted(async () => {
     }
     return {
       ...order,
-      msrp: getMsrp(order.category, order.orderItems, biStore.productsById),
+      msrp: getMsrp(
+        order.category,
+        order.orderItems,
+        biStore.productsById,
+        calculateOrderValidMonths(
+          order.validFrom,
+          configStore.config?.validTo,
+          versionInfoStore.versionInfo?.serverTimeZone,
+        ),
+      ),
       userName: u.title,
       depotName: depot.length ? depot[0].name : "unbekannt",
     };
@@ -261,9 +275,9 @@ const updatedAtDistribution = computed(
 const overallContribution = computed(() => {
   return relevantOrders.value.reduce(
     (acc, o) => ({
-      total: o.msrp.total + acc.total,
-      selfgrown: o.msrp.selfgrown + acc.selfgrown,
-      cooperation: o.msrp.cooperation + acc.cooperation,
+      total: o.msrp.monthly.total + acc.total,
+      selfgrown: o.msrp.monthly.selfgrown + acc.selfgrown,
+      cooperation: o.msrp.monthly.cooperation + acc.cooperation,
       offer: o.offer + acc.offer,
     }),
     {
@@ -318,20 +332,22 @@ const overallContribution = computed(() => {
           </v-tooltip>
         </template>
         <template v-slot:item.msrp="{ item }">
-          {{ item.msrp.total }} € =
+          {{ item.msrp.monthly.total }} € =
           <span class="opacity-70">
             <v-icon style="font-size: 0.7rem">mdi-sprout-outline</v-icon
-            >{{ item.msrp.selfgrown }} € +
+            >{{ item.msrp.monthly.selfgrown }} € +
 
             <v-icon style="font-size: 0.7rem">mdi-truck-delivery-outline</v-icon
-            >{{ item.msrp.cooperation }} €
+            >{{ item.msrp.monthly.cooperation }} €
           </span>
           <br />
           <span class="text-bold">
-            {{ item.offer >= item.msrp.total ? "+" : "-" }}
+            {{ item.offer >= item.msrp.monthly.total ? "+" : "-" }}
             {{
               Math.abs(
-                Math.round((1000 * item.offer) / item.msrp.total - 1000) / 10,
+                Math.round(
+                  (1000 * item.offer) / item.msrp.monthly.total - 1000,
+                ) / 10,
               )
             }}%
           </span>

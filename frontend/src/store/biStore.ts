@@ -27,17 +27,23 @@ import {
 } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { getBI } from "../requests/bi.ts";
 import { useUserStore } from "./userStore.ts";
-import { calculateMsrpWeights, getMsrp } from "@lebenswurzel/solawi-bedarf-shared/src/msrp.ts";
+import {
+  calculateMsrpWeights,
+  calculateOrderValidMonths,
+  getMsrp,
+} from "@lebenswurzel/solawi-bedarf-shared/src/msrp.ts";
 import {
   isIncreaseOnly,
   isRequisitionActive,
 } from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition.ts";
+import { useVersionInfoStore } from "./versionInfoStore.ts";
 
 export const useBIStore = defineStore("bi", () => {
   const now = ref<Date>(new Date());
   const configStore = useConfigStore();
   const orderStore = useOrderStore();
   const userStore = useUserStore();
+  const versionInfoStore = useVersionInfoStore();
 
   const { depots, config } = storeToRefs(configStore);
   const { depotId, category, actualOrderItemsByProductId } =
@@ -83,8 +89,14 @@ export const useBIStore = defineStore("bi", () => {
     const actualOrderItems = Object.entries(
       actualOrderItemsByProductId.value,
     ).map(([key, value]) => ({ productId: parseInt(key), value }));
+    const validMonths = calculateOrderValidMonths(
+      orderStore.validFrom,
+      config.value?.validTo,
+      versionInfoStore.versionInfo?.serverTimeZone,
+    );
     console.log(
       "recalc msrp",
+      validMonths,
       actualOrderItems.length,
       productMsrpWeights.value[157],
     );
@@ -93,6 +105,7 @@ export const useBIStore = defineStore("bi", () => {
       category.value,
       actualOrderItems,
       productsById.value,
+      validMonths,
       productMsrpWeights.value,
     );
   });

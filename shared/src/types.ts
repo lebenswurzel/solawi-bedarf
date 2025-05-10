@@ -368,6 +368,7 @@ export interface BuildInfo {
 
 export interface VersionInfo {
   buildInfo: BuildInfo;
+  serverTimeZone: string;
 }
 
 export interface OrderOverviewProductItem {
@@ -404,9 +405,17 @@ export type OrderOverviewWithApplicantItem = OrderOverviewItem &
   OrderOverviewApplicant;
 
 export interface Msrp {
-  total: number;
-  selfgrown: number;
-  cooperation: number;
+  monthly: {
+    total: number;
+    selfgrown: number;
+    cooperation: number;
+  };
+  yearly: {
+    total: number;
+    selfgrown: number;
+    cooperation: number;
+  };
+  months: number;
 }
 
 export interface OrganizationInfo {
