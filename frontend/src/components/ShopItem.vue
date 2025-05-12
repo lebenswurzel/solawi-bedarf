@@ -199,9 +199,7 @@ onMounted(() => {
             </template>
           </v-tooltip>
           {{ Math.round(deliveryPercentage.percentage)
-          }}<span class="text-caption">%</span> &dash;
-          {{ deliveryPercentage.actualDeliveries }} von
-          {{ deliveryPercentage.targetDeliveries }}
+          }}<span class="text-caption">%</span>
         </div>
       </v-col>
       <v-col cols="3" sm="2">
