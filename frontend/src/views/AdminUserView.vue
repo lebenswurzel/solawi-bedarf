@@ -71,7 +71,11 @@ const processedUsers = ref<number>(0);
 const isProcessing = ref(false);
 const openDatePicker = ref(false);
 const selectedDate = ref(new Date());
-const validFromFilter = ref<Array<number>>([]);
+const displayFilters = ref<{
+  validFrom: Array<number>;
+  role: Array<number>;
+  depot: Array<number>;
+}>({ validFrom: [], role: [], depot: [] });
 
 provide("dialogUser", dialogUser);
 
@@ -208,28 +212,34 @@ const getCurrentSeasonOrder = (
 };
 
 const tableItems = computed(() => {
-  return users.value
-    .map((user) => {
-      const currentOrder = getCurrentSeasonOrder(user.orders);
-      const currentOrderWithItems = getCurrentSeasonOrder(user.orders, true);
+  return users.value.map((user) => {
+    const currentOrder = getCurrentSeasonOrder(user.orders);
+    const currentOrderWithItems = getCurrentSeasonOrder(user.orders, true);
 
-      return {
-        ...user,
-        orderUpdatedAt: currentOrderWithItems?.updatedAt,
-        orderValidFrom: currentOrder?.validFrom,
-        depotName: currentOrder?.depotName,
-      };
-    })
-    .filter(filterValidFromDates);
+    return {
+      ...user,
+      orderUpdatedAt: currentOrderWithItems?.updatedAt,
+      orderValidFrom: currentOrder?.validFrom,
+      depotName: currentOrder?.depotName,
+    };
+  });
 });
 
+const filteredTableItems = computed(() => {
+  return tableItems.value
+    .filter(filterValidFromDates)
+    .filter(filterUserRoles)
+    .filter(filterDepotNames);
+});
+
+/// filter form validFrom
 const filterValidFromDates = (tableItem: {
   orderValidFrom: Date | undefined | null;
 }): boolean => {
-  if (validFromFilter.value.length < 1) {
+  if (displayFilters.value.validFrom.length < 1) {
     return true;
   }
-  return validFromFilter.value
+  return displayFilters.value.validFrom
     .map((index) => validFromItems.value[index])
     .includes(getDateTimestampWithoutTime(tableItem.orderValidFrom));
 };
@@ -247,7 +257,37 @@ const validFromItems = computed(() => {
 
 watch(validFromItems, () => {
   // reset filter if valid from list changes
-  validFromFilter.value = [];
+  displayFilters.value.validFrom = [];
+});
+
+/// filter for user role
+const filterUserRoles = (tableItem: { role: UserRole }): boolean => {
+  if (displayFilters.value.role.length < 1) {
+    return true;
+  }
+  return displayFilters.value.role
+    .map((index) => userRoleItems.value[index])
+    .includes(tableItem.role);
+};
+const userRoleItems = computed(() => {
+  return Array.from(new Set(users.value.map((user) => user.role)));
+});
+
+/// filter for user role
+const filterDepotNames = (tableItem: {
+  depotName: string | undefined;
+}): boolean => {
+  if (displayFilters.value.depot.length < 1) {
+    return true;
+  }
+  return displayFilters.value.depot
+    .map((index) => depotNameItems.value[index])
+    .includes(tableItem.depotName || "- keins -");
+};
+const depotNameItems = computed(() => {
+  return Array.from(
+    new Set(tableItems.value.map((item) => item.depotName || "- keins -")),
+  ).sort();
 });
 </script>
 
@@ -313,7 +353,7 @@ watch(validFromItems, () => {
           <v-col cols="12">
             <v-data-table
               :headers="headers"
-              :items="tableItems"
+              :items="filteredTableItems"
               density="compact"
               :search="search"
               show-select
@@ -391,17 +431,15 @@ watch(validFromItems, () => {
             </v-data-table>
           </v-col>
         </v-row>
+        <span class="text-h6">Anzeigefilter für die Tabelle</span>
         <v-row dense>
-          <v-col cols="12">
-            <span class="text-h6">Anzeigefilter für die Tabelle</span>
-          </v-col>
-          <v-col cols="12">
+          <v-col cols="12" md="6">
             <div class="text-caption">Bedarf gültig ab Datum</div>
             <v-chip-group
               multiple
               selected-class="text-primary"
               column
-              v-model="validFromFilter"
+              v-model="displayFilters.validFrom"
             >
               <v-chip
                 v-for="validFrom in validFromItems"
@@ -410,6 +448,39 @@ watch(validFromItems, () => {
                 filter
               ></v-chip>
             </v-chip-group>
+          </v-col>
+          <v-col cols="12" md="6">
+            <div class="text-caption">Rolle</div>
+            <v-chip-group
+              multiple
+              selected-class="text-primary"
+              column
+              v-model="displayFilters.role"
+            >
+              <v-chip
+                v-for="role in userRoleItems"
+                :key="role"
+                :text="role"
+                filter
+              ></v-chip>
+            </v-chip-group>
+          </v-col>
+          <v-col cols="12">
+            <div class="text-caption">Depot</div>
+            <v-chip-group
+              multiple
+              selected-class="text-primary"
+              column
+              v-model="displayFilters.depot"
+            >
+              <v-chip
+                v-for="depotName in depotNameItems"
+                :key="depotName"
+                :text="depotName"
+                filter
+              ></v-chip>
+            </v-chip-group>
+            {{ depotNameItems }}
           </v-col>
         </v-row>
       </v-container>
