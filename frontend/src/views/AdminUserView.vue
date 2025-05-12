@@ -480,7 +480,6 @@ const depotNameItems = computed(() => {
                 filter
               ></v-chip>
             </v-chip-group>
-            {{ depotNameItems }}
           </v-col>
         </v-row>
       </v-container>
