@@ -69,6 +69,21 @@ export const prettyDate = (
     : "nie";
 };
 
+export const prettyDateNoTime = (
+  date?: Date | string | number | null
+): string => {
+  return date ? format(date, "dd.MM.yyyy", { locale: de }) : "nie";
+};
+
+export const getDateTimestampWithoutTime = (
+  date: Date | string | undefined | null
+): number | undefined => {
+  if (!date) {
+    return undefined;
+  }
+  return new Date(date).setHours(0, 0, 0, 0);
+};
+
 export const prettyDateWithDayName = (date?: Date | string | null): string => {
   return date ? format(date, "EEEE, d. MMMM yyyy", { locale: de }) : "nie";
 };

@@ -32,7 +32,11 @@ import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import { computed } from "@vue/reactivity";
 import { updateUser } from "../requests/user.ts";
 import { useUiFeedback } from "../store/uiFeedbackStore.ts";
-import { prettyDate } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper.ts";
+import {
+  getDateTimestampWithoutTime,
+  prettyDate,
+  prettyDateNoTime,
+} from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper.ts";
 import { useRoute } from "vue-router";
 
 const t = language.pages.user;
@@ -67,6 +71,7 @@ const processedUsers = ref<number>(0);
 const isProcessing = ref(false);
 const openDatePicker = ref(false);
 const selectedDate = ref(new Date());
+const validFromFilter = ref<Array<number>>([]);
 
 provide("dialogUser", dialogUser);
 
@@ -203,17 +208,46 @@ const getCurrentSeasonOrder = (
 };
 
 const tableItems = computed(() => {
-  return users.value.map((user) => {
-    const currentOrder = getCurrentSeasonOrder(user.orders);
-    const currentOrderWithItems = getCurrentSeasonOrder(user.orders, true);
+  return users.value
+    .map((user) => {
+      const currentOrder = getCurrentSeasonOrder(user.orders);
+      const currentOrderWithItems = getCurrentSeasonOrder(user.orders, true);
 
-    return {
-      ...user,
-      orderUpdatedAt: currentOrderWithItems?.updatedAt,
-      orderValidFrom: currentOrder?.validFrom,
-      depotName: currentOrder?.depotName,
-    };
-  });
+      return {
+        ...user,
+        orderUpdatedAt: currentOrderWithItems?.updatedAt,
+        orderValidFrom: currentOrder?.validFrom,
+        depotName: currentOrder?.depotName,
+      };
+    })
+    .filter(filterValidFromDates);
+});
+
+const filterValidFromDates = (tableItem: {
+  orderValidFrom: Date | undefined | null;
+}): boolean => {
+  if (validFromFilter.value.length < 1) {
+    return true;
+  }
+  return validFromFilter.value
+    .map((index) => validFromItems.value[index])
+    .includes(getDateTimestampWithoutTime(tableItem.orderValidFrom));
+};
+
+const validFromItems = computed(() => {
+  return Array.from(
+    new Set(
+      users.value.map((user) => {
+        const currentOrder = getCurrentSeasonOrder(user.orders);
+        return getDateTimestampWithoutTime(currentOrder?.validFrom);
+      }),
+    ),
+  ).sort();
+});
+
+watch(validFromItems, () => {
+  // reset filter if valid from list changes
+  validFromFilter.value = [];
 });
 </script>
 
@@ -355,6 +389,27 @@ const tableItems = computed(() => {
                 ></v-btn>
               </template>
             </v-data-table>
+          </v-col>
+        </v-row>
+        <v-row dense>
+          <v-col cols="12">
+            <span class="text-h6">Anzeigefilter für die Tabelle</span>
+          </v-col>
+          <v-col cols="12">
+            <div class="text-caption">Bedarf gültig ab Datum</div>
+            <v-chip-group
+              multiple
+              selected-class="text-primary"
+              column
+              v-model="validFromFilter"
+            >
+              <v-chip
+                v-for="validFrom in validFromItems"
+                :key="validFrom || 0"
+                :text="prettyDateNoTime(validFrom)"
+                filter
+              ></v-chip>
+            </v-chip-group>
           </v-col>
         </v-row>
       </v-container>
