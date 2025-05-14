@@ -206,7 +206,9 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 
 #237 Kartenansicht für Admins (unter Statistiken)
 
-# NEW
+# v0.7.0 - 2025-05-14 - Usability Verteilungsdialog und Lieferscheine
 
 #251 Verteilungsdialog: Hervorhebung wenn Verteilmenge von der benötigten Menge abweicht
 #228 Verbesserte Formatierung der Lieferscheine
+
+# NEW
