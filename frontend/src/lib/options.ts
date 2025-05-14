@@ -20,6 +20,7 @@ export const multiplicatorOptions = [
   {
     title: "0,5x",
     value: 50,
+    display: "halbe Menge mitnehmen",
   },
   {
     title: "1x",
@@ -28,18 +29,22 @@ export const multiplicatorOptions = [
   {
     title: "1,5x",
     value: 150,
+    display: "1,5-fache Menge mitnehmen",
   },
   {
     title: "2x",
     value: 200,
+    display: "doppelte Menge mitnehmen",
   },
   {
     title: "3x",
     value: 300,
+    display: "dreifache Menge mitnehmen",
   },
   {
     title: "4x",
     value: 400,
+    display: "vierfache Menge mitnehmen",
   },
 ];
 
