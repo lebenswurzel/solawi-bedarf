@@ -96,7 +96,7 @@ describe("create shipment pdfs", () => {
     expect(actual[0].tables).toStrictEqual([
       {
         name: VEGETABLES.name,
-        headers: ["Menge", "Bezeichnung", "Bemerkung"],
+        headers: ["Gesamtmenge der Lieferung", "Bezeichnung", "Bemerkung"],
         widths: ["15%", "50%", "35%"],
         rows: [
           ["5 Stk.", CUCUMBER.name + " [BIO]", ""],
@@ -105,7 +105,7 @@ describe("create shipment pdfs", () => {
       },
       {
         name: MILK_PRODUCTS.name,
-        headers: ["Menge", "Bezeichnung", "Bemerkung"],
+        headers: ["Gesamtmenge der Lieferung", "Bezeichnung", "Bemerkung"],
         widths: ["15%", "50%", "35%"],
         rows: [["7000 ml", MILK.name + " [BIO]", ""]],
       },
@@ -137,7 +137,7 @@ describe("format quantity change", () => {
     const actual = formatQuantityChange(item, product);
 
     // ASSERT
-    expect(actual).toBe("2x");
+    expect(actual).toBe("doppelte Menge mitnehmen");
   });
 
   test("of 0.5x", () => {
@@ -151,7 +151,7 @@ describe("format quantity change", () => {
     const actual = formatQuantityChange(item, product);
 
     // ASSERT
-    expect(actual).toBe("0,5x");
+    expect(actual).toBe("halbe Menge mitnehmen");
   });
 
   test("of (1 Stk. -> 100 g)", () => {
@@ -167,7 +167,7 @@ describe("format quantity change", () => {
     const actual = formatQuantityChange(item, product);
 
     // ASSERT
-    expect(actual).toBe("1 Stk. -> 100 g");
+    expect(actual).toBe("Änderung: 1 Stk. entspricht 100 g");
   });
 
   test("of 2x (1 Stk. -> 100 g)", () => {
@@ -184,7 +184,7 @@ describe("format quantity change", () => {
     const actual = formatQuantityChange(item, product);
 
     // ASSERT
-    expect(actual).toBe("1 Stk. -> 200 g");
+    expect(actual).toBe("Änderung: 1 Stk. entspricht 200 g");
   });
 
   test("of 1 Stk. -> 2 Stk.", () => {
@@ -201,6 +201,6 @@ describe("format quantity change", () => {
     const actual = formatQuantityChange(item, product);
 
     // ASSERT
-    expect(actual).toBe("1 Stk. -> 2 Stk.");
+    expect(actual).toBe("Änderung: 1 Stk. entspricht 2 Stk.");
   });
 });
