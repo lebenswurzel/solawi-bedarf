@@ -209,3 +209,4 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 # NEW
 
 #251 Verteilungsdialog: Hervorhebung wenn Verteilmenge von der benötigten Menge abweicht
+#228 Verbesserte Formatierung der Lieferscheine
