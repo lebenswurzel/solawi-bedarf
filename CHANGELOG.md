@@ -207,3 +207,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #237 Kartenansicht für Admins (unter Statistiken)
 
 # NEW
+
+#251 Verteilungsdialog: Hervorhebung wenn Verteilmenge von der benötigten Menge abweicht
