@@ -184,7 +184,21 @@ const selectAllDepots = computed(() => {
           :label="`Geliefert [${getLangUnit(shipmentItem.unit)}]`"
           v-model="shipmentItem.totalShipedQuantity"
           type="number"
-        />
+        >
+          <template
+            v-slot:append-inner
+            v-if="shipmentItem.totalShipedQuantity != neededQuantity"
+          >
+            <v-tooltip
+              text="Es wird eine abweichende Menge geliefert"
+              open-on-click
+            >
+              <template v-slot:activator="{ props }">
+                <v-icon color="orange" v-bind="props">mdi-alert</v-icon>
+              </template>
+            </v-tooltip>
+          </template>
+        </v-text-field>
       </v-col>
       <v-col cols="2">
         <v-checkbox label="isBio" v-model="shipmentItem.isBio"></v-checkbox>
