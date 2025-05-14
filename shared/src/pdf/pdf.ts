@@ -124,14 +124,31 @@ export function createDefaultPdf(
         widths: table.widths ?? new Array(table.headers.length).fill("*"),
         headerRows: 1,
         body: [
-          table.headers.map((header) => ({
+          table.headers.map((header, index) => ({
             text: header,
             bold: true,
+            fontSize: index == 0 ? 10 : undefined,
           })),
-          ...table.rows,
+          ...table.rows.map((row) =>
+            row.map((cell, index) => {
+              if (index == 0) {
+                return {
+                  text: cell,
+                  color: "#777",
+                };
+              }
+              if (index == 2) {
+                return {
+                  text: cell,
+                  fontSize: 10,
+                };
+              }
+              return cell;
+            })
+          ),
         ],
       },
-      layout: "light-horizontal-lines",
+      layout: "lightHorizontalLines",
     });
   }
 

@@ -64,12 +64,12 @@ export function formatQuantityChange(
 ): string {
   if (item.unit != product.unit || item.conversionFrom != item.conversionTo) {
     const mul = item.multiplicator / 100;
-    return `${item.conversionFrom} ${getLangUnit(product.unit)} -> ${formatNumber(item.conversionTo * mul)} ${getLangUnit(item.unit)}`;
+    return `Änderung: ${item.conversionFrom} ${getLangUnit(product.unit)} entspricht ${formatNumber(item.conversionTo * mul)} ${getLangUnit(item.unit)}`;
   } else {
     if (item.multiplicator != 100) {
       return (
         multiplicatorOptions.find((mo) => mo.value == item.multiplicator)
-          ?.title ?? ""
+          ?.display ?? ""
       );
     } else {
       return "";
@@ -157,7 +157,11 @@ export function createShipmentPackagingPdfSpecs(
           ([name, tableData]) =>
             ({
               name,
-              headers: ["Menge", "Bezeichnung", "Bemerkung"],
+              headers: [
+                "Gesamtmenge der Lieferung",
+                "Bezeichnung",
+                "Bemerkung",
+              ],
               widths: ["15%", "50%", "35%"],
               rows: tableData.sort(byKey((row) => row[0], inLocaleOrder)),
             }) as PdfTable,
