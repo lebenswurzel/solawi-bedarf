@@ -597,3 +597,10 @@ watchEffect(async () => {
     </v-card>
   </v-dialog>
 </template>
+
+<style>
+.v-dialog > .v-overlay__content {
+  top: 0;
+  bottom: 0;
+}
+</style>
