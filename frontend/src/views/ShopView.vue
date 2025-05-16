@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { computed, onMounted, provide, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
 import { interpolate } from "@lebenswurzel/solawi-bedarf-shared/src/lang/template.ts";
 import ShopItem from "../components/ShopItem.vue";
@@ -58,8 +58,6 @@ const canAdministerOtherUsers = computed(() => {
 });
 
 const route = useRoute();
-
-provide("requestUser", requestUser);
 
 watch(userId, async () => {
   const paramUserId = parseUserIdParam();
@@ -235,6 +233,6 @@ const orderPhase = computed(() => {
       </v-card-actions>
     </v-card-actions>
   </v-card>
-  <ShopDialog :open="open" @close="onClose" />
+  <ShopDialog :open="open" @close="onClose" :request-user="requestUser" />
   <FAQDialog :open="faqOpen" @close="onFaqClose" />
 </template>

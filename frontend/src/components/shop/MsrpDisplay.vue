@@ -27,6 +27,7 @@ const t = language.pages.shop;
 
 const props = defineProps<{
   offer: number;
+  hideOffer?: boolean;
 }>();
 </script>
 <template>
@@ -68,6 +69,7 @@ const props = defineProps<{
         :values="{
           offer: props.offer.toString(),
         }"
+        v-if="!props.hideOffer"
       />
     </v-card-text>
   </v-card>
