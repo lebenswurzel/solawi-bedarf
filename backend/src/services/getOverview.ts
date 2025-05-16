@@ -23,7 +23,6 @@ import { AppDataSource } from "../database/database";
 import { MoreThan } from "typeorm";
 import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import {
-  calculateMsrpWeights,
   calculateOrderValidMonths,
   getMsrp,
 } from "@lebenswurzel/solawi-bedarf-shared/src/msrp";
