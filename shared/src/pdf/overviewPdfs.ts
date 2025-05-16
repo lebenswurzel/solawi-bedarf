@@ -293,7 +293,7 @@ export function generateUserData(
           ({
             name: category,
             headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
-            widths: ["70%", "10%", "20%"],
+            widths: ["65%", "15%", "20%"],
             rows: Array.from(products.values(), (item) => {
               const product = item.category.products.find(
                 (p) => p.name === item.name
@@ -389,7 +389,7 @@ export function generateDepotData(
             ({
               name: group,
               headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
-              widths: ["70%", "10%", "20%"],
+              widths: ["60%", "20%", "20%"],
               rows: Array.from(products.values(), (item) => [
                 item.name,
                 `${item.quantity} ${getLangUnit(item.unit)}`,

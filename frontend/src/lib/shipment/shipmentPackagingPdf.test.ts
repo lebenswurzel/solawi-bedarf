@@ -96,18 +96,40 @@ describe("create shipment pdfs", () => {
     expect(actual[0].tables).toStrictEqual([
       {
         name: VEGETABLES.name,
-        headers: ["Gesamtmenge der Lieferung", "Bezeichnung", "Bemerkung"],
+        headers: [
+          { text: "Gesamtmenge der Lieferung", bold: true, fontSize: 10 },
+          "Bezeichnung",
+          "Bemerkung",
+        ],
         widths: ["15%", "50%", "35%"],
         rows: [
-          ["5 Stk.", CUCUMBER.name + " [BIO]", ""],
-          ["5000 g", TOMATO.name + " [BIO]", ""],
+          [
+            { text: "5 Stk.", color: "#777" },
+            CUCUMBER.name + " [BIO]",
+            { text: "", fontSize: 10 },
+          ],
+          [
+            { text: "5000 g", color: "#777" },
+            TOMATO.name + " [BIO]",
+            { text: "", fontSize: 10 },
+          ],
         ],
       },
       {
         name: MILK_PRODUCTS.name,
-        headers: ["Gesamtmenge der Lieferung", "Bezeichnung", "Bemerkung"],
+        headers: [
+          { text: "Gesamtmenge der Lieferung", fontSize: 10, bold: true },
+          "Bezeichnung",
+          "Bemerkung",
+        ],
         widths: ["15%", "50%", "35%"],
-        rows: [["7000 ml", MILK.name + " [BIO]", ""]],
+        rows: [
+          [
+            { text: "7000 ml", color: "#777" },
+            MILK.name + " [BIO]",
+            { text: "", fontSize: 10 },
+          ],
+        ],
       },
     ]);
   });

@@ -63,7 +63,7 @@ const jsonToTableData = (
 
 export interface PdfTable {
   name: string;
-  headers: string[];
+  headers: Content[];
   rows: Content[][];
   widths?: string[];
 }
@@ -116,7 +116,7 @@ export function createDefaultPdf(
   for (const table of pdf.tables) {
     content.push({
       text: table.name,
-      margin: [0, 20],
+      margin: [0, 20, 0, 5],
     });
 
     content.push({
@@ -124,28 +124,13 @@ export function createDefaultPdf(
         widths: table.widths ?? new Array(table.headers.length).fill("*"),
         headerRows: 1,
         body: [
-          table.headers.map((header, index) => ({
-            text: header,
-            bold: true,
-            fontSize: index == 0 ? 10 : undefined,
-          })),
-          ...table.rows.map((row) =>
-            row.map((cell, index) => {
-              if (index == 0) {
-                return {
-                  text: cell,
-                  color: "#777",
-                };
-              }
-              if (index == 2) {
-                return {
-                  text: cell,
-                  fontSize: 10,
-                };
-              }
-              return cell;
-            })
-          ),
+          table.headers.map((h) => {
+            if (typeof h === "string") {
+              return { text: h, bold: true, verticalAlignment: "bottom" };
+            }
+            return h;
+          }),
+          ...table.rows,
         ],
       },
       layout: "lightHorizontalLines",

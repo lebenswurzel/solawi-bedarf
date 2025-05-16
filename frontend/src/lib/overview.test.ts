@@ -103,7 +103,7 @@ describe("summarize demand by user", () => {
       {
         name: VEGETABLES.name,
         headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
-        widths: ["70%", "10%", "20%"],
+        widths: ["65%", "15%", "20%"],
         rows: [
           [CUCUMBER.name, "3 Stk.", "20 x"],
           [TOMATO.name, "200 g", "30 x"],
@@ -112,7 +112,7 @@ describe("summarize demand by user", () => {
       {
         name: MILK_PRODUCTS.name,
         headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
-        widths: ["70%", "10%", "20%"],
+        widths: ["65%", "15%", "20%"],
         rows: [[MILK.name, "3000 ml", "56 x"]],
       },
     ]);
@@ -158,13 +158,13 @@ describe("summarize demand by user", () => {
       {
         name: VEGETABLES.name,
         headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
-        widths: ["70%", "10%", "20%"],
+        widths: ["65%", "15%", "20%"],
         rows: [[TOMATO.name, "200 g", "30 x"]],
       },
       {
         name: MILK_PRODUCTS.name,
         headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
-        widths: ["70%", "10%", "20%"],
+        widths: ["65%", "15%", "20%"],
         rows: [[MILK.name, "3000 ml", "56 x"]],
       },
     ]);
@@ -173,13 +173,13 @@ describe("summarize demand by user", () => {
       {
         name: VEGETABLES.name,
         headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
-        widths: ["70%", "10%", "20%"],
+        widths: ["65%", "15%", "20%"],
         rows: [[CUCUMBER.name, "3 Stk.", "20 x"]],
       },
       {
         name: MILK_PRODUCTS.name,
         headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
-        widths: ["70%", "10%", "20%"],
+        widths: ["65%", "15%", "20%"],
         rows: [[MILK.name, "1000 ml", "56 x"]],
       },
     ]);
@@ -260,7 +260,7 @@ describe("summarize demand by depot", () => {
       {
         name: VEGETABLES.name,
         headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
-        widths: ["70%", "10%", "20%"],
+        widths: ["60%", "20%", "20%"],
         rows: [
           [CUCUMBER.name, "5 Stk.", "20 x"],
           [TOMATO.name, "300 g", "30 x"],
@@ -269,7 +269,7 @@ describe("summarize demand by depot", () => {
       {
         name: MILK_PRODUCTS.name,
         headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
-        widths: ["70%", "10%", "20%"],
+        widths: ["60%", "20%", "20%"],
         rows: [[MILK.name, "10000 ml", "56 x"]],
       },
     ]);
@@ -315,13 +315,13 @@ describe("summarize demand by depot", () => {
       {
         name: VEGETABLES.name,
         headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
-        widths: ["70%", "10%", "20%"],
+        widths: ["60%", "20%", "20%"],
         rows: [[TOMATO.name, "200 g", "30 x"]],
       },
       {
         name: MILK_PRODUCTS.name,
         headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
-        widths: ["70%", "10%", "20%"],
+        widths: ["60%", "20%", "20%"],
         rows: [[MILK.name, "3000 ml", "56 x"]],
       },
     ]);
@@ -330,13 +330,13 @@ describe("summarize demand by depot", () => {
       {
         name: VEGETABLES.name,
         headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
-        widths: ["70%", "10%", "20%"],
+        widths: ["60%", "20%", "20%"],
         rows: [[CUCUMBER.name, "3 Stk.", "20 x"]],
       },
       {
         name: MILK_PRODUCTS.name,
         headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
-        widths: ["70%", "10%", "20%"],
+        widths: ["60%", "20%", "20%"],
         rows: [[MILK.name, "1000 ml", "56 x"]],
       },
     ]);

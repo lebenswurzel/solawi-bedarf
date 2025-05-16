@@ -41,8 +41,9 @@ import {
 } from "@lebenswurzel/solawi-bedarf-shared/src/pdf/pdf.ts";
 import { Zip } from "@lebenswurzel/solawi-bedarf-shared/src/pdf/zip.ts";
 import { TCreatedPdf } from "pdfmake/build/pdfmake";
+import { Content } from "pdfmake/interfaces";
 
-type ProductRow = [string, string, string];
+type ProductRow = [Content, Content, Content];
 type GroupedProducts = Map<string, ProductRow[]>;
 type DepotGroupedProducts = Map<string, GroupedProducts>;
 
@@ -105,9 +106,15 @@ export function createShipmentPackagingPdfSpecs(
     );
     const description = item.description ? item.description : "";
     rows.push([
-      `${item.totalShipedQuantity} ${getLangUnit(item.unit)}`,
+      {
+        text: `${item.totalShipedQuantity} ${getLangUnit(item.unit)}`,
+        color: "#777",
+      },
       `${product.name}${item.isBio ? " [BIO]" : ""}`,
-      joinStrings(formatQuantityChange(item, product), description),
+      {
+        text: joinStrings(formatQuantityChange(item, product), description),
+        fontSize: 10,
+      },
     ]);
   }
 
@@ -126,7 +133,10 @@ export function createShipmentPackagingPdfSpecs(
     );
     const description = item.description || "";
     rows.push([
-      `${item.totalShipedQuantity} ${getLangUnit(item.unit)}`,
+      {
+        text: `${item.totalShipedQuantity} ${getLangUnit(item.unit)}`,
+        color: "#777",
+      },
       `${item.product}${item.isBio ? " [BIO]" : ""}`,
       `${description}`,
     ]);
@@ -158,12 +168,14 @@ export function createShipmentPackagingPdfSpecs(
             ({
               name,
               headers: [
-                "Gesamtmenge der Lieferung",
+                { text: "Gesamtmenge der Lieferung", fontSize: 10, bold: true },
                 "Bezeichnung",
                 "Bemerkung",
               ],
               widths: ["15%", "50%", "35%"],
-              rows: tableData.sort(byKey((row) => row[0], inLocaleOrder)),
+              rows: tableData.sort(
+                byKey((row) => row[1].toLocaleString(), inLocaleOrder),
+              ),
             }) as PdfTable,
         ).sort(byKey((table) => table.name, inLocaleOrder)),
       };
