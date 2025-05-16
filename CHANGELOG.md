@@ -211,6 +211,8 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #251 Verteilungsdialog: Hervorhebung wenn Verteilmenge von der benötigten Menge abweicht
 #228 Verbesserte Formatierung der Lieferscheine
 
-# NEW
+# v0.7.1 - 2025-05-16 - Fix Übersichts-PDFs
 
 #228 Nachbesserung Depot-Übersichts-PDFs und Benutzer-Bedarfs-PDFs
+
+# NEW
