@@ -20,8 +20,13 @@ import { computed } from "vue";
 import { SeasonPhase } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import { useConfigStore } from "../../store/configStore";
 import { interpolate } from "@lebenswurzel/solawi-bedarf-shared/src/lang/template.ts";
+import { RequisitionConfig } from "@lebenswurzel/solawi-bedarf-shared/src/types";
 
-const props = defineProps<{ phase: SeasonPhase; noButton?: boolean }>();
+const props = defineProps<{
+  phase: SeasonPhase;
+  noButton?: boolean;
+  alternativeConfig?: RequisitionConfig;
+}>();
 
 const configStore = useConfigStore();
 
@@ -47,11 +52,12 @@ export type SeasonStatusElement = {
 };
 
 const status = computed((): SeasonStatusElement => {
-  const startOrder = configStore.config?.startOrder!;
-  const startBiddingRound = configStore.config?.startBiddingRound!;
-  const endBiddingRound = configStore.config?.endBiddingRound!;
-  const startSeason = configStore.config?.validFrom!;
-  const endSeason = configStore.config?.validTo!;
+  const config = props.alternativeConfig ?? configStore.config;
+  const startOrder = config?.startOrder!;
+  const startBiddingRound = config?.startBiddingRound!;
+  const endBiddingRound = config?.endBiddingRound!;
+  const startSeason = config?.validFrom!;
+  const endSeason = config?.validTo!;
   const elements = [
     {
       phase: SeasonPhase.FREE_ORDER,
