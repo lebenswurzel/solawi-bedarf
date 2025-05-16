@@ -212,3 +212,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #228 Verbesserte Formatierung der Lieferscheine
 
 # NEW
+
+#228 Nachbesserung Depot-Übersichts-PDFs und Benutzer-Bedarfs-PDFs
