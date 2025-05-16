@@ -298,9 +298,7 @@ export const saveOrder = async (
   ctx.status = http.no_content;
 };
 
-export const getNewOrderValidFromDate = (
-  config: RequisitionConfig,
-): Date | null => {
+const getNewOrderValidFromDate = (config: RequisitionConfig): Date | null => {
   if (config.validFrom < new Date()) {
     // season already started --> new orders must be enabled manually by an admin
     return null;

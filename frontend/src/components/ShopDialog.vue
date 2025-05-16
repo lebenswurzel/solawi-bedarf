@@ -243,7 +243,7 @@ const onSave = () => {
     sendConfirmationEmail: sendConfirmationEmail.value,
   })
     .then(async () => {
-      await biStore.update(activeConfigId.value, validFrom.value || undefined);
+      await biStore.update(activeConfigId.value, requestUser?.value.id);
       requestUser?.value.id &&
         (await orderStore.update(requestUser.value.id, activeConfigId.value));
       loading.value = false;

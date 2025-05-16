@@ -24,7 +24,7 @@ import { getUrl, verifyResponse } from "./requests.ts";
 
 export const getBI = async (
   configId: number,
-  includeShipmentsBeforeDate?: Date | null,
+  requestUserId?: number,
 ): Promise<{
   soldByProductId: SoldByProductId;
   deliveredByProductIdDepotId: DeliveredByProductIdDepotId;
@@ -33,8 +33,8 @@ export const getBI = async (
   offers: number;
 }> => {
   let parameters = "";
-  if (includeShipmentsBeforeDate) {
-    parameters = `&includeShipmentsBeforeTimestamp=${includeShipmentsBeforeDate.getTime()}`;
+  if (requestUserId) {
+    parameters = `&userId=${requestUserId}`;
   }
   const response = await fetch(getUrl(`/bi?configId=${configId}${parameters}`));
 

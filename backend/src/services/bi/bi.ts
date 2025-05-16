@@ -40,22 +40,12 @@ export const biHandler = async (
 ) => {
   await getUserFromContext(ctx);
   const configId = getConfigIdFromQuery(ctx);
-  const includeShipmentsBeforeTimestamp = getNumericQueryParameter(
-    ctx.request.query,
-    "includeShipmentsBeforeTimestamp",
-    -1,
-  );
-  let includeShipmentsBeforeDate = undefined;
-  if (includeShipmentsBeforeTimestamp > 0) {
-    includeShipmentsBeforeDate = new Date(includeShipmentsBeforeTimestamp);
-  }
-  ctx.body = await bi(configId, includeShipmentsBeforeDate);
+  const requestUserId =
+    getNumericQueryParameter(ctx.request.query, "userId", 0) || undefined;
+  ctx.body = await bi(configId, requestUserId);
 };
 
-export const bi = async (
-  configId: number,
-  includeShipmentsBeforeDate?: Date,
-) => {
+export const bi = async (configId: number, requestUserId?: number) => {
   const now = new Date();
   const depots = await AppDataSource.getRepository(Depot).find();
 
@@ -83,11 +73,16 @@ export const bi = async (
   });
 
   let extendedShipmentsWhere = {};
-  console.log("validFrom", includeShipmentsBeforeDate);
-  if (includeShipmentsBeforeDate) {
-    extendedShipmentsWhere = {
-      validFrom: LessThan(includeShipmentsBeforeDate),
-    };
+
+  if (requestUserId) {
+    let includeShipmentsBeforeDate: Date | null = null;
+    const userOrder = orders.find((o) => o.userId === requestUserId);
+    if (userOrder && userOrder.validFrom) {
+      console.log("shipments before validFrom", userOrder.validFrom);
+      extendedShipmentsWhere = {
+        validFrom: LessThan(userOrder.validFrom),
+      };
+    }
   }
 
   const shipments = await AppDataSource.getRepository(Shipment).find({
