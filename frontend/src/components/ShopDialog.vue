@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { computed, inject, onMounted, ref, Ref, watchEffect } from "vue";
+import { computed, onMounted, ref, watchEffect } from "vue";
 import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
 import { interpolate } from "@lebenswurzel/solawi-bedarf-shared/src/lang/template.ts";
 import { useConfigStore } from "../store/configStore.ts";
@@ -38,10 +38,10 @@ import { useUiFeedback } from "../store/uiFeedbackStore.ts";
 import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import { UserWithOrders } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { useTextContentStore } from "../store/textContentStore.ts";
+import MsrpDisplay from "./shop/MsrpDisplay.vue";
 
-defineProps(["open"]);
+const props = defineProps<{ open: boolean; requestUser?: UserWithOrders }>();
 const emit = defineEmits(["close"]);
-const p = language.pages.shop.cards.products;
 const t = language.pages.shop.dialog;
 
 const configStore = useConfigStore();
@@ -70,10 +70,6 @@ const openFAQ = ref(false);
 const loading = ref(false);
 const model = ref<string>();
 const showDepotNote = ref(false);
-
-const requestUser = inject<Ref<UserWithOrders>>(
-  "requestUser",
-) as Ref<UserWithOrders>;
 
 const sendConfirmationEmail = ref(false);
 
@@ -184,8 +180,8 @@ const requireConfirmContribution = computed(() => {
 watch(offer, () => {
   model.value = offer.value.toString() || "0";
 });
-watch(requestUser, () => {
-  sendConfirmationEmail.value = requestUser?.value?.emailEnabled || false;
+watchEffect(() => {
+  sendConfirmationEmail.value = props.requestUser?.emailEnabled || false;
 });
 onMounted(() => {
   model.value = offer.value.toString() || "0";
@@ -229,7 +225,7 @@ const onClose = async () => {
 const onSave = () => {
   loading.value = true;
   saveOrder({
-    userId: requestUser?.value.id!,
+    userId: props.requestUser?.id!,
     orderItems: orderItems.value,
     offer: parseInt(model.value || "0"),
     depotId: depotId.value.actual!,
@@ -243,9 +239,9 @@ const onSave = () => {
     sendConfirmationEmail: sendConfirmationEmail.value,
   })
     .then(async () => {
-      await biStore.update(activeConfigId.value, requestUser?.value.id);
-      requestUser?.value.id &&
-        (await orderStore.update(requestUser.value.id, activeConfigId.value));
+      await biStore.update(activeConfigId.value, props.requestUser?.id);
+      props.requestUser?.id &&
+        (await orderStore.update(props.requestUser.id, activeConfigId.value));
       loading.value = false;
       uiFeedback.setSuccess(language.app.uiFeedback.saving.success);
       emit("close");
@@ -274,20 +270,11 @@ const onSave = () => {
         >
           <div class="text-body-2" v-html="t.alert.text"></div>
         </v-alert>
-        <div class="mb-5">
-          {{
-            interpolate(p.msrp, {
-              total: msrp.monthly.total.toString(),
-              selfgrown: msrp.monthly.selfgrown.toString(),
-              cooperation: msrp.monthly.cooperation.toString(),
-            })
-          }}
-          <v-tooltip :text="p.msrpTooltip" open-on-click>
-            <template v-slot:activator="{ props }">
-              <v-icon v-bind="props">mdi-information-outline</v-icon>
-            </template>
-          </v-tooltip>
-        </div>
+        <MsrpDisplay
+          :offer="orderStore.offer"
+          :hide-offer="true"
+          class="mb-5"
+        />
         <v-text-field
           class="mb-5"
           :model-value="model"
@@ -389,7 +376,7 @@ const onSave = () => {
           "
           hide-details
         />
-        <div class="mb-3" v-if="requireConfirmContribution">
+        <div class="mt-3" v-if="requireConfirmContribution">
           {{
             interpolate(t.confirmContribution.title, {
               model:
@@ -408,7 +395,7 @@ const onSave = () => {
           v-model="sendConfirmationEmail"
           :label="`${t.sendConfirmationEmail.title}`"
           :color="sendConfirmationEmail ? 'primary' : 'secondary'"
-          :disabled="!requestUser.emailEnabled"
+          :disabled="!props.requestUser?.emailEnabled"
           hide-details
         ></v-switch>
         <v-alert
@@ -416,7 +403,7 @@ const onSave = () => {
           variant="outlined"
           density="compact"
           class="text-body-2"
-          v-if="!requestUser.emailEnabled"
+          v-if="!props.requestUser?.emailEnabled"
           >{{ t.sendConfirmationEmail.notAvailable }}</v-alert
         >
       </v-card-text>
