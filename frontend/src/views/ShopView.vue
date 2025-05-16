@@ -44,7 +44,7 @@ const userStore = useUserStore();
 const orderStore = useOrderStore();
 const biStore = useBIStore();
 
-const { depot, submit } = storeToRefs(biStore);
+const { depot, submit, msrp } = storeToRefs(biStore);
 const { userId } = storeToRefs(userStore);
 const { productCategories } = storeToRefs(productStore);
 const { activeConfigId, config } = storeToRefs(configStore);
@@ -173,6 +173,9 @@ const orderPhase = computed(() => {
         <u>{{ t.cards.header.faq }}</u
         >.
       </a>
+      <div class="pt-2" v-if="msrp.months < 12">
+        {{ t.cards.header.orderDuringSeason }}
+      </div>
       <SeasonStatusElement :phase="orderPhase" no-button class="mt-3" />
     </v-card-text>
   </v-card>

@@ -190,15 +190,17 @@ export const language = {
           explaination:
             "Bitte wähle in den entsprechenden Kategorien das Gemüse bzw. die Nahrungsmittel aus, die Du in der {season} im Rahmen des Solawi-Projektes beziehen möchtest. Lege dafür Deine entsprechende Menge je geplanter Verteilung \u26DF fest. Bitte beachte die zusätzlichen Infor­matio­nen für manche Nahrungs­mittel (abrufbar über das Information-Symbol \u24D8 hinter dem Namen des Nahrungsmittels) sowie die",
           faq: "Informationen und Grundlagen",
+          orderDuringSeason:
+            "Für Ernteteiler, die erst während der Saison dazustoßen und die daher nicht die vollen zwölf Monate dabei sind, wird zusätzlich angezeigt, wieviel eines Produkts bereits verteilt wurde (hellgraues Lastwagensymbol mit Prozentangabe). Bei der Berechnung des Orientierungswerts sind die bereits verteilten Produkte bereits herausgerechnet.",
         },
         products: {
           title: "Bedarfsanmeldung",
-          msrp: "Dein Orientierungswert: {total} € pro Monat, davon",
+          msrp: "Dein Orientierungswert: **{total} € pro Monat**, davon",
           msrpSelfgrown: "{selfgrown} € für selbst angebaute Produkte",
           msrpCooperation: "{cooperation} € für Kooperationsprodukte",
           msrpTooltip:
             "Der Orientierungswert errechnet sich aus den von Dir gewählten Nahrungsmitteln sowie Mengen und entspricht dem durchschnittlichen Solawi-Beitrag für Deine Auswahl.",
-          offer: "Dein gewählter Beitrag: {offer} € pro Monat",
+          offer: "Dein gewählter Beitrag: **{offer} € pro Monat**",
           item: {
             freq: "{freq} vorraussichtliche Häufigkeit (in Wochen)",
             delivery:
