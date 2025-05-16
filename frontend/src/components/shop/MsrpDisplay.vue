@@ -17,8 +17,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <script setup lang="ts">
 import { storeToRefs } from "pinia";
 import { useBIStore } from "../../store/biStore";
-import { interpolate } from "../../../../shared/src/lang/template";
 import { language } from "../../../../shared/src/lang/lang";
+import Markdown from "../design/Markdown.vue";
 
 const biStore = useBIStore();
 const { msrp } = storeToRefs(biStore);
@@ -42,32 +42,33 @@ const props = defineProps<{
       </v-tooltip>
     </v-card-subtitle>
     <v-card-text class="py-0">
-      {{
-        interpolate(t.cards.products.msrp, {
+      <Markdown
+        :markdown="t.cards.products.msrp"
+        :values="{
           total: msrp.monthly.total.toString(),
-        })
-      }}
-      <div class="pl-5">
-        {{
-          interpolate(t.cards.products.msrpSelfgrown, {
-            selfgrown: msrp.monthly.selfgrown.toString(),
-          })
-        }}
-      </div>
-      <div class="pl-5">
-        {{
-          interpolate(t.cards.products.msrpCooperation, {
-            cooperation: msrp.monthly.cooperation.toString(),
-          })
-        }}
-      </div>
-    </v-card-text>
-    <v-card-text class="py-1">
-      {{
-        interpolate(t.cards.products.offer, {
+        }"
+      />
+      <Markdown
+        class="pl-5"
+        :markdown="t.cards.products.msrpSelfgrown"
+        :values="{
+          selfgrown: msrp.monthly.selfgrown.toString(),
+        }"
+      />
+      <Markdown
+        class="pl-5"
+        :markdown="t.cards.products.msrpCooperation"
+        :values="{
+          cooperation: msrp.monthly.cooperation.toString(),
+        }"
+      />
+      <Markdown
+        class="py-1"
+        :markdown="t.cards.products.offer"
+        :values="{
           offer: props.offer.toString(),
-        })
-      }}
+        }"
+      />
     </v-card-text>
   </v-card>
 </template>
