@@ -94,12 +94,6 @@ export const useBIStore = defineStore("bi", () => {
       config.value?.validTo,
       versionInfoStore.versionInfo?.serverTimeZone,
     );
-    console.log(
-      "recalc msrp",
-      validMonths,
-      actualOrderItems.length,
-      productMsrpWeights.value[157],
-    );
 
     return getMsrp(
       category.value,
@@ -114,18 +108,14 @@ export const useBIStore = defineStore("bi", () => {
     return depots.value.find((d) => d.id == depotId.value.actual);
   });
 
-  const update = async (configId: number, includeShipmentsValidFrom?: Date) => {
-    console.log("getBI", includeShipmentsValidFrom, orderStore.orderUserId);
-    if (includeShipmentsValidFrom === undefined) {
-      console.error("stop");
-    }
+  const update = async (configId: number, requestUserId?: number) => {
     const {
       soldByProductId: requestSoldByProductId,
       deliveredByProductIdDepotId: requestDeliveredByProductIdDepotId,
       capacityByDepotId: requestCapacityByDepotId,
       productsById: requestedProductsById,
       offers: requestOffers,
-    } = await getBI(configId, includeShipmentsValidFrom);
+    } = await getBI(configId, requestUserId);
     soldByProductId.value = requestSoldByProductId;
     capacityByDepotId.value = requestCapacityByDepotId;
     productsById.value = requestedProductsById;
