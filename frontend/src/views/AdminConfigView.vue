@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { onMounted, watch } from "vue";
+import { computed, ComputedRef, onMounted, watch } from "vue";
 import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
 import { useConfigStore } from "../store/configStore.ts";
 import { ref } from "vue";
@@ -24,6 +24,8 @@ import { stringToDate, dateToString } from "../lib/convert.ts";
 import { ExistingConfig } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { useUiFeedback } from "../store/uiFeedbackStore.ts";
 import NewSeasonDialog from "../components/NewSeasonDialog.vue";
+import SeasonStatusElement from "../components/season/SeasonStatusElement.vue";
+import { getSeasonPhase } from "@lebenswurzel/solawi-bedarf-shared/src/util/configHelper.ts";
 const t = language.pages.config;
 
 const loading = ref(false);
@@ -69,9 +71,8 @@ watch(configStore, () => {
   onConfigUpdated();
 });
 
-const onSave = () => {
-  loading.value = true;
-  const updatedConfig: ExistingConfig = {
+const updatedConfig: ComputedRef<ExistingConfig> = computed(() => {
+  return {
     id: configId.value,
     startOrder: startOrder.value,
     endBiddingRound: endBiddingRound.value,
@@ -82,7 +83,11 @@ const onSave = () => {
     name: seasonName.value,
     public: isPublic.value,
   };
-  saveConfig(updatedConfig)
+});
+
+const onSave = () => {
+  loading.value = true;
+  saveConfig(updatedConfig.value)
     .then(async () => {
       configStore
         .update()
@@ -309,6 +314,57 @@ const updateEndBiddingRound = (val: string) => {
         </v-menu>
       </v-btn>
     </v-card-actions>
+  </v-card>
+  <v-card class="ma-2">
+    <v-card-title>Live-Vorschau</v-card-title>
+    <v-card-text>
+      <v-container fluid>
+        <v-row dense>
+          <v-col cols="12" style="text-h5">Anzeige für aktive Benutzer:</v-col>
+        </v-row>
+        <v-row dense>
+          <v-col cols="12" md="6">
+            <SeasonStatusElement
+              :phase="
+                getSeasonPhase(updatedConfig, new Date(), true).orderPhase
+              "
+              :alternative-config="updatedConfig"
+            />
+          </v-col>
+          <v-col cols="12" md="6">
+            <SeasonStatusElement
+              :phase="
+                getSeasonPhase(updatedConfig, new Date(), true).seasonPhase
+              "
+              :alternative-config="updatedConfig"
+            />
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col cols="12" style="text-h5"
+            >Anzeige für inaktive Benutzer:</v-col
+          >
+        </v-row>
+        <v-row dense>
+          <v-col cols="12" md="6">
+            <SeasonStatusElement
+              :phase="
+                getSeasonPhase(updatedConfig, new Date(), false).orderPhase
+              "
+              :alternative-config="updatedConfig"
+            />
+          </v-col>
+          <v-col cols="12" md="6">
+            <SeasonStatusElement
+              :phase="
+                getSeasonPhase(updatedConfig, new Date(), false).seasonPhase
+              "
+              :alternative-config="updatedConfig"
+            />
+          </v-col>
+        </v-row>
+      </v-container>
+    </v-card-text>
   </v-card>
 
   <NewSeasonDialog :open="openCreateDialog" @close="openCreateDialog = false" />
