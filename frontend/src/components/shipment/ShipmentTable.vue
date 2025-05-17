@@ -31,6 +31,11 @@ import { useProductStore } from "../../store/productStore.ts";
 import BusyIndicator from "../BusyIndicator.vue";
 import ShipmentDialog from "../ShipmentDialog.vue";
 import SeasonText from "../styled/SeasonText.vue";
+import { ShipmentType } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
+
+const props = defineProps<{
+  shipmentType: ShipmentType;
+}>();
 
 const t = language.pages.shipment;
 
@@ -52,19 +57,26 @@ const refresh = async () => {
   busy.value = true;
   await productStore.update(activeConfigId.value);
   await biStore.update(activeConfigId.value);
-  shipmentsWithoutItems.value = (
-    await getShipments(activeConfigId.value, undefined, false)
-  ).shipments;
-  busy.value = false;
+  refreshShipmentList();
 };
 
 const onClose = async () => {
   editShipmentId.value = undefined;
   open.value = false;
   await biStore.update(activeConfigId.value);
+  refreshShipmentList();
+};
+
+const refreshShipmentList = async () => {
   shipmentsWithoutItems.value = (
-    await getShipments(activeConfigId.value, undefined, false)
+    await getShipments(
+      activeConfigId.value,
+      undefined,
+      false,
+      props.shipmentType,
+    )
   ).shipments;
+  busy.value = false;
 };
 
 onMounted(refresh);
@@ -92,7 +104,11 @@ const onRowClick = (
       <v-btn
         @click="onCreateShipment"
         prepend-icon="mdi-account-plus-outline"
-        >{{ t.action.createShipment }}</v-btn
+        >{{
+          props.shipmentType == ShipmentType.NORMAL
+            ? t.action.createShipment
+            : t.action.createForecastShipment
+        }}</v-btn
       >
     </v-card-actions>
     <v-data-table
@@ -151,6 +167,7 @@ const onRowClick = (
   <ShipmentDialog
     :open="open"
     :edit-shipment-id="editShipmentId"
+    :shipment-type="props.shipmentType"
     @close="onClose"
   />
 </template>

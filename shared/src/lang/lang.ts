@@ -14,7 +14,12 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { ProductCategoryType, UserCategory, UserRole } from "../enum";
+import {
+  ProductCategoryType,
+  ShipmentType,
+  UserCategory,
+  UserRole,
+} from "../enum";
 import { OrganizationInfoKeys, PdfTextsKeys } from "../types";
 
 // info i: 24D8
@@ -306,11 +311,17 @@ export const language = {
       },
       action: {
         createShipment: "Verteilung erstellen",
+        createForecastShipment: "Prognose-Verteilung erstellen",
         createShipmentItem: "Verteilung",
         createAdditionalShipmentItem: "Verteilung",
       },
       dialog: {
         title: "Verteilung",
+      },
+      types: {
+        [ShipmentType.NORMAL]: "Standard",
+        [ShipmentType.DRAFT]: "Entwurf",
+        [ShipmentType.FORECAST]: "Prognose",
       },
     },
     product: {
