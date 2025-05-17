@@ -20,6 +20,7 @@ import {
   ShipmentRequest,
 } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { getUrl, verifyResponse } from "./requests";
+import { ShipmentType } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 
 export const saveShipment = async (shipment: ShipmentRequest & OptionalId) => {
   const response = await fetch(getUrl("/shipment"), {
@@ -37,13 +38,15 @@ export const getShipments = async (
   configId: number,
   shipmentId?: number,
   includeItems: boolean = false,
+  shipmentType?: ShipmentType,
 ): Promise<{
   shipments: ShipmentFullInformation[];
 }> => {
   const shipmentIdParam = shipmentId ? `&shipmentId=${shipmentId}` : "";
+  const shipmentTypeParam = shipmentType ? `&shipmentType=${shipmentType}` : "";
   const response = await fetch(
     getUrl(
-      `/shipments?configId=${configId}&includeItems=${includeItems}${shipmentIdParam}`,
+      `/shipments?configId=${configId}&includeItems=${includeItems}${shipmentIdParam}${shipmentTypeParam}`,
     ),
   );
 

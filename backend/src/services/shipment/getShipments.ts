@@ -20,10 +20,14 @@ import { Shipment } from "../../database/Shipment";
 import { http } from "../../consts/http";
 import { AppDataSource } from "../../database/database";
 import { getUserFromContext } from "../getUserFromContext";
-import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import {
+  ShipmentType,
+  UserRole,
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import {
+  getBooleanQueryParameter,
   getConfigIdFromQuery,
-  getIncludeItemsFromQuery,
+  getEnumQueryParameter,
   getNumericQueryParameter,
 } from "../../util/requestUtil";
 
@@ -35,7 +39,17 @@ export const getShipments = async (
     ctx.throw(http.forbidden);
   }
   const configId = getConfigIdFromQuery(ctx);
-  const includeItems = getIncludeItemsFromQuery(ctx);
+  const includeItems = getBooleanQueryParameter(
+    ctx.query,
+    "includeItems",
+    false,
+  );
+  const shipmentType = getEnumQueryParameter(
+    ctx.query,
+    "shipmentType",
+    ShipmentType,
+    ShipmentType.NORMAL,
+  );
   const shipmentId = getNumericQueryParameter(
     ctx.request.query,
     "shipmentId",
@@ -52,6 +66,7 @@ export const getShipments = async (
     where: {
       requisitionConfigId: configId,
       ...(shipmentId ? { id: shipmentId } : {}),
+      type: shipmentType,
     },
   });
   ctx.body = {
