@@ -80,3 +80,9 @@ export enum SeasonPhase {
   FREE_ORDER,
   INCREASE_ONLY,
 }
+
+export enum ShipmentType {
+  NORMAL = "NORMAL",
+  DRAFT = "DRAFT",
+  FORECAST = "FORECAST",
+}

@@ -16,9 +16,19 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { appConfig } from "./config";
 import { ProductCategoryType, Unit, UserCategory } from "./enum";
-import { Msrp, OrderItem, Product, ProductsById } from "./types";
+import { calculateDeliveries } from "./order/orderUtil";
+import {
+  DeliveredByProductIdDepotId,
+  Depot,
+  Msrp,
+  OrderItem,
+  Product,
+  ProductId,
+  ProductsById,
+} from "./types";
+import { countCalendarMonths, getSameOrNextThursday } from "./util/dateHelper";
 
-export const getBaseMsrp = (orderItem: OrderItem, product: Product) => {
+const getYearlyBaseMsrp = (orderItem: OrderItem, product: Product) => {
   if (product) {
     const conversion = product.unit == Unit.PIECE ? 100 : 100000; // convert ct/kg & ct/pcs too €/g & €/pcs
     return (
@@ -28,11 +38,15 @@ export const getBaseMsrp = (orderItem: OrderItem, product: Product) => {
   return 0;
 };
 
-export const adjustMsrp = (baseMsrp: number, category: UserCategory) => {
+const adjustMsrp = (
+  baseMsrp: number,
+  category: UserCategory,
+  months: number
+) => {
   if (baseMsrp > 0) {
     return (
       appConfig.msrp[category].absolute +
-      Math.ceil((appConfig.msrp[category].relative * baseMsrp) / 12)
+      Math.ceil((appConfig.msrp[category].relative * baseMsrp) / months)
     );
   }
   return 0;
@@ -41,11 +55,15 @@ export const adjustMsrp = (baseMsrp: number, category: UserCategory) => {
 export const getMsrp = (
   category: UserCategory,
   orderItems: OrderItem[],
-  productById: ProductsById
+  productById: ProductsById,
+  months: number,
+  productMsrpWeights?: { [key: ProductId]: number }
 ): Msrp => {
   const baseMsrp = orderItems.reduce(
     (acc, orderItem) =>
-      acc + getBaseMsrp(orderItem, productById[orderItem.productId]),
+      acc +
+      getYearlyBaseMsrp(orderItem, productById[orderItem.productId]) *
+        (productMsrpWeights ? productMsrpWeights[orderItem.productId] : 1),
     0
   );
   const selfgrownMsrp = orderItems.reduce(
@@ -53,15 +71,58 @@ export const getMsrp = (
       acc +
       (productById[orderItem.productId]?.productCategoryType ==
       ProductCategoryType.SELFGROWN
-        ? getBaseMsrp(orderItem, productById[orderItem.productId])
+        ? getYearlyBaseMsrp(orderItem, productById[orderItem.productId]) *
+          (productMsrpWeights ? productMsrpWeights[orderItem.productId] : 1)
         : 0),
     0
   );
-  const adjustedTotal = adjustMsrp(baseMsrp, category);
-  const adjustedSelfgrown = adjustMsrp(selfgrownMsrp, category);
+
+  const adjustedMonthlyTotal = adjustMsrp(baseMsrp, category, months);
+  const adjustedMonthlySelfgrown = adjustMsrp(selfgrownMsrp, category, months);
   return {
-    total: adjustedTotal,
-    selfgrown: adjustedSelfgrown,
-    cooperation: adjustedTotal - adjustedSelfgrown,
+    monthly: {
+      total: adjustedMonthlyTotal,
+      selfgrown: adjustedMonthlySelfgrown,
+      cooperation: adjustedMonthlyTotal - adjustedMonthlySelfgrown,
+    },
+    yearly: {
+      total: adjustedMonthlyTotal * months,
+      selfgrown: adjustedMonthlySelfgrown * months,
+      cooperation: (adjustedMonthlyTotal - adjustedMonthlySelfgrown) * months,
+    },
+    months,
   };
+};
+
+export const calculateMsrpWeights = (
+  productsById: ProductsById,
+  deliveredByProductIdDepotId: DeliveredByProductIdDepotId,
+  depots: Depot[]
+): { [key: ProductId]: number } => {
+  return Object.fromEntries(
+    Object.values(productsById).map((product) => [
+      product.id,
+      1 -
+        calculateDeliveries(product, deliveredByProductIdDepotId, depots)
+          .percentage /
+          100,
+    ])
+  );
+};
+
+export const calculateOrderValidMonths = (
+  orderValidFrom?: Date | null,
+  seasonValidTo?: Date,
+  timezone?: string
+): number => {
+  console.log("calc order valid months", orderValidFrom, seasonValidTo);
+  if (orderValidFrom && seasonValidTo) {
+    let firstShipment = getSameOrNextThursday(orderValidFrom);
+    console.log("first shipment", firstShipment);
+    return Math.min(
+      countCalendarMonths(firstShipment, seasonValidTo, timezone),
+      12
+    );
+  }
+  return 12;
 };

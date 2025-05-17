@@ -99,6 +99,7 @@ export const prepareShipment = (
     id: editShipment.id,
     updatedAt: editShipment.updatedAt,
     requisitionConfigId: editShipment.requisitionConfigId,
+    type: editShipment.type,
   };
   return shipment;
 };

@@ -15,7 +15,10 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { expect, test } from "vitest";
-import { Unit } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import {
+  ShipmentType,
+  Unit,
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import {
   Id,
   ShipmentRequest,
@@ -139,6 +142,7 @@ testAsAdmin("create new shipment", async ({ userData }: TestUserData) => {
     updatedAt: new Date(savedShipment.updatedAt.getTime() + 1000),
     shipmentItems: shipmentItems2,
     additionalShipmentItems,
+    type: ShipmentType.NORMAL,
   };
 
   const ctx2 = createBasicTestCtx(request2, userData.token, undefined);
@@ -178,6 +182,7 @@ testAsAdmin("update existing shipment", async ({ userData }: TestUserData) => {
     updatedAt: shipment.updatedAt,
     shipmentItems: [],
     additionalShipmentItems: [],
+    type: ShipmentType.NORMAL,
   };
 
   const ctx = createBasicTestCtx(request, userData.token, undefined);
@@ -211,6 +216,7 @@ testAsAdmin(
       updatedAt: new Date(Date.now() - 10000), // Old timestamp
       shipmentItems: [],
       additionalShipmentItems: [],
+      type: ShipmentType.NORMAL,
     };
 
     const ctx = createBasicTestCtx(request, userData.token, undefined);
@@ -238,12 +244,41 @@ testAsAdmin(
       updatedAt: new Date(Date.now() + 10000), // New timestamp
       shipmentItems: [],
       additionalShipmentItems: [],
+      type: ShipmentType.NORMAL,
     };
 
     const ctx = createBasicTestCtx(request, userData.token, undefined);
 
     await expect(() => saveShipment(ctx)).rejects.toThrowError(
       "Error 400: shipment is active",
+    );
+  },
+);
+
+testAsAdmin(
+  "prevent update of shipment type",
+  async ({ userData }: TestUserData) => {
+    const configId = await getRequisitionConfigId();
+    // Create a shipment
+    const shipment = await createTestShipment("Original shipment");
+
+    // Try to update the shipment to inactive
+    const request: ShipmentRequest & Id = {
+      id: shipment.id,
+      requisitionConfigId: configId,
+      validFrom: new Date(),
+      active: false,
+      description: "Updated shipment",
+      updatedAt: new Date(Date.now() + 10000), // New timestamp
+      shipmentItems: [],
+      additionalShipmentItems: [],
+      type: ShipmentType.FORECAST,
+    };
+
+    const ctx = createBasicTestCtx(request, userData.token, undefined);
+
+    await expect(() => saveShipment(ctx)).rejects.toThrowError(
+      "Error 400: changing shipment type from NORMAL to FORECAST not allowed",
     );
   },
 );
@@ -266,6 +301,7 @@ testAsAdmin(
       active: false,
       description: "Updated shipment",
       updatedAt: new Date(Date.now() + 10000),
+      type: ShipmentType.NORMAL,
       shipmentItems: [
         genShipmentItem(product, depot, {
           totalShipedQuantity: 10,

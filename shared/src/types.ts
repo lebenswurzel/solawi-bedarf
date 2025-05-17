@@ -16,6 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import {
   ProductCategoryType,
+  ShipmentType,
   TextContentCategory,
   TextContentTyp,
   Unit,
@@ -24,6 +25,10 @@ import {
 } from "./enum";
 
 export type DateString = string;
+export type UserId = number;
+export type ProductId = number;
+export type DepotId = number;
+export type OrderId = number;
 
 export interface OptionalId {
   id?: number;
@@ -39,12 +44,12 @@ export interface NewUser {
 
 export type User = Required<NewUser> & Id;
 
-export type SaveUserRequest = Required<NewUser> &
-  OptionalId & {
-    password?: string;
-    orderValidFrom: Date | null;
-    requisitionConfigId: number;
-  };
+export type SaveUserRequest = Required<NewUser> & {
+  id?: UserId;
+  password?: string;
+  orderValidFrom: Date | null;
+  requisitionConfigId: number;
+};
 
 export type UserOrder = {
   updatedAt: Date;
@@ -60,7 +65,7 @@ export type UserWithOrders = Required<User> & {
   emailEnabled: boolean;
 };
 export type GetUserResponse = {
-  userId: number;
+  userId: UserId;
   users: UserWithOrders[];
   tokenValidUntil: Date | null;
 };
@@ -85,15 +90,15 @@ export interface NewProduct {
   productCategoryId?: number;
 }
 
-export type Product = Required<NewProduct> & Id;
+export type Product = Required<NewProduct> & { id: ProductId };
 
-export type ProductWithProductCategoryTyp = Required<NewProduct> &
-  Id & {
-    productCategoryType: ProductCategoryType;
-  };
+export type ProductWithProductCategoryTyp = Required<NewProduct> & {
+  id: ProductId;
+  productCategoryType: ProductCategoryType;
+};
 
 export type ProductsById = {
-  [key: number]: ProductWithProductCategoryTyp;
+  [key: ProductId]: ProductWithProductCategoryTyp;
 };
 
 export interface NewProductCategory {
@@ -110,14 +115,14 @@ export type ProductCategoryWithProducts = ProductCategory & {
 };
 
 export interface OrderItem {
-  productId: number;
+  productId: ProductId;
   value: number;
 }
 
 export interface Order {
   orderItems: OrderItem[];
-  depotId: number;
-  alternateDepotId: number | null;
+  depotId: DepotId;
+  alternateDepotId: DepotId | null;
   offer: number;
   offerReason: string | null;
   category: UserCategory;
@@ -129,8 +134,8 @@ export interface Order {
 }
 
 export interface SavedOrder extends Order {
-  id: number;
-  userId?: number;
+  id: OrderId;
+  userId?: UserId;
 }
 
 export interface ConfirmedOrder extends Order {
@@ -242,43 +247,44 @@ export interface ConfigResponse {
 }
 
 export type SoldByProductId = {
-  [key: number]: {
-    sold: number;
-    quantity: number;
-    frequency: number;
-    soldForShipment: number;
+  [key: ProductId]: {
+    sold: number; // amount sold based on all the orders (even those with validFrom in the future) (in pcs, g, ml)
+    quantity: number; // almost the same as product.quantity but in pcs, g, ml (where product.quantity is in pcs, kg, l)
+    frequency: number; // same as product.frequency
+    soldForShipment: number; // amount sold based on the orders with validFrom in the past (in pcs, g, ml)
   };
 };
 
 export type CapacityByDepotId = {
-  [key: number]: {
+  [key: DepotId]: {
     capacity: number | null;
     reserved: number;
-    userIds: number[];
+    userIds: UserId[];
   };
 };
 
 export type DeliveredByProductIdDepotId = {
-  [key: number]: {
-    [key: number]: {
-      value: number;
-      delivered: number;
-      actuallyDelivered: number;
-      frequency: number;
-      valueForShipment: number;
+  [key: ProductId]: {
+    [key: DepotId]: {
+      value: number; // amount required per shipment based on all the orders (even those with validFrom in the future) (in pcs, g, ml)
+      valueForShipment: number; // amount required per shipment based on the orders with validFrom in the past (in pcs, g, ml)
+      delivered: number; // amount contained in shipments, including non-active shipments (in pcs, g, ml)
+      actuallyDelivered: number; // amount contained in active shipments (in pcs, g, ml)
+      frequency: number; // same as product.frequency
+      deliveryCount: number; // number of deliveries to this depot
     };
   };
 };
 
 export interface BaseShipmentItem {
-  depotId: number;
+  depotId: DepotId;
   totalShipedQuantity: number; // delivered quantity
   unit: Unit; // delivered unit
   isBio: boolean;
 }
 
 export interface ShipmentItem extends BaseShipmentItem {
-  productId: number;
+  productId: ProductId;
   description: string | null;
   multiplicator: number;
   conversionFrom: number; // in requested units
@@ -287,8 +293,8 @@ export interface ShipmentItem extends BaseShipmentItem {
 
 export interface EditShipmentItem
   extends Omit<ShipmentItem, "depotId" | "productId" | "unit"> {
-  productId?: number;
-  depotIds: number[];
+  productId?: ProductId;
+  depotIds: DepotId[];
   unit?: Unit;
   showItem: boolean;
   isNew?: boolean;
@@ -302,7 +308,7 @@ export interface AdditionalShipmentItem extends BaseShipmentItem {
 
 export interface EditAdditionalShipmentItem
   extends Omit<AdditionalShipmentItem, "depotId" | "product" | "unit"> {
-  depotIds: number[];
+  depotIds: DepotId[];
   product?: string;
   unit?: Unit;
   showItem: boolean;
@@ -314,6 +320,7 @@ export interface ShipmentMainInformation {
   active: boolean;
   updatedAt?: Date;
   requisitionConfigId: number;
+  type: ShipmentType;
 }
 
 export interface Shipment extends ShipmentMainInformation {
@@ -363,6 +370,7 @@ export interface BuildInfo {
 
 export interface VersionInfo {
   buildInfo: BuildInfo;
+  serverTimeZone: string;
 }
 
 export interface OrderOverviewProductItem {
@@ -399,9 +407,17 @@ export type OrderOverviewWithApplicantItem = OrderOverviewItem &
   OrderOverviewApplicant;
 
 export interface Msrp {
-  total: number;
-  selfgrown: number;
-  cooperation: number;
+  monthly: {
+    total: number;
+    selfgrown: number;
+    cooperation: number;
+  };
+  yearly: {
+    total: number;
+    selfgrown: number;
+    cooperation: number;
+  };
+  months: number;
 }
 
 export interface OrganizationInfo {
@@ -448,7 +464,7 @@ export interface ErrorLogEntry {
   requestHeaders?: any;
   userAgent?: string;
   ip?: string;
-  userId?: number;
+  userId?: UserId;
   userName?: string;
 }
 

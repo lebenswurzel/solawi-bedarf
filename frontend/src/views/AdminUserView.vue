@@ -32,7 +32,11 @@ import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import { computed } from "@vue/reactivity";
 import { updateUser } from "../requests/user.ts";
 import { useUiFeedback } from "../store/uiFeedbackStore.ts";
-import { prettyDate } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper.ts";
+import {
+  getDateTimestampWithoutTime,
+  prettyDate,
+  prettyDateNoTime,
+} from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper.ts";
 import { useRoute } from "vue-router";
 
 const t = language.pages.user;
@@ -67,6 +71,11 @@ const processedUsers = ref<number>(0);
 const isProcessing = ref(false);
 const openDatePicker = ref(false);
 const selectedDate = ref(new Date());
+const displayFilters = ref<{
+  validFrom: Array<number>;
+  role: Array<number>;
+  depot: Array<number>;
+}>({ validFrom: [], role: [], depot: [] });
 
 provide("dialogUser", dialogUser);
 
@@ -215,6 +224,71 @@ const tableItems = computed(() => {
     };
   });
 });
+
+const filteredTableItems = computed(() => {
+  return tableItems.value
+    .filter(filterValidFromDates)
+    .filter(filterUserRoles)
+    .filter(filterDepotNames);
+});
+
+/// filter form validFrom
+const filterValidFromDates = (tableItem: {
+  orderValidFrom: Date | undefined | null;
+}): boolean => {
+  if (displayFilters.value.validFrom.length < 1) {
+    return true;
+  }
+  return displayFilters.value.validFrom
+    .map((index) => validFromItems.value[index])
+    .includes(getDateTimestampWithoutTime(tableItem.orderValidFrom));
+};
+
+const validFromItems = computed(() => {
+  return Array.from(
+    new Set(
+      users.value.map((user) => {
+        const currentOrder = getCurrentSeasonOrder(user.orders);
+        return getDateTimestampWithoutTime(currentOrder?.validFrom);
+      }),
+    ),
+  ).sort();
+});
+
+watch(validFromItems, () => {
+  // reset filter if valid from list changes
+  displayFilters.value.validFrom = [];
+});
+
+/// filter for user role
+const filterUserRoles = (tableItem: { role: UserRole }): boolean => {
+  if (displayFilters.value.role.length < 1) {
+    return true;
+  }
+  return displayFilters.value.role
+    .map((index) => userRoleItems.value[index])
+    .includes(tableItem.role);
+};
+const userRoleItems = computed(() => {
+  return Array.from(new Set(users.value.map((user) => user.role)));
+});
+
+/// filter for user role
+const filterDepotNames = (tableItem: {
+  depotName: string | undefined;
+}): boolean => {
+  if (displayFilters.value.depot.length < 1) {
+    return true;
+  }
+  return displayFilters.value.depot
+    .map((index) => depotNameItems.value[index])
+    .includes(tableItem.depotName || "- keins -");
+};
+const depotNameItems = computed(() => {
+  return Array.from(
+    new Set(tableItems.value.map((item) => item.depotName || "- keins -")),
+  ).sort();
+});
 </script>
 
 <template>
@@ -279,7 +353,7 @@ const tableItems = computed(() => {
           <v-col cols="12">
             <v-data-table
               :headers="headers"
-              :items="tableItems"
+              :items="filteredTableItems"
               density="compact"
               :search="search"
               show-select
@@ -355,6 +429,57 @@ const tableItems = computed(() => {
                 ></v-btn>
               </template>
             </v-data-table>
+          </v-col>
+        </v-row>
+        <span class="text-h6">Anzeigefilter für die Tabelle</span>
+        <v-row dense>
+          <v-col cols="12" md="6">
+            <div class="text-caption">Bedarf gültig ab Datum</div>
+            <v-chip-group
+              multiple
+              selected-class="text-primary"
+              column
+              v-model="displayFilters.validFrom"
+            >
+              <v-chip
+                v-for="validFrom in validFromItems"
+                :key="validFrom || 0"
+                :text="prettyDateNoTime(validFrom)"
+                filter
+              ></v-chip>
+            </v-chip-group>
+          </v-col>
+          <v-col cols="12" md="6">
+            <div class="text-caption">Rolle</div>
+            <v-chip-group
+              multiple
+              selected-class="text-primary"
+              column
+              v-model="displayFilters.role"
+            >
+              <v-chip
+                v-for="role in userRoleItems"
+                :key="role"
+                :text="role"
+                filter
+              ></v-chip>
+            </v-chip-group>
+          </v-col>
+          <v-col cols="12">
+            <div class="text-caption">Depot</div>
+            <v-chip-group
+              multiple
+              selected-class="text-primary"
+              column
+              v-model="displayFilters.depot"
+            >
+              <v-chip
+                v-for="depotName in depotNameItems"
+                :key="depotName"
+                :text="depotName"
+                filter
+              ></v-chip>
+            </v-chip-group>
           </v-col>
         </v-row>
       </v-container>

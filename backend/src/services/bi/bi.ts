@@ -29,17 +29,23 @@ import { ProductCategory } from "../../database/ProductCategory";
 import { Shipment } from "../../database/Shipment";
 import { AppDataSource } from "../../database/database";
 import { getUserFromContext } from "../getUserFromContext";
-import { getConfigIdFromQuery } from "../../util/requestUtil";
+import {
+  getConfigIdFromQuery,
+  getNumericQueryParameter,
+} from "../../util/requestUtil";
+import { LessThan } from "typeorm";
 
 export const biHandler = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
 ) => {
   await getUserFromContext(ctx);
   const configId = getConfigIdFromQuery(ctx);
-  ctx.body = await bi(configId);
+  const requestUserId =
+    getNumericQueryParameter(ctx.request.query, "userId", 0) || undefined;
+  ctx.body = await bi(configId, requestUserId);
 };
 
-export const bi = async (configId: number) => {
+export const bi = async (configId: number, requestUserId?: number) => {
   const now = new Date();
   const depots = await AppDataSource.getRepository(Depot).find();
 
@@ -66,10 +72,24 @@ export const bi = async (configId: number) => {
     where: { requisitionConfigId: configId },
   });
 
+  let extendedShipmentsWhere = {};
+
+  if (requestUserId) {
+    let includeShipmentsBeforeDate: Date | null = null;
+    const userOrder = orders.find((o) => o.userId === requestUserId);
+    if (userOrder && userOrder.validFrom) {
+      console.log("shipments before validFrom", userOrder.validFrom);
+      extendedShipmentsWhere = {
+        validFrom: LessThan(userOrder.validFrom),
+      };
+    }
+  }
+
   const shipments = await AppDataSource.getRepository(Shipment).find({
     relations: { shipmentItems: true },
     where: {
       requisitionConfigId: configId,
+      ...extendedShipmentsWhere,
     },
   });
 
@@ -121,6 +141,7 @@ export const bi = async (configId: number) => {
           delivered: 0,
           actuallyDelivered: 0,
           frequency: product.frequency,
+          deliveryCount: 0,
         };
       }
       deliveredByProductIdDepotId[orderItem.productId][order.depotId].value +=
@@ -164,6 +185,7 @@ export const bi = async (configId: number) => {
           delivered: 0,
           actuallyDelivered: 0,
           frequency: product.frequency,
+          deliveryCount: 0,
         };
       }
       deliveredByProductIdDepotId[shipmentItem.productId][
@@ -173,6 +195,9 @@ export const bi = async (configId: number) => {
         deliveredByProductIdDepotId[shipmentItem.productId][
           shipmentItem.depotId
         ].actuallyDelivered += shipmentItem.multiplicator;
+        deliveredByProductIdDepotId[shipmentItem.productId][
+          shipmentItem.depotId
+        ].deliveryCount++;
       }
     });
   });
