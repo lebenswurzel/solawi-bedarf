@@ -67,6 +67,10 @@ const emit = defineEmits<{ (e: "close"): void }>();
 const defaultEditShipment: EditShipment = {
   description: null,
   validFrom: addDays(setHours(setMinutes(setSeconds(new Date(), 0), 0), 12), 1),
+  validTo:
+    shipmentType == ShipmentType.FORECAST
+      ? addDays(setHours(setMinutes(setSeconds(new Date(), 0), 0), 12), 2)
+      : undefined,
   shipmentItems: [],
   additionalShipmentItems: [],
   active: false,
@@ -426,8 +430,7 @@ watchEffect(async () => {
             </v-col>
             <v-col cols="6" md="3" v-if="shipmentType == ShipmentType.FORECAST">
               <v-text-field
-                label="
-                  bis "
+                label="bis"
                 type="datetime-local"
                 :model-value="dateToString(editShipment.validTo ?? new Date())"
                 @update:model-value="

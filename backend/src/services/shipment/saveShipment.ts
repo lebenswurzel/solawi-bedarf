@@ -22,7 +22,10 @@ import { AppDataSource } from "../../database/database";
 import { Shipment } from "../../database/Shipment";
 import { ShipmentItem } from "../../database/ShipmentItem";
 import { AdditionalShipmentItem } from "../../database/AdditionalShipmentItem";
-import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import {
+  ShipmentType,
+  UserRole,
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import {
   Id,
   ShipmentItem as ShipmentItemType,
@@ -85,6 +88,16 @@ export const saveShipment = async (
           `changing shipment type from ${shipment.type} to ${requestShipment.type} not allowed`,
         );
       }
+      if (
+        requestShipment.type == ShipmentType.FORECAST &&
+        requestShipment.validTo &&
+        requestShipment.validFrom >= requestShipment.validTo
+      ) {
+        ctx.throw(
+          http.bad_request,
+          "validTo date must be later than validFrom, if set",
+        );
+      }
 
       // add revision message
       if (requestShipment.revisionMessage) {
@@ -100,6 +113,10 @@ export const saveShipment = async (
 
       // update shipment
       shipment.validFrom = requestShipment.validFrom;
+      shipment.validTo =
+        requestShipment.type == ShipmentType.FORECAST
+          ? requestShipment.validTo
+          : undefined;
       shipment.active = requestShipment.active;
       shipment.description = requestShipment.description;
       shipment.updatedAt = new Date();
@@ -182,6 +199,10 @@ export const saveShipment = async (
     } else {
       const shipment = new Shipment();
       shipment.validFrom = requestShipment.validFrom;
+      shipment.validTo =
+        requestShipment.type == ShipmentType.FORECAST
+          ? requestShipment.validTo
+          : undefined;
       shipment.active = requestShipment.active;
       shipment.description = requestShipment.description;
       shipment.requisitionConfigId = requestShipment.requisitionConfigId;

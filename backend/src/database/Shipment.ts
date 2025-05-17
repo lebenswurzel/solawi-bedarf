@@ -42,6 +42,12 @@ export class Shipment extends BaseEntity {
   })
   public validFrom: Date;
 
+  @Column({
+    type: "timestamp",
+    nullable: true,
+  })
+  public validTo?: Date; // only applies to FORECAST shipments
+
   @Column({ type: "varchar", nullable: true })
   description: string | null;
 
