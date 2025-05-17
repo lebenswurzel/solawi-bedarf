@@ -79,6 +79,12 @@ export const saveShipment = async (
           ctx.throw(http.bad_request, "shipment is active");
         }
       }
+      if (shipment.type !== requestShipment.type) {
+        ctx.throw(
+          http.bad_request,
+          `changing shipment type from ${shipment.type} to ${requestShipment.type} not allowed`,
+        );
+      }
 
       // add revision message
       if (requestShipment.revisionMessage) {
@@ -180,6 +186,7 @@ export const saveShipment = async (
       shipment.description = requestShipment.description;
       shipment.requisitionConfigId = requestShipment.requisitionConfigId;
       shipment.updatedAt = new Date();
+      shipment.type = requestShipment.type;
       await transactionalEntityManager.getRepository(Shipment).save(shipment);
       for (let requestShipmentItem of requestShipment.shipmentItems) {
         const shipmentItem = getNewShipmentItem(requestShipmentItem);

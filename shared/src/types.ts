@@ -16,6 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import {
   ProductCategoryType,
+  ShipmentType,
   TextContentCategory,
   TextContentTyp,
   Unit,
@@ -319,6 +320,7 @@ export interface ShipmentMainInformation {
   active: boolean;
   updatedAt?: Date;
   requisitionConfigId: number;
+  type: ShipmentType;
 }
 
 export interface Shipment extends ShipmentMainInformation {
