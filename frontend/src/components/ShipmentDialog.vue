@@ -95,6 +95,7 @@ const showShipmentItems = ref(true);
 const showAdditionalShipmentItems = ref(true);
 
 const productVisibility = ref<{ [key: number]: boolean }>({});
+const showHelp = ref(false);
 
 const updateProductVisibility = () => {
   const newVisibility: { [key: number]: boolean } = {};
@@ -359,60 +360,119 @@ watchEffect(async () => {
     >
       <template v-slot:title>
         {{ savedShipment === undefined ? "[NEU] " : "" }}
-        {{ t.dialog.title }}
-        {{ prettyDateWithDayName(editShipment.validFrom) }} (KW
-        {{ getISOWeek(editShipment.validFrom).toString() }})
         <span v-if="shipmentType != ShipmentType.NORMAL" class="bg-info pa-1">
           {{ t.types[shipmentType] }}
         </span>
+        {{ t.dialog.title }}
+        {{ prettyDateWithDayName(editShipment.validFrom) }} (KW
+        {{ getISOWeek(editShipment.validFrom).toString() }})
       </template>
       <template v-slot:subtitle
         >zuletzt gespeichert:
         {{ prettyDate(savedShipment?.updatedAt, true) }}</template
       >
       <v-card-text style="overflow-y: auto">
-        <v-row align="start" justify="center">
-          <v-col cols="3">
-            <v-text-field
-              label="Von"
-              type="datetime-local"
-              :model-value="dateToString(editShipment.validFrom)"
-              @update:model-value="
-                (val: string) =>
-                  (editShipment.validFrom =
-                    stringToDate(val) || editShipment.validFrom)
-              "
-            ></v-text-field>
-          </v-col>
-          <v-col cols="7">
-            <v-text-field
-              label="Beschreibung"
-              v-model="editShipment.description"
-              clearable
-              hint="Die Beschreibung wird den Ernteteilern in ihrer Verteilungsansicht angezeigt"
-            ></v-text-field>
-          </v-col>
-          <v-col cols="2">
-            <v-checkbox
-              label="veröffentlicht"
-              v-model="editShipment.active"
-            ></v-checkbox>
-          </v-col>
-        </v-row>
+        <div v-if="editShipment.type == ShipmentType.FORECAST">
+          <v-alert
+            class="mb-5"
+            closable
+            color="info"
+            density="compact"
+            variant="outlined"
+          >
+            <template v-slot:title>
+              Hinweis zu Prognose-Verteilungen
+              <v-btn variant="text" v-if="!showHelp" @click="showHelp = true"
+                >Anzeigen</v-btn
+              >
+            </template>
+            <v-expand-transition>
+              <div class="text-caption" v-if="showHelp">
+                Zweck der Prognose-Verteilungen ist es, neuen Ernteteilern, die
+                während der Saison dazu kommen, eine sinnvolle Abschätzung ihres
+                Orientierungswertes zu geben. Speziell für den Fall, dass
+                zwischen Abgabe des Bedarfs und der ersten Verteilung noch
+                mehrere Wochen liegen. <br /><br />
+                Die hier angegebenen Produkte werden im genannten Zeitraum so
+                behandelt, als wären sie bereits verteilt und kommen daher bei
+                der Berechnung des Orientierungswerts des neuen Ernteteilers
+                nicht zum Tragen. Tatsächlich verteilte Produkte in diesem
+                Zeitraum werden von der Prognose-Verteilung automatisch
+                abgezogen, um eine möglichst realitätsnahe Berechnung zu
+                ermöglichen.<br /><br />
+                Der angegebene Prognosezeitraum sollte vor der ersten Verteilung
+                enden, bei der neue Ernteteiler dabei sind.
+              </div>
+            </v-expand-transition>
+          </v-alert>
+        </div>
+        <v-container fluid class="pa-0">
+          <v-row align="start" dense>
+            <v-col cols="6" md="3">
+              <v-text-field
+                :label="
+                  editShipment.type == ShipmentType.NORMAL
+                    ? 'Verteilung am'
+                    : 'Prognose von'
+                "
+                type="datetime-local"
+                :model-value="dateToString(editShipment.validFrom)"
+                @update:model-value="
+                  (val: string) =>
+                    (editShipment.validFrom =
+                      stringToDate(val) || editShipment.validFrom)
+                "
+              ></v-text-field>
+            </v-col>
+            <v-col cols="6" md="3" v-if="shipmentType == ShipmentType.FORECAST">
+              <v-text-field
+                label="
+                  bis "
+                type="datetime-local"
+                :model-value="dateToString(editShipment.validTo ?? new Date())"
+                @update:model-value="
+                  (val: string) =>
+                    (editShipment.validTo =
+                      stringToDate(val) || editShipment.validTo)
+                "
+              ></v-text-field>
+            </v-col>
+            <v-col cols="8" :md="shipmentType == ShipmentType.FORECAST ? 4 : 7">
+              <v-text-field
+                label="Beschreibung"
+                v-model="editShipment.description"
+                clearable
+                :hint="
+                  shipmentType == ShipmentType.NORMAL
+                    ? 'Die Beschreibung wird den Ernteteilern in ihrer Verteilungsansicht angezeigt'
+                    : ''
+                "
+              ></v-text-field>
+            </v-col>
+            <v-col cols="4" md="2">
+              <v-checkbox
+                label="veröffentlicht"
+                v-model="editShipment.active"
+              ></v-checkbox>
+            </v-col>
+          </v-row>
+        </v-container>
         <div class="text-h5">
           <v-icon v-if="showShipmentItems" @click="showShipmentItems = false"
             >mdi-collapse-all</v-icon
           >
           <v-icon v-else @click="showShipmentItems = true"
             >mdi-expand-all</v-icon
-          >Produkte ({{ editShipment.shipmentItems.length }})
+          ><span class="pl-2"
+            >Produkte ({{ editShipment.shipmentItems.length }})</span
+          >
         </div>
         <template v-if="showShipmentItems">
           <v-alert
             type="info"
             class="text-caption"
             density="compact"
-            variant="tonal"
+            variant="outlined"
             v-if="
               editShipment.shipmentItems.length &&
               Object.values(productVisibility).length
@@ -512,7 +572,11 @@ watchEffect(async () => {
           >
           <v-icon v-else @click="showAdditionalShipmentItems = true"
             >mdi-expand-all</v-icon
-          >Zusatzprodukte ({{ editShipment.additionalShipmentItems.length }})
+          ><span class="pl-2"
+            >Zusatzprodukte ({{
+              editShipment.additionalShipmentItems.length
+            }})</span
+          >
         </div>
         <v-list class="ma-0 pa-0" v-if="showAdditionalShipmentItems">
           <div class="text-caption mb-2">

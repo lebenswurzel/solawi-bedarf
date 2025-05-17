@@ -317,6 +317,7 @@ export interface EditAdditionalShipmentItem
 export interface ShipmentMainInformation {
   description: string | null;
   validFrom: Date;
+  validTo?: Date;
   active: boolean;
   updatedAt?: Date;
   requisitionConfigId: number;
