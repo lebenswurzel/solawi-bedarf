@@ -50,13 +50,17 @@ import { useTextContentStore } from "../store/textContentStore.ts";
 import { useUiFeedback } from "../store/uiFeedbackStore.ts";
 import AdditionalShipmentItem from "./AdditionalShipmentItem.vue";
 import ShipmentItem from "./ShipmentItem.vue";
-import { ProductCategoryType } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
+import {
+  ProductCategoryType,
+  ShipmentType,
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 
-const t = language.pages.shipment.dialog;
+const t = language.pages.shipment;
 
-const { open, editShipmentId } = defineProps<{
+const { open, editShipmentId, shipmentType } = defineProps<{
   open: boolean;
   editShipmentId: number | undefined;
+  shipmentType: ShipmentType;
 }>();
 const emit = defineEmits<{ (e: "close"): void }>();
 
@@ -67,6 +71,7 @@ const defaultEditShipment: EditShipment = {
   additionalShipmentItems: [],
   active: false,
   requisitionConfigId: -1,
+  type: shipmentType,
 };
 const editShipment = ref<EditShipment & OptionalId>(defaultEditShipment);
 const savedShipment = ref<(Shipment & Id) | undefined>();
@@ -113,7 +118,7 @@ const activeProducts = computed((): Array<number> => {
 const onEditShipment = async (shipmentId: number) => {
   try {
     const shipmentWithItemsResponse: ShipmentFullInformation[] = (
-      await getShipments(activeConfigId.value, shipmentId, true)
+      await getShipments(activeConfigId.value, shipmentId, true, shipmentType)
     ).shipments;
 
     if (shipmentWithItemsResponse.length !== 1) {
@@ -342,7 +347,11 @@ watchEffect(async () => {
 </script>
 
 <template>
-  <v-dialog :model-value="open" @update:model-value="onClose">
+  <v-dialog
+    :model-value="open"
+    @update:model-value="onClose"
+    class="full-height"
+  >
     <v-card
       :prepend-icon="
         editShipment.active ? 'mdi-check-circle' : 'mdi-circle-outline'
@@ -350,8 +359,12 @@ watchEffect(async () => {
     >
       <template v-slot:title>
         {{ savedShipment === undefined ? "[NEU] " : "" }}
-        {{ t.title }} {{ prettyDateWithDayName(editShipment.validFrom) }} (KW
+        {{ t.dialog.title }}
+        {{ prettyDateWithDayName(editShipment.validFrom) }} (KW
         {{ getISOWeek(editShipment.validFrom).toString() }})
+        <span v-if="shipmentType != ShipmentType.NORMAL" class="bg-info pa-1">
+          {{ t.types[shipmentType] }}
+        </span>
       </template>
       <template v-slot:subtitle
         >zuletzt gespeichert:
@@ -599,7 +612,7 @@ watchEffect(async () => {
 </template>
 
 <style>
-.v-dialog > .v-overlay__content {
+.full-height.v-dialog > .v-overlay__content {
   top: 0;
   bottom: 0;
 }

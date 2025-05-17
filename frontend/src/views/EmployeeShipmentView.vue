@@ -20,6 +20,7 @@ import { ref } from "vue";
 import DeliveryOverview from "../components/shipment/DeliveryOverview.vue";
 import { useProductStore } from "../store/productStore.ts";
 import ShipmentTable from "../components/shipment/ShipmentTable.vue";
+import { ShipmentType } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 
 const t = language.pages.shipment;
 
@@ -38,7 +39,7 @@ const currentTab = ref("shipments");
     </v-tabs>
     <v-tabs-window v-model="currentTab">
       <v-tabs-window-item value="shipments">
-        <ShipmentTable />
+        <ShipmentTable :shipment-type="ShipmentType.NORMAL" />
       </v-tabs-window-item>
       <v-tabs-window-item value="overview">
         <v-card-text>
@@ -67,7 +68,7 @@ const currentTab = ref("shipments");
         </v-card-text>
       </v-tabs-window-item>
       <v-tabs-window-item value="forecast">
-        <ShipmentTable />
+        <ShipmentTable :shipment-type="ShipmentType.FORECAST" />
       </v-tabs-window-item>
     </v-tabs-window>
   </v-card>
