@@ -16,7 +16,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import Koa from "koa";
 import Router from "koa-router";
-import { Unit } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import {
+  ShipmentType,
+  Unit,
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import {
   CapacityByDepotId,
   DeliveredByProductIdDepotId,
@@ -75,7 +78,6 @@ export const bi = async (configId: number, requestUserId?: number) => {
   let extendedShipmentsWhere = {};
 
   if (requestUserId) {
-    let includeShipmentsBeforeDate: Date | null = null;
     const userOrder = orders.find((o) => o.userId === requestUserId);
     if (userOrder && userOrder.validFrom) {
       console.log("shipments before validFrom", userOrder.validFrom);
@@ -90,6 +92,7 @@ export const bi = async (configId: number, requestUserId?: number) => {
     where: {
       requisitionConfigId: configId,
       ...extendedShipmentsWhere,
+      type: ShipmentType.NORMAL,
     },
   });
 
