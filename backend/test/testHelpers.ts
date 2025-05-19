@@ -96,6 +96,8 @@ export const updateRequisition = async (
   biddingOpen: boolean,
   increaseOnly?: boolean,
   requistionName?: string,
+  validFrom?: string | Date,
+  validTo?: string | Date,
 ): Promise<number> => {
   increaseOnly = increaseOnly || false;
   const now = new Date();
@@ -123,6 +125,12 @@ export const updateRequisition = async (
     // season is currently active
     requisition.validFrom = dateDeltaDays(-5);
     requisition.validTo = dateDeltaDays(-5 + 365);
+  }
+  if (validFrom) {
+    requisition.validFrom = new Date(validFrom);
+  }
+  if (validTo) {
+    requisition.validTo = new Date(validTo);
   }
   await repo.save(requisition);
   return requisition.id;
