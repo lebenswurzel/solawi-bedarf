@@ -38,6 +38,7 @@ import {
   getNumericQueryParameter,
 } from "../../util/requestUtil";
 import { LessThan, MoreThan } from "typeorm";
+import { mergeShipmentWithForecast } from "../../util/shipmentUtil";
 
 export const biHandler = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -195,8 +196,8 @@ export const bi = async (
     }
   });
 
-  shipments.forEach((shipment) => {
-    shipment.shipmentItems.forEach((shipmentItem) => {
+  mergeShipmentWithForecast(shipments, forecastShipments).forEach(
+    (shipmentItem) => {
       const product = soldByProductId[shipmentItem.productId];
       if (!deliveredByProductIdDepotId[shipmentItem.productId]) {
         deliveredByProductIdDepotId[shipmentItem.productId] = {};
@@ -217,16 +218,13 @@ export const bi = async (
         };
       }
 
-      if (shipment.active) {
-        deliveredByProductIdDepotId[shipmentItem.productId][
-          shipmentItem.depotId
-        ].actuallyDelivered += shipmentItem.multiplicator;
-        deliveredByProductIdDepotId[shipmentItem.productId][
-          shipmentItem.depotId
-        ].deliveryCount++;
-      }
-    });
-  });
+      deliveredByProductIdDepotId[shipmentItem.productId][
+        shipmentItem.depotId
+      ].actuallyDelivered += shipmentItem.multiplicator;
+      deliveredByProductIdDepotId[shipmentItem.productId][shipmentItem.depotId]
+        .deliveryCount++;
+    },
+  );
 
   // clean the data
   Object.keys(capacityByDepotId).forEach((key) => {
