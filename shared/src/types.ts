@@ -268,7 +268,6 @@ export type DeliveredByProductIdDepotId = {
     [key: DepotId]: {
       value: number; // amount required per shipment based on all the orders (even those with validFrom in the future) (in pcs, g, ml)
       valueForShipment: number; // amount required per shipment based on the orders with validFrom in the past (in pcs, g, ml)
-      delivered: number; // amount contained in shipments, including non-active shipments (in pcs, g, ml)
       actuallyDelivered: number; // amount contained in active shipments (in pcs, g, ml)
       frequency: number; // same as product.frequency
       deliveryCount: number; // number of deliveries to this depot

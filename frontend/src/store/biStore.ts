@@ -108,14 +108,18 @@ export const useBIStore = defineStore("bi", () => {
     return depots.value.find((d) => d.id == depotId.value.actual);
   });
 
-  const update = async (configId: number, requestUserId?: number) => {
+  const update = async (
+    configId: number,
+    requestUserId?: number,
+    includeForecast?: boolean,
+  ) => {
     const {
       soldByProductId: requestSoldByProductId,
       deliveredByProductIdDepotId: requestDeliveredByProductIdDepotId,
       capacityByDepotId: requestCapacityByDepotId,
       productsById: requestedProductsById,
       offers: requestOffers,
-    } = await getBI(configId, requestUserId);
+    } = await getBI(configId, requestUserId, includeForecast);
     soldByProductId.value = requestSoldByProductId;
     capacityByDepotId.value = requestCapacityByDepotId;
     productsById.value = requestedProductsById;
