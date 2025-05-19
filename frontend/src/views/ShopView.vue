@@ -120,7 +120,7 @@ const refresh = async (keepUserId?: boolean) => {
   if (requestUserId.value && activeConfigId.value != -1) {
     await productStore.update(configStore.activeConfigId);
     await orderStore.update(requestUserId.value, activeConfigId.value);
-    await biStore.update(configStore.activeConfigId, requestUserId.value);
+    await biStore.update(configStore.activeConfigId, requestUserId.value, true);
   }
 };
 onMounted(async () => {
