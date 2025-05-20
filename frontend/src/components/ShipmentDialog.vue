@@ -100,6 +100,7 @@ const showAdditionalShipmentItems = ref(true);
 
 const productVisibility = ref<{ [key: number]: boolean }>({});
 const showHelp = ref(false);
+const isForecast = ref(shipmentType == ShipmentType.FORECAST);
 
 const updateProductVisibility = () => {
   const newVisibility: { [key: number]: boolean } = {};
@@ -268,6 +269,7 @@ const onClose = () => {
 
 const onSave = () => {
   if (
+    !isForecast &&
     savedShipment?.value?.active &&
     new Date(savedShipment?.value.validFrom) < new Date()
   ) {
@@ -364,19 +366,25 @@ watchEffect(async () => {
     >
       <template v-slot:title>
         {{ savedShipment === undefined ? "[NEU] " : "" }}
-        <span v-if="shipmentType != ShipmentType.NORMAL" class="bg-info pa-1">
+        <span v-if="isForecast" class="bg-info pa-1">
           {{ t.types[shipmentType] }}
         </span>
-        {{ t.dialog.title }}
-        {{ prettyDateWithDayName(editShipment.validFrom) }} (KW
-        {{ getISOWeek(editShipment.validFrom).toString() }})
+        <template v-if="isForecast">
+          von {{ prettyDateWithDayName(editShipment.validFrom) }} bis
+          {{ prettyDateWithDayName(editShipment.validTo) }}
+        </template>
+        <template v-else>
+          {{ t.dialog.title }}
+          {{ prettyDateWithDayName(editShipment.validFrom) }} (KW
+          {{ getISOWeek(editShipment.validFrom).toString() }})
+        </template>
       </template>
       <template v-slot:subtitle
         >zuletzt gespeichert:
         {{ prettyDate(savedShipment?.updatedAt, true) }}</template
       >
       <v-card-text style="overflow-y: auto">
-        <div v-if="editShipment.type == ShipmentType.FORECAST">
+        <div v-if="isForecast">
           <v-alert
             class="mb-5"
             closable
@@ -392,20 +400,32 @@ watchEffect(async () => {
             </template>
             <v-expand-transition>
               <div class="text-caption" v-if="showHelp">
-                Zweck der Prognose-Verteilungen ist es, neuen Ernteteilern, die
-                während der Saison dazu kommen, eine sinnvolle Abschätzung ihres
-                Orientierungswertes zu geben. Speziell für den Fall, dass
-                zwischen Abgabe des Bedarfs und der ersten Verteilung noch
-                mehrere Wochen liegen. <br /><br />
-                Die hier angegebenen Produkte werden im genannten Zeitraum so
-                behandelt, als wären sie bereits verteilt und kommen daher bei
-                der Berechnung des Orientierungswerts des neuen Ernteteilers
-                nicht zum Tragen. Tatsächlich verteilte Produkte in diesem
-                Zeitraum werden von der Prognose-Verteilung automatisch
-                abgezogen, um eine möglichst realitätsnahe Berechnung zu
-                ermöglichen.<br /><br />
-                Der angegebene Prognosezeitraum sollte vor der ersten Verteilung
-                enden, bei der neue Ernteteiler dabei sind.
+                <p class="pt-1">
+                  Zweck der Prognose-Verteilungen ist es, neuen Ernteteilern,
+                  die während der Saison dazu kommen, eine sinnvolle Abschätzung
+                  ihres Orientierungswertes zu geben. Speziell für den Fall,
+                  dass zwischen Abgabe des Bedarfs und der ersten Verteilung
+                  noch mehrere Wochen liegen.
+                </p>
+                <p class="pt-1">
+                  Die hier angegebenen Produkte werden im genannten Zeitraum so
+                  behandelt, als wären sie bereits verteilt und kommen daher bei
+                  der Berechnung des Orientierungswerts des neuen Ernteteilers
+                  nicht zum Tragen. Tatsächlich verteilte Produkte in diesem
+                  Zeitraum werden von der Prognose-Verteilung automatisch
+                  abgezogen, um eine möglichst realitätsnahe Berechnung zu
+                  ermöglichen.
+                </p>
+                <p class="pt-1">
+                  Der angegebene Prognosezeitraum sollte vor der ersten
+                  Verteilung enden, bei der neue Ernteteiler dabei sind.
+                </p>
+                <p class="pt-1">
+                  Für die Produktmengen kann lediglich eingstellt werden, wie
+                  viel der benötigten jeweils benötigten Mengen voraussichtlich
+                  geliefert werden. Daher kann lediglich der Multiplikator
+                  verändert werden.
+                </p>
               </div>
             </v-expand-transition>
           </v-alert>
@@ -428,7 +448,7 @@ watchEffect(async () => {
                 "
               ></v-text-field>
             </v-col>
-            <v-col cols="6" md="3" v-if="shipmentType == ShipmentType.FORECAST">
+            <v-col cols="6" md="3" v-if="isForecast">
               <v-text-field
                 label="bis"
                 type="datetime-local"
@@ -440,7 +460,7 @@ watchEffect(async () => {
                 "
               ></v-text-field>
             </v-col>
-            <v-col cols="8" :md="shipmentType == ShipmentType.FORECAST ? 4 : 7">
+            <v-col cols="8" :md="isForecast ? 4 : 7">
               <v-text-field
                 label="Beschreibung"
                 v-model="editShipment.description"
@@ -548,6 +568,7 @@ watchEffect(async () => {
               <ShipmentItem
                 :shipment-item="item"
                 :used-depot-ids-by-product-id="usedShipmentDepotIdsByProductId"
+                :is-forecast="isForecast"
               />
               <template v-slot:append>
                 <v-btn
@@ -567,59 +588,63 @@ watchEffect(async () => {
         >
           Produkt hinzufügen
         </v-btn>
-        <div class="text-h5">
-          <v-icon
-            v-if="showAdditionalShipmentItems"
-            @click="showAdditionalShipmentItems = false"
-            >mdi-collapse-all</v-icon
-          >
-          <v-icon v-else @click="showAdditionalShipmentItems = true"
-            >mdi-expand-all</v-icon
-          ><span class="pl-2"
-            >Zusatzprodukte ({{
-              editShipment.additionalShipmentItems.length
-            }})</span
-          >
-        </div>
-        <v-list class="ma-0 pa-0" v-if="showAdditionalShipmentItems">
-          <div class="text-caption mb-2">
-            Als Zusatzprodukt gelten Lebensmittel, die nicht direkt bestellt
-            wurden, die aber verfügbar sind und frei an die Depots verteilt
-            werden.
+        <template v-if="!isForecast">
+          <div class="text-h5">
+            <v-icon
+              v-if="showAdditionalShipmentItems"
+              @click="showAdditionalShipmentItems = false"
+              >mdi-collapse-all</v-icon
+            >
+            <v-icon v-else @click="showAdditionalShipmentItems = true"
+              >mdi-expand-all</v-icon
+            ><span class="pl-2"
+              >Zusatzprodukte ({{
+                editShipment.additionalShipmentItems.length
+              }})</span
+            >
           </div>
-          <v-list-item
-            v-if="!editShipment.additionalShipmentItems.length"
-            class="opacity-50"
-          >
-            <v-icon>mdi-information-outline</v-icon>
-            Bisher keine Zusatzprodukte hinzugefügt
-          </v-list-item>
-          <template v-for="(item, idx) in editShipment.additionalShipmentItems">
-            <v-list-item class="ma-0 pa-0" v-if="item.showItem">
-              <AdditionalShipmentItem
-                :additional-shipment-item="item"
-                :used-depot-ids-by-product="
-                  usedAdditionalShipmentDepotIdsByProduct
-                "
-              />
-              <template v-slot:append>
-                <v-btn
-                  icon="mdi-close-thick"
-                  @click="() => onDeleteAdditionalShipmentItem(idx)"
-                >
-                </v-btn>
-              </template>
+          <v-list class="ma-0 pa-0" v-if="showAdditionalShipmentItems">
+            <div class="text-caption mb-2">
+              Als Zusatzprodukt gelten Lebensmittel, die nicht direkt bestellt
+              wurden, die aber verfügbar sind und frei an die Depots verteilt
+              werden.
+            </div>
+            <v-list-item
+              v-if="!editShipment.additionalShipmentItems.length"
+              class="opacity-50"
+            >
+              <v-icon>mdi-information-outline</v-icon>
+              Bisher keine Zusatzprodukte hinzugefügt
             </v-list-item>
-          </template>
-        </v-list>
-        <v-btn
-          @click="onAddAdditionalShipmentItem"
-          variant="text"
-          class="mb-6"
-          prepend-icon="mdi-plus"
-        >
-          Zusatzprodukt hinzufügen
-        </v-btn>
+            <template
+              v-for="(item, idx) in editShipment.additionalShipmentItems"
+            >
+              <v-list-item class="ma-0 pa-0" v-if="item.showItem">
+                <AdditionalShipmentItem
+                  :additional-shipment-item="item"
+                  :used-depot-ids-by-product="
+                    usedAdditionalShipmentDepotIdsByProduct
+                  "
+                />
+                <template v-slot:append>
+                  <v-btn
+                    icon="mdi-close-thick"
+                    @click="() => onDeleteAdditionalShipmentItem(idx)"
+                  >
+                  </v-btn>
+                </template>
+              </v-list-item>
+            </template>
+          </v-list>
+          <v-btn
+            @click="onAddAdditionalShipmentItem"
+            variant="text"
+            class="mb-6"
+            prepend-icon="mdi-plus"
+          >
+            Zusatzprodukt hinzufügen
+          </v-btn>
+        </template>
       </v-card-text>
       <v-card-actions>
         <v-btn @click="onClose"> {{ language.app.actions.close }} </v-btn>
