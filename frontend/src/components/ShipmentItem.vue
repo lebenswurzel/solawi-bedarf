@@ -27,6 +27,7 @@ import { getLangUnit } from "@lebenswurzel/solawi-bedarf-shared/src/util/unitHel
 const props = defineProps<{
   shipmentItem: EditShipmentItem;
   usedDepotIdsByProductId: { [key: number]: number[] };
+  isForecast: boolean;
 }>();
 
 const biStore = useBIStore();
@@ -60,12 +61,17 @@ const neededQuantity = computed(() => {
       );
       const { multiplicator, conversionFrom, conversionTo } =
         props.shipmentItem;
-      return valueToDelivered({
+      const needed = valueToDelivered({
         value: valueForShipment,
         multiplicator,
         conversionFrom,
         conversionTo,
       });
+      if (props.isForecast) {
+        // for forecast shipments, automatically match the total shipped quanitity with the needed quantity
+        props.shipmentItem.totalShipedQuantity = needed;
+      }
+      return needed;
     }
   }
   return 0;
@@ -144,9 +150,9 @@ const selectAllDepots = computed(() => {
 </script>
 
 <template>
-  <v-container class="pa-0 ma-0">
+  <v-container class="pa-0 ma-0" fluid>
     <v-row no-gutters align="center" justify="center" class="pa-0 ma-0">
-      <v-col cols="2">
+      <v-col :cols="props.isForecast ? 4 : 2">
         <v-autocomplete
           label="Produkt"
           :items="productOptions"
@@ -172,43 +178,54 @@ const selectAllDepots = computed(() => {
           </template>
         </v-select>
       </v-col>
-      <v-col cols="1">
+      <v-col :cols="props.isForecast ? 2 : 1">
         <v-text-field
           :label="`Benötigt [${getLangUnit(shipmentItem.unit)}]`"
           @update:model-value="() => {}"
           :model-value="neededQuantity"
         ></v-text-field>
       </v-col>
-      <v-col cols="2">
-        <v-text-field
-          :label="`Geliefert [${getLangUnit(shipmentItem.unit)}]`"
-          v-model="shipmentItem.totalShipedQuantity"
-          type="number"
-        >
-          <template
-            v-slot:append-inner
-            v-if="shipmentItem.totalShipedQuantity != neededQuantity"
+      <template v-if="!props.isForecast">
+        <v-col cols="2">
+          <v-text-field
+            :label="`Geliefert [${getLangUnit(shipmentItem.unit)}]`"
+            v-model="shipmentItem.totalShipedQuantity"
+            type="number"
           >
-            <v-tooltip
-              text="Es wird eine abweichende Menge geliefert"
-              open-on-click
+            <template
+              v-slot:append-inner
+              v-if="shipmentItem.totalShipedQuantity != neededQuantity"
             >
-              <template v-slot:activator="{ props }">
-                <v-icon color="orange" v-bind="props">mdi-alert</v-icon>
-              </template>
-            </v-tooltip>
-          </template>
-        </v-text-field>
-      </v-col>
-      <v-col cols="2">
-        <v-checkbox label="isBio" v-model="shipmentItem.isBio"></v-checkbox>
-      </v-col>
-      <v-col cols="1">
-        <v-btn variant="outlined" @click="() => (open = !open)">
-          <v-icon v-if="!open"> mdi-arrow-expand-down</v-icon>
-          <v-icon v-if="open"> mdi-arrow-collapse-up</v-icon>
-        </v-btn>
-      </v-col>
+              <v-tooltip
+                text="Es wird eine abweichende Menge geliefert"
+                open-on-click
+              >
+                <template v-slot:activator="{ props }">
+                  <v-icon color="orange" v-bind="props">mdi-alert</v-icon>
+                </template>
+              </v-tooltip>
+            </template>
+          </v-text-field>
+        </v-col>
+        <v-col cols="2">
+          <v-checkbox label="isBio" v-model="shipmentItem.isBio"></v-checkbox>
+        </v-col>
+        <v-col cols="1">
+          <v-btn variant="outlined" @click="() => (open = !open)">
+            <v-icon v-if="!open"> mdi-arrow-expand-down</v-icon>
+            <v-icon v-if="open"> mdi-arrow-collapse-up</v-icon>
+          </v-btn>
+        </v-col>
+      </template>
+      <template v-else>
+        <v-col cols="2">
+          <v-select
+            label="Multiplikator"
+            :items="multiplicatorOptions"
+            v-model="shipmentItem.multiplicator"
+          ></v-select>
+        </v-col>
+      </template>
     </v-row>
     <v-row
       no-gutters

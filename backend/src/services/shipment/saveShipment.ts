@@ -72,7 +72,11 @@ export const saveShipment = async (
       ) {
         ctx.throw(http.bad_request, "outdated shipment");
       }
-      if (shipment.active && shipment.validFrom < new Date()) {
+      if (
+        requestShipment.type != ShipmentType.FORECAST &&
+        shipment.active &&
+        shipment.validFrom < new Date()
+      ) {
         // allow to update active shipment but only if a revision message is provided
         if (
           role !== UserRole.ADMIN ||
