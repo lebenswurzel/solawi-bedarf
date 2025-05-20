@@ -20,77 +20,99 @@ import { ShipmentItem } from "../database/ShipmentItem";
 interface ShipmentItemWithValidity extends ShipmentItem {
   validFrom: Date;
   validTo: Date | undefined;
+  availableMultiplicator: number | undefined; // how much of the muliplicator has been used to reduce forecast items
 }
 
+/**
+ * Deducts form the forecast shipment items the shipment item values that have actually been
+ * delivered within the validFrom-validTo range of the forecast shipments. Values are only
+ * deducted if both the product and the depot match.
+ */
 export const mergeShipmentWithForecast = (
   shipments: Shipment[],
   forecastShipments: Shipment[],
-): ShipmentItem[] => {
+): ShipmentItemWithValidity[] => {
   const result: ShipmentItem[] = [];
 
-  const shippedItems = shipments.flatMap((shipment) =>
-    shipment.shipmentItems.map((si) => ({
-      ...si,
-      validFrom: shipment.validFrom,
-    })),
+  const shippedItems: ShipmentItemWithValidity[] = shipments.flatMap(
+    (shipment) =>
+      shipment.shipmentItems.map((si) => ({
+        ...si,
+        validFrom: shipment.validFrom,
+        validTo: undefined,
+        availableMultiplicator: si.multiplicator,
+      })),
   );
 
-  const forecastItems = forecastShipments.flatMap((shipment) =>
-    shipment.shipmentItems.map((si) => ({
-      ...si,
-      validFrom: shipment.validFrom,
-      validTo: shipment.validTo,
-    })),
+  const forecastItems: ShipmentItemWithValidity[] = forecastShipments.flatMap(
+    (shipment) =>
+      shipment.shipmentItems.map((fi) => ({
+        ...fi,
+        validFrom: shipment.validFrom,
+        validTo: shipment.validTo,
+        availableMultiplicator: undefined,
+      })),
   );
 
   if (forecastItems.length === 0) {
     return shippedItems;
   }
 
-  const usedItems: number[] = [];
-
   const adjustForecastItems = (items: ShipmentItemWithValidity[]) => {
     // find items in forecast that are already shipped and deduct those from the forecast items
-    return items
+    let changed = false;
+    const updatedItems = items
       .map((fi) => {
         const matchingSiIndex = shippedItems.findIndex(
-          (si, index) =>
+          (si) =>
             si.depotId === fi.depotId &&
             si.productId === fi.productId &&
-            !usedItems.includes(index) &&
+            si.availableMultiplicator &&
+            si.availableMultiplicator > 0 &&
             fi.validFrom < si.validFrom &&
             fi.validTo &&
             si.validFrom < fi.validTo,
         );
         if (matchingSiIndex === -1) {
+          // no matching shipment item found that would change the forecast item
           return { ...fi };
         } else {
-          // TODO this is a naive approach where each shipped item is only applied once,
-          // even if it may have a higher multiplicator value than the forecast item that
-          // it is applied to. Instead, also support partial usage of shipped items.
-          usedItems.push(matchingSiIndex);
+          changed = true;
+          const difference = Math.min(
+            shippedItems[matchingSiIndex].availableMultiplicator || 0,
+            fi.multiplicator,
+          );
+          if (shippedItems[matchingSiIndex].availableMultiplicator) {
+            shippedItems[matchingSiIndex].availableMultiplicator -= difference;
+          }
           return {
             ...fi,
-            multiplicator:
-              fi.multiplicator - shippedItems[matchingSiIndex].multiplicator,
+            multiplicator: fi.multiplicator - difference,
           };
         }
       })
       .filter((fi) => fi.multiplicator > 0);
+
+    return {
+      updatedItems,
+      changed,
+    };
   };
 
   let adjustedForecastItems = forecastItems;
   let counter = 0;
   while (true) {
     counter++;
-    const initialUsedItemsCount = usedItems.length;
 
     // repeat the forecast adjustments until no forecast items are modified
-    adjustedForecastItems = adjustForecastItems(adjustedForecastItems);
-    if (usedItems.length === initialUsedItemsCount) {
+    const { updatedItems, changed } = adjustForecastItems(
+      adjustedForecastItems,
+    );
+    if (!changed) {
       break;
     }
-    if (counter > 1000) {
+    adjustedForecastItems = updatedItems;
+    if (counter > 10000) {
       // should never happen, but just to be safe
       throw new Error(`infinite loop detected`);
     }
