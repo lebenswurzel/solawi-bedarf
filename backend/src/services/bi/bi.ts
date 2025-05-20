@@ -16,7 +16,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import Koa from "koa";
 import Router from "koa-router";
-import { Unit } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import {
+  ShipmentType,
+  Unit,
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import {
   CapacityByDepotId,
   DeliveredByProductIdDepotId,
@@ -29,17 +32,34 @@ import { ProductCategory } from "../../database/ProductCategory";
 import { Shipment } from "../../database/Shipment";
 import { AppDataSource } from "../../database/database";
 import { getUserFromContext } from "../getUserFromContext";
-import { getConfigIdFromQuery } from "../../util/requestUtil";
+import {
+  getBooleanQueryParameter,
+  getConfigIdFromQuery,
+  getNumericQueryParameter,
+} from "../../util/requestUtil";
+import { LessThan, MoreThan } from "typeorm";
+import { mergeShipmentWithForecast } from "../../util/shipmentUtil";
 
 export const biHandler = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
 ) => {
   await getUserFromContext(ctx);
   const configId = getConfigIdFromQuery(ctx);
-  ctx.body = await bi(configId);
+  const requestUserId =
+    getNumericQueryParameter(ctx.request.query, "userId", 0) || undefined;
+  const includeForecast = getBooleanQueryParameter(
+    ctx.request.query,
+    "includeForecast",
+    false,
+  );
+  ctx.body = await bi(configId, requestUserId, includeForecast);
 };
 
-export const bi = async (configId: number) => {
+export const bi = async (
+  configId: number,
+  requestUserId?: number,
+  includeForecast: boolean = false,
+) => {
   const now = new Date();
   const depots = await AppDataSource.getRepository(Depot).find();
 
@@ -66,10 +86,41 @@ export const bi = async (configId: number) => {
     where: { requisitionConfigId: configId },
   });
 
+  let extendedShipmentsWhere = {};
+  let forecastShipments: Shipment[] = [];
+
+  if (requestUserId) {
+    const userOrder = orders.find((o) => o.userId === requestUserId);
+    if (userOrder && userOrder.validFrom) {
+      console.log("shipments before validFrom", userOrder.validFrom);
+      extendedShipmentsWhere = {
+        validFrom: LessThan(userOrder.validFrom),
+      };
+
+      if (includeForecast) {
+        forecastShipments = await AppDataSource.getRepository(Shipment).find({
+          relations: { shipmentItems: true },
+          where: {
+            requisitionConfigId: configId,
+            ...extendedShipmentsWhere,
+            validTo: MoreThan(now),
+            type: ShipmentType.FORECAST,
+            active: true,
+          },
+        });
+      }
+    }
+  }
+
+  console.log("forecastShipments", forecastShipments);
+
   const shipments = await AppDataSource.getRepository(Shipment).find({
     relations: { shipmentItems: true },
     where: {
       requisitionConfigId: configId,
+      ...extendedShipmentsWhere,
+      type: ShipmentType.NORMAL,
+      active: true,
     },
   });
 
@@ -118,9 +169,9 @@ export const bi = async (configId: number) => {
         deliveredByProductIdDepotId[orderItem.productId][order.depotId] = {
           value: 0,
           valueForShipment: 0,
-          delivered: 0,
           actuallyDelivered: 0,
           frequency: product.frequency,
+          deliveryCount: 0,
         };
       }
       deliveredByProductIdDepotId[orderItem.productId][order.depotId].value +=
@@ -145,8 +196,8 @@ export const bi = async (configId: number) => {
     }
   });
 
-  shipments.forEach((shipment) => {
-    shipment.shipmentItems.forEach((shipmentItem) => {
+  mergeShipmentWithForecast(shipments, forecastShipments).forEach(
+    (shipmentItem) => {
       const product = soldByProductId[shipmentItem.productId];
       if (!deliveredByProductIdDepotId[shipmentItem.productId]) {
         deliveredByProductIdDepotId[shipmentItem.productId] = {};
@@ -161,21 +212,19 @@ export const bi = async (configId: number) => {
         ] = {
           value: 0,
           valueForShipment: 0,
-          delivered: 0,
           actuallyDelivered: 0,
           frequency: product.frequency,
+          deliveryCount: 0,
         };
       }
+
       deliveredByProductIdDepotId[shipmentItem.productId][
         shipmentItem.depotId
-      ].delivered += shipmentItem.multiplicator;
-      if (shipment.active) {
-        deliveredByProductIdDepotId[shipmentItem.productId][
-          shipmentItem.depotId
-        ].actuallyDelivered += shipmentItem.multiplicator;
-      }
-    });
-  });
+      ].actuallyDelivered += shipmentItem.multiplicator;
+      deliveredByProductIdDepotId[shipmentItem.productId][shipmentItem.depotId]
+        .deliveryCount++;
+    },
+  );
 
   // clean the data
   Object.keys(capacityByDepotId).forEach((key) => {

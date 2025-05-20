@@ -22,7 +22,10 @@ import { AppDataSource } from "../../database/database";
 import { Shipment } from "../../database/Shipment";
 import { ShipmentItem } from "../../database/ShipmentItem";
 import { AdditionalShipmentItem } from "../../database/AdditionalShipmentItem";
-import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import {
+  ShipmentType,
+  UserRole,
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import {
   Id,
   ShipmentItem as ShipmentItemType,
@@ -69,7 +72,11 @@ export const saveShipment = async (
       ) {
         ctx.throw(http.bad_request, "outdated shipment");
       }
-      if (shipment.active && shipment.validFrom < new Date()) {
+      if (
+        requestShipment.type != ShipmentType.FORECAST &&
+        shipment.active &&
+        shipment.validFrom < new Date()
+      ) {
         // allow to update active shipment but only if a revision message is provided
         if (
           role !== UserRole.ADMIN ||
@@ -78,6 +85,22 @@ export const saveShipment = async (
         ) {
           ctx.throw(http.bad_request, "shipment is active");
         }
+      }
+      if (shipment.type !== requestShipment.type) {
+        ctx.throw(
+          http.bad_request,
+          `changing shipment type from ${shipment.type} to ${requestShipment.type} not allowed`,
+        );
+      }
+      if (
+        requestShipment.type == ShipmentType.FORECAST &&
+        requestShipment.validTo &&
+        requestShipment.validFrom >= requestShipment.validTo
+      ) {
+        ctx.throw(
+          http.bad_request,
+          "validTo date must be later than validFrom, if set",
+        );
       }
 
       // add revision message
@@ -94,6 +117,10 @@ export const saveShipment = async (
 
       // update shipment
       shipment.validFrom = requestShipment.validFrom;
+      shipment.validTo =
+        requestShipment.type == ShipmentType.FORECAST
+          ? requestShipment.validTo
+          : undefined;
       shipment.active = requestShipment.active;
       shipment.description = requestShipment.description;
       shipment.updatedAt = new Date();
@@ -176,10 +203,15 @@ export const saveShipment = async (
     } else {
       const shipment = new Shipment();
       shipment.validFrom = requestShipment.validFrom;
+      shipment.validTo =
+        requestShipment.type == ShipmentType.FORECAST
+          ? requestShipment.validTo
+          : undefined;
       shipment.active = requestShipment.active;
       shipment.description = requestShipment.description;
       shipment.requisitionConfigId = requestShipment.requisitionConfigId;
       shipment.updatedAt = new Date();
+      shipment.type = requestShipment.type;
       await transactionalEntityManager.getRepository(Shipment).save(shipment);
       for (let requestShipmentItem of requestShipment.shipmentItems) {
         const shipmentItem = getNewShipmentItem(requestShipmentItem);

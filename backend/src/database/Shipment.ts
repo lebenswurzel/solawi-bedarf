@@ -26,6 +26,7 @@ import { ShipmentItem } from "./ShipmentItem";
 import { AdditionalShipmentItem } from "./AdditionalShipmentItem";
 import { RequisitionConfig } from "./RequisitionConfig";
 import { RevisionMessageJson } from "@lebenswurzel/solawi-bedarf-shared/src/types";
+import { ShipmentType } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 
 @Entity()
 export class Shipment extends BaseEntity {
@@ -40,6 +41,12 @@ export class Shipment extends BaseEntity {
     nullable: false,
   })
   public validFrom: Date;
+
+  @Column({
+    type: "timestamp",
+    nullable: true,
+  })
+  public validTo?: Date; // only applies to FORECAST shipments
 
   @Column({ type: "varchar", nullable: true })
   description: string | null;
@@ -61,4 +68,7 @@ export class Shipment extends BaseEntity {
 
   @Column({ type: "json", nullable: true })
   revisionMessages: RevisionMessageJson[] | null;
+
+  @Column({ type: "enum", enum: ShipmentType, default: ShipmentType.NORMAL })
+  type: ShipmentType;
 }

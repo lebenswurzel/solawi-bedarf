@@ -92,9 +92,32 @@ export const getStringQueryParameter = (
   return requestValue && !Array.isArray(requestValue) ? requestValue : fallback;
 };
 
-export const getIncludeItemsFromQuery = (
-  ctx: Koa.ParameterizedContext,
+export const getBooleanQueryParameter = (
+  requestQuery: ParsedUrlQuery,
+  name: string,
+  fallback?: boolean,
 ): boolean => {
-  const includeItems = ctx.query.includeItems;
-  return includeItems === "true";
+  const value = requestQuery[name];
+  if (value === undefined || Array.isArray(value)) {
+    return fallback ?? false;
+  }
+  return value === "true";
+};
+
+export const getEnumQueryParameter = <T extends { [key: string]: string }>(
+  requestQuery: ParsedUrlQuery,
+  name: string,
+  enumType: T,
+  fallback?: T[keyof T],
+): T[keyof T] => {
+  const requestValue = requestQuery[name];
+  if (!requestValue || Array.isArray(requestValue)) {
+    return fallback ?? (Object.values(enumType)[0] as T[keyof T]);
+  }
+  if (!Object.values(enumType).includes(requestValue as T[keyof T])) {
+    throw new Error(
+      `Invalid value '${requestValue}' for parameter '${name}'. Valid values are: ${Object.values(enumType).join(", ")}`,
+    );
+  }
+  return requestValue as T[keyof T];
 };

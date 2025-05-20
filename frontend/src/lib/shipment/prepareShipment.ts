@@ -93,12 +93,14 @@ export const prepareShipment = (
   const shipment: Shipment & OptionalId = {
     description: editShipment.description,
     validFrom: editShipment.validFrom,
+    validTo: editShipment.validTo,
     shipmentItems,
     additionalShipmentItems,
     active: editShipment.active,
     id: editShipment.id,
     updatedAt: editShipment.updatedAt,
     requisitionConfigId: editShipment.requisitionConfigId,
+    type: editShipment.type,
   };
   return shipment;
 };

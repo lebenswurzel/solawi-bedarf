@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { computed, onMounted, provide, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
 import { interpolate } from "@lebenswurzel/solawi-bedarf-shared/src/lang/template.ts";
 import ShopItem from "../components/ShopItem.vue";
@@ -33,6 +33,8 @@ import { useRoute } from "vue-router";
 import { router } from "../routes.ts";
 import SeasonStatusElement from "../components/season/SeasonStatusElement.vue";
 import { getSeasonPhase } from "@lebenswurzel/solawi-bedarf-shared/src/util/configHelper.ts";
+import OrderRangeDisplay from "../components/shop/OrderRangeDisplay.vue";
+import MsrpDisplay from "../components/shop/MsrpDisplay.vue";
 
 const t = language.pages.shop;
 
@@ -42,7 +44,7 @@ const userStore = useUserStore();
 const orderStore = useOrderStore();
 const biStore = useBIStore();
 
-const { depot, msrp, submit } = storeToRefs(biStore);
+const { depot, submit, msrp } = storeToRefs(biStore);
 const { userId } = storeToRefs(userStore);
 const { productCategories } = storeToRefs(productStore);
 const { activeConfigId, config } = storeToRefs(configStore);
@@ -56,8 +58,6 @@ const canAdministerOtherUsers = computed(() => {
 });
 
 const route = useRoute();
-
-provide("requestUser", requestUser);
 
 watch(userId, async () => {
   const paramUserId = parseUserIdParam();
@@ -118,9 +118,9 @@ const refresh = async (keepUserId?: boolean) => {
     requestUserId.value = userIdParam;
   }
   if (requestUserId.value && activeConfigId.value != -1) {
-    productStore.update(configStore.activeConfigId);
-    biStore.update(configStore.activeConfigId);
-    orderStore.update(requestUserId.value, activeConfigId.value);
+    await productStore.update(configStore.activeConfigId);
+    await orderStore.update(requestUserId.value, activeConfigId.value);
+    await biStore.update(configStore.activeConfigId, requestUserId.value, true);
   }
 };
 onMounted(async () => {
@@ -168,32 +168,29 @@ const orderPhase = computed(() => {
         <u>{{ t.cards.header.faq }}</u
         >.
       </a>
+      <div class="pt-2" v-if="msrp.months < 12">
+        {{ t.cards.header.orderDuringSeason }}
+      </div>
       <SeasonStatusElement :phase="orderPhase" no-button class="mt-3" />
     </v-card-text>
   </v-card>
 
   <v-card class="ma-2">
     <v-card-title>{{ t.cards.products.title }} für <SeasonText /></v-card-title>
-    <v-card-subtitle class="text-wrap">
-      {{
-        interpolate(t.cards.products.msrp, {
-          total: msrp.total.toString(),
-          selfgrown: msrp.selfgrown.toString(),
-          cooperation: msrp.cooperation.toString(),
-        })
-      }}
-      <v-tooltip :text="t.cards.products.msrpTooltip" open-on-click>
-        <template v-slot:activator="{ props }">
-          <v-icon v-bind="props">mdi-information-outline</v-icon>
-        </template>
-      </v-tooltip>
-      <br />
-      {{
-        interpolate(t.cards.products.offer, {
-          offer: orderStore.offer.toString(),
-        })
-      }}
-    </v-card-subtitle>
+    <v-container fluid class="py-0">
+      <v-row dense>
+        <v-col cols="12" sm="6">
+          <v-card-text class="pa-1">
+            <MsrpDisplay :offer="orderStore.offer" />
+          </v-card-text>
+        </v-col>
+        <v-col cols="12" sm="6">
+          <v-card-text class="pa-1">
+            <OrderRangeDisplay :validFrom="orderStore.validFrom" />
+          </v-card-text>
+        </v-col>
+      </v-row>
+    </v-container>
     <v-card-text>
       <v-expansion-panels class="pa-0">
         <v-expansion-panel
@@ -236,6 +233,6 @@ const orderPhase = computed(() => {
       </v-card-actions>
     </v-card-actions>
   </v-card>
-  <ShopDialog :open="open" @close="onClose" />
+  <ShopDialog :open="open" @close="onClose" :request-user="requestUser" />
   <FAQDialog :open="faqOpen" @close="onFaqClose" />
 </template>

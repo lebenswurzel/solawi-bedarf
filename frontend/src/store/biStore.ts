@@ -21,22 +21,29 @@ import { useOrderStore } from "./orderStore";
 import {
   CapacityByDepotId,
   DeliveredByProductIdDepotId,
+  ProductId,
   ProductsById,
   SoldByProductId,
 } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { getBI } from "../requests/bi.ts";
 import { useUserStore } from "./userStore.ts";
-import { getMsrp } from "@lebenswurzel/solawi-bedarf-shared/src/msrp.ts";
+import {
+  calculateMsrpWeights,
+  calculateOrderValidMonths,
+  getMsrp,
+} from "@lebenswurzel/solawi-bedarf-shared/src/msrp.ts";
 import {
   isIncreaseOnly,
   isRequisitionActive,
 } from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition.ts";
+import { useVersionInfoStore } from "./versionInfoStore.ts";
 
 export const useBIStore = defineStore("bi", () => {
   const now = ref<Date>(new Date());
   const configStore = useConfigStore();
   const orderStore = useOrderStore();
   const userStore = useUserStore();
+  const versionInfoStore = useVersionInfoStore();
 
   const { depots, config } = storeToRefs(configStore);
   const { depotId, category, actualOrderItemsByProductId } =
@@ -68,26 +75,51 @@ export const useBIStore = defineStore("bi", () => {
     false;
   });
 
+  const productMsrpWeights = computed((): { [key: ProductId]: number } => {
+    const result = calculateMsrpWeights(
+      productsById.value,
+      deliveredByProductIdDepotId.value,
+      depots.value,
+    );
+    console.log("calculated productMsrpWeights: ", result);
+    return result;
+  });
+
   const msrp = computed(() => {
     const actualOrderItems = Object.entries(
       actualOrderItemsByProductId.value,
     ).map(([key, value]) => ({ productId: parseInt(key), value }));
+    const validMonths = calculateOrderValidMonths(
+      orderStore.validFrom,
+      config.value?.validTo,
+      versionInfoStore.versionInfo?.serverTimeZone,
+    );
 
-    return getMsrp(category.value, actualOrderItems, productsById.value);
+    return getMsrp(
+      category.value,
+      actualOrderItems,
+      productsById.value,
+      validMonths,
+      productMsrpWeights.value,
+    );
   });
 
   const depot = computed(() => {
     return depots.value.find((d) => d.id == depotId.value.actual);
   });
 
-  const update = async (configId: number) => {
+  const update = async (
+    configId: number,
+    requestUserId?: number,
+    includeForecast?: boolean,
+  ) => {
     const {
       soldByProductId: requestSoldByProductId,
       deliveredByProductIdDepotId: requestDeliveredByProductIdDepotId,
       capacityByDepotId: requestCapacityByDepotId,
       productsById: requestedProductsById,
       offers: requestOffers,
-    } = await getBI(configId);
+    } = await getBI(configId, requestUserId, includeForecast);
     soldByProductId.value = requestSoldByProductId;
     capacityByDepotId.value = requestCapacityByDepotId;
     productsById.value = requestedProductsById;

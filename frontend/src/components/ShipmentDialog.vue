@@ -50,23 +50,32 @@ import { useTextContentStore } from "../store/textContentStore.ts";
 import { useUiFeedback } from "../store/uiFeedbackStore.ts";
 import AdditionalShipmentItem from "./AdditionalShipmentItem.vue";
 import ShipmentItem from "./ShipmentItem.vue";
-import { ProductCategoryType } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
+import {
+  ProductCategoryType,
+  ShipmentType,
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 
-const t = language.pages.shipment.dialog;
+const t = language.pages.shipment;
 
-const { open, editShipmentId } = defineProps<{
+const { open, editShipmentId, shipmentType } = defineProps<{
   open: boolean;
   editShipmentId: number | undefined;
+  shipmentType: ShipmentType;
 }>();
 const emit = defineEmits<{ (e: "close"): void }>();
 
 const defaultEditShipment: EditShipment = {
   description: null,
   validFrom: addDays(setHours(setMinutes(setSeconds(new Date(), 0), 0), 12), 1),
+  validTo:
+    shipmentType == ShipmentType.FORECAST
+      ? addDays(setHours(setMinutes(setSeconds(new Date(), 0), 0), 12), 2)
+      : undefined,
   shipmentItems: [],
   additionalShipmentItems: [],
   active: false,
   requisitionConfigId: -1,
+  type: shipmentType,
 };
 const editShipment = ref<EditShipment & OptionalId>(defaultEditShipment);
 const savedShipment = ref<(Shipment & Id) | undefined>();
@@ -90,6 +99,8 @@ const showShipmentItems = ref(true);
 const showAdditionalShipmentItems = ref(true);
 
 const productVisibility = ref<{ [key: number]: boolean }>({});
+const showHelp = ref(false);
+const isForecast = ref(shipmentType == ShipmentType.FORECAST);
 
 const updateProductVisibility = () => {
   const newVisibility: { [key: number]: boolean } = {};
@@ -113,7 +124,7 @@ const activeProducts = computed((): Array<number> => {
 const onEditShipment = async (shipmentId: number) => {
   try {
     const shipmentWithItemsResponse: ShipmentFullInformation[] = (
-      await getShipments(activeConfigId.value, shipmentId, true)
+      await getShipments(activeConfigId.value, shipmentId, true, shipmentType)
     ).shipments;
 
     if (shipmentWithItemsResponse.length !== 1) {
@@ -258,6 +269,7 @@ const onClose = () => {
 
 const onSave = () => {
   if (
+    !isForecast &&
     savedShipment?.value?.active &&
     new Date(savedShipment?.value.validFrom) < new Date()
   ) {
@@ -342,7 +354,11 @@ watchEffect(async () => {
 </script>
 
 <template>
-  <v-dialog :model-value="open" @update:model-value="onClose">
+  <v-dialog
+    :model-value="open"
+    @update:model-value="onClose"
+    class="full-height"
+  >
     <v-card
       :prepend-icon="
         editShipment.active ? 'mdi-check-circle' : 'mdi-circle-outline'
@@ -350,56 +366,136 @@ watchEffect(async () => {
     >
       <template v-slot:title>
         {{ savedShipment === undefined ? "[NEU] " : "" }}
-        {{ t.title }} {{ prettyDateWithDayName(editShipment.validFrom) }} (KW
-        {{ getISOWeek(editShipment.validFrom).toString() }})
+        <span v-if="isForecast" class="bg-info pa-1">
+          {{ t.types[shipmentType] }}
+        </span>
+        <template v-if="isForecast">
+          von {{ prettyDateWithDayName(editShipment.validFrom) }} bis
+          {{ prettyDateWithDayName(editShipment.validTo) }}
+        </template>
+        <template v-else>
+          {{ t.dialog.title }}
+          {{ prettyDateWithDayName(editShipment.validFrom) }} (KW
+          {{ getISOWeek(editShipment.validFrom).toString() }})
+        </template>
       </template>
       <template v-slot:subtitle
         >zuletzt gespeichert:
         {{ prettyDate(savedShipment?.updatedAt, true) }}</template
       >
       <v-card-text style="overflow-y: auto">
-        <v-row align="start" justify="center">
-          <v-col cols="3">
-            <v-text-field
-              label="Von"
-              type="datetime-local"
-              :model-value="dateToString(editShipment.validFrom)"
-              @update:model-value="
-                (val: string) =>
-                  (editShipment.validFrom =
-                    stringToDate(val) || editShipment.validFrom)
-              "
-            ></v-text-field>
-          </v-col>
-          <v-col cols="7">
-            <v-text-field
-              label="Beschreibung"
-              v-model="editShipment.description"
-              clearable
-              hint="Die Beschreibung wird den Ernteteilern in ihrer Verteilungsansicht angezeigt"
-            ></v-text-field>
-          </v-col>
-          <v-col cols="2">
-            <v-checkbox
-              label="veröffentlicht"
-              v-model="editShipment.active"
-            ></v-checkbox>
-          </v-col>
-        </v-row>
+        <div v-if="isForecast">
+          <v-alert
+            class="mb-5"
+            closable
+            color="info"
+            density="compact"
+            variant="outlined"
+          >
+            <template v-slot:title>
+              Hinweis zu Prognose-Verteilungen
+              <v-btn variant="text" v-if="!showHelp" @click="showHelp = true"
+                >Anzeigen</v-btn
+              >
+            </template>
+            <v-expand-transition>
+              <div class="text-caption" v-if="showHelp">
+                <p class="pt-1">
+                  Zweck der Prognose-Verteilungen ist es, neuen Ernteteilern,
+                  die während der Saison dazu kommen, eine sinnvolle Abschätzung
+                  ihres Orientierungswertes zu geben. Speziell für den Fall,
+                  dass zwischen Abgabe des Bedarfs und der ersten Verteilung
+                  noch mehrere Wochen liegen.
+                </p>
+                <p class="pt-1">
+                  Die hier angegebenen Produkte werden im genannten Zeitraum so
+                  behandelt, als wären sie bereits verteilt und kommen daher bei
+                  der Berechnung des Orientierungswerts des neuen Ernteteilers
+                  nicht zum Tragen. Tatsächlich verteilte Produkte in diesem
+                  Zeitraum werden von der Prognose-Verteilung automatisch
+                  abgezogen, um eine möglichst realitätsnahe Berechnung zu
+                  ermöglichen.
+                </p>
+                <p class="pt-1">
+                  Der angegebene Prognosezeitraum sollte vor der ersten
+                  Verteilung enden, bei der neue Ernteteiler dabei sind.
+                </p>
+                <p class="pt-1">
+                  Für die Produktmengen kann lediglich eingstellt werden, wie
+                  viel der benötigten jeweils benötigten Mengen voraussichtlich
+                  geliefert werden. Daher kann lediglich der Multiplikator
+                  verändert werden.
+                </p>
+              </div>
+            </v-expand-transition>
+          </v-alert>
+        </div>
+        <v-container fluid class="pa-0">
+          <v-row align="start" dense>
+            <v-col cols="6" md="3">
+              <v-text-field
+                :label="
+                  editShipment.type == ShipmentType.NORMAL
+                    ? 'Verteilung am'
+                    : 'Prognose von'
+                "
+                type="datetime-local"
+                :model-value="dateToString(editShipment.validFrom)"
+                @update:model-value="
+                  (val: string) =>
+                    (editShipment.validFrom =
+                      stringToDate(val) || editShipment.validFrom)
+                "
+              ></v-text-field>
+            </v-col>
+            <v-col cols="6" md="3" v-if="isForecast">
+              <v-text-field
+                label="bis"
+                type="datetime-local"
+                :model-value="dateToString(editShipment.validTo ?? new Date())"
+                @update:model-value="
+                  (val: string) =>
+                    (editShipment.validTo =
+                      stringToDate(val) || editShipment.validTo)
+                "
+              ></v-text-field>
+            </v-col>
+            <v-col cols="8" :md="isForecast ? 4 : 7">
+              <v-text-field
+                label="Beschreibung"
+                v-model="editShipment.description"
+                clearable
+                :hint="
+                  shipmentType == ShipmentType.NORMAL
+                    ? 'Die Beschreibung wird den Ernteteilern in ihrer Verteilungsansicht angezeigt'
+                    : ''
+                "
+              ></v-text-field>
+            </v-col>
+            <v-col cols="4" md="2">
+              <v-checkbox
+                label="veröffentlicht"
+                v-model="editShipment.active"
+              ></v-checkbox>
+            </v-col>
+          </v-row>
+        </v-container>
         <div class="text-h5">
           <v-icon v-if="showShipmentItems" @click="showShipmentItems = false"
             >mdi-collapse-all</v-icon
           >
           <v-icon v-else @click="showShipmentItems = true"
             >mdi-expand-all</v-icon
-          >Produkte ({{ editShipment.shipmentItems.length }})
+          ><span class="pl-2"
+            >Produkte ({{ editShipment.shipmentItems.length }})</span
+          >
         </div>
         <template v-if="showShipmentItems">
           <v-alert
             type="info"
             class="text-caption"
             density="compact"
-            variant="tonal"
+            variant="outlined"
             v-if="
               editShipment.shipmentItems.length &&
               Object.values(productVisibility).length
@@ -472,6 +568,7 @@ watchEffect(async () => {
               <ShipmentItem
                 :shipment-item="item"
                 :used-depot-ids-by-product-id="usedShipmentDepotIdsByProductId"
+                :is-forecast="isForecast"
               />
               <template v-slot:append>
                 <v-btn
@@ -491,55 +588,63 @@ watchEffect(async () => {
         >
           Produkt hinzufügen
         </v-btn>
-        <div class="text-h5">
-          <v-icon
-            v-if="showAdditionalShipmentItems"
-            @click="showAdditionalShipmentItems = false"
-            >mdi-collapse-all</v-icon
-          >
-          <v-icon v-else @click="showAdditionalShipmentItems = true"
-            >mdi-expand-all</v-icon
-          >Zusatzprodukte ({{ editShipment.additionalShipmentItems.length }})
-        </div>
-        <v-list class="ma-0 pa-0" v-if="showAdditionalShipmentItems">
-          <div class="text-caption mb-2">
-            Als Zusatzprodukt gelten Lebensmittel, die nicht direkt bestellt
-            wurden, die aber verfügbar sind und frei an die Depots verteilt
-            werden.
+        <template v-if="!isForecast">
+          <div class="text-h5">
+            <v-icon
+              v-if="showAdditionalShipmentItems"
+              @click="showAdditionalShipmentItems = false"
+              >mdi-collapse-all</v-icon
+            >
+            <v-icon v-else @click="showAdditionalShipmentItems = true"
+              >mdi-expand-all</v-icon
+            ><span class="pl-2"
+              >Zusatzprodukte ({{
+                editShipment.additionalShipmentItems.length
+              }})</span
+            >
           </div>
-          <v-list-item
-            v-if="!editShipment.additionalShipmentItems.length"
-            class="opacity-50"
-          >
-            <v-icon>mdi-information-outline</v-icon>
-            Bisher keine Zusatzprodukte hinzugefügt
-          </v-list-item>
-          <template v-for="(item, idx) in editShipment.additionalShipmentItems">
-            <v-list-item class="ma-0 pa-0" v-if="item.showItem">
-              <AdditionalShipmentItem
-                :additional-shipment-item="item"
-                :used-depot-ids-by-product="
-                  usedAdditionalShipmentDepotIdsByProduct
-                "
-              />
-              <template v-slot:append>
-                <v-btn
-                  icon="mdi-close-thick"
-                  @click="() => onDeleteAdditionalShipmentItem(idx)"
-                >
-                </v-btn>
-              </template>
+          <v-list class="ma-0 pa-0" v-if="showAdditionalShipmentItems">
+            <div class="text-caption mb-2">
+              Als Zusatzprodukt gelten Lebensmittel, die nicht direkt bestellt
+              wurden, die aber verfügbar sind und frei an die Depots verteilt
+              werden.
+            </div>
+            <v-list-item
+              v-if="!editShipment.additionalShipmentItems.length"
+              class="opacity-50"
+            >
+              <v-icon>mdi-information-outline</v-icon>
+              Bisher keine Zusatzprodukte hinzugefügt
             </v-list-item>
-          </template>
-        </v-list>
-        <v-btn
-          @click="onAddAdditionalShipmentItem"
-          variant="text"
-          class="mb-6"
-          prepend-icon="mdi-plus"
-        >
-          Zusatzprodukt hinzufügen
-        </v-btn>
+            <template
+              v-for="(item, idx) in editShipment.additionalShipmentItems"
+            >
+              <v-list-item class="ma-0 pa-0" v-if="item.showItem">
+                <AdditionalShipmentItem
+                  :additional-shipment-item="item"
+                  :used-depot-ids-by-product="
+                    usedAdditionalShipmentDepotIdsByProduct
+                  "
+                />
+                <template v-slot:append>
+                  <v-btn
+                    icon="mdi-close-thick"
+                    @click="() => onDeleteAdditionalShipmentItem(idx)"
+                  >
+                  </v-btn>
+                </template>
+              </v-list-item>
+            </template>
+          </v-list>
+          <v-btn
+            @click="onAddAdditionalShipmentItem"
+            variant="text"
+            class="mb-6"
+            prepend-icon="mdi-plus"
+          >
+            Zusatzprodukt hinzufügen
+          </v-btn>
+        </template>
       </v-card-text>
       <v-card-actions>
         <v-btn @click="onClose"> {{ language.app.actions.close }} </v-btn>
@@ -597,3 +702,10 @@ watchEffect(async () => {
     </v-card>
   </v-dialog>
 </template>
+
+<style>
+.full-height.v-dialog > .v-overlay__content {
+  top: 0;
+  bottom: 0;
+}
+</style>

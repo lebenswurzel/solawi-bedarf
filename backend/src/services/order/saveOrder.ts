@@ -20,7 +20,11 @@ import Koa from "koa";
 import Router from "koa-router";
 import { LessThan } from "typeorm";
 import { appConfig } from "@lebenswurzel/solawi-bedarf-shared/src/config";
-import { getMsrp } from "@lebenswurzel/solawi-bedarf-shared/src/msrp";
+import {
+  calculateMsrpWeights,
+  calculateOrderValidMonths,
+  getMsrp,
+} from "@lebenswurzel/solawi-bedarf-shared/src/msrp";
 import { generateUserData } from "@lebenswurzel/solawi-bedarf-shared/src/pdf/overviewPdfs";
 import { createDefaultPdf } from "@lebenswurzel/solawi-bedarf-shared/src/pdf/pdf";
 import {
@@ -56,7 +60,10 @@ import { getUserOrderOverview } from "../getOverview";
 import { getRequestUserId, getUserFromContext } from "../getUserFromContext";
 import { getProductCategories } from "../product/getProductCategory";
 import { getOrganizationInfo } from "../text/getOrganizationInfo";
-import { formatDateForFilename } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper";
+import {
+  countCalendarMonths,
+  formatDateForFilename,
+} from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper";
 
 export const saveOrder = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -110,9 +117,12 @@ export const saveOrder = async (
   ) {
     ctx.throw(http.bad_request, "not valid in bidding round");
   }
-  const { soldByProductId, capacityByDepotId, productsById } = await bi(
-    requisitionConfig.id,
-  );
+  const {
+    soldByProductId,
+    capacityByDepotId,
+    productsById,
+    deliveredByProductIdDepotId,
+  } = await bi(requisitionConfig.id);
   const remainingDepotCapacity = getRemainingDepotCapacity(
     depot,
     capacityByDepotId[body.depotId].reserved,
@@ -137,11 +147,21 @@ export const saveOrder = async (
   if (orderItemErrors.length > 0) {
     ctx.throw(http.bad_request, `${orderItemErrors.join("\n")}`);
   }
-  const msrp = getMsrp(body.category, body.orderItems, productsById);
-  if (!isOfferValid(body.offer, msrp.total)) {
+  const msrp = getMsrp(
+    body.category,
+    body.orderItems,
+    productsById,
+    calculateOrderValidMonths(
+      order?.validFrom,
+      requisitionConfig.validTo,
+      config.timezone,
+    ),
+    calculateMsrpWeights(productsById, deliveredByProductIdDepotId, [depot]), // fixme depots!
+  );
+  if (!isOfferValid(body.offer, msrp.monthly.total)) {
     ctx.throw(http.bad_request, "bid too low");
   }
-  if (!isOfferReasonValid(body.offer, msrp.total, body.offerReason)) {
+  if (!isOfferReasonValid(body.offer, msrp.monthly.total, body.offerReason)) {
     ctx.throw(http.bad_request, "no offer reason");
   }
   const productCategories = await AppDataSource.getRepository(
@@ -278,9 +298,7 @@ export const saveOrder = async (
   ctx.status = http.no_content;
 };
 
-export const getNewOrderValidFromDate = (
-  config: RequisitionConfig,
-): Date | null => {
+const getNewOrderValidFromDate = (config: RequisitionConfig): Date | null => {
   if (config.validFrom < new Date()) {
     // season already started --> new orders must be enabled manually by an admin
     return null;

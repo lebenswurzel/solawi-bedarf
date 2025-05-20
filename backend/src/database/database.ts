@@ -48,6 +48,8 @@ import { PdfTextContent1738317876884 } from "../migrations/1738317876884-pdf-tex
 import { ErrorLog } from "./ErrorLog";
 import { ErrorLog1743622159714 } from "../migrations/1743622159714-error-log";
 import { ShipmentRevisions1744143625480 } from "../migrations/1744143625480-shipment-revisions";
+import { ShipmentType1747483622562 } from "../migrations/1747483622562-shipment-type";
+import { ShipmentValidTo1747515818493 } from "../migrations/1747515818493-shipment-valid-to";
 
 const entities = [
   User,
@@ -87,6 +89,8 @@ const migrations = [
   PdfTextContent1738317876884,
   ErrorLog1743622159714,
   ShipmentRevisions1744143625480,
+  ShipmentType1747483622562,
+  ShipmentValidTo1747515818493,
 ];
 
 const configuredPort = config.testing.isTesting

@@ -21,6 +21,7 @@ import { VersionInfo } from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import { AppDataSource } from "../database/database";
 import { TextContent } from "../database/TextContent";
 import { TextContentCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import { config } from "../config";
 
 export const getVersion = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -38,6 +39,7 @@ export const getVersion = async (
         message: maintenanceMessage?.content || "",
       },
     },
+    serverTimeZone: config.timezone,
   };
   ctx.body = response as VersionInfo;
 };
