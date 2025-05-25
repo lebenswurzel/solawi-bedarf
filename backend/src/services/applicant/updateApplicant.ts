@@ -46,11 +46,7 @@ export const updateApplicant = async (
 
   if (request.name) {
     if (applicant.active) {
-      const user = new User();
-      user.name = request.name;
-      user.active = false;
-      user.hash = applicant.hash;
-      user.role = UserRole.USER;
+      const user = new User(request.name, applicant.hash, UserRole.USER, false);
       await AppDataSource.getRepository(User).save(user);
       applicant.active = false;
       applicant.user = user;
