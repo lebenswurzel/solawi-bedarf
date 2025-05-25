@@ -45,6 +45,12 @@ export const deleteApplicant = async (
   if (!applicant) {
     ctx.throw(http.bad_request, "Applicant not found");
   }
+  if (applicant.active) {
+    ctx.throw(
+      http.bad_request,
+      "Active applicants cannot be deleted. Deactivate first.",
+    );
+  }
 
   if (applicant.active) {
     ctx.throw(
