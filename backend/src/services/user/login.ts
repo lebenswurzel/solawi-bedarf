@@ -77,12 +77,10 @@ const getTokenWithLDAP = async (
 
   if (userRole) {
     if (!user) {
-      user = new User();
-      user.name = basicAuthUser.name;
-      user.hash = "ldap";
-      user.active = true;
+      user = new User(basicAuthUser.name, "ldap", userRole, true);
+    } else {
+      user.role = userRole;
     }
-    user.role = userRole;
     await AppDataSource.getRepository(User).save(user);
     return generateToken(user, untilMidnight);
   }
