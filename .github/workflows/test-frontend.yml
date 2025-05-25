@@ -1,5 +1,5 @@
 name: Frontend code style checks and tests
-on: [pull_request, push]
+on: [push]
 
 defaults:
   run:
