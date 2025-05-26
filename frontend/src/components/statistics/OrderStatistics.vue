@@ -99,13 +99,10 @@ onMounted(async () => {
       true,
     );
     processedOrders.value++;
-    if (isEmpty(order)) {
+    if (isEmpty(order) || !order.orderItems) {
       return undefined;
     }
     const depot = depots.value.filter((d) => d.id == order.depotId);
-    if (!order.orderItems) {
-      console.log(order);
-    }
     return {
       ...order,
       msrp: getMsrp(

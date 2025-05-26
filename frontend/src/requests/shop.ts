@@ -61,5 +61,9 @@ export const getOrder = async (
 
   await verifyResponse(response);
 
-  return response.json();
+  const result = await response.json();
+  return {
+    ...(result as SavedOrder),
+    validFrom: result.validFrom ? new Date(result.validFrom) : null,
+  };
 };
