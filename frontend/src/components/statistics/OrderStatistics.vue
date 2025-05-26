@@ -51,6 +51,7 @@ interface OrderExt extends SavedOrder {
   userName: string;
   depotName: string;
   msrp: Msrp;
+  validMonths: number;
 }
 
 const orders = ref<OrderExt[]>([]);
@@ -60,7 +61,7 @@ const search = ref<string>("");
 
 const headers = [
   { title: "Benutzer", key: "userName" },
-  { title: "Monatsbeitrag", key: "offer" },
+  { title: "Gewählter Monatsbeitrag", key: "offer" },
   {
     title: "Orientierungswert",
     key: "msrp",
@@ -103,18 +104,15 @@ onMounted(async () => {
       return undefined;
     }
     const depot = depots.value.filter((d) => d.id == order.depotId);
+    const validMonths = calculateOrderValidMonths(
+      order.validFrom,
+      configStore.config?.validTo,
+      versionInfoStore.versionInfo?.serverTimeZone,
+    );
     return {
       ...order,
-      msrp: getMsrp(
-        order.category,
-        order.orderItems,
-        biStore.productsById,
-        calculateOrderValidMonths(
-          order.validFrom,
-          configStore.config?.validTo,
-          versionInfoStore.versionInfo?.serverTimeZone,
-        ),
-      ),
+      msrp: getMsrp(order.category, order.orderItems, biStore.productsById, 12),
+      validMonths,
       userName: u.title,
       depotName: depot.length ? depot[0].name : "unbekannt",
     };
@@ -315,8 +313,17 @@ const overallContribution = computed(() => {
         hint="Volltextsuche in allen Spalten"
       />
       <v-data-table :items="relevantOrders" :headers="headers" :search="search">
+        <template v-slot:item.userName="{ item }">
+          {{ item.userName }}
+          <v-btn
+            icon="mdi-eye"
+            variant="plain"
+            :to="{ path: `/shop/${item.userId}` }"
+          ></v-btn>
+        </template>
         <template v-slot:item.offer="{ item }">
-          {{ item.offer }} €
+          {{ item.offer }} €<br />
+          <span class="opacity-70"> {{ item.validMonths }} Monate </span>
 
           <v-tooltip
             :text="item.offerReason"
@@ -338,7 +345,16 @@ const overallContribution = computed(() => {
             >{{ item.msrp.monthly.cooperation }} €
           </span>
           <br />
-          <span class="text-bold">
+          <v-tooltip
+            text="Der Orientierungswert kann hier nicht korrekt berechnet werden, wenn der Ernteteiler nicht die vollen 12 Monate teilnimmt. Der genaue Orientierungswert kann auf der Bedarfsanmeldung des Ernteteilers eingesehen werden (Button in der Benutzer-Spalte)"
+            open-on-click
+            v-if="item.validMonths != 12"
+          >
+            <template v-slot:activator="{ props }">
+              <v-icon v-bind="props" color="orange">mdi-alert</v-icon>
+            </template>
+          </v-tooltip>
+          <span class="text-bold" v-else>
             {{ item.offer >= item.msrp.monthly.total ? "+" : "-" }}
             {{
               Math.abs(
@@ -373,14 +389,6 @@ const overallContribution = computed(() => {
               <v-icon v-bind="props">mdi-information-outline</v-icon>
             </template>
           </v-tooltip>
-        </template>
-        <template v-slot:item.id="{ item }">
-          {{ item.id }}
-          <v-btn
-            icon="mdi-eye"
-            variant="plain"
-            :to="{ path: `/shop/${item.userId}` }"
-          ></v-btn>
         </template>
       </v-data-table>
       <div class="text-h6">Zusammenfassung</div>
@@ -424,7 +432,7 @@ const overallContribution = computed(() => {
           </v-col>
 
           <v-col cols="12" sm="6" lg="4">
-            <div class="text-subtitle-1">Monatsbeitrag</div>
+            <div class="text-subtitle-1">Gewählter Monatsbeitrag</div>
             <div class="text-subtitle-2 opacity-60">
               Summe: {{ offerRanges.offersSum }} €
             </div>
