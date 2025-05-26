@@ -49,6 +49,8 @@ const { activeConfigId } = storeToRefs(configStore);
 const open = ref(false);
 const busy = ref<boolean>(true);
 const editShipmentId = ref<number | undefined>();
+const isForecast = ref(props.shipmentType == ShipmentType.FORECAST);
+const showHelp = ref(false);
 
 const refresh = async () => {
   if (activeConfigId.value === -1) {
@@ -100,14 +102,56 @@ const onRowClick = (
 <template>
   <v-card-text>
     <BusyIndicator :busy="busy" />
+    <div v-if="isForecast">
+      <v-alert
+        class="mb-5"
+        closable
+        color="info"
+        density="compact"
+        variant="tonal"
+      >
+        <template v-slot:title>
+          Hinweis zu Prognose-Verteilungen
+          <v-btn variant="text" v-if="!showHelp" @click="showHelp = true"
+            >Anzeigen</v-btn
+          >
+        </template>
+        <v-expand-transition>
+          <div class="text-caption" v-if="showHelp">
+            <p class="pt-1">
+              Zweck der Prognose-Verteilungen ist es, neuen Ernteteilern, die
+              während der Saison dazu kommen, eine sinnvolle Abschätzung ihres
+              Orientierungswertes zu geben. Speziell für den Fall, dass zwischen
+              Abgabe des Bedarfs und der ersten Verteilung noch mehrere Wochen
+              liegen.
+            </p>
+            <p class="pt-1">
+              Die hier angegebenen Produkte werden im genannten Zeitraum so
+              behandelt, als wären sie bereits verteilt und kommen daher bei der
+              Berechnung des Orientierungswerts des neuen Ernteteilers nicht zum
+              Tragen. Tatsächlich verteilte Produkte in diesem Zeitraum werden
+              von der Prognose-Verteilung automatisch abgezogen, um eine
+              möglichst realitätsnahe Berechnung zu ermöglichen.
+            </p>
+            <p class="pt-1">
+              Der angegebene Prognosezeitraum sollte vor der ersten Verteilung
+              enden, bei der neue Ernteteiler dabei sind.
+            </p>
+            <p class="pt-1">
+              Für die Produktmenge kann über den Multiplikator eingestellt
+              werden, wie oft das Produkt im Prognosezeitraum verteilt wird (als
+              Durchschnittswert über alle Depots hinweg).
+            </p>
+          </div>
+        </v-expand-transition>
+      </v-alert>
+    </div>
     <v-card-actions>
       <v-btn
         @click="onCreateShipment"
         prepend-icon="mdi-account-plus-outline"
         >{{
-          props.shipmentType == ShipmentType.NORMAL
-            ? t.action.createShipment
-            : t.action.createForecastShipment
+          isForecast ? t.action.createForecastShipment : t.action.createShipment
         }}</v-btn
       >
     </v-card-actions>
@@ -116,7 +160,7 @@ const onRowClick = (
       :items="shipmentsWithoutItems.slice().reverse()"
       :headers="[
         {
-          title: 'Datum der Verteilung',
+          title: isForecast ? 'Prognosezeitraum' : 'Datum der Verteilung',
           key: 'validFrom',
           sortable: true,
         },
@@ -136,8 +180,14 @@ const onRowClick = (
             :icon="item.active ? 'mdi-check-circle' : 'mdi-circle-outline'"
             class="mr-2"
           />
-          {{ format(item.validFrom, "dd.MM.yyyy") }} - KW
-          {{ getISOWeek(item.validFrom).toString() }}
+          <template v-if="isForecast">
+            {{ format(item.validFrom, "dd.MM.yyyy") }} -
+            {{ format(item.validTo || new Date(), "dd.MM.yyyy") }}
+          </template>
+          <template v-else>
+            {{ format(item.validFrom, "dd.MM.yyyy") }} - KW
+            {{ getISOWeek(item.validFrom).toString() }}
+          </template>
         </div>
       </template>
       <template v-slot:item.description="{ item }">
