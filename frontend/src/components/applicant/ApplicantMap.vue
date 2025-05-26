@@ -121,7 +121,6 @@ const updateDepotMarkers = async () => {
         // remove district name
         address = depot.address.split(":")[1].trim();
       }
-      console.log(depot, address);
       const coords = await getAddressCoordinates(address);
       const marker = {
         position: coords || [0, 0],
@@ -161,7 +160,6 @@ const relevantDepots = computed(() => {
   const dd = depots.value.filter((d) =>
     markers.value.map((m) => m.depotId).includes(d.id),
   );
-  console.log(dd, dd[0]?.name);
   return [...dd];
 });
 

@@ -81,7 +81,6 @@ export const useBIStore = defineStore("bi", () => {
       deliveredByProductIdDepotId.value,
       depots.value,
     );
-    console.log("calculated productMsrpWeights: ", result);
     return result;
   });
 
