@@ -45,7 +45,7 @@ const currentTab = ref("shipments");
         <v-card-text>
           <v-alert class="mb-2" type="info" variant="tonal">
             Übersichten über bereits erfolgte Verteilungen in der jeweiligen
-            Kategorie. In die Berechnung mit einbezogen sind alle Lieferungen
+            Kategorie. In die Berechnung mit einbezogen sind alle Verteilungen
             dieser Saison, die veröffentlicht sind und deren Lieferdatum in der
             Vergangenheit liegt. Hervorgehobenene Werte zeigen an, dass das
             jeweilige Produkt in dem entsprechenden Depot bisher seltener

@@ -64,13 +64,13 @@ const { open, editShipmentId, shipmentType } = defineProps<{
 }>();
 const emit = defineEmits<{ (e: "close"): void }>();
 
+const isForecast = ref(shipmentType == ShipmentType.FORECAST);
 const defaultEditShipment: EditShipment = {
   description: null,
   validFrom: addDays(setHours(setMinutes(setSeconds(new Date(), 0), 0), 12), 1),
-  validTo:
-    shipmentType == ShipmentType.FORECAST
-      ? addDays(setHours(setMinutes(setSeconds(new Date(), 0), 0), 12), 2)
-      : undefined,
+  validTo: isForecast.value
+    ? addDays(setHours(setMinutes(setSeconds(new Date(), 0), 0), 12), 2)
+    : undefined,
   shipmentItems: [],
   additionalShipmentItems: [],
   active: false,
@@ -99,8 +99,6 @@ const showShipmentItems = ref(true);
 const showAdditionalShipmentItems = ref(true);
 
 const productVisibility = ref<{ [key: number]: boolean }>({});
-const showHelp = ref(false);
-const isForecast = ref(shipmentType == ShipmentType.FORECAST);
 
 const updateProductVisibility = () => {
   const newVisibility: { [key: number]: boolean } = {};
@@ -383,52 +381,6 @@ watchEffect(async () => {
         {{ prettyDate(savedShipment?.updatedAt, true) }}</template
       >
       <v-card-text style="overflow-y: auto">
-        <div v-if="isForecast">
-          <v-alert
-            class="mb-5"
-            closable
-            color="info"
-            density="compact"
-            variant="outlined"
-          >
-            <template v-slot:title>
-              Hinweis zu Prognose-Verteilungen
-              <v-btn variant="text" v-if="!showHelp" @click="showHelp = true"
-                >Anzeigen</v-btn
-              >
-            </template>
-            <v-expand-transition>
-              <div class="text-caption" v-if="showHelp">
-                <p class="pt-1">
-                  Zweck der Prognose-Verteilungen ist es, neuen Ernteteilern,
-                  die während der Saison dazu kommen, eine sinnvolle Abschätzung
-                  ihres Orientierungswertes zu geben. Speziell für den Fall,
-                  dass zwischen Abgabe des Bedarfs und der ersten Verteilung
-                  noch mehrere Wochen liegen.
-                </p>
-                <p class="pt-1">
-                  Die hier angegebenen Produkte werden im genannten Zeitraum so
-                  behandelt, als wären sie bereits verteilt und kommen daher bei
-                  der Berechnung des Orientierungswerts des neuen Ernteteilers
-                  nicht zum Tragen. Tatsächlich verteilte Produkte in diesem
-                  Zeitraum werden von der Prognose-Verteilung automatisch
-                  abgezogen, um eine möglichst realitätsnahe Berechnung zu
-                  ermöglichen.
-                </p>
-                <p class="pt-1">
-                  Der angegebene Prognosezeitraum sollte vor der ersten
-                  Verteilung enden, bei der neue Ernteteiler dabei sind.
-                </p>
-                <p class="pt-1">
-                  Für die Produktmengen kann lediglich eingstellt werden, wie
-                  viel der benötigten jeweils benötigten Mengen voraussichtlich
-                  geliefert werden. Daher kann lediglich der Multiplikator
-                  verändert werden.
-                </p>
-              </div>
-            </v-expand-transition>
-          </v-alert>
-        </div>
         <v-container fluid class="pa-0">
           <v-row align="start" dense>
             <v-col cols="6" md="3">
@@ -490,24 +442,6 @@ watchEffect(async () => {
           >
         </div>
         <template v-if="showShipmentItems">
-          <v-alert
-            type="info"
-            class="text-caption"
-            density="compact"
-            variant="outlined"
-            v-if="
-              editShipment.shipmentItems.length &&
-              Object.values(productVisibility).length
-            "
-          >
-            Die Produkte sind standardmäßig ausgeblendet und können über die
-            nachfolgenden Schaltflächen eingeblendet werden. Die
-            unterschiedliche Darstellung kennzeichnet Produkte aus
-            <v-chip color="green" size="small">Selbstanbau</v-chip> und
-            <v-chip color="blue" variant="outlined" size="small"
-              >Kooperationen</v-chip
-            >.
-          </v-alert>
           <v-chip-group
             :model-value="activeProducts"
             class="mb-2"
