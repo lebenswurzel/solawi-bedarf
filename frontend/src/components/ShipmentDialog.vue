@@ -344,7 +344,6 @@ const onShipmentOverviewPdfClick = async () => {
 };
 
 watchEffect(async () => {
-  console.log("edit shipment id", editShipmentId);
   if (editShipmentId) {
     await onEditShipment(editShipmentId);
   } else {
