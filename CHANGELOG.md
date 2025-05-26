@@ -216,3 +216,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #228 Nachbesserung Depot-Übersichts-PDFs und Benutzer-Bedarfs-PDFs
 
 # NEW
+
+#225 Verbesserte Berechnung des Orientierungswerts für Ernteteiler, die während der Saison dazukommen
