@@ -73,6 +73,9 @@ const deliveryPercentage = computed(() => {
   return {
     ...result,
     roundedPercentage: Math.round(result.percentage),
+    roundedDeliveries: Math.round(
+      (result.percentage * product.value.frequency) / 100,
+    ),
   };
 });
 
@@ -190,10 +193,10 @@ onMounted(() => {
           </v-tooltip>
           {{ product.frequency }}
         </div>
-        <div class="opacity-50" v-if="deliveryPercentage.roundedPercentage > 0">
+        <div class="opacity-50" v-if="deliveryPercentage.roundedDeliveries > 0">
           <v-tooltip
             :text="
-              interpolate(t.delivery, {
+              interpolate(t.deliveryPercentage, {
                 percent: deliveryPercentage.roundedPercentage.toString(),
               })
             "
@@ -203,8 +206,7 @@ onMounted(() => {
               <v-icon v-bind="props">mdi-truck-delivery-outline</v-icon>
             </template>
           </v-tooltip>
-          {{ deliveryPercentage.roundedPercentage
-          }}<span class="text-caption">%</span>
+          {{ deliveryPercentage.roundedDeliveries }}
         </div>
       </v-col>
       <v-col cols="3" sm="2">
