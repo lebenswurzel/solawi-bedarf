@@ -218,3 +218,4 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 # NEW
 
 #225 Verbesserte Berechnung des Orientierungswerts für Ernteteiler, die während der Saison dazukommen
+#256 Wenn ein Produkt während der Saison deaktiviert wird, können vorhandene Bedarfsanmeldungen mit diesem Produkt trotzdem noch gespeichert werden
