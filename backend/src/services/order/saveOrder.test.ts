@@ -33,6 +33,7 @@ import {
 } from "../../../test/testHelpers";
 import { bi } from "../bi/bi";
 import { saveOrder } from "./saveOrder";
+import { Product } from "../../database/Product";
 
 test("prevent unauthorized access", async () => {
   const ctx = createBasicTestCtx();
@@ -156,7 +157,40 @@ testAsUser1("save order with products", async ({ userData }: TestUserData) => {
     expect(productsById[product1.id]).toMatchObject(product1);
     expect(productsById[product2.id]).toMatchObject(product2);
   }
-  // expect(orders[0]).toMatchObject(baseRequest);
+
+  // test saving inactive product
+  await AppDataSource.getRepository(Product).save({
+    ...product1,
+    active: false,
+  });
+
+  // saving the same amount should work
+  const ctxSame = createBasicTestCtx(request, userData.token, undefined, {
+    id: userData.userId,
+    configId,
+  });
+  await saveOrder(ctxSame);
+  expect(ctxSame.status).toBe(204);
+
+  // changing inactive product should fail
+  const changedRequest = {
+    ...baseRequest,
+    offer: 100,
+    orderItems: [{ ...orderItem1, value: 4 }, orderItem2],
+  };
+  const ctxChanged = createBasicTestCtx(
+    changedRequest,
+    userData.token,
+    undefined,
+    {
+      id: userData.userId,
+      configId,
+    },
+  );
+
+  await expect(() => saveOrder(ctxChanged)).rejects.toThrowError(
+    "Error 400: Änderung von p1 auf 4 nicht möglich",
+  );
 });
 
 testAsUser1("bad requests", async ({ userData }: TestUserData) => {
