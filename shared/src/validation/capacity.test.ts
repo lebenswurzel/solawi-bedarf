@@ -92,7 +92,7 @@ describe("checkOrderItemValid", () => {
       mockSoldByProductId,
       productsById
     );
-    expect(result).toBe("Produkt nicht verfügbar");
+    expect(result).toBe("Änderung von Test Product auf 10 nicht möglich");
   });
 
   it("should return error for non-existent product", () => {
@@ -103,7 +103,7 @@ describe("checkOrderItemValid", () => {
       mockSoldByProductId,
       mockProductsById
     );
-    expect(result).toBe("Produkt nicht verfügbar");
+    expect(result).toBe(`Produkt id=999 nicht verfügbar`);
   });
 
   it("should return error for negative value", () => {
