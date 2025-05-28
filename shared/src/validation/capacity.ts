@@ -50,8 +50,13 @@ export const checkOrderItemValid = (
     return null;
   }
   const product = productsById[actualOrderItem.productId];
-  if (!product || !product.active) {
-    return "Produkt nicht verfügbar";
+  if (!product) {
+    return `Produkt id=${actualOrderItem.productId} nicht verfügbar`;
+  }
+  if (!product.active) {
+    if (savedValue === null || savedValue !== actualOrderItem.value) {
+      return `Änderung von ${product.name} auf ${actualOrderItem.value} nicht möglich`;
+    }
   }
   if (actualOrderItem.value < 0) {
     return `Wert für ${product.name} darf nicht negativ sein`;

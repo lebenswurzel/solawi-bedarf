@@ -87,7 +87,7 @@ const onSave = () => {
         <span class="text-h5">{{ t.product }}</span>
       </v-card-title>
       <v-card-text>
-        <v-row dense>
+        <v-row>
           <v-col cols="12">
             <v-text-field
               v-model="dialogProduct.name"
@@ -109,6 +109,13 @@ const onSave = () => {
                   : language.app.options.active.false
               }`"
               color="primary"
+              :hint="
+                dialogProduct.active
+                  ? ''
+                  : 'Inaktiv: Vorhandene Produktbestellungen bleiben erhalten und können nicht verändert werden'
+              "
+              persistent-hint
+              dense
             ></v-switch>
           </v-col>
           <v-col cols="12" sm="4">
