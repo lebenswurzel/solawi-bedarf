@@ -221,3 +221,6 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #256 Wenn ein Produkt während der Saison deaktiviert wird, können vorhandene Bedarfsanmeldungen mit diesem Produkt trotzdem noch gespeichert werden
 
 # NEW
+
+#259 Fix: Speichern von aktiven Verteilungen durch Admins wieder möglich
+#259 Fix: Prognose-Verteilungen werden nicht mehr auf der Startseite angezeigt
