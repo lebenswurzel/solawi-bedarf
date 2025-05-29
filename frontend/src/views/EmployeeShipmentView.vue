@@ -50,6 +50,9 @@ const currentTab = ref("shipments");
             Vergangenheit liegt. Hervorgehobenene Werte zeigen an, dass das
             jeweilige Produkt in dem entsprechenden Depot bisher seltener
             geliefert wurde als in anderen Depots.
+            <br />
+            Ein <v-icon size="14">mdi-alert</v-icon> bedeutet, dass das Produkts
+            in diesem Depot schon mindestens zwei Lieferungen im Rückstand ist.
           </v-alert>
           <v-expansion-panels>
             <v-expansion-panel
