@@ -220,7 +220,9 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #225 Verbesserte Berechnung des Orientierungswerts für Ernteteiler, die während der Saison dazukommen
 #256 Wenn ein Produkt während der Saison deaktiviert wird, können vorhandene Bedarfsanmeldungen mit diesem Produkt trotzdem noch gespeichert werden
 
-# NEW
+# v0.8.1 - 2025-05-29 - Fixes
 
 #259 Fix: Speichern von aktiven Verteilungen durch Admins wieder möglich
 #259 Fix: Prognose-Verteilungen werden nicht mehr auf der Startseite angezeigt
+
+# NEW
