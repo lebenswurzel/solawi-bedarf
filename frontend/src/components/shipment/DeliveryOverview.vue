@@ -57,25 +57,37 @@ const headers = computed(() => {
 const getDeliveryInfo = (productId: number, depotId: number) => {
   const deliveryInfo = deliveredByProductIdDepotId.value[productId]?.[depotId];
   if (!deliveryInfo) {
-    return { label: "", isMaximum: true };
+    return { label: "", isMaximum: true, isMinimum: false };
   }
 
   const product = props.productCategoryWithProducts?.products.find(
     (p) => p.id === productId,
   );
   if (!product) {
-    return { label: "", isMaximum: true };
+    return { label: "", isMaximum: true, isMinimum: false };
   }
 
-  const deliveredMaximum = Math.max(
+  const allValues = [
     ...Object.values(deliveredByProductIdDepotId.value[productId]).map(
       (p) => p.actuallyDelivered,
     ),
-  );
+  ];
+
+  const deliveredMaximum = Math.max(...allValues);
+  const deliveredMinimum = Math.min(...allValues);
+
+  // count how many differnt values exists
+  const differentValues = new Set(allValues);
+  const differentValuesCount = differentValues.size;
+
+  const isMinimum =
+    deliveredMinimum == deliveryInfo.actuallyDelivered &&
+    differentValuesCount > 2;
 
   return {
     label: `${deliveryInfo.actuallyDelivered / 100}/${product.frequency}`,
     isMaximum: deliveredMaximum == deliveryInfo.actuallyDelivered,
+    isMinimum,
   };
 };
 
@@ -133,6 +145,13 @@ const deliveryInfoCache = computed(() => {
               "
             >
               {{ deliveryInfoCache[item.id][depot.id].label }}
+              <v-icon
+                v-if="deliveryInfoCache[item.id][depot.id].isMinimum"
+                size="14"
+                class="ml-1 opacity-60"
+              >
+                mdi-alert
+              </v-icon>
             </div>
           </template>
         </td>
