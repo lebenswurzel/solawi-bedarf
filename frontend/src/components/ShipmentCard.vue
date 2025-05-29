@@ -19,7 +19,7 @@ import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
 import { interpolate } from "@lebenswurzel/solawi-bedarf-shared/src/lang/template.ts";
 import { computed, ref, watch, watchEffect } from "vue";
 import { useUserStore } from "../store/userStore.ts";
-import { getShipment } from "../requests/shipment.ts";
+import { getUserShipments } from "../requests/shipment.ts";
 import { format, getISOWeek } from "date-fns";
 import { useOrderStore } from "../store/orderStore.ts";
 import {
@@ -170,7 +170,7 @@ watchEffect(async () => {
       userStore.currentUser.id,
       configStore.activeConfigId,
     );
-    const { shipments: requestShipments } = await getShipment(
+    const { shipments: requestShipments } = await getUserShipments(
       userStore.currentUser?.id,
       configStore.activeConfigId,
     );
