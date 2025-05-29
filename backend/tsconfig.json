@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "target": "ES2019",
-    "module": "commonjs",
+    "target": "es2021",
+    "module": "node16",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -9,9 +9,11 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "strictPropertyInitialization": false,
-    "moduleResolution": "node",
     "outDir": "./dist"
   },
-  "include": ["src/**/*.ts", "../shared/src/**/*.ts"],
+  "ts-node": {
+    "transpileOnly": true
+  },
+  "include": ["src/**/*.ts"],
   "exclude": ["**/*.test.ts"]
 }
