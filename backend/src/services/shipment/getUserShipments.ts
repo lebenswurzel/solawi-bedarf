@@ -22,8 +22,9 @@ import { Shipment } from "../../database/Shipment";
 import { Order } from "../../database/Order";
 import { In } from "typeorm";
 import { getConfigIdFromQuery } from "../../util/requestUtil";
+import { ShipmentType } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 
-export const getShipment = async (
+export const getUserShipments = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
 ) => {
   const requestUserId = await getRequestUserId(ctx);
@@ -53,6 +54,7 @@ export const getShipment = async (
           depotId: In(depotIds),
         },
         active: true,
+        type: ShipmentType.NORMAL,
       },
       {
         requisitionConfigId: configId,
@@ -60,6 +62,7 @@ export const getShipment = async (
           depotId: In(depotIds),
         },
         active: true,
+        type: ShipmentType.NORMAL,
       },
     ],
     order: {

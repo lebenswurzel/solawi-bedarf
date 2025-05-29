@@ -55,7 +55,7 @@ export const getShipments = async (
   return response.json();
 };
 
-export const getShipment = async (
+export const getUserShipments = async (
   userId: number,
   configId: number,
 ): Promise<{ shipments: ShipmentFullInformation[] }> => {

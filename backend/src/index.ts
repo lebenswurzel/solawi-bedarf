@@ -40,7 +40,6 @@ import { getOverview } from "./services/getOverview";
 import { getTextContent } from "./services/text/getTextContent";
 import { saveTextContent } from "./services/text/saveTextContent";
 import { deleteTextContent } from "./services/text/deleteTextContent";
-import { getShipment } from "./services/shipment/getShipment";
 import { getShipments } from "./services/shipment/getShipments";
 import { saveShipment } from "./services/shipment/saveShipment";
 import { biHandler } from "./services/bi/bi";
@@ -54,6 +53,7 @@ import { updateUser } from "./services/user/updateUser";
 import { importApplicant } from "./services/applicant/importApplicant";
 import { errorLogger } from "./middleware/errorLogger";
 import { getErrorLog } from "./services/getErrorLog";
+import { getUserShipments } from "./services/shipment/getUserShipments";
 
 const port = config.server.serverPort;
 const app = new Koa();
@@ -113,7 +113,7 @@ router.put("/applicant/import", importApplicant);
 router.get("/shop/order", getOrder);
 router.post("/shop/order", saveOrder);
 
-router.get("/shipment", getShipment);
+router.get("/shipment", getUserShipments);
 router.get("/shipments", getShipments);
 router.post("/shipment", saveShipment);
 
