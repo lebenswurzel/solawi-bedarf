@@ -39,6 +39,7 @@
     "pg": "^8.11.3",
     "prettier": "^3.0.3",
     "reflect-metadata": "^0.2.1",
+    "true-myth": "^9.0.1",
     "ts-node": "^10.9.1",
     "typeorm": "^0.3.17"
   },
