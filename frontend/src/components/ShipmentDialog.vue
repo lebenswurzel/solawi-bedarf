@@ -266,8 +266,9 @@ const onClose = () => {
 };
 
 const onSave = () => {
+  console.log("onSave", isForecast.value);
   if (
-    !isForecast &&
+    !isForecast.value &&
     savedShipment?.value?.active &&
     new Date(savedShipment?.value.validFrom) < new Date()
   ) {
