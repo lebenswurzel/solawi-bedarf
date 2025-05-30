@@ -53,8 +53,8 @@ const clearAllTables = async () => {
   await AppDataSource.getRepository(Shipment).delete({});
   await AppDataSource.getRepository(Depot).delete({});
   await AppDataSource.getRepository(Token).delete({});
-  await AppDataSource.getRepository(UserAddress).delete({});
   await AppDataSource.getRepository(Applicant).delete({});
+  await AppDataSource.getRepository(UserAddress).delete({});
   await AppDataSource.getRepository(User).delete({});
 
   // delete everything that remains
