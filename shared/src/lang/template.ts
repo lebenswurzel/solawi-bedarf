@@ -17,21 +17,22 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import { escapeHtmlEntities } from "../util/stringHelper";
 
+const regex = /{([a-zA-Z0-9]+)}/g;
+
 export const interpolate = (
   template: string,
-  variables: { [key: string]: string },
-  escapeHtml?: boolean
+  variables: Record<string, string>,
+  escapeHtml?: boolean,
 ) => {
-  let result = template;
-  for (const key in variables) {
-    if (variables.hasOwnProperty(key)) {
+  if (escapeHtml) {
+    return template.replace(regex, (match, key) => {
       let value = variables[key];
-      if (escapeHtml) {
-        value = escapeHtmlEntities(value);
-      }
-      result = result.replace(new RegExp(`{${key}}`, "g"), value);
-    }
+      return value !== undefined ? escapeHtmlEntities(value) : match;
+    });
+  } else {
+    return template.replace(regex, (match, key) => {
+      let value = variables[key];
+      return value !== undefined ? value : match;
+    });
   }
-
-  return result;
 };

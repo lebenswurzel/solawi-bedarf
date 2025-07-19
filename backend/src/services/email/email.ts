@@ -16,17 +16,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import nodemailer from "nodemailer";
 import { config } from "../../config";
-import { appConfig } from "@lebenswurzel/solawi-bedarf-shared/src/config";
 import { escapeHtmlEntities } from "@lebenswurzel/solawi-bedarf-shared/src/util/stringHelper";
 import { Attachment } from "nodemailer/lib/mailer";
 import { getOrganizationInfo } from "../text/getOrganizationInfo";
+import { EmailService, SendEmailRequest } from "../../ports/email";
+import { ResultAsync } from "neverthrow";
+import { InfrastructureError } from "../../error";
 
 let emailEnabled = false;
-
-export interface AttachedFile {
-  filename: string;
-  data: Blob;
-}
 
 const transporter = nodemailer.createTransport({
   host: config.email.host,
@@ -55,6 +52,7 @@ const verifyEmail = () => {
   });
 };
 
+// Use NodemailerEmailService for new code!
 export const sendEmail = async ({
   sender,
   receiver,
@@ -63,15 +61,7 @@ export const sendEmail = async ({
   html,
   attachments,
   bcc,
-}: {
-  sender: string;
-  receiver?: string;
-  subject: string;
-  paragraphs?: string[];
-  html?: string;
-  attachments?: AttachedFile[];
-  bcc?: string;
-}) => {
+}: SendEmailRequest) => {
   if (emailEnabled) {
     if (!html && !paragraphs) {
       throw new Error("Must either specify 'html' or 'paragraphs'!");
@@ -122,4 +112,13 @@ if (config.email.enabled) {
     .catch((err) => {
       console.log(err);
     });
+}
+
+export class NodemailerEmailService implements EmailService {
+  sendEmail(req: SendEmailRequest): ResultAsync<void, InfrastructureError> {
+    return ResultAsync.fromThrowable(
+      sendEmail,
+      (err) => new InfrastructureError("email", err),
+    )(req);
+  }
 }
