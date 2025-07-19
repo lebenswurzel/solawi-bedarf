@@ -35,11 +35,11 @@
     "koa-router": "^13.0.1",
     "ldapjs": "^3.0.7",
     "marked": "^15.0.7",
+    "neverthrow": "^8.2.0",
     "nodemailer": "^6.9.7",
     "pg": "^8.11.3",
     "prettier": "^3.0.3",
     "reflect-metadata": "^0.2.1",
-    "true-myth": "^9.0.1",
     "ts-node": "^10.9.1",
     "typeorm": "^0.3.17"
   },
