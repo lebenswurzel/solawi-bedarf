@@ -111,7 +111,7 @@ const depotOptions = computed(() => {
     (dd) => ({
       title: `${dd.depot.name} (${dd.delivered.actuallyDelivered / 100}/${
         dd.delivered.frequency
-      }) [${dd.delivered.deliveryCount}]`,
+      })`,
       value: dd.depot.id,
     }),
   );
