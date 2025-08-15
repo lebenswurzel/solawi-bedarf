@@ -49,12 +49,18 @@ export const isValidBiddingOrder = (
   userRole: UserRole,
   requisitionConfig: ExistingConfig,
   now: Date,
-  savedOrder: Order,
+  savedOrder: Order | null,
   actualOrder: Order
 ) => {
   if (!isIncreaseOnly(userRole, requisitionConfig, now)) {
     return true;
   }
+
+  // If no saved order exists, any order is valid
+  if (!savedOrder) {
+    return true;
+  }
+
   if (savedOrder.offer > actualOrder.offer) {
     return false;
   }

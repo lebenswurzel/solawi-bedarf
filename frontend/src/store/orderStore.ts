@@ -38,6 +38,7 @@ export const useOrderStore = defineStore("orderStore", () => {
   const categoryReason = ref<string | null>(null);
   const orderUserId = ref<number>();
   const validFrom = ref<Date | null>(null);
+  const validTo = ref<Date | null>(null);
 
   const orderItems = computed(() =>
     Object.entries(actualOrderItemsByProductId.value).map(
@@ -62,6 +63,7 @@ export const useOrderStore = defineStore("orderStore", () => {
     categoryReason.value = order.categoryReason || null;
     savedOrderItemsByProductId.value = {};
     validFrom.value = order.validFrom ? new Date(order.validFrom) : null;
+    validTo.value = order.validTo ? new Date(order.validTo) : null;
     if (Array.isArray(order.orderItems)) {
       savedOrderItemsByProductId.value = order.orderItems.reduce(
         (acc, cur) => {
@@ -88,6 +90,7 @@ export const useOrderStore = defineStore("orderStore", () => {
     savedOrderItemsByProductId.value = {};
     orderUserId.value = undefined;
     validFrom.value = null;
+    validTo.value = null;
   };
 
   return {
@@ -102,6 +105,7 @@ export const useOrderStore = defineStore("orderStore", () => {
     orderUserId,
     orderItems,
     validFrom,
+    validTo,
     updateOrderItem,
     update,
     clear,

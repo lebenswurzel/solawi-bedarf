@@ -61,6 +61,7 @@ const {
   offerReason,
   orderItems,
   validFrom,
+  validTo,
 } = storeToRefs(orderStore);
 const { organizationInfo } = storeToRefs(textContentStore);
 
@@ -235,6 +236,7 @@ const onSave = () => {
     categoryReason: categoryReason.value,
     confirmGTC: confirmGTC.value,
     validFrom: validFrom.value,
+    validTo: validTo.value,
     requisitionConfigId: activeConfigId.value,
     sendConfirmationEmail: sendConfirmationEmail.value,
   })

@@ -49,13 +49,21 @@ export const getOrder = async (
     );
   }
 
-  const order: OrderType | null = await AppDataSource.getRepository(
-    Order,
-  ).findOne({
+  // Get all orders for the user and config, then find the currently valid one
+  const allOrders: OrderType[] = await AppDataSource.getRepository(Order).find({
     select: columnsToSelect as (keyof Order)[],
     where: { userId: requestUserId, requisitionConfigId: configId },
     relations,
+    order: { validFrom: "DESC" }, // Most recent first
   });
+
+  // Find the currently valid order (validFrom <= now and (validTo is null or validTo > now))
+  const now = new Date();
+  const order =
+    allOrders.find(
+      (o) =>
+        (!o.validFrom || o.validFrom <= now) && (!o.validTo || o.validTo > now),
+    ) || null;
 
   ctx.body = order || {};
 };

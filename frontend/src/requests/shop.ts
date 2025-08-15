@@ -31,6 +31,7 @@ export const saveOrder = async (order: ConfirmedOrder & { userId: number }) => {
     categoryReason: order.categoryReason,
     confirmGTC: order.confirmGTC,
     validFrom: order.validFrom,
+    validTo: order.validTo,
     requisitionConfigId: order.requisitionConfigId,
     sendConfirmationEmail: order.sendConfirmationEmail,
   };
@@ -65,5 +66,29 @@ export const getOrder = async (
   return {
     ...(result as SavedOrder),
     validFrom: result.validFrom ? new Date(result.validFrom) : null,
+    validTo: result.validTo ? new Date(result.validTo) : null,
+  };
+};
+
+export const modifyOrder = async (userId: number, configId: number) => {
+  const response = await fetch(
+    getUrl(`/shop/order/modify?id=${userId}&configId=${configId}`),
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    },
+  );
+
+  await verifyResponse(response);
+
+  const result = await response.json();
+  return {
+    ...result,
+    validFrom: result.validFrom ? new Date(result.validFrom) : null,
+    previousOrderValidTo: result.previousOrderValidTo
+      ? new Date(result.previousOrderValidTo)
+      : null,
   };
 };

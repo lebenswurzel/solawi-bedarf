@@ -35,6 +35,8 @@ import SeasonStatusElement from "../components/season/SeasonStatusElement.vue";
 import { getSeasonPhase } from "@lebenswurzel/solawi-bedarf-shared/src/util/configHelper.ts";
 import OrderRangeDisplay from "../components/shop/OrderRangeDisplay.vue";
 import MsrpDisplay from "../components/shop/MsrpDisplay.vue";
+import { modifyOrder } from "../requests/shop.ts";
+import { useUiFeedback } from "../store/uiFeedbackStore.ts";
 
 const t = language.pages.shop;
 
@@ -43,18 +45,26 @@ const productStore = useProductStore();
 const userStore = useUserStore();
 const orderStore = useOrderStore();
 const biStore = useBIStore();
+const uiFeedback = useUiFeedback();
 
-const { depot, submit, msrp } = storeToRefs(biStore);
+const { depot, submit, msrp, increaseOnly } = storeToRefs(biStore);
 const { userId } = storeToRefs(userStore);
 const { productCategories } = storeToRefs(productStore);
 const { activeConfigId, config } = storeToRefs(configStore);
 
 const open = ref(false);
 const faqOpen = ref(false);
+const modifyOrderLoading = ref(false);
 const requestUserId = ref<number | undefined>(userStore.userId);
 const requestUser = ref<UserWithOrders | undefined>(userStore.currentUser);
 const canAdministerOtherUsers = computed(() => {
   return userStore.userOptions.length > 1;
+});
+
+const canModifyOrder = computed(() => {
+  return (
+    increaseOnly.value && requestUserId.value === userStore.currentUser?.id
+  );
 });
 
 const route = useRoute();
@@ -98,6 +108,32 @@ const onFaqClose = async () => {
 
 const onSave = () => {
   open.value = true;
+};
+
+const onModifyOrder = async () => {
+  if (!requestUserId.value || !activeConfigId.value) return;
+
+  modifyOrderLoading.value = true;
+  try {
+    const result = await modifyOrder(requestUserId.value, activeConfigId.value);
+    uiFeedback.setSuccess(
+      "Bedarfsanmeldung wurde erfolgreich geändert. Die neue Anmeldung ist ab " +
+        new Intl.DateTimeFormat("de-DE", {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        }).format(result.validFrom) +
+        " gültig.",
+    );
+
+    // Refresh the order data
+    await refresh(true);
+  } catch (error: any) {
+    uiFeedback.setError("Fehler beim Ändern der Bedarfsanmeldung", error);
+  } finally {
+    modifyOrderLoading.value = false;
+  }
 };
 
 const parseUserIdParam = (): number | undefined => {
@@ -221,6 +257,15 @@ const orderPhase = computed(() => {
           variant="outlined"
         >
           {{ language.app.actions.restore }}
+        </v-btn>
+        <v-btn
+          v-if="canModifyOrder"
+          @click="onModifyOrder"
+          class="text-warning"
+          variant="outlined"
+          :loading="modifyOrderLoading"
+        >
+          Bedarfsanmeldung ändern
         </v-btn>
         <v-btn
           @click="onSave"

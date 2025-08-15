@@ -164,3 +164,42 @@ export const countCalendarMonths = (
 
   return monthDiff;
 };
+
+/**
+ * Calculates the validFrom date for a new order modification.
+ * Returns the Friday before the first Thursday in the month that follows
+ * the month of the endBiddingRound date.
+ */
+export const calculateNewOrderValidFromDate = (endBiddingRound: Date): Date => {
+  // Get the month that follows the endBiddingRound month
+  const nextMonth = new Date(
+    endBiddingRound.getFullYear(),
+    endBiddingRound.getMonth() + 1,
+    1
+  );
+
+  // Find the first Thursday in that month
+  const firstThursday = getSameOrNextThursday(nextMonth);
+
+  // Get the Friday before that Thursday (subtract 6 days to go back to Friday)
+  const fridayBefore = addDays(firstThursday, -6);
+
+  return fridayBefore;
+};
+
+/**
+ * Calculates the validTo date for the previous order when creating a new order.
+ * Returns 23:59 of the day before the new order's validFrom date.
+ */
+export const calculatePreviousOrderValidToDate = (
+  newOrderValidFrom: Date
+): Date => {
+  // Get the day before
+  const dayBefore = addDays(newOrderValidFrom, -1);
+
+  // Set to 23:59:59.999
+  const validTo = new Date(dayBefore);
+  validTo.setHours(23, 59, 59, 999);
+
+  return validTo;
+};

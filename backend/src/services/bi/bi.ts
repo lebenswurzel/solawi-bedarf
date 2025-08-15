@@ -40,6 +40,68 @@ import {
 import { LessThan, MoreThan } from "typeorm";
 import { mergeShipmentWithForecast } from "../../util/shipmentUtil";
 
+/**
+ * Finds the valid order for a specific user at a specific date.
+ * Returns the order that was valid at the given date based on validFrom and validTo.
+ */
+const findValidOrderForUserAtDate = (
+  orders: Order[],
+  userId: number,
+  targetDate: Date,
+): Order | null => {
+  const userOrders = orders.filter((o) => o.userId === userId);
+
+  // Find the order that was valid at the target date
+  return (
+    userOrders.find(
+      (order) =>
+        (!order.validFrom || order.validFrom <= targetDate) &&
+        (!order.validTo || order.validTo > targetDate),
+    ) || null
+  );
+};
+
+/**
+ * Gets the currently valid order for a user (validTo is null or in the future).
+ */
+const getCurrentValidOrderForUser = (
+  orders: Order[],
+  userId: number,
+  now: Date,
+): Order | null => {
+  return findValidOrderForUserAtDate(orders, userId, now);
+};
+
+/**
+ * Groups orders by user and returns the currently valid order for each user.
+ */
+const getCurrentValidOrdersByUser = (
+  orders: Order[],
+  now: Date,
+): { [userId: number]: Order } => {
+  const result: { [userId: number]: Order } = {};
+
+  // Group orders by user
+  const ordersByUser: { [userId: number]: Order[] } = {};
+  orders.forEach((order) => {
+    if (!ordersByUser[order.userId]) {
+      ordersByUser[order.userId] = [];
+    }
+    ordersByUser[order.userId].push(order);
+  });
+
+  // Find current valid order for each user
+  Object.entries(ordersByUser).forEach(([userIdStr, userOrders]) => {
+    const userId = parseInt(userIdStr);
+    const validOrder = getCurrentValidOrderForUser(orders, userId, now);
+    if (validOrder) {
+      result[userId] = validOrder;
+    }
+  });
+
+  return result;
+};
+
 export const biHandler = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
 ) => {
@@ -70,6 +132,7 @@ export const bi = async (
       depotId: true,
       userId: true,
       validFrom: true,
+      validTo: true,
       orderItems: {
         value: true,
         productId: true,
@@ -78,6 +141,7 @@ export const bi = async (
     where: {
       requisitionConfigId: configId,
     },
+    order: { userId: "ASC", validFrom: "ASC" }, // Order by user and then by validity
   });
   const productCategories = await AppDataSource.getRepository(
     ProductCategory,
@@ -90,7 +154,7 @@ export const bi = async (
   let forecastShipments: Shipment[] = [];
 
   if (requestUserId) {
-    const userOrder = orders.find((o) => o.userId === requestUserId);
+    const userOrder = getCurrentValidOrderForUser(orders, requestUserId, now);
     if (userOrder && userOrder.validFrom) {
       console.log("shipments before validFrom", userOrder.validFrom);
       extendedShipmentsWhere = {
@@ -147,7 +211,9 @@ export const bi = async (
     }),
   );
 
-  orders.forEach((order) =>
+  // Use only currently valid orders for sold calculations
+  const currentValidOrdersByUser = getCurrentValidOrdersByUser(orders, now);
+  Object.values(currentValidOrdersByUser).forEach((order) =>
     order.orderItems.forEach((orderItem) => {
       const product = soldByProductId[orderItem.productId];
       soldByProductId[orderItem.productId].sold +=
@@ -159,7 +225,8 @@ export const bi = async (
     }),
   );
 
-  orders.forEach((order) =>
+  // Use only currently valid orders for delivery calculations
+  Object.values(currentValidOrdersByUser).forEach((order) =>
     order.orderItems.forEach((orderItem) => {
       const product = soldByProductId[orderItem.productId];
       if (!deliveredByProductIdDepotId[orderItem.productId]) {
@@ -184,7 +251,8 @@ export const bi = async (
     }),
   );
 
-  orders.forEach((order) => {
+  // Use only currently valid orders for depot capacity calculations
+  Object.values(currentValidOrdersByUser).forEach((order) => {
     if (order.depotId) {
       if (
         !capacityByDepotId[order.depotId].userIds.includes(order.userId) &&
@@ -256,6 +324,9 @@ export const bi = async (
     deliveredByProductIdDepotId,
     capacityByDepotId,
     productsById,
-    offers: orders.reduce((acc, cur) => acc + cur.offer, 0),
+    offers: Object.values(currentValidOrdersByUser).reduce(
+      (acc, cur) => acc + cur.offer,
+      0,
+    ),
   };
 };
