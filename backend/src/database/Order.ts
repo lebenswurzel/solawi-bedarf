@@ -41,6 +41,9 @@ export class Order extends BaseEntity {
   @Column({ type: "timestamp", nullable: true })
   validFrom: Date | null;
 
+  @Column({ type: "timestamp", nullable: true })
+  validTo: Date | null;
+
   @Column({ type: "varchar", nullable: true })
   offerReason: string | null;
 

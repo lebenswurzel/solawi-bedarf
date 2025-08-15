@@ -128,6 +128,7 @@ export interface Order {
   category: UserCategory;
   categoryReason: string | null;
   validFrom: Date | null;
+  validTo: Date | null;
   requisitionConfigId: number;
   createdAt?: string | Date;
   updatedAt?: string | Date;

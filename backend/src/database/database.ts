@@ -50,6 +50,7 @@ import { ErrorLog1743622159714 } from "../migrations/1743622159714-error-log";
 import { ShipmentRevisions1744143625480 } from "../migrations/1744143625480-shipment-revisions";
 import { ShipmentType1747483622562 } from "../migrations/1747483622562-shipment-type";
 import { ShipmentValidTo1747515818493 } from "../migrations/1747515818493-shipment-valid-to";
+import { AddOrderValidTo1755284922330 } from "../migrations/1755284922330-add-order-valid-to";
 
 const entities = [
   User,
@@ -91,6 +92,7 @@ const migrations = [
   ShipmentRevisions1744143625480,
   ShipmentType1747483622562,
   ShipmentValidTo1747515818493,
+  AddOrderValidTo1755284922330,
 ];
 
 const configuredPort = config.testing.isTesting

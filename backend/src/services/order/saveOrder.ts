@@ -18,7 +18,7 @@ import { addMonths } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 import Koa from "koa";
 import Router from "koa-router";
-import { LessThan } from "typeorm";
+import { LessThan, IsNull } from "typeorm";
 import { appConfig } from "@lebenswurzel/solawi-bedarf-shared/src/config";
 import {
   calculateMsrpWeights,
@@ -68,7 +68,7 @@ import {
 export const saveOrder = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
 ) => {
-  const now = new Date();
+  const currentTime = new Date();
   const { role, active, id } = await getUserFromContext(ctx);
   const requestUserId = await getRequestUserId(ctx);
   const body = ctx.request.body as ConfirmedOrder;
@@ -94,7 +94,7 @@ export const saveOrder = async (
     ctx.throw(http.bad_request, "no valid category");
   }
 
-  if (!isRequisitionActive(role, active, requisitionConfig, now)) {
+  if (!isRequisitionActive(role, active, requisitionConfig, currentTime)) {
     ctx.throw(http.bad_request, "requisition not active");
   }
   if (!isCategoryReasonValid(body.category, body.categoryReason)) {
@@ -107,13 +107,23 @@ export const saveOrder = async (
   if (!depot || !depot.active) {
     ctx.throw(http.bad_request, "no valid depot");
   }
-  let order = await AppDataSource.getRepository(Order).findOne({
+  // Find all orders for the user and config to determine the current valid one
+  const allOrders = await AppDataSource.getRepository(Order).find({
     where: { userId: requestUserId, requisitionConfigId: configId },
     relations: { orderItems: true },
+    order: { validFrom: "DESC" },
   });
+
+  // Find the currently valid order
+  let order =
+    allOrders.find(
+      (o) =>
+        (!o.validFrom || o.validFrom <= currentTime) &&
+        (!o.validTo || o.validTo > currentTime),
+    ) || null;
   if (
     order &&
-    !isValidBiddingOrder(role, requisitionConfig, now, order, body)
+    !isValidBiddingOrder(role, requisitionConfig, currentTime, order, body)
   ) {
     ctx.throw(http.bad_request, "not valid in bidding round");
   }
@@ -176,6 +186,7 @@ export const saveOrder = async (
     order.userId = requestUserId;
     order.requisitionConfigId = configId;
     order.validFrom = getNewOrderValidFromDate(requisitionConfig);
+    order.validTo = null; // New orders are valid indefinitely until modified
   }
 
   order.offer = body.offer;

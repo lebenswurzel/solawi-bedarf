@@ -30,6 +30,7 @@ import { initDb } from "./services/initDb";
 import { getConfig } from "./services/config/getConfig";
 import { getOrder } from "./services/order/getOrder";
 import { saveOrder } from "./services/order/saveOrder";
+import { modifyOrder } from "./services/order/modifyOrder";
 import { saveConfig } from "./services/config/saveConfig";
 import { saveApplicant } from "./services/applicant/saveApplicant";
 import { getApplicant } from "./services/applicant/getApplicant";
@@ -112,6 +113,7 @@ router.put("/applicant/import", importApplicant);
 
 router.get("/shop/order", getOrder);
 router.post("/shop/order", saveOrder);
+router.post("/shop/order/modify", modifyOrder);
 
 router.get("/shipment", getUserShipments);
 router.get("/shipments", getShipments);
