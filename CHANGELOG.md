@@ -226,3 +226,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #259 Fix: Prognose-Verteilungen werden nicht mehr auf der Startseite angezeigt
 
 # NEW
+
+#270 Fix: Negative Berechnung des Orientierungswerts behoben
