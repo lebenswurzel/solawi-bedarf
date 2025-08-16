@@ -22,7 +22,10 @@ import { http } from "../../consts/http";
 import Koa from "koa";
 import Router from "koa-router";
 import { invalidateTokenForUser } from "../../token";
-import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import {
+  OrderType,
+  UserRole,
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import { Order } from "../../database/Order";
 import { appConfig } from "@lebenswurzel/solawi-bedarf-shared/src/config";
 import { RequisitionConfig } from "../../database/RequisitionConfig";
@@ -94,25 +97,28 @@ export const updateOrderValidFrom = async (
   orderValidFrom: Date,
   configId: number,
 ) => {
-  let order = await AppDataSource.getRepository(Order).findOne({
+  let orders = await AppDataSource.getRepository(Order).find({
     where: { userId: user.id, requisitionConfigId: configId },
   });
-  if (order) {
-    await AppDataSource.getRepository(Order).update(
-      { id: order.id },
-      {
-        validFrom: orderValidFrom,
-        updatedAt: order.updatedAt, // prevent modification of updatedAt as we use it to indicate whether a user changed his order
-      },
-    );
+  if (orders.length > 0) {
+    for (const order of orders) {
+      await AppDataSource.getRepository(Order).update(
+        { id: order.id },
+        {
+          validFrom: orderValidFrom,
+          updatedAt: order.updatedAt, // prevent modification of updatedAt as we use it to indicate whether a user changed his order
+        },
+      );
+    }
   } else {
-    order = new Order();
+    const order = new Order();
     order.user = user;
     order.offer = 0;
     order.category = appConfig.defaultCategory;
     order.validFrom = orderValidFrom;
     order.productConfiguration = "";
     order.requisitionConfigId = configId;
+    order.type = OrderType.NORMAL;
     await AppDataSource.getRepository(Order).save(order);
   }
 };

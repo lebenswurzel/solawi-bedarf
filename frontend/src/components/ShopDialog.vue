@@ -35,7 +35,10 @@ import {
 } from "@lebenswurzel/solawi-bedarf-shared/src/validation/reason.ts";
 import SeasonText from "./styled/SeasonText.vue";
 import { useUiFeedback } from "../store/uiFeedbackStore.ts";
-import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
+import {
+  OrderType,
+  UserCategory,
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import { UserWithOrders } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { useTextContentStore } from "../store/textContentStore.ts";
 import MsrpDisplay from "./shop/MsrpDisplay.vue";
@@ -237,6 +240,7 @@ const onSave = () => {
     validFrom: validFrom.value,
     requisitionConfigId: activeConfigId.value,
     sendConfirmationEmail: sendConfirmationEmail.value,
+    type: increaseOnly.value ? OrderType.MODIFICATION : OrderType.NORMAL,
   })
     .then(async () => {
       await biStore.update(activeConfigId.value, props.requestUser?.id);

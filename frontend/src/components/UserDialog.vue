@@ -88,8 +88,11 @@ const onSave = () => {
 
 watchEffect(async () => {
   if (isIdType(dialogUser.value)) {
-    const order = await getOrder(dialogUser.value.id, activeConfigId.value);
-    orderValidFrom.value = order.validFrom || null;
+    const { currentOrder: order } = await getOrder(
+      dialogUser.value.id,
+      activeConfigId.value,
+    );
+    orderValidFrom.value = order?.validFrom || null;
   } else {
     orderValidFrom.value = null;
   }

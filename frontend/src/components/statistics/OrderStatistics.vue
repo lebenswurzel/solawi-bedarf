@@ -93,14 +93,14 @@ onMounted(async () => {
   isProcessing.value = true;
 
   const allOrders = userStore.userOptions.map(async (u) => {
-    const order = await getOrder(
+    const { currentOrder: order } = await getOrder(
       u.value,
       configStore.activeConfigId,
       false,
       true,
     );
     processedOrders.value++;
-    if (isEmpty(order) || !order.orderItems) {
+    if (!order || isEmpty(order) || !order.orderItems) {
       return undefined;
     }
     const depot = depots.value.filter((d) => d.id == order.depotId);

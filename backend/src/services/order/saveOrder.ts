@@ -107,8 +107,15 @@ export const saveOrder = async (
   if (!depot || !depot.active) {
     ctx.throw(http.bad_request, "no valid depot");
   }
+
+  const orderType = body.type; // TODO: don't just take the value for granted, check if it's valid
+
   let order = await AppDataSource.getRepository(Order).findOne({
-    where: { userId: requestUserId, requisitionConfigId: configId },
+    where: {
+      userId: requestUserId,
+      requisitionConfigId: configId,
+      type: orderType,
+    },
     relations: { orderItems: true },
   });
   if (
@@ -185,6 +192,7 @@ export const saveOrder = async (
   order.offerReason = body.offerReason || "";
   order.category = body.category;
   order.categoryReason = body.categoryReason || "";
+  order.type = orderType;
   await AppDataSource.getRepository(Order).save(order);
 
   for (const requestOrderItem of body.orderItems) {

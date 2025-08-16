@@ -33,6 +33,7 @@ export const saveOrder = async (order: ConfirmedOrder & { userId: number }) => {
     validFrom: order.validFrom,
     requisitionConfigId: order.requisitionConfigId,
     sendConfirmationEmail: order.sendConfirmationEmail,
+    type: order.type,
   };
   const response = await fetch(getUrl(`/shop/order?id=${order.userId}`), {
     method: "POST",
@@ -50,7 +51,10 @@ export const getOrder = async (
   configId: number,
   noOrderItems?: boolean,
   noProductConfiguration?: boolean,
-): Promise<SavedOrder> => {
+): Promise<{
+  currentOrder: SavedOrder | null;
+  modificationOrder: SavedOrder | null;
+}> => {
   const options = [
     noOrderItems ? "no-order-items" : "",
     noProductConfiguration ? "no-product-configuration" : "",
@@ -62,8 +66,26 @@ export const getOrder = async (
   await verifyResponse(response);
 
   const result = await response.json();
+  if (result.length === 0) {
+    return {
+      currentOrder: null,
+      modificationOrder: null,
+    };
+  }
   return {
-    ...(result as SavedOrder),
-    validFrom: result.validFrom ? new Date(result.validFrom) : null,
+    currentOrder: {
+      ...(result.currentOrder as SavedOrder),
+      validFrom: result.currentOrder.validFrom
+        ? new Date(result.currentOrder.validFrom)
+        : null,
+    },
+    modificationOrder: result.modificationOrder
+      ? {
+          ...(result.modificationOrder as SavedOrder),
+          validFrom: result.modificationOrder.validFrom
+            ? new Date(result.modificationOrder.validFrom)
+            : null,
+        }
+      : null,
   };
 };

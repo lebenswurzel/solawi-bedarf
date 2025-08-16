@@ -25,7 +25,10 @@ import { User } from "./User";
 import { Depot } from "./Depot";
 import { OrderItem } from "./OrderItem";
 import { BaseEntity } from "./BaseEntity";
-import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import {
+  OrderType,
+  UserCategory,
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import { RequisitionConfig } from "./RequisitionConfig";
 
 @Entity()
@@ -83,4 +86,7 @@ export class Order extends BaseEntity {
 
   @ManyToOne(() => RequisitionConfig, { nullable: false })
   requisitionConfig: RequisitionConfig;
+
+  @Column({ type: "enum", enum: OrderType, default: OrderType.NORMAL })
+  type: OrderType;
 }

@@ -26,7 +26,10 @@ import {
   ConfigResponse,
 } from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import { getNumericQueryParameter } from "../../util/requestUtil";
-import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import {
+  OrderType,
+  UserRole,
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import { User } from "../../database/User";
 import { Order } from "../../database/Order";
 
@@ -110,7 +113,7 @@ const getFirstConfigWithActiveOrderOrLast = async (
 ): Promise<RequisitionConfig | null> => {
   for (let config of configs) {
     const foundOrders = await AppDataSource.getRepository(Order).find({
-      where: { userId, requisitionConfigId: config.id },
+      where: { userId, requisitionConfigId: config.id, type: OrderType.NORMAL },
     });
 
     if (foundOrders.length > 0) {

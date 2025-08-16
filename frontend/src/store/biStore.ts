@@ -81,6 +81,7 @@ export const useBIStore = defineStore("bi", () => {
       deliveredByProductIdDepotId.value,
       depots.value,
     );
+    console.log(result);
     return result;
   });
 

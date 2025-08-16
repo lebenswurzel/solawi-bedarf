@@ -22,7 +22,10 @@ import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang";
 import { RequisitionConfig } from "../../database/RequisitionConfig";
 import { interpolate } from "@lebenswurzel/solawi-bedarf-shared/src/lang/template";
 import { format } from "date-fns";
-import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import {
+  OrderType,
+  UserCategory,
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import { OrganizationInfo } from "@lebenswurzel/solawi-bedarf-shared/src/types";
 
 const emailHtmlTemplate = `<html>
@@ -78,6 +81,7 @@ export const buildOrderEmail = async (
   const order = await AppDataSource.getRepository(Order).findOne({
     where: {
       id: orderId,
+      type: OrderType.NORMAL,
     },
     relations: { orderItems: { product: true } },
   });

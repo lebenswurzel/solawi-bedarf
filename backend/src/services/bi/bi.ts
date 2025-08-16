@@ -17,6 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import Koa from "koa";
 import Router from "koa-router";
 import {
+  OrderType,
   ShipmentType,
   Unit,
 } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
@@ -77,6 +78,7 @@ export const bi = async (
     },
     where: {
       requisitionConfigId: configId,
+      type: OrderType.NORMAL,
     },
   });
   const productCategories = await AppDataSource.getRepository(

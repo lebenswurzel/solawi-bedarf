@@ -200,8 +200,8 @@ onMounted(async () => {
         false,
         true,
       );
-      if (order && order.offer > 0) {
-        return { ...applicant, depotId: order.depotId };
+      if (order && order.currentOrder && order.currentOrder?.offer > 0) {
+        return { ...applicant, depotId: order.currentOrder.depotId };
       }
       return null;
     }),

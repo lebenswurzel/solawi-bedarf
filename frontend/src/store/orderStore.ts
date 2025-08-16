@@ -27,6 +27,9 @@ export const useOrderStore = defineStore("orderStore", () => {
   const actualOrderItemsByProductId = ref<{
     [key: number]: number;
   }>({});
+  const modificationOrderItemsByProductId = ref<{
+    [key: number]: number;
+  }>({});
   const depotId = ref<{
     saved: number | undefined;
     actual: number | undefined;
@@ -53,7 +56,23 @@ export const useOrderStore = defineStore("orderStore", () => {
   };
 
   const update = async (requestUserId: number, configId: number) => {
-    const order = await getOrder(requestUserId, configId);
+    const { currentOrder: order, modificationOrder: modificationOrder } =
+      await getOrder(requestUserId, configId);
+    if (!order) {
+      return;
+    }
+    if (modificationOrder) {
+      modificationOrderItemsByProductId.value =
+        modificationOrder.orderItems.reduce(
+          (acc, cur) => {
+            acc[cur.productId] = cur.value;
+            return acc;
+          },
+          {} as { [key: number]: number },
+        );
+    } else {
+      modificationOrderItemsByProductId.value = {};
+    }
     offer.value = order.offer || 0;
     offerReason.value = order.offerReason || null;
     depotId.value = { saved: order.depotId, actual: order.depotId };
@@ -71,10 +90,17 @@ export const useOrderStore = defineStore("orderStore", () => {
         {} as { [key: number]: number },
       );
     }
-    actualOrderItemsByProductId.value = JSON.parse(
-      JSON.stringify(savedOrderItemsByProductId.value),
-    );
     orderUserId.value = requestUserId;
+
+    if (modificationOrder) {
+      actualOrderItemsByProductId.value = JSON.parse(
+        JSON.stringify(modificationOrderItemsByProductId.value),
+      );
+    } else {
+      actualOrderItemsByProductId.value = JSON.parse(
+        JSON.stringify(savedOrderItemsByProductId.value),
+      );
+    }
   };
 
   const clear = async () => {

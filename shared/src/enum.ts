@@ -86,3 +86,8 @@ export enum ShipmentType {
   DRAFT = "DRAFT",
   FORECAST = "FORECAST",
 }
+
+export enum OrderType {
+  NORMAL = "NORMAL",
+  MODIFICATION = "MODIFICATION",
+}

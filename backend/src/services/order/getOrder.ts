@@ -24,6 +24,7 @@ import {
   getConfigIdFromQuery,
   getStringQueryParameter,
 } from "../../util/requestUtil";
+import { OrderType as OrderTypeEnum } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 
 export const getOrder = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -49,13 +50,21 @@ export const getOrder = async (
     );
   }
 
-  const order: OrderType | null = await AppDataSource.getRepository(
+  const orders: OrderType[] | null = await AppDataSource.getRepository(
     Order,
-  ).findOne({
+  ).find({
     select: columnsToSelect as (keyof Order)[],
     where: { userId: requestUserId, requisitionConfigId: configId },
     relations,
   });
 
-  ctx.body = order || {};
+  const currentOrder =
+    orders.find((o) => o.type === OrderTypeEnum.NORMAL) || null;
+  const modificationOrder =
+    orders.find((o) => o.type === OrderTypeEnum.MODIFICATION) || null;
+
+  ctx.body = {
+    currentOrder,
+    modificationOrder,
+  };
 };
