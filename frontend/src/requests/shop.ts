@@ -51,14 +51,24 @@ export const getOrder = async (
   configId: number,
   noOrderItems?: boolean,
   noProductConfiguration?: boolean,
+  orderId?: number,
 ): Promise<SavedOrder> => {
   const options = [
     noOrderItems ? "no-order-items" : "",
     noProductConfiguration ? "no-product-configuration" : "",
   ].join(",");
-  const response = await fetch(
-    getUrl(`/shop/order?id=${userId}&configId=${configId}&options=${options}`),
-  );
+
+  const params = new URLSearchParams({
+    id: userId.toString(),
+    configId: configId.toString(),
+    options,
+  });
+
+  if (orderId) {
+    params.append("orderId", orderId.toString());
+  }
+
+  const response = await fetch(getUrl(`/shop/order?${params.toString()}`));
 
   await verifyResponse(response);
 
@@ -68,6 +78,24 @@ export const getOrder = async (
     validFrom: result.validFrom ? new Date(result.validFrom) : null,
     validTo: result.validTo ? new Date(result.validTo) : null,
   };
+};
+
+export const getAllOrders = async (
+  userId: number,
+  configId: number,
+): Promise<SavedOrder[]> => {
+  const response = await fetch(
+    getUrl(`/shop/orders?id=${userId}&configId=${configId}`),
+  );
+
+  await verifyResponse(response);
+
+  const result = await response.json();
+  return result.map((order: any) => ({
+    ...order,
+    validFrom: order.validFrom ? new Date(order.validFrom) : null,
+    validTo: order.validTo ? new Date(order.validTo) : null,
+  }));
 };
 
 export const modifyOrder = async (userId: number, configId: number) => {

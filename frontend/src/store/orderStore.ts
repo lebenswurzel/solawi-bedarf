@@ -16,9 +16,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { _UnwrapAll, defineStore } from "pinia";
 import { computed, ref } from "vue";
-import { getOrder } from "../requests/shop.ts";
+import { getOrder, getAllOrders } from "../requests/shop.ts";
 import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import { appConfig } from "@lebenswurzel/solawi-bedarf-shared/src/config.ts";
+import { SavedOrder } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 
 export const useOrderStore = defineStore("orderStore", () => {
   const savedOrderItemsByProductId = ref<{
@@ -40,6 +41,10 @@ export const useOrderStore = defineStore("orderStore", () => {
   const validFrom = ref<Date | null>(null);
   const validTo = ref<Date | null>(null);
 
+  // New fields for multiple orders support
+  const allOrders = ref<SavedOrder[]>([]);
+  const currentOrderId = ref<number | null>(null);
+
   const orderItems = computed(() =>
     Object.entries(actualOrderItemsByProductId.value).map(
       ([productId, actual]) => ({
@@ -53,8 +58,29 @@ export const useOrderStore = defineStore("orderStore", () => {
     actualOrderItemsByProductId.value[productId] = value;
   };
 
-  const update = async (requestUserId: number, configId: number) => {
-    const order = await getOrder(requestUserId, configId);
+  const update = async (
+    requestUserId: number,
+    configId: number,
+    orderId?: number,
+  ) => {
+    // First, get all orders for this user/config combination
+    const orders = await getAllOrders(requestUserId, configId);
+    allOrders.value = orders;
+
+    let order: SavedOrder;
+
+    if (orderId) {
+      // If a specific order ID is requested, get that order
+      order = await getOrder(requestUserId, configId, false, false, orderId);
+      currentOrderId.value = orderId;
+    } else {
+      // Otherwise, get the currently valid order
+      order = await getOrder(requestUserId, configId);
+      // Find the current order ID from the allOrders list
+      const currentOrder = orders.find((o) => o.id === order.id);
+      currentOrderId.value = currentOrder?.id || null;
+    }
+
     offer.value = order.offer || 0;
     offerReason.value = order.offerReason || null;
     depotId.value = { saved: order.depotId, actual: order.depotId };
@@ -91,6 +117,8 @@ export const useOrderStore = defineStore("orderStore", () => {
     orderUserId.value = undefined;
     validFrom.value = null;
     validTo.value = null;
+    allOrders.value = [];
+    currentOrderId.value = null;
   };
 
   return {
@@ -106,6 +134,8 @@ export const useOrderStore = defineStore("orderStore", () => {
     orderItems,
     validFrom,
     validTo,
+    allOrders,
+    currentOrderId,
     updateOrderItem,
     update,
     clear,
