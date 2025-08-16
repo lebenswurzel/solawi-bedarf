@@ -29,6 +29,7 @@ import { saveProduct } from "./services/product/saveProduct";
 import { initDb } from "./services/initDb";
 import { getConfig } from "./services/config/getConfig";
 import { getOrder } from "./services/order/getOrder";
+import { getAllOrders } from "./services/order/getAllOrders";
 import { saveOrder } from "./services/order/saveOrder";
 import { modifyOrder } from "./services/order/modifyOrder";
 import { saveConfig } from "./services/config/saveConfig";
@@ -112,6 +113,7 @@ router.post("/applicant/update", updateApplicant);
 router.put("/applicant/import", importApplicant);
 
 router.get("/shop/order", getOrder);
+router.get("/shop/orders", getAllOrders);
 router.post("/shop/order", saveOrder);
 router.post("/shop/order/modify", modifyOrder);
 

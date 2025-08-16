@@ -32,6 +32,7 @@ export const getOrder = async (
 
   const configId = getConfigIdFromQuery(ctx);
   const option = getStringQueryParameter(ctx.request.query, "options", "");
+  const orderId = getStringQueryParameter(ctx.request.query, "orderId", "");
 
   let relations = { orderItems: true };
   if (option.includes("no-order-items")) {
@@ -49,7 +50,27 @@ export const getOrder = async (
     );
   }
 
-  // Get all orders for the user and config, then find the currently valid one
+  // If a specific order ID is requested, return that order
+  if (orderId) {
+    const order = await AppDataSource.getRepository(Order).findOne({
+      select: columnsToSelect as (keyof Order)[],
+      where: {
+        id: parseInt(orderId),
+        userId: requestUserId,
+        requisitionConfigId: configId,
+      },
+      relations,
+    });
+
+    if (order) {
+      ctx.body = order;
+    } else {
+      ctx.body = {};
+    }
+    return;
+  }
+
+  // Get all orders for the user and config
   const allOrders: OrderType[] = await AppDataSource.getRepository(Order).find({
     select: columnsToSelect as (keyof Order)[],
     where: { userId: requestUserId, requisitionConfigId: configId },
@@ -57,13 +78,13 @@ export const getOrder = async (
     order: { validFrom: "DESC" }, // Most recent first
   });
 
-  // Find the currently valid order (validFrom <= now and (validTo is null or validTo > now))
+  // If no specific order requested, return the currently valid one
   const now = new Date();
-  const order =
+  const currentOrder =
     allOrders.find(
       (o) =>
         (!o.validFrom || o.validFrom <= now) && (!o.validTo || o.validTo > now),
     ) || null;
 
-  ctx.body = order || {};
+  ctx.body = currentOrder || {};
 };
