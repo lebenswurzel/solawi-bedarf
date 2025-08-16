@@ -225,6 +225,8 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #259 Fix: Speichern von aktiven Verteilungen durch Admins wieder möglich
 #259 Fix: Prognose-Verteilungen werden nicht mehr auf der Startseite angezeigt
 
-# NEW
+# v0.8.2 - 2025-08-16 - Fix Orientierungswert
 
 #270 Fix: Negative Berechnung des Orientierungswerts behoben
+
+# NEW
