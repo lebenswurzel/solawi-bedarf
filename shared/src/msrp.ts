@@ -100,13 +100,15 @@ export const calculateMsrpWeights = (
   depots: Depot[]
 ): { [key: ProductId]: number } => {
   return Object.fromEntries(
-    Object.values(productsById).map((product) => [
-      product.id,
-      1 -
-        calculateDeliveries(product, deliveredByProductIdDepotId, depots)
-          .percentage /
-          100,
-    ])
+    Object.values(productsById)
+      .map((product) => [
+        product.id,
+        1 -
+          calculateDeliveries(product, deliveredByProductIdDepotId, depots)
+            .percentage /
+            100,
+      ])
+      .map(([key, value]) => [key, value > 0 ? value : 0])
   );
 };
 
