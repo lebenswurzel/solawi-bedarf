@@ -19,6 +19,8 @@ import { storeToRefs } from "pinia";
 import { useBIStore } from "../../store/biStore";
 import { language } from "../../../../shared/src/lang/lang";
 import Markdown from "../design/Markdown.vue";
+import { ref, watchEffect } from "vue";
+import { Msrp } from "@lebenswurzel/solawi-bedarf-shared/src/types";
 
 const biStore = useBIStore();
 const { msrp } = storeToRefs(biStore);
@@ -29,6 +31,12 @@ const props = defineProps<{
   offer: number;
   hideOffer?: boolean;
 }>();
+
+const savedMsrp = ref<Msrp | null>(null);
+
+watchEffect(async () => {
+  savedMsrp.value = await biStore.getSavedMsrp();
+});
 </script>
 <template>
   <v-card variant="outlined" color="blue-grey">
@@ -71,6 +79,12 @@ const props = defineProps<{
         }"
         v-if="!props.hideOffer"
       />
+      <div v-if="savedMsrp">
+        Bisheriger Orientierungswert: {{ savedMsrp.monthly.total }}€ ({{
+          savedMsrp.months
+        }}
+        Monate)
+      </div>
     </v-card-text>
   </v-card>
 </template>

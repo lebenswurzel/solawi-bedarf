@@ -39,16 +39,9 @@ export const getOrder = async (
     relations = { orderItems: false };
   }
 
-  const allColumns: string[] = AppDataSource.getRepository(
-    Order,
-  ).metadata.columns.map((col) => col.propertyName);
-
-  let columnsToSelect = undefined;
-  if (option.includes("no-product-configuration")) {
-    columnsToSelect = allColumns.filter(
-      (col) => col !== "productConfiguration",
-    );
-  }
+  const columnsToSelect = determineColumnsToSelect(
+    option.includes("no-product-configuration"),
+  );
 
   // If a specific order ID is requested, return that order
   if (orderId) {
@@ -87,4 +80,20 @@ export const getOrder = async (
     ) || null;
 
   ctx.body = currentOrder || {};
+};
+
+export const determineColumnsToSelect = (
+  excludeProductConfiguration: boolean,
+): (keyof Order)[] => {
+  const allColumns: string[] = AppDataSource.getRepository(
+    Order,
+  ).metadata.columns.map((col) => col.propertyName);
+
+  if (excludeProductConfiguration) {
+    return allColumns.filter(
+      (col) => col !== "productConfiguration",
+    ) as (keyof Order)[];
+  } else {
+    return allColumns as (keyof Order)[];
+  }
 };

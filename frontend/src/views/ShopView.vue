@@ -51,7 +51,8 @@ const { depot, submit, msrp, increaseOnly } = storeToRefs(biStore);
 const { userId } = storeToRefs(userStore);
 const { productCategories } = storeToRefs(productStore);
 const { activeConfigId, config } = storeToRefs(configStore);
-const { allOrders, currentOrderId } = storeToRefs(orderStore);
+const { allOrders, currentOrderId, modificationOrder } =
+  storeToRefs(orderStore);
 
 const open = ref(false);
 const faqOpen = ref(false);
@@ -141,16 +142,6 @@ const onModifyOrder = async () => {
   }
 };
 
-const onOrderChange = async (orderId: number | null) => {
-  if (!requestUserId.value || !activeConfigId.value) return;
-
-  if (orderId) {
-    await orderStore.update(requestUserId.value, activeConfigId.value, orderId);
-  } else {
-    await orderStore.update(requestUserId.value, activeConfigId.value);
-  }
-};
-
 const parseUserIdParam = (): number | undefined => {
   const value = route.params.userId;
   if (canAdministerOtherUsers.value) {
@@ -171,7 +162,8 @@ const refresh = async (keepUserId?: boolean) => {
   if (requestUserId.value && activeConfigId.value != -1) {
     await productStore.update(configStore.activeConfigId);
     await orderStore.update(requestUserId.value, activeConfigId.value);
-    await biStore.update(configStore.activeConfigId, requestUserId.value, true);
+    const relevantOrderId = modificationOrder.value?.id || currentOrderId.value;
+    await biStore.update(configStore.activeConfigId, relevantOrderId, true);
   }
 };
 onMounted(async () => {
@@ -228,10 +220,13 @@ const orderPhase = computed(() => {
 
   <v-card class="ma-2">
     <v-card-title>{{ t.cards.products.title }} für <SeasonText /></v-card-title>
-    <v-card-subtitle v-if="allOrders.length > 0" class="pb-0">
+    <v-card-text v-if="allOrders.length > 0" class="pb-0">
       <!-- Debug info -->
       <div v-if="allOrders.length > 1" class="text-caption text-grey mb-2">
         {{ allOrders.length }} Bedarfsanmeldungen verfügbar
+        <div v-for="order in allOrders" :key="order.id">
+          {{ order.validFrom }} - {{ order.validTo }}
+        </div>
       </div>
       <div
         v-else-if="allOrders.length === 1"
@@ -239,38 +234,7 @@ const orderPhase = computed(() => {
       >
         1 Bedarfsanmeldung verfügbar
       </div>
-      <v-select
-        v-if="allOrders.length > 1"
-        v-model="currentOrderId"
-        :items="
-          allOrders.map((order) => ({
-            title: `Bedarfsanmeldung ${order.validFrom ? 'ab ' + new Intl.DateTimeFormat('de-DE').format(new Date(order.validFrom)) : 'unbekannt'}${order.validTo ? ' bis ' + new Intl.DateTimeFormat('de-DE').format(new Date(order.validTo)) : ''}`,
-            value: order.id,
-          }))
-        "
-        label="Bedarfsanmeldung auswählen"
-        @update:model-value="onOrderChange"
-        clearable
-        hide-details
-        density="compact"
-      >
-        <template v-slot:prepend-item>
-          <v-list-item
-            @click="onOrderChange(null)"
-            :active="currentOrderId === null"
-          >
-            <v-list-item-title>Aktuelle Bedarfsanmeldung</v-list-item-title>
-          </v-list-item>
-          <v-divider></v-divider>
-        </template>
-        <template v-slot:selection="{ item }">
-          <span v-if="item?.raw?.value === currentOrderId">
-            {{ item.raw.title }}
-          </span>
-          <span v-else> Aktuelle Bedarfsanmeldung </span>
-        </template>
-      </v-select>
-    </v-card-subtitle>
+    </v-card-text>
     <v-container fluid class="py-0">
       <v-row dense>
         <v-col cols="12" sm="6">

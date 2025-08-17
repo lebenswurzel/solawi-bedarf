@@ -24,7 +24,7 @@ import { getUrl, verifyResponse } from "./requests.ts";
 
 export const getBI = async (
   configId: number,
-  requestUserId?: number,
+  orderId?: number,
   includeForecast?: boolean,
 ): Promise<{
   soldByProductId: SoldByProductId;
@@ -34,8 +34,8 @@ export const getBI = async (
   offers: number;
 }> => {
   let parameters = "";
-  if (requestUserId) {
-    parameters = `&userId=${requestUserId}`;
+  if (orderId) {
+    parameters = `&orderId=${orderId}`;
   }
   if (includeForecast) {
     parameters += "&includeForecast=true";

@@ -45,9 +45,13 @@ export const useBIStore = defineStore("bi", () => {
   const userStore = useUserStore();
   const versionInfoStore = useVersionInfoStore();
 
-  const { depots, config } = storeToRefs(configStore);
-  const { depotId, category, actualOrderItemsByProductId } =
-    storeToRefs(orderStore);
+  const { depots, config, activeConfigId } = storeToRefs(configStore);
+  const {
+    depotId,
+    category,
+    actualOrderItemsByProductId,
+    savedOrderItemsByProductId,
+  } = storeToRefs(orderStore);
   const { currentUser } = storeToRefs(userStore);
 
   const soldByProductId = ref<SoldByProductId>({});
@@ -85,11 +89,13 @@ export const useBIStore = defineStore("bi", () => {
   });
 
   const msrp = computed(() => {
+    const relevantValidFrom =
+      orderStore.modificationOrder?.validFrom || orderStore.validFrom;
     const actualOrderItems = Object.entries(
       actualOrderItemsByProductId.value,
     ).map(([key, value]) => ({ productId: parseInt(key), value }));
     const validMonths = calculateOrderValidMonths(
-      orderStore.validFrom,
+      relevantValidFrom,
       config.value?.validTo,
       versionInfoStore.versionInfo?.serverTimeZone,
     );
@@ -103,13 +109,48 @@ export const useBIStore = defineStore("bi", () => {
     );
   });
 
+  const getSavedMsrp = async () => {
+    if (activeConfigId.value == -1) {
+      return null;
+    }
+    const savedOrderItems = Object.entries(
+      savedOrderItemsByProductId.value,
+    ).map(([key, value]) => ({ productId: parseInt(key), value }));
+
+    const validMonths = calculateOrderValidMonths(
+      orderStore.validFrom,
+      config.value?.validTo,
+      versionInfoStore.versionInfo?.serverTimeZone,
+    );
+
+    const {
+      deliveredByProductIdDepotId: requestDeliveredByProductIdDepotId,
+      productsById: requestedProductsById,
+    } = await getBI(activeConfigId.value, orderStore.currentOrderId, true);
+
+    const weights = calculateMsrpWeights(
+      requestedProductsById,
+      requestDeliveredByProductIdDepotId,
+      depots.value,
+    );
+    console.log("weights", weights);
+
+    return getMsrp(
+      category.value,
+      savedOrderItems,
+      requestedProductsById,
+      validMonths,
+      weights,
+    );
+  };
+
   const depot = computed(() => {
     return depots.value.find((d) => d.id == depotId.value.actual);
   });
 
   const update = async (
     configId: number,
-    requestUserId?: number,
+    orderId?: number,
     includeForecast?: boolean,
   ) => {
     const {
@@ -118,7 +159,7 @@ export const useBIStore = defineStore("bi", () => {
       capacityByDepotId: requestCapacityByDepotId,
       productsById: requestedProductsById,
       offers: requestOffers,
-    } = await getBI(configId, requestUserId, includeForecast);
+    } = await getBI(configId, orderId, includeForecast);
     soldByProductId.value = requestSoldByProductId;
     capacityByDepotId.value = requestCapacityByDepotId;
     productsById.value = requestedProductsById;
@@ -134,6 +175,7 @@ export const useBIStore = defineStore("bi", () => {
     productsById,
     depot,
     msrp,
+    getSavedMsrp,
     submit,
     increaseOnly,
     offers,

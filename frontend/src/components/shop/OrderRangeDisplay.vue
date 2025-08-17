@@ -25,9 +25,12 @@ import {
   dayDifference,
   getSameOrNextThursday,
 } from "../../../../shared/src/util/dateHelper";
+import { useOrderStore } from "../../store/orderStore";
 
 const configStore = useConfigStore();
+const orderStore = useOrderStore();
 const { config } = storeToRefs(configStore);
+const { modificationOrder } = storeToRefs(orderStore);
 
 const props = defineProps<{
   validFrom: Date | null;
@@ -89,6 +92,12 @@ const isFirstDeliveryInThePast = computed(() => {
         {{ dayDifference(new Date(), firstThursdayOfDelivery || new Date()) }}
         Tage bis zu deiner ersten Verteilung.</v-card-text
       >
+    </template>
+    <template v-if="modificationOrder">
+      <v-card-text class="py-1">
+        Es existiert eine angepasste Bedarfsanmeldung, die ab
+        {{ prettyDate(modificationOrder.validFrom) }} gültig ist.
+      </v-card-text>
     </template>
   </v-card>
 </template>
