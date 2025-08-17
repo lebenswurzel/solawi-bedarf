@@ -40,6 +40,13 @@ import {
 import { LessThan, MoreThan } from "typeorm";
 import { mergeShipmentWithForecast } from "../../util/shipmentUtil";
 
+const isOrderValidOnDate = (order: Order, targetDate: Date): boolean => {
+  return (
+    (!order.validFrom || order.validFrom <= targetDate) &&
+    (!order.validTo || order.validTo > targetDate)
+  );
+};
+
 /**
  * Finds the valid order for a specific user at a specific date.
  * Returns the order that was valid at the given date based on validFrom and validTo.
@@ -53,11 +60,7 @@ const findValidOrderForUserAtDate = (
 
   // Find the order that was valid at the target date
   return (
-    userOrders.find(
-      (order) =>
-        (!order.validFrom || order.validFrom <= targetDate) &&
-        (!order.validTo || order.validTo > targetDate),
-    ) || null
+    userOrders.find((order) => isOrderValidOnDate(order, targetDate)) || null
   );
 };
 
@@ -107,19 +110,18 @@ export const biHandler = async (
 ) => {
   await getUserFromContext(ctx);
   const configId = getConfigIdFromQuery(ctx);
-  const requestUserId =
-    getNumericQueryParameter(ctx.request.query, "userId", 0) || undefined;
+  const orderId = getNumericQueryParameter(ctx.request.query, "orderId", 0);
   const includeForecast = getBooleanQueryParameter(
     ctx.request.query,
     "includeForecast",
     false,
   );
-  ctx.body = await bi(configId, requestUserId, includeForecast);
+  ctx.body = await bi(configId, orderId, includeForecast);
 };
 
 export const bi = async (
   configId: number,
-  requestUserId?: number,
+  orderId?: number,
   includeForecast: boolean = false,
 ) => {
   const now = new Date();
@@ -153,8 +155,13 @@ export const bi = async (
   let extendedShipmentsWhere = {};
   let forecastShipments: Shipment[] = [];
 
-  if (requestUserId) {
-    const userOrder = getCurrentValidOrderForUser(orders, requestUserId, now);
+  if (orderId) {
+    const userOrder = await AppDataSource.getRepository(Order).findOne({
+      where: { id: orderId, requisitionConfigId: configId },
+    });
+    if (!userOrder) {
+      throw new Error(`Order ${orderId} not found in season ${configId}`);
+    }
     if (userOrder && userOrder.validFrom) {
       console.log("shipments before validFrom", userOrder.validFrom);
       extendedShipmentsWhere = {
@@ -218,7 +225,7 @@ export const bi = async (
       const product = soldByProductId[orderItem.productId];
       soldByProductId[orderItem.productId].sold +=
         orderItem.value * product.frequency;
-      if (order.validFrom && order.validFrom < now) {
+      if (isOrderValidOnDate(order, now)) {
         soldByProductId[orderItem.productId].soldForShipment +=
           orderItem.value * product.frequency;
       }
@@ -243,7 +250,7 @@ export const bi = async (
       }
       deliveredByProductIdDepotId[orderItem.productId][order.depotId].value +=
         orderItem.value;
-      if (order.validFrom && order.validFrom < now) {
+      if (isOrderValidOnDate(order, now)) {
         deliveredByProductIdDepotId[orderItem.productId][
           order.depotId
         ].valueForShipment += orderItem.value;

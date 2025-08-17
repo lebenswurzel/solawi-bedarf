@@ -100,7 +100,7 @@ const maxValueAvailable = computed(() => {
 const minValueAvailable = computed(() => {
   const savedOrderItem = savedOrderItemsByProductId.value[props.productId];
   if (config.value) {
-    return getMinAvailable(
+    const result = getMinAvailable(
       savedOrderItem || 0,
       props.productId,
       currentUser.value?.role,
@@ -108,11 +108,13 @@ const minValueAvailable = computed(() => {
       now.value,
       productsById.value,
     );
+    return result;
   }
   return product.value.quantityMin;
 });
 
 const model = ref<string>();
+const oldValue = ref<string>();
 const errorMessage = ref<string | null>(null);
 
 const onUpdate = (value: string) => {
@@ -159,13 +161,15 @@ watch([productsById, savedOrderItemsByProductId], () => {
 onMounted(() => {
   model.value =
     actualOrderItemsByProductId.value[props.productId]?.toString() || "0";
+  oldValue.value =
+    savedOrderItemsByProductId.value[props.productId]?.toString() || "0";
 });
 </script>
 
 <template>
-  <v-container class="pa-0">
-    <v-row no-gutters align="center" justify="center">
-      <v-col cols="12" sm="5">
+  <v-container class="pa-0" fluid>
+    <v-row dense align="center" justify="center">
+      <v-col cols="8" sm="6">
         {{ product.name }}
         <v-tooltip
           :text="product.description"
@@ -177,7 +181,7 @@ onMounted(() => {
           </template>
         </v-tooltip>
       </v-col>
-      <v-col cols="3" sm="2">
+      <v-col cols="2" sm="1">
         <div>
           <v-tooltip
             :text="
@@ -209,7 +213,7 @@ onMounted(() => {
           {{ deliveryPercentage.roundedDeliveries }}
         </div>
       </v-col>
-      <v-col cols="3" sm="2">
+      <v-col cols="2" sm="1">
         <v-tooltip
           :text="interpolate(t.stock, { stock: percentageSold.toString() })"
           open-on-click
@@ -226,7 +230,7 @@ onMounted(() => {
           </template>
         </v-tooltip>
       </v-col>
-      <v-col cols="6" sm="3">
+      <v-col cols="6" sm="2">
         <v-text-field
           :label="interpolate(t.value, { unit: unit })"
           type="number"
@@ -243,6 +247,14 @@ onMounted(() => {
             }
           "
           @update:focused="onBlur"
+        ></v-text-field>
+      </v-col>
+      <v-col cols="6" sm="2">
+        <v-text-field
+          :label="interpolate(t.oldValue, { unit: unit })"
+          type="number"
+          :model-value="oldValue"
+          :disabled="true"
         ></v-text-field>
       </v-col>
     </v-row>
