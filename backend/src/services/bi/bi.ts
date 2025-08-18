@@ -116,12 +116,23 @@ export const biHandler = async (
     "includeForecast",
     false,
   );
-  ctx.body = await bi(configId, orderId, includeForecast);
+
+  let orderValidFrom = undefined;
+  if (orderId) {
+    const userOrder = await AppDataSource.getRepository(Order).findOne({
+      where: { id: orderId, requisitionConfigId: configId },
+    });
+    if (!userOrder) {
+      throw new Error(`Order ${orderId} not found in season ${configId}`);
+    }
+    orderValidFrom = userOrder.validFrom || undefined;
+  }
+  ctx.body = await bi(configId, orderValidFrom, includeForecast);
 };
 
 export const bi = async (
   configId: number,
-  orderId?: number,
+  orderValidFrom?: Date,
   includeForecast: boolean = false,
 ) => {
   const now = new Date();
@@ -155,35 +166,27 @@ export const bi = async (
   let extendedShipmentsWhere = {};
   let forecastShipments: Shipment[] = [];
 
-  if (orderId) {
-    const userOrder = await AppDataSource.getRepository(Order).findOne({
-      where: { id: orderId, requisitionConfigId: configId },
-    });
-    if (!userOrder) {
-      throw new Error(`Order ${orderId} not found in season ${configId}`);
-    }
-    if (userOrder && userOrder.validFrom) {
-      console.log("shipments before validFrom", userOrder.validFrom);
-      extendedShipmentsWhere = {
-        validFrom: LessThan(userOrder.validFrom),
-      };
+  if (orderValidFrom) {
+    // console.log("shipments before validFrom", userOrder.validFrom);
+    extendedShipmentsWhere = {
+      validFrom: LessThan(orderValidFrom),
+    };
 
-      if (includeForecast) {
-        forecastShipments = await AppDataSource.getRepository(Shipment).find({
-          relations: { shipmentItems: true },
-          where: {
-            requisitionConfigId: configId,
-            ...extendedShipmentsWhere,
-            validTo: MoreThan(now),
-            type: ShipmentType.FORECAST,
-            active: true,
-          },
-        });
-      }
+    if (includeForecast) {
+      forecastShipments = await AppDataSource.getRepository(Shipment).find({
+        relations: { shipmentItems: true },
+        where: {
+          requisitionConfigId: configId,
+          ...extendedShipmentsWhere,
+          validTo: MoreThan(now),
+          type: ShipmentType.FORECAST,
+          active: true,
+        },
+      });
     }
   }
 
-  console.log("forecastShipments", forecastShipments);
+  // console.log("forecastShipments", forecastShipments);
 
   const shipments = await AppDataSource.getRepository(Shipment).find({
     relations: { shipmentItems: true },

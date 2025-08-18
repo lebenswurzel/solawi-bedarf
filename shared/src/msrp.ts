@@ -44,41 +44,66 @@ const adjustMsrp = (
   months: number
 ) => {
   if (baseMsrp > 0) {
-    return (
-      appConfig.msrp[category].absolute +
-      Math.ceil((appConfig.msrp[category].relative * baseMsrp) / months)
-    );
+    return (appConfig.msrp[category].relative * baseMsrp) / months;
   }
   return 0;
+};
+
+export const getOrderItemAdjustedMonthlyMsrp = (
+  category: UserCategory,
+  orderItem: OrderItem,
+  productById: ProductsById,
+  months: number,
+  productMsrpWeights?: { [key: ProductId]: number }
+): number => {
+  const baseMsrp =
+    getYearlyBaseMsrp(orderItem, productById[orderItem.productId]) *
+    (productMsrpWeights ? productMsrpWeights[orderItem.productId] : 1);
+  return adjustMsrp(baseMsrp, category, months);
 };
 
 export const getMsrp = (
   category: UserCategory,
   orderItems: OrderItem[],
-  productById: ProductsById,
+  productsById: ProductsById,
   months: number,
   productMsrpWeights?: { [key: ProductId]: number }
 ): Msrp => {
-  const baseMsrp = orderItems.reduce(
-    (acc, orderItem) =>
-      acc +
-      getYearlyBaseMsrp(orderItem, productById[orderItem.productId]) *
-        (productMsrpWeights ? productMsrpWeights[orderItem.productId] : 1),
-    0
+  const adjustedMonthlyTotal = Math.ceil(
+    orderItems.reduce(
+      (acc, orderItem) =>
+        acc +
+        getOrderItemAdjustedMonthlyMsrp(
+          category,
+          orderItem,
+          productsById,
+          months,
+          productMsrpWeights
+        ),
+      0
+    )
   );
-  const selfgrownMsrp = orderItems.reduce(
-    (acc, orderItem) =>
-      acc +
-      (productById[orderItem.productId]?.productCategoryType ==
-      ProductCategoryType.SELFGROWN
-        ? getYearlyBaseMsrp(orderItem, productById[orderItem.productId]) *
-          (productMsrpWeights ? productMsrpWeights[orderItem.productId] : 1)
-        : 0),
-    0
+  const adjustedMonthlySelfgrown = Math.ceil(
+    orderItems
+      .filter(
+        (oi) =>
+          productsById[oi.productId].productCategoryType ==
+          ProductCategoryType.SELFGROWN
+      )
+      .reduce(
+        (acc, orderItem) =>
+          acc +
+          getOrderItemAdjustedMonthlyMsrp(
+            category,
+            orderItem,
+            productsById,
+            months,
+            productMsrpWeights
+          ),
+        0
+      )
   );
 
-  const adjustedMonthlyTotal = adjustMsrp(baseMsrp, category, months);
-  const adjustedMonthlySelfgrown = adjustMsrp(selfgrownMsrp, category, months);
   return {
     monthly: {
       total: adjustedMonthlyTotal,

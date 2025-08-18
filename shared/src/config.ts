@@ -47,15 +47,12 @@ export const basicOrganizationInfo: OrganizationInfo = {
 export const appConfig = {
   msrp: {
     [UserCategory.CAT100]: {
-      absolute: 0, // monthly base amount
       relative: 1.0, // multiplier for the given category
     },
     [UserCategory.CAT115]: {
-      absolute: 0, // monthly base amount
       relative: 1.15, // multiplier for the given category
     },
     [UserCategory.CAT130]: {
-      absolute: 0, // monthly base amount
       relative: 1.3, // multiplier for the given category
     },
   },

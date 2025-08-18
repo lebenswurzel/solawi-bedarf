@@ -35,7 +35,7 @@ import SeasonStatusElement from "../components/season/SeasonStatusElement.vue";
 import { getSeasonPhase } from "@lebenswurzel/solawi-bedarf-shared/src/util/configHelper.ts";
 import OrderRangeDisplay from "../components/shop/OrderRangeDisplay.vue";
 import MsrpDisplay from "../components/shop/MsrpDisplay.vue";
-import { modifyOrder } from "../requests/shop.ts";
+import { calcMsrp, modifyOrder } from "../requests/shop.ts";
 import { useUiFeedback } from "../store/uiFeedbackStore.ts";
 
 const t = language.pages.shop;
@@ -164,6 +164,7 @@ const refresh = async (keepUserId?: boolean) => {
     await orderStore.update(requestUserId.value, activeConfigId.value);
     const relevantOrderId = modificationOrder.value?.id || currentOrderId.value;
     await biStore.update(configStore.activeConfigId, relevantOrderId, true);
+    await calcMsrp(requestUserId.value, activeConfigId.value);
   }
 };
 onMounted(async () => {
