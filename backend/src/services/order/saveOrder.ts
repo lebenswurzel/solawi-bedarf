@@ -132,7 +132,7 @@ export const saveOrder = async (
     capacityByDepotId,
     productsById,
     deliveredByProductIdDepotId,
-  } = await bi(requisitionConfig.id, order?.id, true);
+  } = await bi(requisitionConfig.id, order?.validFrom || undefined, true);
   const remainingDepotCapacity = getRemainingDepotCapacity(
     depot,
     capacityByDepotId[body.depotId].reserved,
