@@ -27,6 +27,7 @@ import { Msrp, ProductId } from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import {
   calculateMsrpWeights,
   getMsrp,
+  getOrderItemAdjustedMonthlyMsrp,
 } from "@lebenswurzel/solawi-bedarf-shared/src/msrp";
 import { bi } from "./bi";
 import { calculateOrderValidMonths } from "@lebenswurzel/solawi-bedarf-shared/src/msrp";
@@ -34,6 +35,7 @@ import { RequisitionConfig } from "../../database/RequisitionConfig";
 import { http } from "../../consts/http";
 import { config as configBackend } from "../../config";
 import { Depot } from "../../database/Depot";
+import { OrderItem } from "../../database/OrderItem";
 
 interface OrderMsrpValues {
   order: Order;
@@ -41,6 +43,9 @@ interface OrderMsrpValues {
   msrp: Msrp;
   productMsrpWeights: { [key: ProductId]: number };
   previousOrder: Order | undefined;
+  productMsrps: {
+    [key: string]: number;
+  };
 }
 
 export const calcMsrp = async (
@@ -109,6 +114,20 @@ export const calcMsrp = async (
           productMsrpWeights,
         ),
         productMsrpWeights,
+        productMsrps: order.orderItems.reduce(
+          (acc, oi) => {
+            acc[productsById[oi.productId].name + "_" + oi.productId] =
+              getOrderItemAdjustedMonthlyMsrp(
+                order.category,
+                oi,
+                productsById,
+                validMonths,
+                productMsrpWeights,
+              );
+            return acc;
+          },
+          {} as { [key: string]: number },
+        ),
         previousOrder: orders
           .reverse()
           .find(
@@ -117,6 +136,7 @@ export const calcMsrp = async (
       };
     }),
   );
+  console.log(orderMsrpValues);
 
   const msrpDeltas = orderMsrpValues.map((orderMsrpValue) => {
     const differingOrderItems = orderMsrpValue.previousOrder?.orderItems.filter(
@@ -131,7 +151,7 @@ export const calcMsrp = async (
     };
   });
 
-  console.log(msrpDeltas);
+  // console.log(msrpDeltas);
   ctx.body = msrpDeltas;
   ctx.status = http.ok;
 };
