@@ -21,10 +21,12 @@ import {
   DeliveredByProductIdDepotId,
   Depot,
   Msrp,
+  Order,
   OrderItem,
   Product,
   ProductId,
   ProductsById,
+  RequisitionConfig,
 } from "./types";
 import { countCalendarMonths, getSameOrNextThursday } from "./util/dateHelper";
 
@@ -150,4 +152,120 @@ export const calculateOrderValidMonths = (
     );
   }
   return 12;
+};
+
+export const calculateEffectiveMsrp = (
+  orders: {
+    order: Order;
+    deliveredByProductIdDepotId: DeliveredByProductIdDepotId;
+  }[],
+  productsById: ProductsById,
+  depots: Depot[],
+  config: RequisitionConfig,
+  timezone: string
+): {
+  effectiveMsrp: { [key: ProductId]: number };
+  effectiveMsrpSum: number;
+} => {
+  type ProductKey = string;
+  interface OrderMsrpValues {
+    order: Order;
+    validFrom: Date | null;
+    msrp: Msrp;
+    productMsrpWeights: { [key: ProductId]: number };
+    productMsrps: {
+      [key: string]: number;
+    };
+  }
+
+  const productKey = (oi: OrderItem, productsById: ProductsById): ProductKey =>
+    `${productsById[oi.productId].name}_${oi.productId}`;
+
+  const orderMsrpValues: OrderMsrpValues[] = orders.map((o) => {
+    const validMonths = calculateOrderValidMonths(
+      o.order.validFrom,
+      config.validTo,
+      timezone
+    );
+
+    const productMsrpWeights = calculateMsrpWeights(
+      productsById,
+      o.deliveredByProductIdDepotId,
+      depots
+    );
+
+    return {
+      order: o.order,
+      validFrom: o.order.validFrom,
+      msrp: getMsrp(
+        o.order.category,
+        o.order.orderItems,
+        productsById,
+        validMonths,
+        productMsrpWeights
+      ),
+      productMsrpWeights,
+      productMsrps: o.order.orderItems.reduce(
+        (acc, oi) => {
+          acc[productKey(oi, productsById)] = getOrderItemAdjustedMonthlyMsrp(
+            o.order.category,
+            oi,
+            productsById,
+            validMonths,
+            productMsrpWeights
+          );
+          return acc;
+        },
+        {} as { [key: string]: number }
+      ),
+    };
+  });
+
+  const aggregateEffectiveMsrp = (
+    laterOrder: OrderMsrpValues,
+    earlierOrder: OrderMsrpValues
+  ): { [key: ProductKey]: number } => {
+    const result: { [key: ProductKey]: number } = {};
+    for (const orderItem of laterOrder.order.orderItems) {
+      const earlierOrderItem = earlierOrder.order.orderItems.find(
+        (oi) => oi.productId === orderItem.productId
+      );
+      const pk = productKey(orderItem, productsById);
+      let offset = 0;
+      if (earlierOrderItem) {
+        // calculate over/under price paid
+        offset =
+          earlierOrder.productMsrps[pk] *
+          (earlierOrder.msrp.months *
+            laterOrder.productMsrpWeights[orderItem.productId] -
+            laterOrder.msrp.months);
+        // console.log(
+        //   pk,
+        //   offset,
+        //   earlierOrder.productMsrps[pk],
+        //   earlierOrder.msrp.months,
+        //   earlierOrder.productMsrpWeights[orderItem.productId],
+        //   laterOrder.msrp.months,
+        //   laterOrder.productMsrpWeights[orderItem.productId]
+        // );
+      }
+      result[pk] =
+        laterOrder.productMsrps[pk] - offset / laterOrder.msrp.months;
+      console.log(pk, result[pk]);
+    }
+    return result;
+  };
+
+  const effectiveMsrp = aggregateEffectiveMsrp(
+    orderMsrpValues[1],
+    orderMsrpValues[0]
+  );
+  const effectiveMsrpSum: number = Object.values(effectiveMsrp).reduce(
+    (acc, value) => acc + value,
+    0
+  );
+  return {
+    effectiveMsrp,
+    effectiveMsrpSum,
+  };
 };

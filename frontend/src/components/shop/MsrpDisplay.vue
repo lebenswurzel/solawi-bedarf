@@ -33,10 +33,19 @@ const props = defineProps<{
 }>();
 
 const savedMsrp = ref<Msrp | null>(null);
+const effectiveMsrp = ref<{
+  effectiveMsrp: { [key: number]: number };
+  effectiveMsrpSum: number;
+} | null>(null);
 
 watchEffect(async () => {
   savedMsrp.value = await biStore.getSavedMsrp();
+  effectiveMsrp.value = await biStore.getEffectiveMsrp();
 });
+
+const updateEffectiveMsrp = async () => {
+  effectiveMsrp.value = await biStore.getEffectiveMsrp();
+};
 </script>
 <template>
   <v-card variant="outlined" color="blue-grey">
@@ -84,6 +93,10 @@ watchEffect(async () => {
           savedMsrp.months
         }}
         Monate)
+      </div>
+      <v-btn @click="updateEffectiveMsrp">Update</v-btn>
+      <div v-if="effectiveMsrp">
+        Effektiver Orientierungswert: {{ effectiveMsrp.effectiveMsrpSum }}€
       </div>
     </v-card-text>
   </v-card>

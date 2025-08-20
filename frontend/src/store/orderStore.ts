@@ -56,8 +56,18 @@ export const useOrderStore = defineStore("orderStore", () => {
   );
 
   const updateOrderItem = (productId: number, value: number) => {
+    console.log("updateOrderItem", productId, value);
     actualOrderItemsByProductId.value[productId] = value;
   };
+
+  const ordersWithActualOrderItems = computed(() => {
+    // set actual order item values to the last element of the array
+    return allOrders.value.map((o, index) => ({
+      ...o,
+      orderItems:
+        index === allOrders.value.length - 1 ? orderItems.value : o.orderItems,
+    }));
+  });
 
   const update = async (requestUserId: number, configId: number) => {
     const orders = await getAllOrders(requestUserId, configId);
@@ -128,6 +138,7 @@ export const useOrderStore = defineStore("orderStore", () => {
     allOrders,
     modificationOrder,
     currentOrderId,
+    ordersWithActualOrderItems,
     updateOrderItem,
     update,
     clear,
