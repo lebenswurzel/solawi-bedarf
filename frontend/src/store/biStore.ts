@@ -28,6 +28,7 @@ import {
 import { getBI } from "../requests/bi.ts";
 import { useUserStore } from "./userStore.ts";
 import {
+  calculateEffectiveMsrp,
   calculateMsrpWeights,
   calculateOrderValidMonths,
   getMsrp,
@@ -91,6 +92,7 @@ export const useBIStore = defineStore("bi", () => {
   const msrp = computed(() => {
     const relevantValidFrom =
       orderStore.modificationOrder?.validFrom || orderStore.validFrom;
+
     const actualOrderItems = Object.entries(
       actualOrderItemsByProductId.value,
     ).map(([key, value]) => ({ productId: parseInt(key), value }));
@@ -108,6 +110,34 @@ export const useBIStore = defineStore("bi", () => {
       productMsrpWeights.value,
     );
   });
+
+  const getEffectiveMsrp = async () => {
+    if (activeConfigId.value == -1 || !config.value) {
+      return null;
+    }
+    const orders = orderStore.ordersWithActualOrderItems;
+    const ordersWithDeliveredByProductIdDepotId = await Promise.all(
+      orders.map(async (o) => {
+        const { deliveredByProductIdDepotId } = await getBI(
+          activeConfigId.value,
+          o.id,
+          true,
+        );
+        return {
+          order: o,
+          deliveredByProductIdDepotId,
+        };
+      }),
+    );
+    const { effectiveMsrp, effectiveMsrpSum } = calculateEffectiveMsrp(
+      ordersWithDeliveredByProductIdDepotId,
+      productsById.value,
+      depots.value,
+      config.value,
+      versionInfoStore.versionInfo?.serverTimeZone || "UTC",
+    );
+    return { effectiveMsrp, effectiveMsrpSum };
+  };
 
   const getSavedMsrp = async () => {
     if (activeConfigId.value == -1) {
@@ -181,5 +211,6 @@ export const useBIStore = defineStore("bi", () => {
     offers,
     update,
     now,
+    getEffectiveMsrp,
   };
 });
