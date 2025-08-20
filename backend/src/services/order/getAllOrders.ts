@@ -35,7 +35,7 @@ export const getAllOrders = async (
   const allOrders: OrderType[] = await AppDataSource.getRepository(Order).find({
     select: columnsToSelect as (keyof Order)[],
     where: { userId: requestUserId, requisitionConfigId: configId },
-    order: { validFrom: "DESC" }, // Most recent first
+    order: { validFrom: "ASC" }, // Most recent last
     relations: { orderItems: true },
   });
 
