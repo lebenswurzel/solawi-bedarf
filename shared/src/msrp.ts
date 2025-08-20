@@ -225,6 +225,8 @@ export const calculateEffectiveMsrp = (
     laterOrder: OrderMsrpValues,
     earlierOrder: OrderMsrpValues
   ): { [key: ProductKey]: number } => {
+    console.log(laterOrder.msrp.months, laterOrder.order.orderItems);
+    console.log(earlierOrder.msrp.months, earlierOrder.order.orderItems);
     const result: { [key: ProductKey]: number } = {};
     for (const orderItem of laterOrder.order.orderItems) {
       const earlierOrderItem = earlierOrder.order.orderItems.find(
