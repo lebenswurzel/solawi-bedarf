@@ -23,7 +23,11 @@ import {
 } from "../../util/requestUtil";
 import { Order } from "../../database/Order";
 import { AppDataSource } from "../../database/database";
-import { Msrp, ProductId } from "@lebenswurzel/solawi-bedarf-shared/src/types";
+import {
+  Msrp,
+  ProductId,
+  ProductsById,
+} from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import {
   calculateMsrpWeights,
   getMsrp,
@@ -42,7 +46,7 @@ interface OrderMsrpValues {
   validFrom: Date | null;
   msrp: Msrp;
   productMsrpWeights: { [key: ProductId]: number };
-  previousOrder: Order | undefined;
+  productsById: ProductsById; // TODO: remove this later, just for debugging
   productMsrps: {
     [key: string]: number;
   };
@@ -83,6 +87,11 @@ export const calcMsrp = async (
     },
   });
 
+  type ProductKey = string;
+
+  const productKey = (oi: OrderItem, productsById: ProductsById): ProductKey =>
+    `${productsById[oi.productId].name}_${oi.productId}`;
+
   const orderMsrpValues: OrderMsrpValues[] = await Promise.all(
     orders.map(async (order) => {
       const { deliveredByProductIdDepotId, productsById } = await bi(
@@ -116,42 +125,70 @@ export const calcMsrp = async (
         productMsrpWeights,
         productMsrps: order.orderItems.reduce(
           (acc, oi) => {
-            acc[productsById[oi.productId].name + "_" + oi.productId] =
-              getOrderItemAdjustedMonthlyMsrp(
-                order.category,
-                oi,
-                productsById,
-                validMonths,
-                productMsrpWeights,
-              );
+            acc[productKey(oi, productsById)] = getOrderItemAdjustedMonthlyMsrp(
+              order.category,
+              oi,
+              productsById,
+              validMonths,
+              productMsrpWeights,
+            );
             return acc;
           },
           {} as { [key: string]: number },
         ),
-        previousOrder: orders
-          .reverse()
-          .find(
-            (o) => o.validFrom && o.validFrom < (order.validFrom || new Date()),
-          ),
+        productsById,
       };
     }),
   );
   console.log(orderMsrpValues);
 
-  const msrpDeltas = orderMsrpValues.map((orderMsrpValue) => {
-    const differingOrderItems = orderMsrpValue.previousOrder?.orderItems.filter(
-      (oi) =>
-        orderMsrpValue.order.orderItems.find(
-          (o) => o.productId === oi.productId,
-        )?.value !== oi.value,
-    );
-    return {
-      validFrom: orderMsrpValue.validFrom,
-      differingOrderItems,
-    };
-  });
+  const calculateEffectiveMsrp = (
+    laterOrder: OrderMsrpValues,
+    earlierOrder: OrderMsrpValues,
+  ): { [key: ProductKey]: number } => {
+    const result: { [key: ProductKey]: number } = {};
+    for (const orderItem of laterOrder.order.orderItems) {
+      const earlierOrderItem = earlierOrder.order.orderItems.find(
+        (oi) => oi.productId === orderItem.productId,
+      );
+      const pk = productKey(orderItem, laterOrder.productsById);
+      let offset = 0;
+      if (earlierOrderItem) {
+        // calculate over/under price paid
+        offset =
+          earlierOrder.productMsrps[pk] *
+          (earlierOrder.msrp.months *
+            laterOrder.productMsrpWeights[orderItem.productId] -
+            laterOrder.msrp.months);
+        console.log(
+          pk,
+          offset,
+          earlierOrder.productMsrps[pk],
+          earlierOrder.msrp.months,
+          earlierOrder.productMsrpWeights[orderItem.productId],
+          laterOrder.msrp.months,
+          laterOrder.productMsrpWeights[orderItem.productId],
+        );
+      }
+      result[pk] =
+        laterOrder.productMsrps[pk] - offset / laterOrder.msrp.months;
+    }
+    return result;
+  };
 
-  // console.log(msrpDeltas);
-  ctx.body = msrpDeltas;
+  const effectiveMsrp = calculateEffectiveMsrp(
+    orderMsrpValues[1],
+    orderMsrpValues[0],
+  );
+  const effectiveMsrpSum: number = Object.values(effectiveMsrp).reduce(
+    (acc, value) => acc + value,
+    0,
+  );
+  console.log(effectiveMsrpSum);
+
+  ctx.body = {
+    effectiveMsrp,
+    effectiveMsrpSum,
+  };
   ctx.status = http.ok;
 };
