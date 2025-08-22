@@ -19,7 +19,6 @@ import Koa from "koa";
 import Router from "koa-router";
 import { AppDataSource } from "../../database/database";
 import { Order } from "../../database/Order";
-import { Order as OrderType } from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import { getConfigIdFromQuery } from "../../util/requestUtil";
 import { determineColumnsToSelect } from "./getOrder";
 
@@ -28,16 +27,17 @@ export const getAllOrders = async (
 ) => {
   const requestUserId = await getRequestUserId(ctx);
   const configId = getConfigIdFromQuery(ctx);
+  const allOrders = await getUserOrders(requestUserId, configId);
+  ctx.body = allOrders || [];
+};
 
+export const getUserOrders = async (userId: number, configId: number) => {
   const columnsToSelect = determineColumnsToSelect(true);
-
-  // Get all orders for the user and config
-  const allOrders: OrderType[] = await AppDataSource.getRepository(Order).find({
+  const allOrders: Order[] = await AppDataSource.getRepository(Order).find({
     select: columnsToSelect as (keyof Order)[],
-    where: { userId: requestUserId, requisitionConfigId: configId },
+    where: { userId: userId, requisitionConfigId: configId },
     order: { validFrom: "ASC" }, // Most recent last
     relations: { orderItems: true },
   });
-
-  ctx.body = allOrders || [];
+  return allOrders;
 };

@@ -18,7 +18,7 @@ import { addMonths } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 import Koa from "koa";
 import Router from "koa-router";
-import { LessThan, IsNull } from "typeorm";
+import { LessThan } from "typeorm";
 import { appConfig } from "@lebenswurzel/solawi-bedarf-shared/src/config";
 import {
   calculateMsrpWeights,
@@ -63,6 +63,7 @@ import { getOrganizationInfo } from "../text/getOrganizationInfo";
 import {
   countCalendarMonths,
   formatDateForFilename,
+  isDateInRange,
 } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper";
 
 export const saveOrder = async (
@@ -116,11 +117,14 @@ export const saveOrder = async (
 
   // Find the currently valid order
   let order =
-    allOrders.find(
-      (o) =>
-        (!o.validFrom || o.validFrom <= currentTime) &&
-        (!o.validTo || o.validTo > currentTime),
+    allOrders.find((o) =>
+      isDateInRange(currentTime, {
+        from: o.validFrom,
+        to: o.validTo,
+      }),
     ) || null;
+
+  console.log("currently valid order", order);
   if (
     order &&
     !isValidBiddingOrder(role, requisitionConfig, currentTime, order, body)
@@ -132,7 +136,7 @@ export const saveOrder = async (
     capacityByDepotId,
     productsById,
     deliveredByProductIdDepotId,
-  } = await bi(requisitionConfig.id, order?.validFrom || undefined, true);
+  } = await bi(requisitionConfig.id);
   const remainingDepotCapacity = getRemainingDepotCapacity(
     depot,
     capacityByDepotId[body.depotId].reserved,
@@ -192,7 +196,7 @@ export const saveOrder = async (
   order.offer = body.offer;
   order.depotId = body.depotId;
   order.alternateDepotId = body.alternateDepotId;
-  order.productConfiguration = JSON.stringify(productCategories);
+  order.productConfiguration = ""; // storing this is produces a lot of data in the database, so we don't do it anymore; JSON.stringify(productCategories);
   order.offerReason = body.offerReason || "";
   order.category = body.category;
   order.categoryReason = body.categoryReason || "";

@@ -43,6 +43,7 @@ export const getUser = async (
               requisitionConfigId: true,
               validFrom: true,
               orderItems: true,
+              validTo: true,
             },
           },
           relations: {
@@ -78,6 +79,7 @@ export const getUser = async (
             updatedAt: o.updatedAt,
             configId: o.requisitionConfigId,
             validFrom: o.validFrom,
+            validTo: o.validTo,
             hasItems: o.orderItems?.length > 0,
             depotId: o.depotId,
             depotName: o.depot?.name,

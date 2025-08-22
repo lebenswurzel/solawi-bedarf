@@ -24,6 +24,7 @@ import { AppDataSource } from "../../database/database";
 import { getUserFromContext } from "../getUserFromContext";
 import { RequisitionConfig } from "../../database/RequisitionConfig";
 import { updateOrderValidFrom } from "./saveUser";
+import { createAdditionalOrder } from "../order/modifyOrder";
 
 export const updateUser = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -59,12 +60,21 @@ export const updateUser = async (
     ctx.status = http.no_content;
   }
 
-  if (requestUser.orderValidFrom !== undefined) {
-    await updateOrderValidFrom(
-      user,
-      requestUser.orderValidFrom,
-      requestUser.configId,
-    );
-    ctx.status = http.no_content;
+  try {
+    if (requestUser.orderValidFrom !== undefined) {
+      await updateOrderValidFrom(
+        user,
+        requestUser.orderValidFrom,
+        requestUser.configId,
+      );
+      ctx.status = http.no_content;
+    }
+
+    if (requestUser.addNewOrder) {
+      await createAdditionalOrder(user.id, requisitionConfig, new Date());
+      ctx.status = http.no_content;
+    }
+  } catch (error: any) {
+    ctx.throw(http.bad_request, error.message, error);
   }
 };
