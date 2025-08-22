@@ -51,7 +51,7 @@ const { depot, submit, msrpByOrderId, increaseOnly } = storeToRefs(biStore);
 const { userId } = storeToRefs(userStore);
 const { productCategories } = storeToRefs(productStore);
 const { activeConfigId, config } = storeToRefs(configStore);
-const { allOrders, currentOrderId } = storeToRefs(orderStore);
+const { allOrders, modificationOrderId } = storeToRefs(orderStore);
 
 const open = ref(false);
 const faqOpen = ref(false);
@@ -163,7 +163,7 @@ const refresh = async (keepUserId?: boolean) => {
     await orderStore.update(requestUserId.value, activeConfigId.value);
     await biStore.update(
       configStore.activeConfigId,
-      currentOrderId.value,
+      modificationOrderId.value,
       true,
     );
   }
@@ -216,9 +216,9 @@ const orderPhase = computed(() => {
       <div
         class="pt-2"
         v-if="
-          currentOrderId &&
-          msrpByOrderId[currentOrderId] &&
-          msrpByOrderId[currentOrderId].months < 12
+          modificationOrderId &&
+          msrpByOrderId[modificationOrderId] &&
+          msrpByOrderId[modificationOrderId].months < 12
         "
       >
         {{ t.cards.header.orderDuringSeason }}
