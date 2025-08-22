@@ -21,6 +21,7 @@ import {
   Unit,
 } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import {
+  BIData,
   CapacityByDepotId,
   DeliveredByProductIdDepotId,
   ProductsById,
@@ -134,7 +135,7 @@ export const bi = async (
   configId: number,
   orderValidFrom?: Date,
   includeForecast: boolean = false,
-) => {
+): Promise<BIData> => {
   const now = new Date();
   const depots = await AppDataSource.getRepository(Depot).find();
 
