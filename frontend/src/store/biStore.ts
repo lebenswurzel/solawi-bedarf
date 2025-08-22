@@ -198,7 +198,6 @@ export const useBIStore = defineStore("bi", () => {
     const validMonths = calculateOrderValidMonths(
       orderStore.validFrom,
       config.value?.validTo,
-      versionInfoStore.versionInfo?.serverTimeZone,
     );
 
     const {

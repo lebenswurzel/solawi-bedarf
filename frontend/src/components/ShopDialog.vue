@@ -60,7 +60,7 @@ const {
   category,
   categoryReason,
   offerReason,
-  orderItems,
+  modificationOrderItems,
   validFrom,
   validTo,
 } = storeToRefs(orderStore);
@@ -228,7 +228,7 @@ const onSave = () => {
   loading.value = true;
   saveOrder({
     userId: props.requestUser?.id!,
-    orderItems: orderItems.value,
+    orderItems: modificationOrderItems.value,
     offer: parseInt(model.value || "0"),
     depotId: depotId.value.actual!,
     alternateDepotId: alternateDepotId.value,

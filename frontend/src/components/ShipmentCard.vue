@@ -48,7 +48,8 @@ const orderStore = useOrderStore();
 const shipments = ref<(ShipmentFullInformation & Id)[]>([]);
 const configStore = useConfigStore();
 
-const { orderItems, validFrom } = storeToRefs(orderStore);
+const { shipmentOrderItems, validFrom, selectedShipmentDate } =
+  storeToRefs(orderStore);
 const { productsById } = storeToRefs(biStore);
 
 const monthModel = ref<Date>();
@@ -103,6 +104,10 @@ const shipment = computed(() => {
   );
 });
 
+watch(shipment, () => {
+  selectedShipmentDate.value = new Date(shipment.value.validFrom);
+});
+
 watch(monthModel, () => {
   selectedShippingItems.value = {};
   selectedShipmentModel.value = 0;
@@ -121,7 +126,7 @@ const shipmentItems = computed(() => {
     id: number;
   }[] = [];
   for (let shipmentItem of shipment.value.shipmentItems || []) {
-    const orderItem = orderItems.value.find(
+    const orderItem = shipmentOrderItems.value.find(
       (o) => o.productId == shipmentItem.productId,
     );
     if (orderItem) {
