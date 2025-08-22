@@ -40,8 +40,12 @@ export const useOrderStore = defineStore("orderStore", () => {
   const categoryReason = ref<string | null>(null);
   const validFrom = ref<Date | null>(null);
   const validTo = ref<Date | null>(null);
+
+  // id of the order that is currently valid based on the current date
   const currentOrderId = ref<number | undefined>(undefined);
+  // id of the order that is to be modified
   const modificationOrderId = ref<number | undefined>(undefined);
+
   const selectedShipmentDate = ref<Date>(new Date());
 
   // New fields for multiple orders support
@@ -74,31 +78,54 @@ export const useOrderStore = defineStore("orderStore", () => {
 
   const ordersWithActualOrderItems = computed(() => {
     // set actual order item values to the last element of the array
-    return allOrders.value.map((o, index) => ({
+    return allOrders.value.map((o) => ({
       ...o,
       orderItems:
-        index === allOrders.value.length - 1
+        o.id === modificationOrderId.value
           ? modificationOrderItems.value
           : o.orderItems,
     }));
   });
 
   const modificationOrder = computed((): SavedOrder | undefined => {
-    return allOrders.value.find((o) => o.id === modificationOrderId.value);
+    const order = allOrders.value.find(
+      (o) => o.id === modificationOrderId.value,
+    );
+    if (order) {
+      return {
+        ...order,
+        orderItems: order.orderItems.map((o) => ({
+          ...o,
+          value: actualOrderItemsByProductId.value[o.productId],
+        })),
+      };
+    }
+  });
+
+  const currentOrder = computed((): SavedOrder | undefined => {
+    return allOrders.value.find((o) => o.id === currentOrderId.value);
   });
 
   const update = async (requestUserId: number, configId: number) => {
     const orders = await getAllOrders(requestUserId, configId);
-    console.log("update orders", orders);
     allOrders.value = orders;
 
     const now = new Date();
 
-    modificationOrderId.value = orders[orders.length - 1].id;
+    const modOrder = orders.find(
+      (o) => o.validFrom && now.getTime() < o.validFrom?.getTime(),
+    );
+    modificationOrderId.value = modOrder?.id;
+    const curOrder = orders.find((o) =>
+      isDateInRange(now, {
+        from: o.validFrom,
+        to: o.validTo,
+      }),
+    );
+    currentOrderId.value = curOrder?.id;
 
-    // Find the current order
-    const order: SavedOrder =
-      orders.find((o) => o.validFrom && o.validFrom <= now) || orders[0];
+    // Find the order that is to be modified
+    const order: SavedOrder = modOrder || curOrder || orders[0];
 
     offer.value = order.offer || 0;
     offerReason.value = order.offerReason || null;
@@ -109,7 +136,6 @@ export const useOrderStore = defineStore("orderStore", () => {
     savedOrderItemsByProductId.value = {};
     validFrom.value = order.validFrom ? new Date(order.validFrom) : null;
     validTo.value = order.validTo ? new Date(order.validTo) : null;
-    currentOrderId.value = order.id || undefined;
     if (Array.isArray(order.orderItems)) {
       savedOrderItemsByProductId.value = order.orderItems.reduce(
         (acc, cur) => {
@@ -156,6 +182,7 @@ export const useOrderStore = defineStore("orderStore", () => {
     modificationOrderId,
     ordersWithActualOrderItems,
     modificationOrder,
+    currentOrder,
     selectedShipmentDate,
     updateOrderItem,
     update,

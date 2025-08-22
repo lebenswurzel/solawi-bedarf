@@ -156,7 +156,7 @@ export const calculateOrderValidMonths = (
 };
 
 export const calculateEffectiveMsrp = (
-  orders: SavedOrder[],
+  orders: { laterOrder: SavedOrder; earlierOrder: SavedOrder },
   msrpByOrderId: { [key: OrderId]: Msrp },
   productMsrpWeightsByOrderId: { [key: OrderId]: { [key: ProductId]: number } },
   productsById: ProductsById
@@ -175,7 +175,7 @@ export const calculateEffectiveMsrp = (
   const productKey = (oi: OrderItem, productsById: ProductsById): ProductKey =>
     `${productsById[oi.productId].name}_${oi.productId}`;
 
-  const orderMsrpValues: OrderMsrpValues[] = orders.map((o) => {
+  const orderMsrpValues = (o: SavedOrder) => {
     return {
       order: o,
       validFrom: o.validFrom,
@@ -195,21 +195,19 @@ export const calculateEffectiveMsrp = (
       ),
       productMsrpWeights: productMsrpWeightsByOrderId[o.id],
     };
-  });
+  };
 
   const aggregateEffectiveMsrp = (
-    laterOrder: OrderMsrpValues,
-    earlierOrder: OrderMsrpValues
+    laterOrderMsrpValues: OrderMsrpValues,
+    earlierOrderMsrpValues: OrderMsrpValues
   ): {
     [key: ProductKey]: { value: number; category: ProductCategoryType };
   } => {
-    console.log(laterOrder.msrp.months, laterOrder.order.orderItems);
-    console.log(earlierOrder.msrp.months, earlierOrder.order.orderItems);
     const result: {
       [key: ProductKey]: { value: number; category: ProductCategoryType };
     } = {};
-    for (const orderItem of laterOrder.order.orderItems) {
-      const earlierOrderItem = earlierOrder.order.orderItems.find(
+    for (const orderItem of laterOrderMsrpValues.order.orderItems) {
+      const earlierOrderItem = earlierOrderMsrpValues.order.orderItems.find(
         (oi) => oi.productId === orderItem.productId
       );
       const pk = productKey(orderItem, productsById);
@@ -217,10 +215,10 @@ export const calculateEffectiveMsrp = (
       if (earlierOrderItem) {
         // calculate over/under price paid
         offset =
-          earlierOrder.productMsrps[pk] *
-          (earlierOrder.msrp.months *
-            laterOrder.productMsrpWeights[orderItem.productId] -
-            laterOrder.msrp.months);
+          earlierOrderMsrpValues.productMsrps[pk] *
+          (earlierOrderMsrpValues.msrp.months *
+            laterOrderMsrpValues.productMsrpWeights[orderItem.productId] -
+            laterOrderMsrpValues.msrp.months);
         // console.log(
         //   pk,
         //   offset,
@@ -232,17 +230,22 @@ export const calculateEffectiveMsrp = (
         // );
       }
       result[pk] = {
-        value: laterOrder.productMsrps[pk] - offset / laterOrder.msrp.months,
+        value:
+          laterOrderMsrpValues.productMsrps[pk] -
+          offset / laterOrderMsrpValues.msrp.months,
         category: productsById[orderItem.productId].productCategoryType,
       };
-      console.log(pk, result[pk]);
+      // console.log(pk, result[pk]);
     }
     return result;
   };
 
+  const laterOrderMsrpValues = orderMsrpValues(orders.laterOrder);
+  const earlierOrderMsrpValues = orderMsrpValues(orders.earlierOrder);
+
   const effectiveMsrp = aggregateEffectiveMsrp(
-    orderMsrpValues[1],
-    orderMsrpValues[0]
+    laterOrderMsrpValues,
+    earlierOrderMsrpValues
   );
 
   const effectiveMonthlyTotal = Math.ceil(
@@ -256,14 +259,14 @@ export const calculateEffectiveMsrp = (
   const effectiveMonthlyCooperation =
     effectiveMonthlyTotal - effectiveMonthlySelfgrown;
   const effectiveYearlyTotal =
-    effectiveMonthlyTotal * orderMsrpValues[1].msrp.months;
+    effectiveMonthlyTotal * laterOrderMsrpValues.msrp.months;
   const effectiveYearlySelfgrown =
-    effectiveMonthlySelfgrown * orderMsrpValues[1].msrp.months;
+    effectiveMonthlySelfgrown * laterOrderMsrpValues.msrp.months;
   const effectiveYearlyCooperation =
-    effectiveMonthlyCooperation * orderMsrpValues[1].msrp.months;
+    effectiveMonthlyCooperation * laterOrderMsrpValues.msrp.months;
 
   const result = {
-    ...orderMsrpValues[1].msrp,
+    ...laterOrderMsrpValues.msrp,
     monthly: {
       total: effectiveMonthlyTotal,
       selfgrown: effectiveMonthlySelfgrown,
