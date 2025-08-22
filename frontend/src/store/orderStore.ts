@@ -19,10 +19,16 @@ import { computed, ref } from "vue";
 import { getAllOrders } from "../requests/shop.ts";
 import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import { appConfig } from "@lebenswurzel/solawi-bedarf-shared/src/config.ts";
-import { SavedOrder } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
+import {
+  OrderItem,
+  SavedOrder,
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { isDateInRange } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper.ts";
 
 export const useOrderStore = defineStore("orderStore", () => {
+  const currentOrderItemsByProductId = ref<{
+    [key: number]: number;
+  }>({});
   const savedOrderItemsByProductId = ref<{
     [key: number]: number;
   }>({});
@@ -140,20 +146,29 @@ export const useOrderStore = defineStore("orderStore", () => {
     alternateDepotId.value = order.alternateDepotId;
     category.value = order.category || appConfig.defaultCategory;
     categoryReason.value = order.categoryReason || null;
-    savedOrderItemsByProductId.value = {};
     validFrom.value = order.validFrom ? new Date(order.validFrom) : null;
     validTo.value = order.validTo ? new Date(order.validTo) : null;
-    if (Array.isArray(order.orderItems)) {
-      savedOrderItemsByProductId.value = order.orderItems.reduce(
-        (acc, cur) => {
-          acc[cur.productId] = cur.value;
-          return acc;
-        },
-        {} as { [key: number]: number },
-      );
-    }
+
+    const mapOrderItems = (orderItems: OrderItem[]) => {
+      if (Array.isArray(orderItems)) {
+        return orderItems.reduce(
+          (acc, cur) => {
+            acc[cur.productId] = cur.value;
+            return acc;
+          },
+          {} as { [key: number]: number },
+        );
+      }
+      return {};
+    };
+
+    savedOrderItemsByProductId.value = mapOrderItems(order.orderItems);
     actualOrderItemsByProductId.value = JSON.parse(
       JSON.stringify(savedOrderItemsByProductId.value),
+    );
+
+    currentOrderItemsByProductId.value = JSON.parse(
+      JSON.stringify(mapOrderItems(currentOrder.value?.orderItems || [])),
     );
   };
 
@@ -164,16 +179,18 @@ export const useOrderStore = defineStore("orderStore", () => {
     alternateDepotId.value = null;
     category.value = appConfig.defaultCategory;
     categoryReason.value = null;
-    actualOrderItemsByProductId.value = {};
     savedOrderItemsByProductId.value = {};
+    actualOrderItemsByProductId.value = {};
+    currentOrderItemsByProductId.value = {};
     validFrom.value = null;
     validTo.value = null;
     allOrders.value = [];
   };
 
   return {
-    savedOrderItemsByProductId,
+    currentOrderItemsByProductId,
     actualOrderItemsByProductId,
+    savedOrderItemsByProductId,
     offer,
     offerReason,
     depotId,

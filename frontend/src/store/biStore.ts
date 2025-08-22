@@ -198,40 +198,6 @@ export const useBIStore = defineStore("bi", () => {
     );
   });
 
-  // const getSavedMsrp = async () => {
-  //   if (activeConfigId.value == -1) {
-  //     return null;
-  //   }
-  //   const savedOrderItems = Object.entries(
-  //     savedOrderItemsByProductId.value,
-  //   ).map(([key, value]) => ({ productId: parseInt(key), value }));
-
-  //   const validMonths = calculateOrderValidMonths(
-  //     orderStore.validFrom,
-  //     config.value?.validTo,
-  //   );
-
-  //   const {
-  //     deliveredByProductIdDepotId: requestDeliveredByProductIdDepotId,
-  //     productsById: requestedProductsById,
-  //   } = await getBI(activeConfigId.value, orderStore.currentOrderId, true);
-
-  //   const weights = calculateMsrpWeights(
-  //     requestedProductsById,
-  //     requestDeliveredByProductIdDepotId,
-  //     depots.value,
-  //   );
-  //   console.log("weights", weights);
-
-  //   return getMsrp(
-  //     category.value,
-  //     savedOrderItems,
-  //     requestedProductsById,
-  //     validMonths,
-  //     weights,
-  //   );
-  // };
-
   const depot = computed(() => {
     return depots.value.find((d) => d.id == depotId.value.actual);
   });
