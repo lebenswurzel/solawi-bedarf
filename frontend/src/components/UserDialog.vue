@@ -41,9 +41,9 @@ const loading = ref(false);
 const error = ref<string>();
 const password = ref<string>();
 
-const dialogUser = inject<Ref<NewUser | User>>("dialogUser") as Ref<
-  NewUser | User
->;
+const dialogUser = inject<
+  Ref<{ user: NewUser | User; enableValidFrom: boolean }>
+>("dialogUser") as Ref<{ user: NewUser | User; enableValidFrom: boolean }>;
 const roleOptions = [
   {
     title: language.app.options.userRoles[UserRole.USER],
@@ -66,13 +66,14 @@ const onClose = () => {
 
 const onSave = () => {
   loading.value = true;
+  const includeValidFrom = dialogUser.value.enableValidFrom;
   saveUser({
-    id: isIdType(dialogUser.value) ? dialogUser.value.id : undefined,
-    name: dialogUser.value.name!,
-    role: dialogUser.value.role,
-    active: dialogUser.value.active,
+    id: isIdType(dialogUser.value.user) ? dialogUser.value.user.id : undefined,
+    name: dialogUser.value.user.name!,
+    role: dialogUser.value.user.role,
+    active: dialogUser.value.user.active,
     password: password.value || undefined,
-    orderValidFrom: orderValidFrom.value,
+    orderValidFrom: includeValidFrom ? orderValidFrom.value : null,
     requisitionConfigId: activeConfigId.value,
   })
     .then(() => {
@@ -87,8 +88,11 @@ const onSave = () => {
 };
 
 watchEffect(async () => {
-  if (isIdType(dialogUser.value)) {
-    const order = await getOrder(dialogUser.value.id, activeConfigId.value);
+  if (isIdType(dialogUser.value.user)) {
+    const order = await getOrder(
+      dialogUser.value.user.id,
+      activeConfigId.value,
+    );
     orderValidFrom.value = order.validFrom || null;
   } else {
     orderValidFrom.value = null;
@@ -105,7 +109,7 @@ watchEffect(async () => {
       <v-card-text>
         <v-text-field
           :disabled="externalAuthProvider"
-          v-model="dialogUser.name"
+          v-model="dialogUser.user.name"
           :label="t.name"
         ></v-text-field>
         <v-text-field
@@ -116,20 +120,21 @@ watchEffect(async () => {
         ></v-text-field>
         <v-select
           :disabled="externalAuthProvider"
-          v-model="dialogUser.role"
+          v-model="dialogUser.user.role"
           :items="roleOptions"
           :label="t.role"
         ></v-select>
         <v-switch
-          v-model="dialogUser.active"
+          v-model="dialogUser.user.active"
           :label="`${
-            dialogUser.active
+            dialogUser.user.active
               ? language.app.options.active.true
               : language.app.options.active.false
           }`"
           color="primary"
         ></v-switch>
         <v-text-field
+          v-if="dialogUser.enableValidFrom"
           :label="t.orderValidFrom"
           type="datetime-local"
           :model-value="orderValidFrom ? dateToString(orderValidFrom) : null"

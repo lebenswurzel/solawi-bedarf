@@ -24,7 +24,6 @@ import { useConfigStore } from "../store/configStore";
 import {
   NewUser,
   UpdateUserRequest,
-  User,
   UserOrder,
   UserWithOrders,
 } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
@@ -46,9 +45,12 @@ const configStore = useConfigStore();
 const { externalAuthProvider, activeConfigId } = storeToRefs(configStore);
 const route = useRoute();
 
-const defaultUser: NewUser = {
-  role: UserRole.USER,
-  active: false,
+const defaultUser: { user: NewUser; enableValidFrom: boolean } = {
+  user: {
+    role: UserRole.USER,
+    active: false,
+  },
+  enableValidFrom: true,
 };
 
 const ACTION_ACTIVATE = "Aktivieren";
@@ -59,7 +61,13 @@ const ACTION_ADD_NEW_ORDER = "Bedarfsänderung hinzufügen";
 const userStore = useUserStore();
 const { users } = storeToRefs(userStore);
 const open = ref(false);
-const dialogUser = ref<NewUser | User>({ ...defaultUser });
+const dialogUser = ref<{
+  user: NewUser | UserWithOrders;
+  enableValidFrom: boolean;
+}>({
+  user: { ...defaultUser.user },
+  enableValidFrom: defaultUser.enableValidFrom,
+});
 const search = ref<string>("");
 const selectedUsers = ref<number[]>([]);
 const selectedUserActions = [
@@ -122,12 +130,21 @@ onMounted(async () => {
 });
 
 const onCreateUser = () => {
-  dialogUser.value = { ...defaultUser };
+  dialogUser.value = {
+    user: { ...defaultUser.user },
+    enableValidFrom: false,
+  };
   open.value = true;
 };
 
-const onEditUser = (user: User) => {
-  dialogUser.value = user;
+const onEditUser = (user: UserWithOrders) => {
+  console.log("onEditUser", { ...user });
+  dialogUser.value = {
+    user: { ...user },
+    enableValidFrom:
+      user.orders.length == 0 ||
+      (user.orders.length < 2 && !user.orders[0].hasItems),
+  };
   open.value = true;
 };
 
@@ -205,25 +222,28 @@ watch(selectedUsers, () => {
   processedUsers.value = 0;
 });
 
-const getCurrentSeasonOrders = (
-  userOrders?: UserOrder[],
-  ifHasItems = false,
-): UserOrder[] => {
+const getCurrentSeasonOrders = (userOrders?: UserOrder[]): UserOrder[] => {
   const orders = userOrders?.filter((o) => o.configId == activeConfigId.value);
-  if (orders && orders.length > 1) {
-    console.log("current season orders", { ...orders });
-  }
-  if (orders && orders.length > 0 && (orders[0].hasItems || !ifHasItems)) {
+  if (orders && orders.length > 0) {
     return orders;
   } else {
     return [];
   }
 };
 
-const tableItems = computed(() => {
+const usersWithCurrentSeasonOrders = computed(() => {
   return users.value.map((user) => {
-    const currentOrders = getCurrentSeasonOrders(user.orders);
-    const currentOrdersWithItems = getCurrentSeasonOrders(user.orders, true);
+    return {
+      ...user,
+      orders: getCurrentSeasonOrders(user.orders),
+    };
+  });
+});
+
+const tableItems = computed(() => {
+  return usersWithCurrentSeasonOrders.value.map((user) => {
+    const currentOrders = user.orders;
+    const currentOrdersWithItems = user.orders.filter((o) => o.hasItems);
 
     return {
       ...user,
@@ -259,10 +279,9 @@ const filterValidFromDates = (tableItem: {
 const validFromItems = computed(() => {
   return Array.from(
     new Set(
-      users.value
+      usersWithCurrentSeasonOrders.value
         .map((user) => {
-          const currentOrders = getCurrentSeasonOrders(user.orders);
-          return currentOrders.map((o) =>
+          return user.orders.map((o) =>
             getDateTimestampWithoutTime(o.validFrom),
           );
         })
@@ -286,7 +305,9 @@ const filterUserRoles = (tableItem: { role: UserRole }): boolean => {
     .includes(tableItem.role);
 };
 const userRoleItems = computed(() => {
-  return Array.from(new Set(users.value.map((user) => user.role)));
+  return Array.from(
+    new Set(usersWithCurrentSeasonOrders.value.map((user) => user.role)),
+  );
 });
 
 /// filter for user role
