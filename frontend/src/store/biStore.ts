@@ -15,12 +15,14 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { defineStore, storeToRefs } from "pinia";
-import { computed, ref } from "vue";
+import { computed, ref, watchEffect } from "vue";
 import { useConfigStore } from "./configStore.ts";
 import { useOrderStore } from "./orderStore";
 import {
   CapacityByDepotId,
   DeliveredByProductIdDepotId,
+  Msrp,
+  OrderId,
   ProductId,
   ProductsById,
   SoldByProductId,
@@ -47,12 +49,8 @@ export const useBIStore = defineStore("bi", () => {
   const versionInfoStore = useVersionInfoStore();
 
   const { depots, config, activeConfigId } = storeToRefs(configStore);
-  const {
-    depotId,
-    category,
-    actualOrderItemsByProductId,
-    savedOrderItemsByProductId,
-  } = storeToRefs(orderStore);
+  const { depotId, category, savedOrderItemsByProductId } =
+    storeToRefs(orderStore);
   const { currentUser } = storeToRefs(userStore);
 
   const soldByProductId = ref<SoldByProductId>({});
@@ -60,6 +58,40 @@ export const useBIStore = defineStore("bi", () => {
   const productsById = ref<ProductsById>({});
   const deliveredByProductIdDepotId = ref<DeliveredByProductIdDepotId>({});
   const offers = ref<number>(0);
+
+  const productMsrpWeightsByOrderId = ref<{
+    [key: OrderId]: { [key: ProductId]: number };
+  }>({});
+
+  // update productMsrpWeightsByOrderId when orderStore.allOrders changes
+  watchEffect(async () => {
+    const results = await Promise.all(
+      orderStore.ordersWithActualOrderItems.map(async (o) => {
+        const {
+          deliveredByProductIdDepotId: requestDeliveredByProductIdDepotId,
+        } = await getBI(activeConfigId.value, o.id, true);
+        return {
+          [o.id]: requestDeliveredByProductIdDepotId,
+        };
+      }),
+    );
+    console.log("updated deliveredByProductIdDepotIdByOrderId", results);
+    productMsrpWeightsByOrderId.value = Object.assign(
+      {},
+      ...results.map((deliveredByProductId) => {
+        return {
+          [Object.keys(deliveredByProductId)[0]]: calculateMsrpWeights(
+            productsById.value,
+            Object.values(deliveredByProductId)[0],
+            depots.value,
+          ),
+        };
+      }),
+    );
+    console.log("productMsrpWeightsByOrderId", {
+      ...productMsrpWeightsByOrderId.value,
+    });
+  });
 
   const submit = computed(() => {
     if (currentUser.value && config.value) {
@@ -89,55 +121,71 @@ export const useBIStore = defineStore("bi", () => {
     return result;
   });
 
-  const msrp = computed(() => {
-    const relevantValidFrom =
-      orderStore.modificationOrder?.validFrom || orderStore.validFrom;
+  const msrpByOrderId = computed((): { [key: OrderId]: Msrp } => {
+    if (
+      !productsById.value ||
+      !config.value ||
+      Object.keys(productMsrpWeights.value).length === 0
+    ) {
+      return {};
+    }
+    const orders = orderStore.ordersWithActualOrderItems;
+    const msrpsMap: { [key: OrderId]: Msrp } = {};
 
-    const actualOrderItems = Object.entries(
-      actualOrderItemsByProductId.value,
-    ).map(([key, value]) => ({ productId: parseInt(key), value }));
-    const validMonths = calculateOrderValidMonths(
-      relevantValidFrom,
-      config.value?.validTo,
-      versionInfoStore.versionInfo?.serverTimeZone,
-    );
+    orders.forEach((o) => {
+      const actualOrderItems = o.orderItems.map((item) => ({
+        productId: item.productId,
+        value: item.value,
+      }));
+      const validMonths = calculateOrderValidMonths(
+        o.validFrom,
+        config.value?.validTo,
+        versionInfoStore.versionInfo?.serverTimeZone,
+      );
+      const msrp = getMsrp(
+        category.value,
+        actualOrderItems,
+        productsById.value,
+        validMonths,
+        productMsrpWeights.value,
+      );
+      msrpsMap[o.id] = msrp;
+    });
 
-    return getMsrp(
-      category.value,
-      actualOrderItems,
-      productsById.value,
-      validMonths,
-      productMsrpWeights.value,
-    );
+    console.log("msrpsMap", msrpsMap);
+    return msrpsMap;
   });
 
-  const getEffectiveMsrp = async () => {
-    if (activeConfigId.value == -1 || !config.value) {
+  const getEffectiveMsrp = (): Msrp | null => {
+    if (
+      activeConfigId.value == -1 ||
+      !config.value ||
+      Object.keys(msrpByOrderId.value).length === 0
+    ) {
       return null;
     }
     const orders = orderStore.ordersWithActualOrderItems;
-    const ordersWithDeliveredByProductIdDepotId = await Promise.all(
-      orders.map(async (o) => {
-        const { deliveredByProductIdDepotId } = await getBI(
-          activeConfigId.value,
-          o.id,
-          true,
-        );
-        return {
-          order: o,
-          deliveredByProductIdDepotId,
-        };
-      }),
-    );
-    const { effectiveMsrp, effectiveMsrpSum } = calculateEffectiveMsrp(
-      ordersWithDeliveredByProductIdDepotId,
+    console.log("ordersWithDeliveredByProductIdDepotId", {
+      ...productMsrpWeightsByOrderId.value,
+    });
+    const effectiveMsrp = calculateEffectiveMsrp(
+      orders,
+      msrpByOrderId.value,
+      productMsrpWeightsByOrderId.value,
       productsById.value,
-      depots.value,
-      config.value,
-      versionInfoStore.versionInfo?.serverTimeZone || "UTC",
     );
-    return { effectiveMsrp, effectiveMsrpSum };
+    return effectiveMsrp;
   };
+
+  const effectiveMsrp = computed((): Msrp => {
+    return (
+      getEffectiveMsrp() || {
+        monthly: { total: 0, selfgrown: 0, cooperation: 0 },
+        yearly: { total: 0, selfgrown: 0, cooperation: 0 },
+        months: 0,
+      }
+    );
+  });
 
   const getSavedMsrp = async () => {
     if (activeConfigId.value == -1) {
@@ -204,7 +252,7 @@ export const useBIStore = defineStore("bi", () => {
     deliveredByProductIdDepotId,
     productsById,
     depot,
-    msrp,
+    msrpByOrderId,
     getSavedMsrp,
     submit,
     increaseOnly,
@@ -212,5 +260,6 @@ export const useBIStore = defineStore("bi", () => {
     update,
     now,
     getEffectiveMsrp,
+    effectiveMsrp,
   };
 });
