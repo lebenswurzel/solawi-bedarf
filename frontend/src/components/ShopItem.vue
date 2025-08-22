@@ -41,8 +41,11 @@ const biStore = useBIStore();
 const userStore = useUserStore();
 const configStore = useConfigStore();
 
-const { actualOrderItemsByProductId, savedOrderItemsByProductId } =
-  storeToRefs(orderStore);
+const {
+  actualOrderItemsByProductId,
+  savedOrderItemsByProductId,
+  isModifyingOrder,
+} = storeToRefs(orderStore);
 const {
   soldByProductId,
   submit,
@@ -169,7 +172,7 @@ onMounted(() => {
 <template>
   <v-container class="pa-0" fluid>
     <v-row dense align="center" justify="center">
-      <v-col cols="8" sm="6">
+      <v-col cols="12" :md="isModifyingOrder ? 6 : 8">
         {{ product.name }}
         <v-tooltip
           :text="product.description"
@@ -181,7 +184,7 @@ onMounted(() => {
           </template>
         </v-tooltip>
       </v-col>
-      <v-col cols="2" sm="1">
+      <v-col cols="2" md="1">
         <div>
           <v-tooltip
             :text="
@@ -213,7 +216,7 @@ onMounted(() => {
           {{ deliveryPercentage.roundedDeliveries }}
         </div>
       </v-col>
-      <v-col cols="2" sm="1">
+      <v-col cols="2" md="1">
         <v-tooltip
           :text="interpolate(t.stock, { stock: percentageSold.toString() })"
           open-on-click
@@ -230,7 +233,7 @@ onMounted(() => {
           </template>
         </v-tooltip>
       </v-col>
-      <v-col cols="6" sm="2">
+      <v-col :cols="isModifyingOrder ? 4 : 6" md="2">
         <v-text-field
           :label="interpolate(t.value, { unit: unit })"
           type="number"
@@ -249,7 +252,7 @@ onMounted(() => {
           @update:focused="onBlur"
         ></v-text-field>
       </v-col>
-      <v-col cols="6" sm="2">
+      <v-col cols="4" md="2" v-if="isModifyingOrder">
         <v-text-field
           :label="interpolate(t.oldValue, { unit: unit })"
           type="number"

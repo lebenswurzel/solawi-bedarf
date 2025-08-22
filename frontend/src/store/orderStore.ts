@@ -106,6 +106,13 @@ export const useOrderStore = defineStore("orderStore", () => {
     return allOrders.value.find((o) => o.id === currentOrderId.value);
   });
 
+  const isModifyingOrder = computed(() => {
+    return (
+      modificationOrderId.value !== undefined &&
+      currentOrderId.value !== undefined
+    );
+  });
+
   const update = async (requestUserId: number, configId: number) => {
     const orders = await getAllOrders(requestUserId, configId);
     allOrders.value = orders;
@@ -184,6 +191,7 @@ export const useOrderStore = defineStore("orderStore", () => {
     modificationOrder,
     currentOrder,
     selectedShipmentDate,
+    isModifyingOrder,
     updateOrderItem,
     update,
     clear,

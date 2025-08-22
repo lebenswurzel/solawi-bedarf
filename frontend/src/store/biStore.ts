@@ -122,7 +122,13 @@ export const useBIStore = defineStore("bi", () => {
     if (
       Object.keys(productsById.value).length === 0 ||
       !config.value ||
-      Object.keys(productMsrpWeightsByOrderId.value).length === 0
+      Object.keys(productMsrpWeightsByOrderId.value).length === 0 ||
+      // check that productMsrpWeightsByOrderId contains all orders
+      !Object.keys(productMsrpWeightsByOrderId.value).every((orderId) =>
+        ordersWithActualOrderItems.value.some(
+          (o) => o.id === parseInt(orderId),
+        ),
+      )
     ) {
       return {};
     }
