@@ -129,8 +129,14 @@ export const createAdditionalOrder = async (
   // Use a transaction to ensure all operations succeed or fail together
   const result = await AppDataSource.transaction(async (manager) => {
     // Update the current order's validTo
-    currentOrder.validTo = previousOrderValidTo;
-    await manager.save(Order, currentOrder);
+    await manager.update(
+      Order,
+      { id: currentOrder.id },
+      {
+        validTo: previousOrderValidTo,
+        updatedAt: currentOrder.updatedAt, // prevent modification of updatedAt as we use it to indicate whether a user changed his order
+      },
+    );
 
     // Create the new order based on the current order
     const newOrder = new Order();

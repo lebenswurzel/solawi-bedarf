@@ -48,20 +48,37 @@ export const saveUser = async (
       "missing or bad requisition config id " + requestUser.requisitionConfigId,
     );
   }
-  if (requestUser.id) {
-    const user = await AppDataSource.getRepository(User).findOneBy({
-      id: requestUser.id,
-    });
-    if (!user) {
-      ctx.throw(http.bad_request);
+  try {
+    if (requestUser.id) {
+      const user = await AppDataSource.getRepository(User).findOneBy({
+        id: requestUser.id,
+      });
+      if (!user) {
+        ctx.throw(http.bad_request);
+      } else {
+        user.name = requestUser.name;
+        user.role = requestUser.role;
+        user.active = requestUser.active;
+        if (requestUser.password) {
+          user.hash = await hashPassword(requestUser.password);
+          await invalidateTokenForUser(user.id);
+        }
+        await AppDataSource.getRepository(User).save(user);
+        if (requestUser.orderValidFrom) {
+          await updateOrderValidFrom(
+            user,
+            requestUser.orderValidFrom,
+            requestUser.requisitionConfigId,
+          );
+        }
+        ctx.status = http.no_content;
+      }
     } else {
+      const user = new User();
       user.name = requestUser.name;
+      user.hash = await hashPassword(requestUser.password!);
       user.role = requestUser.role;
       user.active = requestUser.active;
-      if (requestUser.password) {
-        user.hash = await hashPassword(requestUser.password);
-        await invalidateTokenForUser(user.id);
-      }
       await AppDataSource.getRepository(User).save(user);
       if (requestUser.orderValidFrom) {
         await updateOrderValidFrom(
@@ -70,23 +87,10 @@ export const saveUser = async (
           requestUser.requisitionConfigId,
         );
       }
-      ctx.status = http.no_content;
+      ctx.status = http.created;
     }
-  } else {
-    const user = new User();
-    user.name = requestUser.name;
-    user.hash = await hashPassword(requestUser.password!);
-    user.role = requestUser.role;
-    user.active = requestUser.active;
-    await AppDataSource.getRepository(User).save(user);
-    if (requestUser.orderValidFrom) {
-      await updateOrderValidFrom(
-        user,
-        requestUser.orderValidFrom,
-        requestUser.requisitionConfigId,
-      );
-    }
-    ctx.status = http.created;
+  } catch (error: any) {
+    ctx.throw(http.bad_request, error.message, error);
   }
 };
 
@@ -98,6 +102,7 @@ export const updateOrderValidFrom = async (
   let orders = await AppDataSource.getRepository(Order).find({
     where: { userId: user.id, requisitionConfigId: configId },
     order: { validFrom: "ASC" },
+    relations: { orderItems: true },
   });
   if (orders.length > 1) {
     throw new Error("Multiple orders found, cannot update validFrom date!");
