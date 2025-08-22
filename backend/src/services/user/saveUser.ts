@@ -27,6 +27,7 @@ import { Order } from "../../database/Order";
 import { appConfig } from "@lebenswurzel/solawi-bedarf-shared/src/config";
 import { RequisitionConfig } from "../../database/RequisitionConfig";
 import { SaveUserRequest } from "@lebenswurzel/solawi-bedarf-shared/src/types";
+import { getUserOrders } from "../order/getAllOrders";
 
 export const saveUser = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -94,10 +95,18 @@ export const updateOrderValidFrom = async (
   orderValidFrom: Date,
   configId: number,
 ) => {
-  let order = await AppDataSource.getRepository(Order).findOne({
+  let orders = await AppDataSource.getRepository(Order).find({
     where: { userId: user.id, requisitionConfigId: configId },
+    order: { validFrom: "ASC" },
   });
-  if (order) {
+  if (orders.length > 1) {
+    throw new Error("Multiple orders found, cannot update validFrom date!");
+  }
+  if (orders[0].orderItems && orders[0].orderItems.length > 0) {
+    throw new Error("Order has order items, cannot update validFrom date!");
+  }
+  if (orders.length === 1) {
+    const order = orders[0];
     await AppDataSource.getRepository(Order).update(
       { id: order.id },
       {
@@ -106,7 +115,7 @@ export const updateOrderValidFrom = async (
       },
     );
   } else {
-    order = new Order();
+    const order = new Order();
     order.user = user;
     order.offer = 0;
     order.category = appConfig.defaultCategory;

@@ -71,11 +71,33 @@ export const modifyOrder = async (
     );
   }
 
+  try {
+    const result = await createAdditionalOrder(
+      requestUserId,
+      requisitionConfig,
+      now,
+    );
+
+    ctx.body = {
+      message: "Order modification created successfully",
+      ...result,
+    };
+    ctx.status = http.ok;
+  } catch (error: any) {
+    ctx.throw(http.bad_request, error.message);
+  }
+};
+
+export const createAdditionalOrder = async (
+  requestUserId: number,
+  requisitionConfig: RequisitionConfig,
+  now: Date,
+) => {
   // Find the current valid order
   const allOrders = await AppDataSource.getRepository(Order).find({
     where: {
       userId: requestUserId,
-      requisitionConfigId: configId,
+      requisitionConfigId: requisitionConfig.id,
     },
     relations: { orderItems: true },
     order: { validFrom: "DESC" },
@@ -88,16 +110,13 @@ export const modifyOrder = async (
   );
 
   if (!currentOrder) {
-    ctx.throw(http.bad_request, "no current order found to modify");
+    throw new Error("no current order found to modify");
   }
 
   // error if an order with a validFrom in the future exists
   const futureOrder = allOrders.find((o) => o.validFrom && o.validFrom > now);
   if (futureOrder) {
-    ctx.throw(
-      http.bad_request,
-      "an order with a validFrom in the future exists",
-    );
+    throw new Error("an order with a validFrom in the future exists");
   }
 
   // Calculate dates for the new order
@@ -116,7 +135,7 @@ export const modifyOrder = async (
     // Create the new order based on the current order
     const newOrder = new Order();
     newOrder.userId = requestUserId;
-    newOrder.requisitionConfigId = configId;
+    newOrder.requisitionConfigId = requisitionConfig.id;
     newOrder.validFrom = newOrderValidFrom;
     newOrder.validTo = requisitionConfig.validTo;
 
@@ -150,10 +169,5 @@ export const modifyOrder = async (
       previousOrderValidTo: previousOrderValidTo,
     };
   });
-
-  ctx.body = {
-    message: "Order modification created successfully",
-    ...result,
-  };
-  ctx.status = http.ok;
+  return result;
 };
