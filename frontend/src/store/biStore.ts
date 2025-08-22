@@ -155,8 +155,13 @@ export const useBIStore = defineStore("bi", () => {
   });
 
   const getEffectiveMsrp = (): Msrp | null => {
-    if (!modificationOrder.value || !currentOrder.value) {
+    if (!modificationOrder.value) {
       return null;
+    }
+    if (!currentOrder.value) {
+      // no current order exists, i.e., only the modification order exists
+      // return the msrp of the modification order as is
+      return msrpByOrderId.value[modificationOrder.value.id];
     }
     if (
       activeConfigId.value == -1 ||
@@ -165,7 +170,6 @@ export const useBIStore = defineStore("bi", () => {
     ) {
       return null;
     }
-    console.log("modificationOrder", { ...modificationOrder.value });
     const effectiveMsrp = calculateEffectiveMsrp(
       {
         earlierOrder: currentOrder.value!,
