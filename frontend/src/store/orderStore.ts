@@ -91,13 +91,13 @@ export const useOrderStore = defineStore("orderStore", () => {
     const order = allOrders.value.find(
       (o) => o.id === modificationOrderId.value,
     );
+    console.log("actualOrderItemsByProductId", {
+      ...actualOrderItemsByProductId.value,
+    });
     if (order) {
       return {
         ...order,
-        orderItems: order.orderItems.map((o) => ({
-          ...o,
-          value: actualOrderItemsByProductId.value[o.productId],
-        })),
+        orderItems: modificationOrderItems.value,
       };
     }
   });

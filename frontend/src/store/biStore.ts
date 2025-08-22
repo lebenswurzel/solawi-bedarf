@@ -118,24 +118,16 @@ export const useBIStore = defineStore("bi", () => {
     false;
   });
 
-  const productMsrpWeights = computed((): { [key: ProductId]: number } => {
-    const result = calculateMsrpWeights(
-      productsById.value,
-      deliveredByProductIdDepotId.value,
-      depots.value,
-    );
-    return result;
-  });
-
   const msrpByOrderId = computed((): { [key: OrderId]: Msrp } => {
     if (
-      !productsById.value ||
+      Object.keys(productsById.value).length === 0 ||
       !config.value ||
-      Object.keys(productMsrpWeights.value).length === 0
+      Object.keys(productMsrpWeightsByOrderId.value).length === 0
     ) {
       return {};
     }
     const orders = ordersWithActualOrderItems.value;
+    console.log("orders", orders);
     const msrpsMap: { [key: OrderId]: Msrp } = {};
 
     orders.forEach((o) => {
@@ -153,7 +145,7 @@ export const useBIStore = defineStore("bi", () => {
         actualOrderItems,
         productsById.value,
         validMonths,
-        productMsrpWeights.value,
+        productMsrpWeightsByOrderId.value[o.id],
       );
       msrpsMap[o.id] = msrp;
     });
@@ -173,9 +165,7 @@ export const useBIStore = defineStore("bi", () => {
     ) {
       return null;
     }
-    console.log("productMsrpWeightsByOrderId", {
-      ...productMsrpWeightsByOrderId.value,
-    });
+    console.log("modificationOrder", { ...modificationOrder.value });
     const effectiveMsrp = calculateEffectiveMsrp(
       {
         earlierOrder: currentOrder.value!,
