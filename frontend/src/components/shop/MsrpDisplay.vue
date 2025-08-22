@@ -19,39 +19,42 @@ import { storeToRefs } from "pinia";
 import { useBIStore } from "../../store/biStore";
 import { language } from "../../../../shared/src/lang/lang";
 import Markdown from "../design/Markdown.vue";
-import { ref, watchEffect } from "vue";
-import { Msrp } from "@lebenswurzel/solawi-bedarf-shared/src/types";
+import { Msrp, SavedOrder } from "@lebenswurzel/solawi-bedarf-shared/src/types";
+import { computed } from "vue";
+import { useOrderStore } from "../../store/orderStore";
 
 const biStore = useBIStore();
-const { msrp } = storeToRefs(biStore);
+const { msrpByOrderId, effectiveMsrp } = storeToRefs(biStore);
+const orderStore = useOrderStore();
+const { modificationOrderId } = storeToRefs(orderStore);
 
 const t = language.pages.shop;
 
-const props = defineProps<{
-  offer: number;
-  hideOffer?: boolean;
-}>();
-
-const savedMsrp = ref<Msrp | null>(null);
-const effectiveMsrp = ref<{
-  effectiveMsrp: { [key: number]: number };
-  effectiveMsrpSum: number;
-} | null>(null);
-
-watchEffect(async () => {
-  savedMsrp.value = await biStore.getSavedMsrp();
-  effectiveMsrp.value = await biStore.getEffectiveMsrp();
+const msrp = computed((): Msrp => {
+  if (!props.order) {
+    return {
+      monthly: { total: 0, selfgrown: 0, cooperation: 0 },
+      yearly: { total: 0, selfgrown: 0, cooperation: 0 },
+      months: 0,
+    };
+  }
+  if (effectiveMsrp.value && modificationOrderId.value == props.order.id) {
+    return effectiveMsrp.value;
+  }
+  return msrpByOrderId.value[props.order.id];
 });
 
-const updateEffectiveMsrp = async () => {
-  effectiveMsrp.value = await biStore.getEffectiveMsrp();
-};
+const props = defineProps<{
+  order: SavedOrder | undefined;
+  hideOffer?: boolean;
+}>();
 </script>
 <template>
   <v-card variant="outlined" color="blue-grey">
     <v-card-subtitle class="pt-1 text-wrap"
       ><strong>Zusammensetzung des Orientierungswerts</strong> (Werte auf volle
-      Euros gerundet, bezogen auf {{ msrp.months }} Kalendermonate)
+      Euros gerundet, bezogen auf {{ msrp?.months }}
+      Kalendermonate)
 
       <v-tooltip :text="t.cards.products.msrpTooltip" open-on-click>
         <template v-slot:activator="{ props }">
@@ -63,41 +66,31 @@ const updateEffectiveMsrp = async () => {
       <Markdown
         :markdown="t.cards.products.msrp"
         :values="{
-          total: msrp.monthly.total.toString(),
+          total: msrp?.monthly.total.toString(),
         }"
       />
       <Markdown
         class="pl-5"
         :markdown="t.cards.products.msrpSelfgrown"
         :values="{
-          selfgrown: msrp.monthly.selfgrown.toString(),
+          selfgrown: msrp?.monthly.selfgrown.toString(),
         }"
       />
       <Markdown
         class="pl-5"
         :markdown="t.cards.products.msrpCooperation"
         :values="{
-          cooperation: msrp.monthly.cooperation.toString(),
+          cooperation: msrp?.monthly.cooperation.toString(),
         }"
       />
       <Markdown
         class="py-1"
         :markdown="t.cards.products.offer"
         :values="{
-          offer: props.offer.toString(),
+          offer: props.order?.offer.toString() || '-',
         }"
         v-if="!props.hideOffer"
       />
-      <div v-if="savedMsrp">
-        Bisheriger Orientierungswert: {{ savedMsrp.monthly.total }}€ ({{
-          savedMsrp.months
-        }}
-        Monate)
-      </div>
-      <v-btn @click="updateEffectiveMsrp">Update</v-btn>
-      <div v-if="effectiveMsrp">
-        Effektiver Orientierungswert: {{ effectiveMsrp.effectiveMsrpSum }}€
-      </div>
     </v-card-text>
   </v-card>
 </template>

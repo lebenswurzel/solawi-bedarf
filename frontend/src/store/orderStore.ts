@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { _UnwrapAll, defineStore } from "pinia";
+import { defineStore } from "pinia";
 import { computed, ref } from "vue";
 import { getAllOrders } from "../requests/shop.ts";
 import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
@@ -40,11 +40,10 @@ export const useOrderStore = defineStore("orderStore", () => {
   const validFrom = ref<Date | null>(null);
   const validTo = ref<Date | null>(null);
   const currentOrderId = ref<number | undefined>(undefined);
+  const modificationOrderId = ref<number | undefined>(undefined);
 
   // New fields for multiple orders support
   const allOrders = ref<SavedOrder[]>([]);
-
-  const modificationOrder = ref<SavedOrder | null>(null);
 
   const orderItems = computed(() =>
     Object.entries(actualOrderItemsByProductId.value).map(
@@ -69,17 +68,18 @@ export const useOrderStore = defineStore("orderStore", () => {
     }));
   });
 
+  const modificationOrder = computed((): SavedOrder | undefined => {
+    return allOrders.value.find((o) => o.id === modificationOrderId.value);
+  });
+
   const update = async (requestUserId: number, configId: number) => {
     const orders = await getAllOrders(requestUserId, configId);
+    console.log("update orders", orders);
     allOrders.value = orders;
 
     const now = new Date();
 
-    // Find the modification order thats validFrom time is after now
-    const modOrder = orders.find((o) => o.validFrom && o.validFrom > now);
-    if (modOrder) {
-      modificationOrder.value = modOrder;
-    }
+    modificationOrderId.value = orders[orders.length - 1].id;
 
     // Find the current order
     const order: SavedOrder =
@@ -136,9 +136,10 @@ export const useOrderStore = defineStore("orderStore", () => {
     validFrom,
     validTo,
     allOrders,
-    modificationOrder,
     currentOrderId,
+    modificationOrderId,
     ordersWithActualOrderItems,
+    modificationOrder,
     updateOrderItem,
     update,
     clear,

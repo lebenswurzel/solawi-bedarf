@@ -51,7 +51,8 @@ const uiFeedback = useUiFeedback();
 const textContentStore = useTextContentStore();
 
 const { depots, activeConfigId, config } = storeToRefs(configStore);
-const { depot, msrp, capacityByDepotId, increaseOnly } = storeToRefs(biStore);
+const { depot, effectiveMsrp, capacityByDepotId, increaseOnly } =
+  storeToRefs(biStore);
 const {
   offer,
   depotId,
@@ -126,20 +127,20 @@ const alternateDepot = computed(() => {
 });
 
 const enableOfferReason = computed(() =>
-  needsOfferReason(modelInt.value, msrp.value.monthly.total),
+  needsOfferReason(modelInt.value, effectiveMsrp.value.monthly.total),
 );
 
 const offerReasonHint = computed(
   () =>
     !isOfferReasonValid(
       modelInt.value,
-      msrp.value.monthly.total,
+      effectiveMsrp.value.monthly.total,
       offerReason.value,
     ),
 );
 
 const needsHigherOffer = computed(
-  () => !isOfferValid(modelInt.value, msrp.value.monthly.total),
+  () => !isOfferValid(modelInt.value, effectiveMsrp.value.monthly.total),
 );
 
 const enableCategoryReason = computed(() =>
@@ -272,11 +273,7 @@ const onSave = () => {
         >
           <div class="text-body-2" v-html="t.alert.text"></div>
         </v-alert>
-        <MsrpDisplay
-          :offer="orderStore.offer"
-          :hide-offer="true"
-          class="mb-5"
-        />
+        <MsrpDisplay :order="orderStore.modificationOrder" class="mb-5" />
         <v-text-field
           class="mb-5"
           :model-value="model"
@@ -286,7 +283,9 @@ const onSave = () => {
           :hint="
             needsHigherOffer
               ? interpolate(t.offer.hint, {
-                  msrp: Math.ceil(minOffer(msrp.monthly.total)).toString(),
+                  msrp: Math.ceil(
+                    minOffer(effectiveMsrp.monthly.total),
+                  ).toString(),
                 })
               : undefined
           "
