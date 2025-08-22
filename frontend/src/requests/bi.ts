@@ -14,25 +14,14 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import {
-  CapacityByDepotId,
-  DeliveredByProductIdDepotId,
-  ProductsById,
-  SoldByProductId,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
+import { BIData } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { getUrl, verifyResponse } from "./requests.ts";
 
 export const getBI = async (
   configId: number,
   orderId?: number,
   includeForecast?: boolean,
-): Promise<{
-  soldByProductId: SoldByProductId;
-  deliveredByProductIdDepotId: DeliveredByProductIdDepotId;
-  capacityByDepotId: CapacityByDepotId;
-  productsById: ProductsById;
-  offers: number;
-}> => {
+): Promise<BIData> => {
   let parameters = "";
   if (orderId) {
     parameters = `&orderId=${orderId}`;

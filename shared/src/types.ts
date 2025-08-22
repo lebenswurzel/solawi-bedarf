@@ -470,3 +470,11 @@ export interface ErrorLogEntry {
 }
 
 export type GetErrorLogResponse = ErrorLogEntry[];
+
+export interface BIData {
+  soldByProductId: SoldByProductId;
+  deliveredByProductIdDepotId: DeliveredByProductIdDepotId;
+  capacityByDepotId: CapacityByDepotId;
+  productsById: ProductsById;
+  offers: number;
+}
