@@ -44,6 +44,7 @@ const configStore = useConfigStore();
 const {
   actualOrderItemsByProductId,
   savedOrderItemsByProductId,
+  currentOrderItemsByProductId,
   isModifyingOrder,
 } = storeToRefs(orderStore);
 const {
@@ -165,7 +166,7 @@ onMounted(() => {
   model.value =
     actualOrderItemsByProductId.value[props.productId]?.toString() || "0";
   oldValue.value =
-    savedOrderItemsByProductId.value[props.productId]?.toString() || "0";
+    currentOrderItemsByProductId.value[props.productId]?.toString() || "0";
 });
 </script>
 
