@@ -203,3 +203,18 @@ export const calculatePreviousOrderValidToDate = (
 
   return validTo;
 };
+
+export const isDateInRange = (
+  date: Date | string | number,
+  range: {
+    from: Date | string | number | null;
+    to: Date | string | number | null;
+  }
+) => {
+  return (
+    (range.from === null ||
+      new Date(date).getTime() >= new Date(range.from).getTime()) &&
+    (range.to === null ||
+      new Date(date).getTime() <= new Date(range.to).getTime())
+  );
+};

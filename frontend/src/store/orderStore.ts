@@ -20,6 +20,7 @@ import { getAllOrders } from "../requests/shop.ts";
 import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import { appConfig } from "@lebenswurzel/solawi-bedarf-shared/src/config.ts";
 import { SavedOrder } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
+import { isDateInRange } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper.ts";
 
 export const useOrderStore = defineStore("orderStore", () => {
   const savedOrderItemsByProductId = ref<{
@@ -41,11 +42,12 @@ export const useOrderStore = defineStore("orderStore", () => {
   const validTo = ref<Date | null>(null);
   const currentOrderId = ref<number | undefined>(undefined);
   const modificationOrderId = ref<number | undefined>(undefined);
+  const selectedShipmentDate = ref<Date>(new Date());
 
   // New fields for multiple orders support
   const allOrders = ref<SavedOrder[]>([]);
 
-  const orderItems = computed(() =>
+  const modificationOrderItems = computed(() =>
     Object.entries(actualOrderItemsByProductId.value).map(
       ([productId, actual]) => ({
         productId: parseInt(productId),
@@ -53,6 +55,17 @@ export const useOrderStore = defineStore("orderStore", () => {
       }),
     ),
   );
+
+  const shipmentOrderItems = computed(() => {
+    const result =
+      allOrders.value.find((o) =>
+        isDateInRange(selectedShipmentDate.value, {
+          from: o.validFrom,
+          to: o.validTo,
+        }),
+      )?.orderItems || [];
+    return result;
+  });
 
   const updateOrderItem = (productId: number, value: number) => {
     console.log("updateOrderItem", productId, value);
@@ -64,7 +77,9 @@ export const useOrderStore = defineStore("orderStore", () => {
     return allOrders.value.map((o, index) => ({
       ...o,
       orderItems:
-        index === allOrders.value.length - 1 ? orderItems.value : o.orderItems,
+        index === allOrders.value.length - 1
+          ? modificationOrderItems.value
+          : o.orderItems,
     }));
   });
 
@@ -132,7 +147,8 @@ export const useOrderStore = defineStore("orderStore", () => {
     alternateDepotId,
     category,
     categoryReason,
-    orderItems,
+    modificationOrderItems,
+    shipmentOrderItems,
     validFrom,
     validTo,
     allOrders,
@@ -140,6 +156,7 @@ export const useOrderStore = defineStore("orderStore", () => {
     modificationOrderId,
     ordersWithActualOrderItems,
     modificationOrder,
+    selectedShipmentDate,
     updateOrderItem,
     update,
     clear,
