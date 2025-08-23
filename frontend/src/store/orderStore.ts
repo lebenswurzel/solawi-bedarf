@@ -114,7 +114,8 @@ export const useOrderStore = defineStore("orderStore", () => {
   const isModifyingOrder = computed(() => {
     return (
       modificationOrderId.value !== undefined &&
-      currentOrderId.value !== undefined
+      currentOrderId.value !== undefined &&
+      visibleOrderId.value === modificationOrderId.value
     );
   });
 
