@@ -71,24 +71,33 @@ export const useBIStore = defineStore("bi", () => {
 
   // update productMsrpWeightsByOrderId when orderStore.allOrders changes
   watchEffect(async () => {
+    if (allOrders.value.length === 0) {
+      // skip if information is still missing
+      return;
+    }
+
     const results = await Promise.all(
       allOrders.value.map(async (o) => {
         const {
           deliveredByProductIdDepotId: requestDeliveredByProductIdDepotId,
+          productsById: requestProductsById,
         } = await getBI(activeConfigId.value, o.id, true);
         return {
-          [o.id]: requestDeliveredByProductIdDepotId,
+          [o.id]: {
+            deliveredByProductIdDepotId: requestDeliveredByProductIdDepotId,
+            productsById: requestProductsById,
+          },
         };
       }),
     );
-    console.log("updated deliveredByProductIdDepotIdByOrderId", results);
+
     productMsrpWeightsByOrderId.value = Object.assign(
       {},
-      ...results.map((deliveredByProductId) => {
+      ...results.map((result) => {
         return {
-          [Object.keys(deliveredByProductId)[0]]: calculateMsrpWeights(
-            productsById.value,
-            Object.values(deliveredByProductId)[0],
+          [Object.keys(result)[0]]: calculateMsrpWeights(
+            Object.values(result)[0].productsById,
+            Object.values(result)[0].deliveredByProductIdDepotId,
             depots.value,
           ),
         };
@@ -133,7 +142,6 @@ export const useBIStore = defineStore("bi", () => {
       return {};
     }
     const orders = ordersWithActualOrderItems.value;
-    console.log("orders", orders);
     const msrpsMap: { [key: OrderId]: Msrp } = {};
 
     orders.forEach((o) => {

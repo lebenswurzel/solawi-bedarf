@@ -51,6 +51,7 @@ const configStore = useConfigStore();
 const { shipmentOrderItems, validFrom, selectedShipmentDate } =
   storeToRefs(orderStore);
 const { productsById } = storeToRefs(biStore);
+const { userId } = storeToRefs(userStore);
 
 const monthModel = ref<Date>();
 const selectedShipmentModel = ref<number>(0);
@@ -170,13 +171,10 @@ const additionalShipmentItems = computed(() => {
 });
 
 watchEffect(async () => {
-  if (userStore.currentUser?.id && configStore.activeConfigId != -1) {
-    await orderStore.update(
-      userStore.currentUser.id,
-      configStore.activeConfigId,
-    );
+  if (userId.value && configStore.activeConfigId != -1) {
+    await orderStore.update(userId.value, configStore.activeConfigId);
     const { shipments: requestShipments } = await getUserShipments(
-      userStore.currentUser?.id,
+      userId.value,
       configStore.activeConfigId,
     );
     shipments.value = requestShipments;
