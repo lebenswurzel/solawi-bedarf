@@ -22,13 +22,22 @@ import Markdown from "../design/Markdown.vue";
 import { Msrp, SavedOrder } from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import { computed } from "vue";
 import { useOrderStore } from "../../store/orderStore";
+import OrderRangeDisplay from "./OrderRangeDisplay.vue";
 
 const biStore = useBIStore();
-const { msrpByOrderId, effectiveMsrp } = storeToRefs(biStore);
+const { effectiveMsrpByOrderId } = storeToRefs(biStore);
 const orderStore = useOrderStore();
-const { modificationOrderId } = storeToRefs(orderStore);
+const { visibleOrderId } = storeToRefs(orderStore);
 
 const t = language.pages.shop;
+const props = defineProps<{
+  order: SavedOrder | undefined;
+  hideOffer?: boolean;
+}>();
+
+const isVisibleOrder = computed(() => {
+  return visibleOrderId.value == props.order?.id;
+});
 
 const msrp = computed((): Msrp => {
   if (!props.order) {
@@ -38,19 +47,38 @@ const msrp = computed((): Msrp => {
       months: 0,
     };
   }
-  if (effectiveMsrp.value && modificationOrderId.value == props.order.id) {
-    return effectiveMsrp.value;
-  }
-  return msrpByOrderId.value[props.order.id];
+  return effectiveMsrpByOrderId.value[props.order.id];
 });
-
-const props = defineProps<{
-  order: SavedOrder | undefined;
-  hideOffer?: boolean;
-}>();
 </script>
 <template>
-  <v-card variant="outlined" color="blue-grey">
+  <v-card
+    :variant="isVisibleOrder ? 'elevated' : 'outlined'"
+    :color="isVisibleOrder ? 'primary' : 'blue-grey'"
+  >
+    <v-card-text class="pb-1 pt-3">
+      <v-container fluid class="pa-0">
+        <v-row dense>
+          <v-col cols="1">
+            <v-icon size="x-large" v-if="isVisibleOrder"
+              >mdi-radiobox-marked</v-icon
+            >
+            <v-icon
+              size="x-large"
+              v-else
+              @click="
+                () =>
+                  props.order?.id &&
+                  orderStore.setVisibleOrderId(props.order?.id)
+              "
+              >mdi-radiobox-blank</v-icon
+            >
+          </v-col>
+          <v-col cols="11">
+            <OrderRangeDisplay :order="props.order" plain />
+          </v-col>
+        </v-row>
+      </v-container>
+    </v-card-text>
     <v-card-subtitle class="pt-1 text-wrap"
       ><strong>Zusammensetzung des Orientierungswerts</strong> (Werte auf volle
       Euros gerundet, bezogen auf {{ msrp?.months }}

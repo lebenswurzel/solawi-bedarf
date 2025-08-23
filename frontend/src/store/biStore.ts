@@ -110,11 +110,15 @@ export const useBIStore = defineStore("bi", () => {
 
   const submit = computed(() => {
     if (currentUser.value && config.value) {
-      return isRequisitionActive(
-        currentUser.value.role,
-        currentUser.value.active,
-        config.value,
-        now.value,
+      return (
+        isRequisitionActive(
+          currentUser.value.role,
+          currentUser.value.active,
+          config.value,
+          now.value,
+        ) &&
+        orderStore.modificationOrder?.validFrom &&
+        orderStore.modificationOrder.validFrom.getTime() > now.value.getTime()
       );
     }
     return false;
@@ -196,14 +200,20 @@ export const useBIStore = defineStore("bi", () => {
     return effectiveMsrp;
   };
 
-  const effectiveMsrp = computed((): Msrp => {
-    return (
-      getEffectiveMsrp() || {
-        monthly: { total: 0, selfgrown: 0, cooperation: 0 },
-        yearly: { total: 0, selfgrown: 0, cooperation: 0 },
-        months: 0,
-      }
+  const effectiveMsrpByOrderId = computed((): { [key: OrderId]: Msrp } => {
+    const result = allOrders.value.reduce(
+      (acc, o, index) => {
+        if (index === allOrders.value.length - 1) {
+          acc[o.id] = getEffectiveMsrp() || msrpByOrderId.value[o.id];
+        } else {
+          acc[o.id] = msrpByOrderId.value[o.id];
+        }
+        return acc;
+      },
+      {} as { [key: OrderId]: Msrp },
     );
+    console.log("effectiveMsrpByOrderId", result);
+    return result;
   });
 
   const depot = computed(() => {
@@ -242,7 +252,6 @@ export const useBIStore = defineStore("bi", () => {
     offers,
     update,
     now,
-    getEffectiveMsrp,
-    effectiveMsrp,
+    effectiveMsrpByOrderId,
   };
 });

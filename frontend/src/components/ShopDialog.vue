@@ -51,7 +51,7 @@ const uiFeedback = useUiFeedback();
 const textContentStore = useTextContentStore();
 
 const { depots, activeConfigId, config } = storeToRefs(configStore);
-const { depot, effectiveMsrp, capacityByDepotId, increaseOnly } =
+const { depot, effectiveMsrpByOrderId, capacityByDepotId, increaseOnly } =
   storeToRefs(biStore);
 const {
   offer,
@@ -61,6 +61,7 @@ const {
   categoryReason,
   offerReason,
   modificationOrderItems,
+  modificationOrderId,
 } = storeToRefs(orderStore);
 const { organizationInfo } = storeToRefs(textContentStore);
 
@@ -122,6 +123,17 @@ const modelInt = computed(() => {
 
 const alternateDepot = computed(() => {
   return depots.value.find((d) => d.id == alternateDepotId.value);
+});
+
+const effectiveMsrp = computed(() => {
+  if (!modificationOrderId.value) {
+    return {
+      monthly: { total: 0, selfgrown: 0, cooperation: 0 },
+      yearly: { total: 0, selfgrown: 0, cooperation: 0 },
+      months: 0,
+    };
+  }
+  return effectiveMsrpByOrderId.value[modificationOrderId.value!];
 });
 
 const enableOfferReason = computed(() =>
