@@ -14,8 +14,8 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { format } from "date-fns";
-import { toZonedTime } from "date-fns-tz";
+import { addSeconds, format } from "date-fns";
+import { fromZonedTime, toZonedTime } from "date-fns-tz";
 import { de } from "date-fns/locale";
 
 export const addYears = (date: Date, yearsDiff: number): Date => {
@@ -170,7 +170,10 @@ export const countCalendarMonths = (
  * Returns the Friday before the first Thursday in the month that follows
  * the month of the endBiddingRound date.
  */
-export const calculateNewOrderValidFromDate = (endBiddingRound: Date): Date => {
+export const calculateNewOrderValidFromDate = (
+  endBiddingRound: Date,
+  timezone?: string
+): Date => {
   // Get the month that follows the endBiddingRound month
   const nextMonth = new Date(
     endBiddingRound.getFullYear(),
@@ -184,6 +187,24 @@ export const calculateNewOrderValidFromDate = (endBiddingRound: Date): Date => {
   // Get the Friday before that Thursday (subtract 6 days to go back to Friday)
   const fridayBefore = addDays(firstThursday, -6);
 
+  if (timezone) {
+    // Create a date that represents midnight in the specified timezone
+    // and convert it to UTC
+    const midnightInTimezone = new Date(
+      fridayBefore.getFullYear(),
+      fridayBefore.getMonth(),
+      fridayBefore.getDate(),
+      0,
+      0,
+      0,
+      0
+    );
+
+    // Convert to the specified timezone and then to UTC
+    const zonedDate = fromZonedTime(midnightInTimezone, timezone);
+    return new Date(zonedDate.getTime());
+  }
+
   return fridayBefore;
 };
 
@@ -194,14 +215,7 @@ export const calculateNewOrderValidFromDate = (endBiddingRound: Date): Date => {
 export const calculatePreviousOrderValidToDate = (
   newOrderValidFrom: Date
 ): Date => {
-  // Get the day before
-  const dayBefore = addDays(newOrderValidFrom, -1);
-
-  // Set to 23:59:59.999
-  const validTo = new Date(dayBefore);
-  validTo.setHours(23, 59, 59, 999);
-
-  return validTo;
+  return addSeconds(newOrderValidFrom, -1);
 };
 
 export const isDateInRange = (

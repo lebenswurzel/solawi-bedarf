@@ -49,7 +49,7 @@ describe("Order date calculations", () => {
     expect(validTo.getHours()).toBe(23);
     expect(validTo.getMinutes()).toBe(59);
     expect(validTo.getSeconds()).toBe(59);
-    expect(validTo.getMilliseconds()).toBe(999);
+    expect(validTo.getMilliseconds()).toBe(0);
   });
 
   it("should handle edge case when first day of month is Thursday", () => {
