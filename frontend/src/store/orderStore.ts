@@ -44,8 +44,6 @@ export const useOrderStore = defineStore("orderStore", () => {
   const offerReason = ref<string | null>(null);
   const category = ref<UserCategory>(appConfig.defaultCategory);
   const categoryReason = ref<string | null>(null);
-  const validFrom = ref<Date | null>(null);
-  const validTo = ref<Date | null>(null);
 
   // id of the order that is currently valid based on the current date
   const currentOrderId = ref<number | undefined>(undefined);
@@ -146,8 +144,6 @@ export const useOrderStore = defineStore("orderStore", () => {
     alternateDepotId.value = order.alternateDepotId;
     category.value = order.category || appConfig.defaultCategory;
     categoryReason.value = order.categoryReason || null;
-    validFrom.value = order.validFrom ? new Date(order.validFrom) : null;
-    validTo.value = order.validTo ? new Date(order.validTo) : null;
 
     const mapOrderItems = (orderItems: OrderItem[]) => {
       if (Array.isArray(orderItems)) {
@@ -182,8 +178,6 @@ export const useOrderStore = defineStore("orderStore", () => {
     savedOrderItemsByProductId.value = {};
     actualOrderItemsByProductId.value = {};
     currentOrderItemsByProductId.value = {};
-    validFrom.value = null;
-    validTo.value = null;
     allOrders.value = [];
   };
 
@@ -199,8 +193,6 @@ export const useOrderStore = defineStore("orderStore", () => {
     categoryReason,
     modificationOrderItems,
     shipmentOrderItems,
-    validFrom,
-    validTo,
     allOrders,
     currentOrderId,
     modificationOrderId,

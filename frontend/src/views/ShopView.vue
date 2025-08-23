@@ -255,7 +255,9 @@ const orderPhase = computed(() => {
         </v-col>
         <v-col cols="12" sm="6">
           <v-card-text class="pa-1">
-            <OrderRangeDisplay :validFrom="orderStore.validFrom" />
+            <OrderRangeDisplay
+              :validFrom="orderStore.modificationOrder?.validFrom || null"
+            />
           </v-card-text>
         </v-col>
       </v-row>
