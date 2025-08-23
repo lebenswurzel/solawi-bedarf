@@ -48,8 +48,7 @@ const orderStore = useOrderStore();
 const shipments = ref<(ShipmentFullInformation & Id)[]>([]);
 const configStore = useConfigStore();
 
-const { shipmentOrderItems, validFrom, selectedShipmentDate } =
-  storeToRefs(orderStore);
+const { shipmentOrderItems, selectedShipmentDate } = storeToRefs(orderStore);
 const { productsById } = storeToRefs(biStore);
 const { userId } = storeToRefs(userStore);
 
@@ -196,10 +195,7 @@ const isSelected = (id: number) => !!selectedShippingItems.value[id];
     <v-card-title style="white-space: normal"
       >{{ t.cards.list.title }} <SeasonText
     /></v-card-title>
-    <v-card-text
-      v-if="dateOptionsMonths.length > 0 && validFrom && validFrom < now"
-      class="pb-0"
-    >
+    <v-card-text v-if="dateOptionsMonths.length > 0" class="pb-0">
       <v-container fluid style="max-width: 800px">
         <v-row dense justify="center">
           <v-col cols="8" sm="4" md="3" class="d-flex justify-center">
@@ -251,10 +247,7 @@ const isSelected = (id: number) => !!selectedShippingItems.value[id];
     >
     <v-card-text v-if="props.seasonPhase >= SeasonPhase.ACTIVE_SEASON">
       <p
-        v-if="
-          (additionalShipmentItems.length == 0 && shipmentItems.length == 0) ||
-          (validFrom && validFrom > now)
-        "
+        v-if="additionalShipmentItems.length == 0 && shipmentItems.length == 0"
         style="max-width: 800px"
         class="mx-auto"
       >
@@ -292,7 +285,7 @@ const isSelected = (id: number) => !!selectedShippingItems.value[id];
           <v-card-text class="pa-2">
             <div class="mx-auto" style="max-width: 700px">
               <v-list
-                v-if="shipmentItems.length > 0 && validFrom && validFrom < now"
+                v-if="shipmentItems.length > 0"
                 class="bg-surface-light rounded-lg mb-2"
                 elevation="4"
               >
@@ -324,13 +317,7 @@ const isSelected = (id: number) => !!selectedShippingItems.value[id];
                   </v-list-item-subtitle>
                 </v-list-item>
               </v-list>
-              <v-list
-                v-if="
-                  additionalShipmentItems.length > 0 &&
-                  validFrom &&
-                  validFrom < now
-                "
-              >
+              <v-list v-if="additionalShipmentItems.length > 0">
                 {{ t.cards.list.additionalShipment }}
                 <v-list-item
                   v-for="item of additionalShipmentItems"
