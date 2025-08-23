@@ -146,7 +146,7 @@ export const calculateOrderValidMonths = (
   timezone?: string
 ): number => {
   if (orderValidFrom && seasonValidTo) {
-    let firstShipment = getSameOrNextThursday(orderValidFrom);
+    let firstShipment = getSameOrNextThursday(orderValidFrom, timezone);
     return Math.min(
       countCalendarMonths(firstShipment, seasonValidTo, timezone),
       12

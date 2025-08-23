@@ -129,11 +129,15 @@ export const countThursdaysBetweenDates = (
   return thursdays;
 };
 
-export const getSameOrNextThursday = (date: Date): Date => {
+export const getSameOrNextThursday = (date: Date, timezone?: string): Date => {
+  let relevantDate = date;
+  if (timezone) {
+    relevantDate = toZonedTime(date, timezone);
+  }
   const dateOnly = new Date(
-    date.getFullYear(),
-    date.getMonth(),
-    date.getDate()
+    relevantDate.getFullYear(),
+    relevantDate.getMonth(),
+    relevantDate.getDate()
   );
   const day = dateOnly.getDay();
 
@@ -182,7 +186,7 @@ export const calculateNewOrderValidFromDate = (
   );
 
   // Find the first Thursday in that month
-  const firstThursday = getSameOrNextThursday(nextMonth);
+  const firstThursday = getSameOrNextThursday(nextMonth, timezone);
 
   // Get the Friday before that Thursday (subtract 6 days to go back to Friday)
   const fridayBefore = addDays(firstThursday, -6);

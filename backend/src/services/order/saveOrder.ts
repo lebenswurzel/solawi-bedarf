@@ -21,6 +21,7 @@ import Router from "koa-router";
 import { LessThan } from "typeorm";
 import { appConfig } from "@lebenswurzel/solawi-bedarf-shared/src/config";
 import {
+  calculateEffectiveMsrp,
   calculateMsrpWeights,
   calculateOrderValidMonths,
   getMsrp,
@@ -30,6 +31,10 @@ import { createDefaultPdf } from "@lebenswurzel/solawi-bedarf-shared/src/pdf/pdf
 import {
   Address,
   ConfirmedOrder,
+  DeliveredByProductIdDepotId,
+  Msrp,
+  ProductsById,
+  OrderItem as SharedOrderItem,
 } from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import {
   getRemainingDepotCapacity,
@@ -41,6 +46,8 @@ import {
   isOfferValid,
 } from "@lebenswurzel/solawi-bedarf-shared/src/validation/reason";
 import {
+  determineCurrentOrderId,
+  determineModificationOrderId,
   isRequisitionActive,
   isValidBiddingOrder,
 } from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition";
@@ -63,8 +70,10 @@ import { getOrganizationInfo } from "../text/getOrganizationInfo";
 import {
   countCalendarMonths,
   formatDateForFilename,
+  getSameOrNextThursday,
   isDateInRange,
 } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper";
+import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 
 export const saveOrder = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -101,10 +110,8 @@ export const saveOrder = async (
   if (!isCategoryReasonValid(body.category, body.categoryReason)) {
     ctx.throw(http.bad_request, "no category reason");
   }
-  const depot = await AppDataSource.getRepository(Depot).findOne({
-    // '.. || 0' to make sure a value of undefined does not return the first table row
-    where: { id: body.depotId || 0 },
-  });
+  const depots = await AppDataSource.getRepository(Depot).find();
+  const depot = depots.find((d) => d.id === body.depotId);
   if (!depot || !depot.active) {
     ctx.throw(http.bad_request, "no valid depot");
   }
@@ -116,27 +123,28 @@ export const saveOrder = async (
   });
 
   // Find the currently valid order
-  let order =
-    allOrders.find((o) =>
-      isDateInRange(currentTime, {
-        from: o.validFrom,
-        to: o.validTo,
-      }),
-    ) || null;
+  const orderId = determineModificationOrderId(allOrders, currentTime);
+  const order = allOrders.find((o) => o.id === orderId);
 
-  console.log("currently valid order", order);
-  if (
-    order &&
-    !isValidBiddingOrder(role, requisitionConfig, currentTime, order, body)
-  ) {
+  if (!order) {
+    ctx.throw(http.bad_request, "no order to modify");
+  }
+
+  if (!isValidBiddingOrder(role, requisitionConfig, currentTime, null, body)) {
     ctx.throw(http.bad_request, "not valid in bidding round");
   }
+  const dateOfInterest = getSameOrNextThursday(order.validFrom || currentTime);
   const {
     soldByProductId,
     capacityByDepotId,
     productsById,
     deliveredByProductIdDepotId,
-  } = await bi(requisitionConfig.id);
+  } = await bi(
+    requisitionConfig.id,
+    order.validFrom || undefined,
+    true,
+    new Date(), // TODO: use dateOfInterest?
+  );
   const remainingDepotCapacity = getRemainingDepotCapacity(
     depot,
     capacityByDepotId[body.depotId].reserved,
@@ -161,42 +169,46 @@ export const saveOrder = async (
   if (orderItemErrors.length > 0) {
     ctx.throw(http.bad_request, `${orderItemErrors.join("\n")}`);
   }
-  const msrp = getMsrp(
+
+  const previousOrderId = determineCurrentOrderId(allOrders, currentTime);
+  const previousOrder = allOrders.find((o) => o.id === previousOrderId);
+
+  if (previousOrder) {
+    if (previousOrder.offer > body.offer) {
+      ctx.throw(
+        http.bad_request,
+        "new bid must not be lower than previous bid",
+      );
+    }
+  }
+
+  const { modificationMsrp } = await determineEffectiveMsrp(
     body.category,
     body.orderItems,
     productsById,
-    calculateOrderValidMonths(
-      order?.validFrom,
-      requisitionConfig.validTo,
-      config.timezone,
-    ),
-    calculateMsrpWeights(productsById, deliveredByProductIdDepotId, [depot]), // fixme depots!
+    deliveredByProductIdDepotId,
+    depots,
+    requisitionConfig,
+    order,
+    previousOrder,
   );
-  if (!isOfferValid(body.offer, msrp.monthly.total)) {
+  if (!isOfferValid(body.offer, modificationMsrp.monthly.total)) {
     ctx.throw(http.bad_request, "bid too low");
   }
-  if (!isOfferReasonValid(body.offer, msrp.monthly.total, body.offerReason)) {
+  if (
+    !isOfferReasonValid(
+      body.offer,
+      modificationMsrp.monthly.total,
+      body.offerReason,
+    )
+  ) {
     ctx.throw(http.bad_request, "no offer reason");
-  }
-  const productCategories = await AppDataSource.getRepository(
-    ProductCategory,
-  ).find({
-    relations: { products: true },
-    where: { requisitionConfigId: configId },
-  });
-
-  if (!order) {
-    order = new Order();
-    order.userId = requestUserId;
-    order.requisitionConfigId = configId;
-    order.validFrom = getNewOrderValidFromDate(requisitionConfig);
-    order.validTo = null; // New orders are valid indefinitely until modified
   }
 
   order.offer = body.offer;
   order.depotId = body.depotId;
   order.alternateDepotId = body.alternateDepotId;
-  order.productConfiguration = ""; // storing this is produces a lot of data in the database, so we don't do it anymore; JSON.stringify(productCategories);
+  order.productConfiguration = ""; // storing this produces a lot of data in the database, so we don't do it anymore; JSON.stringify(productCategories);
   order.offerReason = body.offerReason || "";
   order.category = body.category;
   order.categoryReason = body.categoryReason || "";
@@ -313,11 +325,78 @@ export const saveOrder = async (
   ctx.status = http.no_content;
 };
 
-const getNewOrderValidFromDate = (config: RequisitionConfig): Date | null => {
-  if (config.validFrom < new Date()) {
-    // season already started --> new orders must be enabled manually by an admin
-    return null;
+const determineEffectiveMsrp = async (
+  category: UserCategory,
+  orderItems: SharedOrderItem[],
+  productsById: ProductsById,
+  deliveredByProductIdDepotId: DeliveredByProductIdDepotId,
+  depots: Depot[],
+  requisitionConfig: RequisitionConfig,
+  modificationOrder: Order,
+  currentOrder?: Order,
+): Promise<{
+  modificationMsrp: Msrp;
+  previousMsrp: Msrp | null;
+}> => {
+  const productMsrpWeights = calculateMsrpWeights(
+    productsById,
+    deliveredByProductIdDepotId,
+    depots,
+  );
+  const msrp = getMsrp(
+    category,
+    orderItems,
+    productsById,
+    calculateOrderValidMonths(
+      modificationOrder.validFrom,
+      requisitionConfig.validTo,
+      config.timezone,
+    ),
+    productMsrpWeights,
+  );
+  if (!currentOrder) {
+    return {
+      modificationMsrp: msrp,
+      previousMsrp: null,
+    };
   }
-  // validFrom two month before the season starts
-  return addMonths(config.validFrom, -2);
+
+  const {
+    deliveredByProductIdDepotId: currentOrderDeliveredByProductIdDepotId,
+  } = await bi(requisitionConfig.id, currentOrder.validFrom || undefined);
+
+  const currentProductMsrpWeights = calculateMsrpWeights(
+    productsById,
+    currentOrderDeliveredByProductIdDepotId,
+    depots,
+  );
+
+  const previousMsrp = getMsrp(
+    currentOrder.category,
+    currentOrder.orderItems,
+    productsById,
+    calculateOrderValidMonths(
+      currentOrder.validFrom,
+      requisitionConfig.validTo,
+      config.timezone,
+    ),
+    currentProductMsrpWeights,
+  );
+
+  const effectiveMsrp = calculateEffectiveMsrp(
+    {
+      earlierOrder: currentOrder,
+      laterOrder: modificationOrder,
+    },
+    { [modificationOrder.id]: msrp, [currentOrder.id]: previousMsrp },
+    {
+      [modificationOrder.id]: productMsrpWeights,
+      [currentOrder.id]: currentProductMsrpWeights,
+    },
+    productsById,
+  );
+  return {
+    modificationMsrp: effectiveMsrp,
+    previousMsrp,
+  };
 };

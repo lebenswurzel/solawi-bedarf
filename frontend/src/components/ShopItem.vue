@@ -102,10 +102,9 @@ const maxValueAvailable = computed(() => {
 });
 
 const minValueAvailable = computed(() => {
-  const savedOrderItem = savedOrderItemsByProductId.value[props.productId];
   if (config.value) {
     const result = getMinAvailable(
-      savedOrderItem || 0,
+      0,
       props.productId,
       currentUser.value?.role,
       config.value,
@@ -174,7 +173,7 @@ onMounted(() => {
   <v-container class="pa-0" fluid>
     <v-row dense align="center" justify="center">
       <v-col cols="12" :md="isModifyingOrder ? 6 : 8">
-        {{ product.name }}
+        {{ product.name }} {{ product.id }}
         <v-tooltip
           :text="product.description"
           v-if="product.description"
