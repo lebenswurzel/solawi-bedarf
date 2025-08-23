@@ -47,7 +47,8 @@ const { depot, submit, msrpByOrderId } = storeToRefs(biStore);
 const { userId } = storeToRefs(userStore);
 const { productCategories } = storeToRefs(productStore);
 const { activeConfigId, config } = storeToRefs(configStore);
-const { allOrders, modificationOrderId } = storeToRefs(orderStore);
+const { allOrders, modificationOrderId, visibleOrderId } =
+  storeToRefs(orderStore);
 
 const open = ref(false);
 const faqOpen = ref(false);
@@ -138,6 +139,10 @@ const orderPhase = computed(() => {
     userStore.currentUser?.active || false,
   );
   return orderPhaseValue;
+});
+
+const disableSaveButton = computed(() => {
+  return !submit.value || visibleOrderId.value !== modificationOrderId.value;
 });
 </script>
 
@@ -247,7 +252,7 @@ const orderPhase = computed(() => {
           @click="onSave"
           class="text-white bg-success"
           variant="elevated"
-          :disabled="!submit"
+          :disabled="disableSaveButton"
         >
           {{ language.app.actions.save }}
         </v-btn>
