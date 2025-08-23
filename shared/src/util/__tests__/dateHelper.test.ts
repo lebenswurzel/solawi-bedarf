@@ -26,6 +26,9 @@ import {
   countThursdaysBetweenDates,
   dayDifference,
   countCalendarMonths,
+  calculateNewOrderValidFromDate,
+  calculatePreviousOrderValidToDate,
+  isDateInRange,
 } from "../dateHelper";
 
 describe("dateHelper", () => {
@@ -309,6 +312,314 @@ describe("dateHelper", () => {
       const date1 = new Date("2025-04-01T00:00:00+02:00");
       const date2 = new Date("2026-03-31T23:59:59+02:00");
       expect(countCalendarMonths(date1, date2, "Europe/Berlin")).toBe(12);
+    });
+  });
+
+  describe("calculateNewOrderValidFromDate", () => {
+    it("should calculate valid from date for next month's first Thursday", () => {
+      // End bidding round on January 15th (should look for February's first Thursday)
+      const endBiddingRound = new Date("2024-01-15");
+      const result = calculateNewOrderValidFromDate(endBiddingRound);
+
+      // February 1st, 2024 is a Thursday, so we go back 6 days to Friday January 26th
+      expect(result.getFullYear()).toBe(2024);
+      expect(result.getMonth()).toBe(0); // January
+      expect(result.getDate()).toBe(26);
+      expect(result.getDay()).toBe(5); // Friday
+    });
+
+    it("should handle month where first day is not Thursday", () => {
+      // End bidding round on March 20th (should look for April's first Thursday)
+      const endBiddingRound = new Date("2024-03-20");
+      const result = calculateNewOrderValidFromDate(endBiddingRound);
+
+      // April 1st, 2024 is a Monday, first Thursday is April 4th
+      // Go back 6 days to Friday March 29th
+      expect(result.getFullYear()).toBe(2024);
+      expect(result.getMonth()).toBe(2); // March
+      expect(result.getDate()).toBe(29);
+      expect(result.getDay()).toBe(5); // Friday
+    });
+
+    it("should handle year boundary", () => {
+      // End bidding round on December 15th (should look for January's first Thursday)
+      const endBiddingRound = new Date("2024-12-15");
+      const result = calculateNewOrderValidFromDate(endBiddingRound);
+
+      // January 1st, 2025 is a Wednesday, first Thursday is January 2nd
+      // Go back 6 days to Friday December 27th, 2024
+      expect(result.getFullYear()).toBe(2024);
+      expect(result.getMonth()).toBe(11); // December
+      expect(result.getDate()).toBe(27);
+      expect(result.getDay()).toBe(5); // Friday
+    });
+
+    it("should handle timezone parameter", () => {
+      const endBiddingRound = new Date("2024-01-15T23:00:00Z");
+      const result = calculateNewOrderValidFromDate(
+        endBiddingRound,
+        "Europe/Berlin"
+      );
+
+      // Should return UTC date representing midnight Berlin time on January 26th
+      // January 26th, 2024 at 00:00:00 in Europe/Berlin (UTC+1 in January)
+      // converts to January 25th, 2024 at 23:00:00 UTC
+      expect(result.getFullYear()).toBe(2024);
+      expect(result.getMonth()).toBe(0); // January
+      expect(result.getDate()).toBe(25);
+      expect(result.getDay()).toBe(4); // Thursday (UTC)
+      expect(result.getHours()).toBe(23);
+      expect(result.getMinutes()).toBe(0);
+      expect(result.getSeconds()).toBe(0);
+      expect(result.getMilliseconds()).toBe(0);
+    });
+
+    it("should handle leap year February", () => {
+      // End bidding round on January 15th, 2024 (leap year)
+      const endBiddingRound = new Date("2024-01-15");
+      const result = calculateNewOrderValidFromDate(endBiddingRound);
+
+      // February 1st, 2024 is a Thursday, so we go back 6 days to Friday January 26th
+      expect(result.getFullYear()).toBe(2024);
+      expect(result.getMonth()).toBe(0); // January
+      expect(result.getDate()).toBe(26);
+      expect(result.getDay()).toBe(5); // Friday
+    });
+
+    it("should return UTC date representing midnight in timezone", () => {
+      // Test that the function returns a UTC date representing midnight in the timezone
+      const endBiddingRound = new Date("2024-06-15"); // June 15th
+      const result = calculateNewOrderValidFromDate(endBiddingRound);
+
+      // July 1st, 2024 is a Monday, first Thursday is July 4th
+      // Go back 6 days to Friday June 28th
+      // June 28th, 2024 at 00:00:00 in Europe/Berlin (UTC+2 in June)
+      // converts to June 27th, 2024 at 22:00:00 UTC
+      expect(result.getFullYear()).toBe(2024);
+      expect(result.getMonth()).toBe(5); // June
+      expect(result.getDate()).toBe(27);
+      expect(result.getHours()).toBe(22);
+      expect(result.getMinutes()).toBe(0);
+      expect(result.getSeconds()).toBe(0);
+      expect(result.getMilliseconds()).toBe(0);
+    });
+  });
+
+  describe("calculatePreviousOrderValidToDate", () => {
+    it("should calculate valid to date as day before at 23:59:59.999", () => {
+      const newOrderValidFrom = new Date("2024-02-01");
+      const result = calculatePreviousOrderValidToDate(newOrderValidFrom);
+
+      // Should be January 31st at 23:59:59.999
+      expect(result.getFullYear()).toBe(2024);
+      expect(result.getMonth()).toBe(0); // January
+      expect(result.getDate()).toBe(31);
+      expect(result.getHours()).toBe(23);
+      expect(result.getMinutes()).toBe(59);
+      expect(result.getSeconds()).toBe(59);
+      expect(result.getMilliseconds()).toBe(999);
+    });
+
+    it("should handle month boundary", () => {
+      const newOrderValidFrom = new Date("2024-01-01");
+      const result = calculatePreviousOrderValidToDate(newOrderValidFrom);
+
+      // Should be December 31st, 2023 at 23:59:59.999
+      expect(result.getFullYear()).toBe(2023);
+      expect(result.getMonth()).toBe(11); // December
+      expect(result.getDate()).toBe(31);
+      expect(result.getHours()).toBe(23);
+      expect(result.getMinutes()).toBe(59);
+      expect(result.getSeconds()).toBe(59);
+      expect(result.getMilliseconds()).toBe(999);
+    });
+
+    it("should handle year boundary", () => {
+      const newOrderValidFrom = new Date("2025-01-01");
+      const result = calculatePreviousOrderValidToDate(newOrderValidFrom);
+
+      // Should be December 31st, 2024 at 23:59:59.999
+      expect(result.getFullYear()).toBe(2024);
+      expect(result.getMonth()).toBe(11); // December
+      expect(result.getDate()).toBe(31);
+      expect(result.getHours()).toBe(23);
+      expect(result.getMinutes()).toBe(59);
+      expect(result.getSeconds()).toBe(59);
+      expect(result.getMilliseconds()).toBe(0);
+    });
+
+    it("should handle leap year", () => {
+      const newOrderValidFrom = new Date("2024-03-01");
+      const result = calculatePreviousOrderValidToDate(newOrderValidFrom);
+
+      // Should be February 29th, 2024 at 23:59:59.999 (leap year)
+      expect(result.getFullYear()).toBe(2024);
+      expect(result.getMonth()).toBe(1); // February
+      expect(result.getDate()).toBe(29);
+      expect(result.getHours()).toBe(23);
+      expect(result.getMinutes()).toBe(59);
+      expect(result.getSeconds()).toBe(59);
+      expect(result.getMilliseconds()).toBe(0);
+    });
+
+    it("should handle timezone parameter", () => {
+      const newOrderValidFrom = new Date("2024-02-01T00:00:00+01:00");
+      const result = calculatePreviousOrderValidToDate(newOrderValidFrom);
+
+      // Should return UTC date representing 23:59:59.999 Berlin time on January 31st
+      // January 31st, 2024 at 23:59:59.999 in Europe/Berlin (UTC+1 in January)
+      // converts to January 31st, 2024 at 22:59:59.999 UTC
+      expect(result.getFullYear()).toBe(2024);
+      expect(result.getMonth()).toBe(0); // January
+      expect(result.getDate()).toBe(31);
+      expect(result.getHours()).toBe(23);
+      expect(result.getMinutes()).toBe(59);
+      expect(result.getSeconds()).toBe(59);
+      expect(result.getMilliseconds()).toBe(0);
+    });
+  });
+
+  describe("isDateInRange", () => {
+    it("should return true when date is within range", () => {
+      const date = new Date("2024-02-15");
+      const range = {
+        from: new Date("2024-02-01"),
+        to: new Date("2024-02-28"),
+      };
+
+      expect(isDateInRange(date, range)).toBe(true);
+    });
+
+    it("should return true when date equals from boundary", () => {
+      const date = new Date("2024-02-01");
+      const range = {
+        from: new Date("2024-02-01"),
+        to: new Date("2024-02-28"),
+      };
+
+      expect(isDateInRange(date, range)).toBe(true);
+    });
+
+    it("should return true when date equals to boundary", () => {
+      const date = new Date("2024-02-28");
+      const range = {
+        from: new Date("2024-02-01"),
+        to: new Date("2024-02-28"),
+      };
+
+      expect(isDateInRange(date, range)).toBe(true);
+    });
+
+    it("should return false when date is before from boundary", () => {
+      const date = new Date("2024-01-31");
+      const range = {
+        from: new Date("2024-02-01"),
+        to: new Date("2024-02-28"),
+      };
+
+      expect(isDateInRange(date, range)).toBe(false);
+    });
+
+    it("should return false when date is after to boundary", () => {
+      const date = new Date("2024-03-01");
+      const range = {
+        from: new Date("2024-02-01"),
+        to: new Date("2024-02-28"),
+      };
+
+      expect(isDateInRange(date, range)).toBe(false);
+    });
+
+    it("should handle null from boundary (unbounded start)", () => {
+      const date = new Date("2024-02-15");
+      const range = {
+        from: null,
+        to: new Date("2024-02-28"),
+      };
+
+      expect(isDateInRange(date, range)).toBe(true);
+    });
+
+    it("should handle null to boundary (unbounded end)", () => {
+      const date = new Date("2024-02-15");
+      const range = {
+        from: new Date("2024-02-01"),
+        to: null,
+      };
+
+      expect(isDateInRange(date, range)).toBe(true);
+    });
+
+    it("should handle both boundaries as null (unbounded range)", () => {
+      const date = new Date("2024-02-15");
+      const range = {
+        from: null,
+        to: null,
+      };
+
+      expect(isDateInRange(date, range)).toBe(true);
+    });
+
+    it("should handle string date input", () => {
+      const date = "2024-02-15";
+      const range = {
+        from: new Date("2024-02-01"),
+        to: new Date("2024-02-28"),
+      };
+
+      expect(isDateInRange(date, range)).toBe(true);
+    });
+
+    it("should handle number date input (timestamp)", () => {
+      const date = new Date("2024-02-15").getTime();
+      const range = {
+        from: new Date("2024-02-01"),
+        to: new Date("2024-02-28"),
+      };
+
+      expect(isDateInRange(date, range)).toBe(true);
+    });
+
+    it("should handle string range boundaries", () => {
+      const date = new Date("2024-02-15");
+      const range = {
+        from: "2024-02-01",
+        to: "2024-02-28",
+      };
+
+      expect(isDateInRange(date, range)).toBe(true);
+    });
+
+    it("should handle number range boundaries (timestamps)", () => {
+      const date = new Date("2024-02-15");
+      const range = {
+        from: new Date("2024-02-01").getTime(),
+        to: new Date("2024-02-28").getTime(),
+      };
+
+      expect(isDateInRange(date, range)).toBe(true);
+    });
+
+    it("should handle timezone differences correctly", () => {
+      // Date in UTC
+      const date = new Date("2024-02-15T12:00:00Z");
+      // Range boundaries in Europe/Berlin (UTC+1 in February)
+      const range = {
+        from: new Date("2024-02-15T00:00:00+01:00"),
+        to: new Date("2024-02-15T23:59:59+01:00"),
+      };
+
+      expect(isDateInRange(date, range)).toBe(true);
+    });
+
+    it("should handle edge case with exact time boundaries", () => {
+      const date = new Date("2024-02-15T12:00:00");
+      const range = {
+        from: new Date("2024-02-15T12:00:00"),
+        to: new Date("2024-02-15T12:00:00"),
+      };
+
+      expect(isDateInRange(date, range)).toBe(true);
     });
   });
 });

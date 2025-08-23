@@ -31,6 +31,7 @@ import {
   isRequisitionActive,
   isIncreaseOnly,
 } from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition";
+import { config } from "../../config";
 
 /**
  * Creates a new order modification during the bidding round.
@@ -122,6 +123,7 @@ export const createAdditionalOrder = async (
   // Calculate dates for the new order
   const newOrderValidFrom = calculateNewOrderValidFromDate(
     requisitionConfig.endBiddingRound,
+    config.timezone,
   );
   const previousOrderValidTo =
     calculatePreviousOrderValidToDate(newOrderValidFrom);
