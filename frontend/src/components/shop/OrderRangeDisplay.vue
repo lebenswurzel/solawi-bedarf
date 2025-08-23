@@ -25,17 +25,34 @@ import {
   dayDifference,
   getSameOrNextThursday,
 } from "../../../../shared/src/util/dateHelper";
-import { useOrderStore } from "../../store/orderStore";
+import { SavedOrder } from "@lebenswurzel/solawi-bedarf-shared/src/types";
 
 const configStore = useConfigStore();
-const orderStore = useOrderStore();
 const { config } = storeToRefs(configStore);
-const { modificationOrder } = storeToRefs(orderStore);
 
 const props = defineProps<{
-  validFrom: Date | null;
-  validTo?: Date | null;
+  order: SavedOrder | undefined;
+  plain?: boolean;
 }>();
+
+const validFrom = computed(() => {
+  return props.order?.validFrom;
+});
+const validTo = computed(() => {
+  return props.order?.validTo;
+});
+
+const isPastOrder = computed(() => {
+  return (
+    props.order?.validTo && props.order.validTo.getTime() < new Date().getTime()
+  );
+});
+const isFutureOrder = computed(() => {
+  return (
+    props.order?.validFrom &&
+    props.order.validFrom.getTime() > new Date().getTime()
+  );
+});
 
 const prettyDate = (date?: Date | string | null): string => {
   if (date) {
@@ -46,16 +63,16 @@ const prettyDate = (date?: Date | string | null): string => {
 
 const firstThursdayOfDelivery = computed(() => {
   if (
-    props.validFrom &&
-    props.validFrom.getTime() > (config.value?.validFrom?.getTime() || 0)
+    validFrom.value &&
+    validFrom.value.getTime() > (config.value?.validFrom?.getTime() || 0)
   ) {
-    return getSameOrNextThursday(props.validFrom);
+    return getSameOrNextThursday(validFrom.value);
   }
   return config.value?.validFrom;
 });
 
 const endDate = computed(() => {
-  return props.validTo || configStore.config?.validTo;
+  return validTo.value || config.value?.validTo;
 });
 
 const deliveries = computed(() => {
@@ -76,28 +93,28 @@ const isFirstDeliveryInThePast = computed(() => {
 });
 </script>
 <template>
-  <v-card variant="outlined" color="primary">
-    <v-card-subtitle class="pt-1"
-      ><strong
-        >Gültigkeitszeitraum der Bedarfsanmeldung</strong
-      ></v-card-subtitle
-    >
-    <v-card-text class="py-1"
-      >{{ prettyDate(firstThursdayOfDelivery) }} bis
-      {{ prettyDate(endDate) }} ({{ deliveries }} Verteilungen)</v-card-text
-    >
-    <template v-if="!isFirstDeliveryInThePast">
-      <v-card-text class="py-1"
-        >Noch
-        {{ dayDifference(new Date(), firstThursdayOfDelivery || new Date()) }}
-        Tage bis zu deiner ersten Verteilung.</v-card-text
-      >
-    </template>
-    <template v-if="modificationOrder">
-      <v-card-text class="py-1">
-        Es existiert eine angepasste Bedarfsanmeldung, die ab
-        {{ prettyDate(modificationOrder.validFrom) }} gültig ist.
-      </v-card-text>
-    </template>
-  </v-card>
+  <div>
+    <strong>
+      <template v-if="isPastOrder"> Vergangene Bedarfsanmeldung </template>
+      <template v-else-if="isFutureOrder">
+        Zukünftige Bedarfsanmeldung
+      </template>
+      <template v-else>Aktuelle Bedarfsanmeldung</template>
+    </strong>
+    {{ order?.id }}
+  </div>
+
+  <div>
+    {{ prettyDate(firstThursdayOfDelivery) }} bis {{ prettyDate(endDate) }} ({{
+      deliveries
+    }}
+    Verteilungen)
+  </div>
+  <template v-if="!isFirstDeliveryInThePast">
+    <div class="py-1">
+      Noch
+      {{ dayDifference(new Date(), firstThursdayOfDelivery || new Date()) }}
+      Tage bis zur ersten Verteilung.
+    </div>
+  </template>
 </template>

@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { defineStore } from "pinia";
-import { computed, ref } from "vue";
+import { computed, ref, watchEffect } from "vue";
 import { getAllOrders } from "../requests/shop.ts";
 import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import { appConfig } from "@lebenswurzel/solawi-bedarf-shared/src/config.ts";
@@ -44,6 +44,7 @@ export const useOrderStore = defineStore("orderStore", () => {
   const offerReason = ref<string | null>(null);
   const category = ref<UserCategory>(appConfig.defaultCategory);
   const categoryReason = ref<string | null>(null);
+  const visibleOrderId = ref<number | undefined>(undefined);
 
   // id of the order that is currently valid based on the current date
   const currentOrderId = ref<number | undefined>(undefined);
@@ -117,8 +118,22 @@ export const useOrderStore = defineStore("orderStore", () => {
     );
   });
 
+  const mapOrderItems = (orderItems: OrderItem[]) => {
+    if (Array.isArray(orderItems)) {
+      return orderItems.reduce(
+        (acc, cur) => {
+          acc[cur.productId] = cur.value;
+          return acc;
+        },
+        {} as { [key: number]: number },
+      );
+    }
+    return {};
+  };
+
   const update = async (requestUserId: number, configId: number) => {
     const orders = await getAllOrders(requestUserId, configId);
+    console.log("orderStore.update", { ...orders });
     allOrders.value = orders;
 
     const now = new Date();
@@ -136,36 +151,31 @@ export const useOrderStore = defineStore("orderStore", () => {
     currentOrderId.value = curOrder?.id;
 
     // Find the order that is to be modified
-    const order: SavedOrder = modOrder || curOrder || orders[0];
+    const order: SavedOrder | undefined =
+      modOrder || curOrder || orders[orders.length - 1];
+    console.log("orderStore.update order", order);
 
-    offer.value = order.offer || 0;
-    offerReason.value = order.offerReason || null;
-    depotId.value = { saved: order.depotId, actual: order.depotId };
-    alternateDepotId.value = order.alternateDepotId;
-    category.value = order.category || appConfig.defaultCategory;
-    categoryReason.value = order.categoryReason || null;
-
-    const mapOrderItems = (orderItems: OrderItem[]) => {
-      if (Array.isArray(orderItems)) {
-        return orderItems.reduce(
-          (acc, cur) => {
-            acc[cur.productId] = cur.value;
-            return acc;
-          },
-          {} as { [key: number]: number },
-        );
-      }
-      return {};
-    };
-
-    savedOrderItemsByProductId.value = mapOrderItems(order.orderItems);
-    actualOrderItemsByProductId.value = JSON.parse(
-      JSON.stringify(savedOrderItemsByProductId.value),
-    );
-
+    visibleOrderId.value = order?.id;
     currentOrderItemsByProductId.value = JSON.parse(
       JSON.stringify(mapOrderItems(currentOrder.value?.orderItems || [])),
     );
+  };
+
+  watchEffect(() => {
+    const order = allOrders.value.find((o) => o.id === visibleOrderId.value);
+    offer.value = order?.offer || 0;
+    offerReason.value = order?.offerReason || null;
+    depotId.value = { saved: order?.depotId, actual: order?.depotId };
+    alternateDepotId.value = order?.alternateDepotId || null;
+    category.value = order?.category || appConfig.defaultCategory;
+    categoryReason.value = order?.categoryReason || null;
+
+    savedOrderItemsByProductId.value = mapOrderItems(order?.orderItems || []);
+    actualOrderItemsByProductId.value = mapOrderItems(order?.orderItems || []);
+  });
+
+  const setVisibleOrderId = (orderId: number) => {
+    visibleOrderId.value = orderId;
   };
 
   const clear = async () => {
@@ -201,8 +211,10 @@ export const useOrderStore = defineStore("orderStore", () => {
     currentOrder,
     selectedShipmentDate,
     isModifyingOrder,
+    visibleOrderId,
     updateOrderItem,
     update,
     clear,
+    setVisibleOrderId,
   };
 });
