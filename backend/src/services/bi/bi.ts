@@ -71,9 +71,9 @@ const findValidOrderForUserAtDate = (
 const getCurrentValidOrderForUser = (
   orders: Order[],
   userId: number,
-  now: Date,
+  targetDate: Date,
 ): Order | null => {
-  return findValidOrderForUserAtDate(orders, userId, now);
+  return findValidOrderForUserAtDate(orders, userId, targetDate);
 };
 
 /**
@@ -81,7 +81,7 @@ const getCurrentValidOrderForUser = (
  */
 const getCurrentValidOrdersByUser = (
   orders: Order[],
-  now: Date,
+  targetDate: Date,
 ): { [userId: number]: Order } => {
   const result: { [userId: number]: Order } = {};
 
@@ -97,7 +97,7 @@ const getCurrentValidOrdersByUser = (
   // Find current valid order for each user
   Object.entries(ordersByUser).forEach(([userIdStr, userOrders]) => {
     const userId = parseInt(userIdStr);
-    const validOrder = getCurrentValidOrderForUser(orders, userId, now);
+    const validOrder = getCurrentValidOrderForUser(orders, userId, targetDate);
     if (validOrder) {
       result[userId] = validOrder;
     }
@@ -135,8 +135,9 @@ export const bi = async (
   configId: number,
   orderValidFrom?: Date,
   includeForecast: boolean = false,
+  dateOfInterest?: Date,
 ): Promise<BIData> => {
-  const now = new Date();
+  const targetDate = dateOfInterest || new Date();
   const depots = await AppDataSource.getRepository(Depot).find();
 
   const orders = await AppDataSource.getRepository(Order).find({
@@ -179,7 +180,7 @@ export const bi = async (
         where: {
           requisitionConfigId: configId,
           ...extendedShipmentsWhere,
-          validTo: MoreThan(now),
+          validTo: MoreThan(new Date()), // use current date for finding forecast shipments
           type: ShipmentType.FORECAST,
           active: true,
         },
@@ -223,13 +224,16 @@ export const bi = async (
   );
 
   // Use only currently valid orders for sold calculations
-  const currentValidOrdersByUser = getCurrentValidOrdersByUser(orders, now);
+  const currentValidOrdersByUser = getCurrentValidOrdersByUser(
+    orders,
+    targetDate,
+  );
   Object.values(currentValidOrdersByUser).forEach((order) =>
     order.orderItems.forEach((orderItem) => {
       const product = soldByProductId[orderItem.productId];
       soldByProductId[orderItem.productId].sold +=
         orderItem.value * product.frequency;
-      if (isOrderValidOnDate(order, now)) {
+      if (isOrderValidOnDate(order, targetDate)) {
         soldByProductId[orderItem.productId].soldForShipment +=
           orderItem.value * product.frequency;
       }
@@ -254,7 +258,7 @@ export const bi = async (
       }
       deliveredByProductIdDepotId[orderItem.productId][order.depotId].value +=
         orderItem.value;
-      if (isOrderValidOnDate(order, now)) {
+      if (isOrderValidOnDate(order, targetDate)) {
         deliveredByProductIdDepotId[orderItem.productId][
           order.depotId
         ].valueForShipment += orderItem.value;

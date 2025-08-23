@@ -24,6 +24,10 @@ import {
   SavedOrder,
 } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { isDateInRange } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper.ts";
+import {
+  determineCurrentOrderId,
+  determineModificationOrderId,
+} from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition.ts";
 
 export const useOrderStore = defineStore("orderStore", () => {
   const currentOrderItemsByProductId = ref<{
@@ -139,17 +143,10 @@ export const useOrderStore = defineStore("orderStore", () => {
 
     const now = new Date();
 
-    const modOrder = orders.find(
-      (o) => o.validFrom && now.getTime() < o.validFrom?.getTime(),
-    );
-    modificationOrderId.value = modOrder?.id;
-    const curOrder = orders.find((o) =>
-      isDateInRange(now, {
-        from: o.validFrom,
-        to: o.validTo,
-      }),
-    );
-    currentOrderId.value = curOrder?.id;
+    modificationOrderId.value = determineModificationOrderId(orders, now);
+    const modOrder = orders.find((o) => o.id === modificationOrderId.value);
+    currentOrderId.value = determineCurrentOrderId(orders, now);
+    const curOrder = orders.find((o) => o.id === currentOrderId.value);
 
     // Find the order that is to be modified
     const order: SavedOrder | undefined =

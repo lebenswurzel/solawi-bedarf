@@ -120,11 +120,20 @@ export const updateOrderValidFrom = async (
       },
     );
   } else {
+    const config = await AppDataSource.getRepository(
+      RequisitionConfig,
+    ).findOneBy({
+      id: configId,
+    });
+    if (!config) {
+      throw new Error(`Config ${configId} not found`);
+    }
     const order = new Order();
     order.user = user;
     order.offer = 0;
     order.category = appConfig.defaultCategory;
     order.validFrom = orderValidFrom;
+    order.validTo = config.validTo;
     order.productConfiguration = "";
     order.requisitionConfigId = configId;
     await AppDataSource.getRepository(Order).save(order);

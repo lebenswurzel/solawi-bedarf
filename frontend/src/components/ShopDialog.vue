@@ -51,7 +51,7 @@ const uiFeedback = useUiFeedback();
 const textContentStore = useTextContentStore();
 
 const { depots, activeConfigId, config } = storeToRefs(configStore);
-const { depot, effectiveMsrpByOrderId, capacityByDepotId, increaseOnly } =
+const { depot, effectiveMsrpByOrderId, capacityByDepotId } =
   storeToRefs(biStore);
 const {
   offer,
@@ -69,7 +69,7 @@ const confirmGTC = ref(false);
 const confirmContribution = ref(false);
 const openFAQ = ref(false);
 const loading = ref(false);
-const model = ref<string>();
+const offerValue = ref<string>();
 const showDepotNote = ref(false);
 
 const sendConfirmationEmail = ref(false);
@@ -114,7 +114,7 @@ watchEffect(() => {
 });
 
 const modelInt = computed(() => {
-  const tmp = parseInt(model.value || "0");
+  const tmp = parseInt(offerValue.value || "0");
   if (isNaN(tmp)) {
     return 0;
   }
@@ -126,14 +126,19 @@ const alternateDepot = computed(() => {
 });
 
 const effectiveMsrp = computed(() => {
-  if (!modificationOrderId.value) {
-    return {
-      monthly: { total: 0, selfgrown: 0, cooperation: 0 },
-      yearly: { total: 0, selfgrown: 0, cooperation: 0 },
-      months: 0,
-    };
+  if (
+    modificationOrderId.value &&
+    Object.keys(effectiveMsrpByOrderId.value).includes(
+      modificationOrderId.value.toString(),
+    )
+  ) {
+    return effectiveMsrpByOrderId.value[modificationOrderId.value!];
   }
-  return effectiveMsrpByOrderId.value[modificationOrderId.value!];
+  return {
+    monthly: { total: 0, selfgrown: 0, cooperation: 0 },
+    yearly: { total: 0, selfgrown: 0, cooperation: 0 },
+    months: 0,
+  };
 });
 
 const enableOfferReason = computed(() =>
@@ -190,13 +195,14 @@ const requireConfirmContribution = computed(() => {
 });
 
 watch(offer, () => {
-  model.value = offer.value.toString() || "0";
+  console.log("watch offer", offer.value);
+  offerValue.value = offer.value.toString() || "0";
 });
 watchEffect(() => {
   sendConfirmationEmail.value = props.requestUser?.emailEnabled || false;
 });
 onMounted(() => {
-  model.value = offer.value.toString() || "0";
+  offerValue.value = offer.value.toString() || "0";
 });
 
 const onDepotChanged = (val: number) => {
@@ -213,33 +219,21 @@ const clearAlternateDepot = () => {
 
 const onUpdate = (value: string) => {
   const newOffer = parseInt(value || "0");
-  if (increaseOnly.value) {
-    model.value = Math.max(offer.value, newOffer).toString();
-  } else {
-    model.value = newOffer.toString();
-  }
-};
-
-const onBlur = (blur: boolean) => {
-  if (!blur) {
-    const newOffer = parseInt(model.value || "0");
-    if (increaseOnly.value) {
-      model.value = Math.max(offer.value, newOffer).toString();
-    }
-  }
+  offerValue.value = newOffer.toString();
 };
 
 const onClose = async () => {
-  model.value = offer.value.toString() || "0";
+  offerValue.value = offer.value.toString() || "0";
   emit("close");
 };
 
 const onSave = () => {
   loading.value = true;
+  console.log("onSave", offerValue.value);
   saveOrder({
     userId: props.requestUser?.id!,
     orderItems: modificationOrderItems.value,
-    offer: parseInt(model.value || "0"),
+    offer: parseInt(offerValue.value || "0"),
     depotId: depotId.value.actual!,
     alternateDepotId: alternateDepotId.value,
     category: category.value,
@@ -289,9 +283,8 @@ const onSave = () => {
         <MsrpDisplay :order="orderStore.modificationOrder" class="mb-5" />
         <v-text-field
           class="mb-5"
-          :model-value="model"
+          :model-value="offerValue"
           @update:model-value="onUpdate"
-          @update:focused="onBlur"
           type="number"
           :hint="
             needsHigherOffer

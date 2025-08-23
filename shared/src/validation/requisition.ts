@@ -15,7 +15,8 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { UserRole } from "../enum";
-import { ExistingConfig, Order } from "../types";
+import { ExistingConfig, Order, OrderId, SavedOrder } from "../types";
+import { isDateInRange } from "../util/dateHelper";
 
 export const isRequisitionActive = (
   userRole: UserRole,
@@ -76,4 +77,33 @@ export const isValidBiddingOrder = (
     }
   }
   return true;
+};
+
+/**
+ * Determine the id of the order to be modified
+ * The order to be modified is the one with the validFrom date in the future
+ *
+ * @param allOrders All orders for the user and config
+ * @param now Current date
+ * @returns The id of the order to be modified
+ */
+export const determineModificationOrderId = (
+  allOrders: SavedOrder[],
+  now: Date
+): OrderId | undefined => {
+  return allOrders.find(
+    (order) => order.validFrom && now.getTime() < order.validFrom?.getTime()
+  )?.id;
+};
+
+export const determineCurrentOrderId = (
+  allOrders: SavedOrder[],
+  now: Date
+): OrderId | undefined => {
+  return allOrders.find((order) =>
+    isDateInRange(now, {
+      from: order.validFrom,
+      to: order.validTo,
+    })
+  )?.id;
 };
