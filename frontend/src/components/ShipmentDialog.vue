@@ -43,6 +43,7 @@ import { prepareShipment } from "../lib/shipment/prepareShipment.ts";
 import { createShipmentOverviewPdf } from "../lib/shipment/shipmentOverviewPdf.ts";
 import { createShipmentPackagingPdfs } from "../lib/shipment/shipmentPackagingPdf.ts";
 import { getShipments, saveShipment } from "../requests/shipment.ts";
+import { deleteShipment } from "../requests/shipment.ts";
 import { useBIStore } from "../store/biStore";
 import { useConfigStore } from "../store/configStore";
 import { useProductStore } from "../store/productStore";
@@ -342,6 +343,42 @@ const onShipmentOverviewPdfClick = async () => {
   });
 };
 
+const onDeleteShipment = async () => {
+  if (!savedShipment?.value) {
+    return;
+  }
+
+  if (
+    savedShipment.value.additionalShipmentItems.length > 0 ||
+    savedShipment.value.shipmentItems.length > 0
+  ) {
+    alert(
+      "Es gibt noch Produkte in dieser Verteilung. Es können nur Verteilungen gelöscht werden, die keine Produkte enthalten.\n\n(Wenn alle Produkte entfernt wurden, muss die Verteilung zunächst gespeichert werden, bevor sie gelöscht werden kann)",
+    );
+    return;
+  }
+
+  if (
+    !confirm(
+      "Soll die Verteilung gelöscht werden? Diese Aktion kann nicht rückgängig gemacht werden.",
+    )
+  ) {
+    return;
+  }
+
+  loading.value = true;
+  try {
+    console.log("deleteShipment", savedShipment.value.id);
+    await deleteShipment(savedShipment.value.id);
+    loading.value = false;
+    setSuccess("Verteilung erfolgreich gelöscht");
+    emit("close");
+  } catch (error) {
+    loading.value = false;
+    setError("Fehler beim Löschen der Verteilung", error as Error);
+  }
+};
+
 watchEffect(async () => {
   if (editShipmentId) {
     await onEditShipment(editShipmentId);
@@ -581,8 +618,24 @@ watchEffect(async () => {
         </template>
       </v-card-text>
       <v-card-actions>
+        <v-btn
+          v-if="savedShipment"
+          color="error"
+          variant="text"
+          @click="onDeleteShipment"
+          :loading="loading"
+          prepend-icon="mdi-delete"
+        >
+          Löschen
+        </v-btn>
+        <v-spacer></v-spacer>
         <v-btn @click="onClose"> {{ language.app.actions.close }} </v-btn>
-        <v-btn :loading="loading" @click="onSave" :disabled="!canSave">
+        <v-btn
+          :loading="loading"
+          @click="onSave"
+          :disabled="!canSave"
+          prepend-icon="mdi-content-save"
+        >
           {{ language.app.actions.save }}
         </v-btn>
         <v-btn
