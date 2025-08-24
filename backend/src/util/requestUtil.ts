@@ -121,3 +121,15 @@ export const getEnumQueryParameter = <T extends { [key: string]: string }>(
   }
   return requestValue as T[keyof T];
 };
+
+export const getDateQueryParameter = (
+  requestQuery: ParsedUrlQuery,
+  name: string,
+  fallback?: Date,
+): Date | undefined => {
+  const requestValue = requestQuery[name];
+  if (!requestValue || Array.isArray(requestValue)) {
+    return fallback;
+  }
+  return new Date(requestValue);
+};

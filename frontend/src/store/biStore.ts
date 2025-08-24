@@ -224,6 +224,7 @@ export const useBIStore = defineStore("bi", () => {
     configId: number,
     orderId?: number,
     includeForecast?: boolean,
+    dateOfInterest?: Date,
   ) => {
     const {
       soldByProductId: requestSoldByProductId,
@@ -231,7 +232,7 @@ export const useBIStore = defineStore("bi", () => {
       capacityByDepotId: requestCapacityByDepotId,
       productsById: requestedProductsById,
       offers: requestOffers,
-    } = await getBI(configId, orderId, includeForecast);
+    } = await getBI(configId, orderId, includeForecast, dateOfInterest);
     soldByProductId.value = requestSoldByProductId;
     capacityByDepotId.value = requestCapacityByDepotId;
     productsById.value = requestedProductsById;
