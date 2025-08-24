@@ -131,6 +131,7 @@ export interface Order {
   validFrom: Date | null;
   validTo: Date | null;
   requisitionConfigId: number;
+  confirmGTC: boolean;
   createdAt?: string | Date;
   updatedAt?: string | Date;
 }
@@ -141,7 +142,6 @@ export interface SavedOrder extends Order {
 }
 
 export interface ConfirmedOrder extends Order {
-  confirmGTC: boolean;
   sendConfirmationEmail?: boolean;
 }
 

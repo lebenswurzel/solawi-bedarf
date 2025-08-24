@@ -57,7 +57,6 @@ import { AppDataSource } from "../../database/database";
 import { Depot } from "../../database/Depot";
 import { Order } from "../../database/Order";
 import { OrderItem } from "../../database/OrderItem";
-import { ProductCategory } from "../../database/ProductCategory";
 import { RequisitionConfig } from "../../database/RequisitionConfig";
 import { User } from "../../database/User";
 import { bi } from "../bi/bi";
@@ -68,10 +67,8 @@ import { getRequestUserId, getUserFromContext } from "../getUserFromContext";
 import { getProductCategories } from "../product/getProductCategory";
 import { getOrganizationInfo } from "../text/getOrganizationInfo";
 import {
-  countCalendarMonths,
   formatDateForFilename,
   getSameOrNextThursday,
-  isDateInRange,
 } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper";
 import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 
@@ -83,6 +80,8 @@ export const saveOrder = async (
   const requestUserId = await getRequestUserId(ctx);
   const body = ctx.request.body as ConfirmedOrder;
   const sendConfirmationEmail = body.sendConfirmationEmail || false;
+
+  const isEditedByOtherUser = requestUserId !== id;
 
   const configId = body.requisitionConfigId;
   if (configId < 1) {
@@ -97,7 +96,7 @@ export const saveOrder = async (
   if (!requisitionConfig) {
     ctx.throw(http.bad_request, `no valid config (id=${configId})`);
   }
-  if (!body.confirmGTC) {
+  if (!body.confirmGTC && !isEditedByOtherUser) {
     ctx.throw(http.bad_request, "commitment not confirmed");
   }
   if (!appConfig.availableCategories.includes(body.category)) {
@@ -212,6 +211,10 @@ export const saveOrder = async (
   order.offerReason = body.offerReason || "";
   order.category = body.category;
   order.categoryReason = body.categoryReason || "";
+  if (!isEditedByOtherUser) {
+    // only the user who has created the order can confirm it
+    order.confirmGTC = body.confirmGTC || false;
+  }
   if (body.validFrom) {
     order.validFrom = body.validFrom;
   }
@@ -240,7 +243,7 @@ export const saveOrder = async (
   // cleanup of useless items
   await AppDataSource.getRepository(OrderItem).delete({ value: LessThan(1) });
 
-  // Send confirmation email to user (if option is set) and always to the EMAIL_ORDERED_UPDATED_BCC (if set)
+  // Send confirmation email to user (if option is set) and always to the EMAIL_ORDER_UPDATED_BCC (if set)
   if (sendConfirmationEmail || config.email.orderUpdatedBccReceiver) {
     const orderUser = await AppDataSource.getRepository(User).findOneOrFail({
       where: { id: requestUserId },

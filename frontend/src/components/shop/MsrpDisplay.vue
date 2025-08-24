@@ -31,7 +31,7 @@ const { visibleOrderId } = storeToRefs(orderStore);
 
 const t = language.pages.shop;
 const props = defineProps<{
-  order: SavedOrder | undefined;
+  order: SavedOrder;
   hideOffer?: boolean;
 }>();
 
@@ -119,6 +119,20 @@ const msrp = computed((): Msrp => {
         }"
         v-if="!props.hideOffer"
       />
+    </v-card-text>
+    <v-card-text class="py-2" v-if="!props.order.confirmGTC">
+      <v-alert
+        class="py-2 text-caption font-weight-bold"
+        icon="mdi-lightbulb-alert"
+        variant="outlined"
+      >
+        Diese Bedarfsanmeldung ist noch nicht bestätigt und wird erst aktiv,
+        wenn sie gespeichert wurde.
+        <template v-if="orderStore.currentOrderId"
+          >Bis dahin bleibt die bisherige Bedarfsanmeldung bis zum Ende der
+          Saison gültig.</template
+        >
+      </v-alert>
     </v-card-text>
   </v-card>
 </template>

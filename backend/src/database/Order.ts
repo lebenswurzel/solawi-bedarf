@@ -38,6 +38,12 @@ export class Order extends BaseEntity {
   })
   offer: number;
 
+  @Column({
+    nullable: false,
+    default: false,
+  })
+  confirmGTC: boolean;
+
   @Column({ type: "timestamp", nullable: true })
   validFrom: Date | null;
 

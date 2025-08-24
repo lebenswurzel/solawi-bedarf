@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, watchEffect } from "vue";
 import { getOverview } from "../requests/overview";
 import { getProductCategory } from "../requests/productCategory";
 import {
@@ -55,6 +55,10 @@ const orderOverviewSeasons = computed(() =>
 const orderOverviewSelectedSeasons = ref<number[]>([
   configStore.activeConfigId,
 ]);
+
+watchEffect(() => {
+  orderOverviewSelectedSeasons.value = [configStore.activeConfigId];
+});
 
 const onUserCsvClick = async () => {
   loading.value.csv = true;

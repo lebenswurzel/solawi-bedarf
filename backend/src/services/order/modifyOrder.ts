@@ -155,6 +155,7 @@ export const createAdditionalOrder = async (
     newOrder.offerReason = currentOrder.offerReason;
     newOrder.category = currentOrder.category;
     newOrder.categoryReason = currentOrder.categoryReason;
+    newOrder.confirmGTC = false; // by default, order is not yet confirmed
 
     const savedNewOrder = await manager.save(Order, newOrder);
 
