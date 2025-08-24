@@ -52,6 +52,24 @@ const onDateChange = () => {
     Es können auch Datumswerte in der Zukunft ausgewählt werden, um angepasste
     Bedarfsanmeldungen darzustellen.
   </v-alert>
+  <v-alert class="mb-2" type="warning" variant="tonal">
+    <p>
+      Für den Sonderfall, dass während der Saison in einem Depot ein Produkt
+      bestellt wird, welches bisher noch nicht an dieses Depot zu verteilen war,
+      wird der Zielwert für dieses Depot nicht korrekt angezeigt. Dieser Fall
+      kann eintreten, wenn ein neuer Ernteteiler hinzukommt oder durch die
+      Bedarfsanpassung eines bestehenden Ernteteilers.
+    </p>
+    <p>
+      <u>Beispiel:</u>
+      <br />
+      Depot 1 hat bisher keine Eier bekommen, da sie nicht bestellt wurden. Ein
+      neuer Ernteteiler bestellt ab Mitte der Saison Eier. Folglich stehen in
+      diesem Depot noch 25 Eierlieferungen aus. Angezeigt werden aber 50
+      Lieferungen, welche für die komplette Saison gelten würden.
+      <br />
+    </p>
+  </v-alert>
 
   <v-container fluid>
     <v-row>
