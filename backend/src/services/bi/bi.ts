@@ -36,6 +36,7 @@ import { getUserFromContext } from "../getUserFromContext";
 import {
   getBooleanQueryParameter,
   getConfigIdFromQuery,
+  getDateQueryParameter,
   getNumericQueryParameter,
 } from "../../util/requestUtil";
 import { LessThan, MoreThan } from "typeorm";
@@ -117,6 +118,10 @@ export const biHandler = async (
     "includeForecast",
     false,
   );
+  const dateOfInterest = getDateQueryParameter(
+    ctx.request.query,
+    "dateOfInterest",
+  );
 
   let orderValidFrom = undefined;
   if (orderId) {
@@ -128,7 +133,12 @@ export const biHandler = async (
     }
     orderValidFrom = userOrder.validFrom || undefined;
   }
-  ctx.body = await bi(configId, orderValidFrom, includeForecast);
+  ctx.body = await bi(
+    configId,
+    orderValidFrom,
+    includeForecast,
+    dateOfInterest,
+  );
 };
 
 export const bi = async (
@@ -165,7 +175,9 @@ export const bi = async (
     where: { requisitionConfigId: configId },
   });
 
-  let extendedShipmentsWhere = {};
+  let extendedShipmentsWhere = {
+    validFrom: LessThan(targetDate),
+  };
   let forecastShipments: Shipment[] = [];
 
   if (orderValidFrom) {

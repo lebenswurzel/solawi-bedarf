@@ -21,6 +21,7 @@ export const getBI = async (
   configId: number,
   orderId?: number,
   includeForecast?: boolean,
+  dateOfInterest?: Date,
 ): Promise<BIData> => {
   let parameters = "";
   if (orderId) {
@@ -28,6 +29,9 @@ export const getBI = async (
   }
   if (includeForecast) {
     parameters += "&includeForecast=true";
+  }
+  if (dateOfInterest) {
+    parameters += `&dateOfInterest=${dateOfInterest.toISOString()}`;
   }
   const response = await fetch(getUrl(`/bi?configId=${configId}${parameters}`));
 

@@ -317,10 +317,10 @@ export interface EditAdditionalShipmentItem
 
 export interface ShipmentMainInformation {
   description: string | null;
-  validFrom: Date;
-  validTo?: Date;
+  validFrom: Date | string;
+  validTo?: Date | string;
   active: boolean;
-  updatedAt?: Date;
+  updatedAt?: Date | string;
   requisitionConfigId: number;
   type: ShipmentType;
 }

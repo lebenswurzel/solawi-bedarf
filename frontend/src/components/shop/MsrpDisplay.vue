@@ -58,7 +58,7 @@ const msrp = computed((): Msrp => {
     <v-card-text class="pb-1 pt-3">
       <v-container fluid class="pa-0">
         <v-row dense>
-          <v-col cols="1">
+          <v-col cols="2" sm="1">
             <v-icon size="x-large" v-if="isVisibleOrder"
               >mdi-radiobox-marked</v-icon
             >
@@ -73,7 +73,7 @@ const msrp = computed((): Msrp => {
               >mdi-radiobox-blank</v-icon
             >
           </v-col>
-          <v-col cols="11">
+          <v-col cols="10" sm="11">
             <OrderRangeDisplay :order="props.order" plain />
           </v-col>
         </v-row>

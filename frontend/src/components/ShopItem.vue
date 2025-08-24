@@ -76,7 +76,6 @@ const deliveryPercentage = computed(() => {
 
   return {
     ...result,
-    roundedPercentage: Math.round(result.percentage),
     roundedDeliveries: Math.round(
       (result.percentage * product.value.frequency) / 100,
     ),
