@@ -212,6 +212,12 @@ export const saveOrder = async (
   order.offerReason = body.offerReason || "";
   order.category = body.category;
   order.categoryReason = body.categoryReason || "";
+  if (body.validFrom) {
+    order.validFrom = body.validFrom;
+  }
+  if (body.validTo) {
+    order.validTo = body.validTo;
+  }
   await AppDataSource.getRepository(Order).save(order);
 
   for (const requestOrderItem of body.orderItems) {

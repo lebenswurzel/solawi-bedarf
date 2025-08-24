@@ -26,7 +26,10 @@ import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import { Order } from "../../database/Order";
 import { appConfig } from "@lebenswurzel/solawi-bedarf-shared/src/config";
 import { RequisitionConfig } from "../../database/RequisitionConfig";
-import { SaveUserRequest } from "@lebenswurzel/solawi-bedarf-shared/src/types";
+import {
+  SaveUserRequest,
+  UserId,
+} from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import { getUserOrders } from "../order/getAllOrders";
 
 export const saveUser = async (
@@ -66,7 +69,7 @@ export const saveUser = async (
         await AppDataSource.getRepository(User).save(user);
         if (requestUser.orderValidFrom) {
           await updateOrderValidFrom(
-            user,
+            user.id,
             requestUser.orderValidFrom,
             requestUser.requisitionConfigId,
           );
@@ -82,7 +85,7 @@ export const saveUser = async (
       await AppDataSource.getRepository(User).save(user);
       if (requestUser.orderValidFrom) {
         await updateOrderValidFrom(
-          user,
+          user.id,
           requestUser.orderValidFrom,
           requestUser.requisitionConfigId,
         );
@@ -95,23 +98,23 @@ export const saveUser = async (
 };
 
 export const updateOrderValidFrom = async (
-  user: User,
+  userId: UserId,
   orderValidFrom: Date,
   configId: number,
 ) => {
   let orders = await AppDataSource.getRepository(Order).find({
-    where: { userId: user.id, requisitionConfigId: configId },
+    where: { userId, requisitionConfigId: configId },
     order: { validFrom: "ASC" },
     relations: { orderItems: true },
   });
   if (orders.length > 1) {
     throw new Error("Multiple orders found, cannot update validFrom date!");
   }
-  if (orders[0].orderItems && orders[0].orderItems.length > 0) {
-    throw new Error("Order has order items, cannot update validFrom date!");
-  }
   if (orders.length === 1) {
     const order = orders[0];
+    if (order.orderItems && order.orderItems.length > 0) {
+      throw new Error("Order has order items, cannot update validFrom date!");
+    }
     await AppDataSource.getRepository(Order).update(
       { id: order.id },
       {
@@ -129,7 +132,7 @@ export const updateOrderValidFrom = async (
       throw new Error(`Config ${configId} not found`);
     }
     const order = new Order();
-    order.user = user;
+    order.userId = userId;
     order.offer = 0;
     order.category = appConfig.defaultCategory;
     order.validFrom = orderValidFrom;
