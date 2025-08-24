@@ -31,6 +31,7 @@ export const saveOrder = async (order: ConfirmedOrder & { userId: number }) => {
     categoryReason: order.categoryReason,
     confirmGTC: order.confirmGTC,
     validFrom: order.validFrom,
+    validTo: order.validTo,
     requisitionConfigId: order.requisitionConfigId,
     sendConfirmationEmail: order.sendConfirmationEmail,
   };
@@ -50,14 +51,24 @@ export const getOrder = async (
   configId: number,
   noOrderItems?: boolean,
   noProductConfiguration?: boolean,
+  orderId?: number,
 ): Promise<SavedOrder> => {
   const options = [
     noOrderItems ? "no-order-items" : "",
     noProductConfiguration ? "no-product-configuration" : "",
   ].join(",");
-  const response = await fetch(
-    getUrl(`/shop/order?id=${userId}&configId=${configId}&options=${options}`),
-  );
+
+  const params = new URLSearchParams({
+    id: userId.toString(),
+    configId: configId.toString(),
+    options,
+  });
+
+  if (orderId) {
+    params.append("orderId", orderId.toString());
+  }
+
+  const response = await fetch(getUrl(`/shop/order?${params.toString()}`));
 
   await verifyResponse(response);
 
@@ -65,5 +76,55 @@ export const getOrder = async (
   return {
     ...(result as SavedOrder),
     validFrom: result.validFrom ? new Date(result.validFrom) : null,
+    validTo: result.validTo ? new Date(result.validTo) : null,
   };
+};
+
+export const getAllOrders = async (
+  userId: number,
+  configId: number,
+): Promise<SavedOrder[]> => {
+  const response = await fetch(
+    getUrl(`/shop/orders?id=${userId}&configId=${configId}`),
+  );
+
+  await verifyResponse(response);
+
+  const result = await response.json();
+  return result.map((order: any) => ({
+    ...order,
+    validFrom: order.validFrom ? new Date(order.validFrom) : null,
+    validTo: order.validTo ? new Date(order.validTo) : null,
+  }));
+};
+
+export const modifyOrder = async (userId: number, configId: number) => {
+  const response = await fetch(
+    getUrl(`/shop/order/modify?id=${userId}&configId=${configId}`),
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    },
+  );
+
+  await verifyResponse(response);
+
+  const result = await response.json();
+  return {
+    ...result,
+    validFrom: result.validFrom ? new Date(result.validFrom) : null,
+    previousOrderValidTo: result.previousOrderValidTo
+      ? new Date(result.previousOrderValidTo)
+      : null,
+  };
+};
+
+export const calcMsrp = async (userId: number, configId: number) => {
+  const response = await fetch(
+    getUrl(`/shop/calcMsrp?id=${userId}&configId=${configId}`),
+  );
+
+  await verifyResponse(response);
 };

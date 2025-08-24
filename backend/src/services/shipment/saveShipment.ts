@@ -116,10 +116,10 @@ export const saveShipment = async (
       }
 
       // update shipment
-      shipment.validFrom = requestShipment.validFrom;
+      shipment.validFrom = new Date(requestShipment.validFrom);
       shipment.validTo =
-        requestShipment.type == ShipmentType.FORECAST
-          ? requestShipment.validTo
+        requestShipment.validTo && requestShipment.type == ShipmentType.FORECAST
+          ? new Date(requestShipment.validTo)
           : undefined;
       shipment.active = requestShipment.active;
       shipment.description = requestShipment.description;
@@ -202,10 +202,10 @@ export const saveShipment = async (
       ctx.status = http.no_content;
     } else {
       const shipment = new Shipment();
-      shipment.validFrom = requestShipment.validFrom;
+      shipment.validFrom = new Date(requestShipment.validFrom);
       shipment.validTo =
-        requestShipment.type == ShipmentType.FORECAST
-          ? requestShipment.validTo
+        requestShipment.validTo && requestShipment.type == ShipmentType.FORECAST
+          ? new Date(requestShipment.validTo)
           : undefined;
       shipment.active = requestShipment.active;
       shipment.description = requestShipment.description;

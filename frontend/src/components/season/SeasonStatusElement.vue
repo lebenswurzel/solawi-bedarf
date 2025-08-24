@@ -21,6 +21,7 @@ import { SeasonPhase } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import { useConfigStore } from "../../store/configStore";
 import { interpolate } from "@lebenswurzel/solawi-bedarf-shared/src/lang/template.ts";
 import { RequisitionConfig } from "@lebenswurzel/solawi-bedarf-shared/src/types";
+import { useOrderStore } from "../../store/orderStore";
 
 const props = defineProps<{
   phase: SeasonPhase;
@@ -29,6 +30,7 @@ const props = defineProps<{
 }>();
 
 const configStore = useConfigStore();
+const orderStore = useOrderStore();
 
 const prettyDate = (date: Date) => {
   if (date) {
@@ -51,6 +53,10 @@ export type SeasonStatusElement = {
   addGotoOrderButton: boolean;
 };
 
+const mustAddOrder = computed(() => {
+  return !orderStore.modificationOrder;
+});
+
 const status = computed((): SeasonStatusElement => {
   const config = props.alternativeConfig ?? configStore.config;
   const startOrder = config?.startOrder!;
@@ -63,7 +69,7 @@ const status = computed((): SeasonStatusElement => {
       phase: SeasonPhase.FREE_ORDER,
       title: "Bedarfsanmeldung läuft",
       description:
-        "Der Bedarf kann angemeldet und bis zum {dateEnd} beliebig angepasst werden",
+        "Der Bedarf kann angemeldet und bis zum {dateEnd} beliebig angepasst werden.",
       dateBegin: startOrder,
       dateEnd: startBiddingRound,
       addGotoOrderButton: true,
@@ -75,7 +81,10 @@ const status = computed((): SeasonStatusElement => {
       phase: SeasonPhase.INCREASE_ONLY,
       title: "Bieterrunde läuft",
       description:
-        "Vom {dateBegin} bis zum {dateEnd} kann der Bedarf nach oben angepasst werden",
+        "Vom {dateBegin} bis zum {dateEnd} kann der Bedarf nach oben angepasst werden." +
+        (mustAddOrder.value
+          ? " Bitte wende dich an die Mitgliederbetreung der Solawi, wenn du deine Bedarfsanmeldung anpassen möchtest."
+          : ""),
       dateBegin: startBiddingRound,
       dateEnd: endBiddingRound,
       addGotoOrderButton: true,

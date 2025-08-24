@@ -73,6 +73,7 @@ export type GetUserResponse = {
 export type UpdateUserRequest = Id & {
   active?: boolean;
   orderValidFrom?: Date;
+  addNewOrder?: boolean;
   configId: number;
 };
 
@@ -128,7 +129,9 @@ export interface Order {
   category: UserCategory;
   categoryReason: string | null;
   validFrom: Date | null;
+  validTo: Date | null;
   requisitionConfigId: number;
+  confirmGTC: boolean;
   createdAt?: string | Date;
   updatedAt?: string | Date;
 }
@@ -139,7 +142,6 @@ export interface SavedOrder extends Order {
 }
 
 export interface ConfirmedOrder extends Order {
-  confirmGTC: boolean;
   sendConfirmationEmail?: boolean;
 }
 
@@ -315,10 +317,10 @@ export interface EditAdditionalShipmentItem
 
 export interface ShipmentMainInformation {
   description: string | null;
-  validFrom: Date;
-  validTo?: Date;
+  validFrom: Date | string;
+  validTo?: Date | string;
   active: boolean;
-  updatedAt?: Date;
+  updatedAt?: Date | string;
   requisitionConfigId: number;
   type: ShipmentType;
 }
@@ -418,6 +420,7 @@ export interface Msrp {
     cooperation: number;
   };
   months: number;
+  contribution: UserCategory;
 }
 
 export interface OrganizationInfo {
@@ -469,3 +472,11 @@ export interface ErrorLogEntry {
 }
 
 export type GetErrorLogResponse = ErrorLogEntry[];
+
+export interface BIData {
+  soldByProductId: SoldByProductId;
+  deliveredByProductIdDepotId: DeliveredByProductIdDepotId;
+  capacityByDepotId: CapacityByDepotId;
+  productsById: ProductsById;
+  offers: number;
+}

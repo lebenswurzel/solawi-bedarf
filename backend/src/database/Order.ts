@@ -38,8 +38,17 @@ export class Order extends BaseEntity {
   })
   offer: number;
 
+  @Column({
+    nullable: false,
+    default: false,
+  })
+  confirmGTC: boolean;
+
   @Column({ type: "timestamp", nullable: true })
   validFrom: Date | null;
+
+  @Column({ type: "timestamp", nullable: true })
+  validTo: Date | null;
 
   @Column({ type: "varchar", nullable: true })
   offerReason: string | null;

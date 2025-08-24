@@ -67,3 +67,11 @@ export const getUserShipments = async (
 
   return response.json();
 };
+
+export const deleteShipment = async (shipmentId: number) => {
+  const response = await fetch(getUrl(`/shipment?id=${shipmentId}`), {
+    method: "DELETE",
+  });
+
+  await verifyResponse(response);
+};

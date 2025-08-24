@@ -14,8 +14,8 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { format } from "date-fns";
-import { toZonedTime } from "date-fns-tz";
+import { addSeconds, format } from "date-fns";
+import { fromZonedTime, toZonedTime } from "date-fns-tz";
 import { de } from "date-fns/locale";
 
 export const addYears = (date: Date, yearsDiff: number): Date => {
@@ -129,11 +129,15 @@ export const countThursdaysBetweenDates = (
   return thursdays;
 };
 
-export const getSameOrNextThursday = (date: Date): Date => {
+export const getSameOrNextThursday = (date: Date, timezone?: string): Date => {
+  let relevantDate = date;
+  if (timezone) {
+    relevantDate = toZonedTime(date, timezone);
+  }
   const dateOnly = new Date(
-    date.getFullYear(),
-    date.getMonth(),
-    date.getDate()
+    relevantDate.getFullYear(),
+    relevantDate.getMonth(),
+    relevantDate.getDate()
   );
   const day = dateOnly.getDay();
 
@@ -163,4 +167,72 @@ export const countCalendarMonths = (
     (laterYear - earlierYear) * 12 + (laterMonth - earlierMonth) + 1;
 
   return monthDiff;
+};
+
+/**
+ * Calculates the validFrom date for a new order modification.
+ * Returns the Friday before the first Thursday in the month that follows
+ * the month of the endBiddingRound date.
+ */
+export const calculateNewOrderValidFromDate = (
+  endBiddingRound: Date,
+  timezone?: string
+): Date => {
+  // Get the month that follows the endBiddingRound month
+  const nextMonth = new Date(
+    endBiddingRound.getFullYear(),
+    endBiddingRound.getMonth() + 1,
+    1
+  );
+
+  // Find the first Thursday in that month
+  const firstThursday = getSameOrNextThursday(nextMonth, timezone);
+
+  // Get the Friday before that Thursday (subtract 6 days to go back to Friday)
+  const fridayBefore = addDays(firstThursday, -6);
+
+  if (timezone) {
+    // Create a date that represents midnight in the specified timezone
+    // and convert it to UTC
+    const midnightInTimezone = new Date(
+      fridayBefore.getFullYear(),
+      fridayBefore.getMonth(),
+      fridayBefore.getDate(),
+      0,
+      0,
+      0,
+      0
+    );
+
+    // Convert to the specified timezone and then to UTC
+    const zonedDate = fromZonedTime(midnightInTimezone, timezone);
+    return new Date(zonedDate.getTime());
+  }
+
+  return fridayBefore;
+};
+
+/**
+ * Calculates the validTo date for the previous order when creating a new order.
+ * Returns 23:59 of the day before the new order's validFrom date.
+ */
+export const calculatePreviousOrderValidToDate = (
+  newOrderValidFrom: Date
+): Date => {
+  return addSeconds(newOrderValidFrom, -1);
+};
+
+export const isDateInRange = (
+  date: Date | string | number,
+  range: {
+    from: Date | string | number | null;
+    to: Date | string | number | null;
+  }
+) => {
+  return (
+    (range.from === null ||
+      new Date(date).getTime() >= new Date(range.from).getTime()) &&
+    (range.to === null ||
+      new Date(date).getTime() <= new Date(range.to).getTime())
+  );
 };

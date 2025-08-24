@@ -14,13 +14,25 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { _UnwrapAll, defineStore } from "pinia";
-import { computed, ref } from "vue";
-import { getOrder } from "../requests/shop.ts";
+import { defineStore } from "pinia";
+import { computed, ref, watchEffect } from "vue";
+import { getAllOrders } from "../requests/shop.ts";
 import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import { appConfig } from "@lebenswurzel/solawi-bedarf-shared/src/config.ts";
+import {
+  OrderItem,
+  SavedOrder,
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
+import { isDateInRange } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper.ts";
+import {
+  determineCurrentOrderId,
+  determineModificationOrderId,
+} from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition.ts";
 
 export const useOrderStore = defineStore("orderStore", () => {
+  const currentOrderItemsByProductId = ref<{
+    [key: number]: number;
+  }>({});
   const savedOrderItemsByProductId = ref<{
     [key: number]: number;
   }>({});
@@ -36,10 +48,19 @@ export const useOrderStore = defineStore("orderStore", () => {
   const offerReason = ref<string | null>(null);
   const category = ref<UserCategory>(appConfig.defaultCategory);
   const categoryReason = ref<string | null>(null);
-  const orderUserId = ref<number>();
-  const validFrom = ref<Date | null>(null);
+  const visibleOrderId = ref<number | undefined>(undefined);
 
-  const orderItems = computed(() =>
+  // id of the order that is currently valid based on the current date
+  const currentOrderId = ref<number | undefined>(undefined);
+  // id of the order that is to be modified
+  const modificationOrderId = ref<number | undefined>(undefined);
+
+  const selectedShipmentDate = ref<Date>(new Date());
+
+  // New fields for multiple orders support
+  const allOrders = ref<SavedOrder[]>([]);
+
+  const modificationOrderItems = computed(() =>
     Object.entries(actualOrderItemsByProductId.value).map(
       ([productId, actual]) => ({
         productId: parseInt(productId),
@@ -48,22 +69,66 @@ export const useOrderStore = defineStore("orderStore", () => {
     ),
   );
 
+  const shipmentOrderItems = computed(() => {
+    const result =
+      allOrders.value.find((o) =>
+        isDateInRange(selectedShipmentDate.value, {
+          from: o.validFrom,
+          to: o.validTo,
+        }),
+      )?.orderItems || [];
+    return result;
+  });
+
   const updateOrderItem = (productId: number, value: number) => {
+    console.log("updateOrderItem", productId, value);
     actualOrderItemsByProductId.value[productId] = value;
   };
 
-  const update = async (requestUserId: number, configId: number) => {
-    const order = await getOrder(requestUserId, configId);
-    offer.value = order.offer || 0;
-    offerReason.value = order.offerReason || null;
-    depotId.value = { saved: order.depotId, actual: order.depotId };
-    alternateDepotId.value = order.alternateDepotId;
-    category.value = order.category || appConfig.defaultCategory;
-    categoryReason.value = order.categoryReason || null;
-    savedOrderItemsByProductId.value = {};
-    validFrom.value = order.validFrom ? new Date(order.validFrom) : null;
-    if (Array.isArray(order.orderItems)) {
-      savedOrderItemsByProductId.value = order.orderItems.reduce(
+  const ordersWithActualOrderItems = computed(() => {
+    // set actual order item values to the last element of the array
+    return allOrders.value.map((o) => ({
+      ...o,
+      orderItems:
+        o.id === modificationOrderId.value
+          ? modificationOrderItems.value
+          : o.orderItems,
+    }));
+  });
+
+  const modificationOrder = computed((): SavedOrder | undefined => {
+    const order = allOrders.value.find(
+      (o) => o.id === modificationOrderId.value,
+    );
+    console.log("actualOrderItemsByProductId", {
+      ...actualOrderItemsByProductId.value,
+    });
+    if (order) {
+      return {
+        ...order,
+        orderItems: modificationOrderItems.value,
+      };
+    }
+  });
+
+  const currentOrder = computed((): SavedOrder | undefined => {
+    return allOrders.value.find((o) => o.id === currentOrderId.value);
+  });
+
+  const isModifyingOrder = computed(() => {
+    return (
+      modificationOrderId.value !== undefined &&
+      visibleOrderId.value === modificationOrderId.value
+    );
+  });
+
+  const hasPreviousOrder = computed(() => {
+    return isModifyingOrder.value && currentOrderId.value !== undefined;
+  });
+
+  const mapOrderItems = (orderItems: OrderItem[]) => {
+    if (Array.isArray(orderItems)) {
+      return orderItems.reduce(
         (acc, cur) => {
           acc[cur.productId] = cur.value;
           return acc;
@@ -71,10 +136,47 @@ export const useOrderStore = defineStore("orderStore", () => {
         {} as { [key: number]: number },
       );
     }
-    actualOrderItemsByProductId.value = JSON.parse(
-      JSON.stringify(savedOrderItemsByProductId.value),
+    return {};
+  };
+
+  const update = async (requestUserId: number, configId: number) => {
+    const orders = await getAllOrders(requestUserId, configId);
+    console.log("orderStore.update", { ...orders });
+    allOrders.value = orders;
+
+    const now = new Date();
+
+    modificationOrderId.value = determineModificationOrderId(orders, now);
+    const modOrder = orders.find((o) => o.id === modificationOrderId.value);
+    currentOrderId.value = determineCurrentOrderId(orders, now);
+    const curOrder = orders.find((o) => o.id === currentOrderId.value);
+
+    // Find the order that is to be modified
+    const order: SavedOrder | undefined =
+      modOrder || curOrder || orders[orders.length - 1];
+    console.log("orderStore.update order", order);
+
+    visibleOrderId.value = order?.id;
+    currentOrderItemsByProductId.value = JSON.parse(
+      JSON.stringify(mapOrderItems(currentOrder.value?.orderItems || [])),
     );
-    orderUserId.value = requestUserId;
+  };
+
+  watchEffect(() => {
+    const order = allOrders.value.find((o) => o.id === visibleOrderId.value);
+    offer.value = order?.offer || 0;
+    offerReason.value = order?.offerReason || null;
+    depotId.value = { saved: order?.depotId, actual: order?.depotId };
+    alternateDepotId.value = order?.alternateDepotId || null;
+    category.value = order?.category || appConfig.defaultCategory;
+    categoryReason.value = order?.categoryReason || null;
+
+    savedOrderItemsByProductId.value = mapOrderItems(order?.orderItems || []);
+    actualOrderItemsByProductId.value = mapOrderItems(order?.orderItems || []);
+  });
+
+  const setVisibleOrderId = (orderId: number) => {
+    visibleOrderId.value = orderId;
   };
 
   const clear = async () => {
@@ -84,26 +186,37 @@ export const useOrderStore = defineStore("orderStore", () => {
     alternateDepotId.value = null;
     category.value = appConfig.defaultCategory;
     categoryReason.value = null;
-    actualOrderItemsByProductId.value = {};
     savedOrderItemsByProductId.value = {};
-    orderUserId.value = undefined;
-    validFrom.value = null;
+    actualOrderItemsByProductId.value = {};
+    currentOrderItemsByProductId.value = {};
+    allOrders.value = [];
   };
 
   return {
-    savedOrderItemsByProductId,
+    currentOrderItemsByProductId,
     actualOrderItemsByProductId,
+    savedOrderItemsByProductId,
     offer,
     offerReason,
     depotId,
     alternateDepotId,
     category,
     categoryReason,
-    orderUserId,
-    orderItems,
-    validFrom,
+    modificationOrderItems,
+    shipmentOrderItems,
+    allOrders,
+    currentOrderId,
+    modificationOrderId,
+    ordersWithActualOrderItems,
+    modificationOrder,
+    currentOrder,
+    selectedShipmentDate,
+    isModifyingOrder,
+    hasPreviousOrder,
+    visibleOrderId,
     updateOrderItem,
     update,
     clear,
+    setVisibleOrderId,
   };
 });

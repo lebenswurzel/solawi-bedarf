@@ -14,31 +14,24 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import {
-  CapacityByDepotId,
-  DeliveredByProductIdDepotId,
-  ProductsById,
-  SoldByProductId,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
+import { BIData } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { getUrl, verifyResponse } from "./requests.ts";
 
 export const getBI = async (
   configId: number,
-  requestUserId?: number,
+  orderId?: number,
   includeForecast?: boolean,
-): Promise<{
-  soldByProductId: SoldByProductId;
-  deliveredByProductIdDepotId: DeliveredByProductIdDepotId;
-  capacityByDepotId: CapacityByDepotId;
-  productsById: ProductsById;
-  offers: number;
-}> => {
+  dateOfInterest?: Date,
+): Promise<BIData> => {
   let parameters = "";
-  if (requestUserId) {
-    parameters = `&userId=${requestUserId}`;
+  if (orderId) {
+    parameters = `&orderId=${orderId}`;
   }
   if (includeForecast) {
     parameters += "&includeForecast=true";
+  }
+  if (dateOfInterest) {
+    parameters += `&dateOfInterest=${dateOfInterest.toISOString()}`;
   }
   const response = await fetch(getUrl(`/bi?configId=${configId}${parameters}`));
 

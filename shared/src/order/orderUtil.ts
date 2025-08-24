@@ -23,6 +23,7 @@ export const calculateDeliveries = (
 ): {
   display: string;
   percentage: number;
+  roundedPercentage: number;
   targetDeliveries: number;
   actualDeliveries: number;
 } => {
@@ -39,11 +40,13 @@ export const calculateDeliveries = (
       .map((d) => deliveredByDepotId[d.id].actuallyDelivered)
       .reduce((sum, value) => sum + value, 0) / 100;
 
+  const percentage = !targetDeliveries
+    ? 0
+    : (actualDeliveries / targetDeliveries) * 100;
   return {
     display: `${actualDeliveries}/${targetDeliveries}`,
-    percentage: !targetDeliveries
-      ? 0
-      : Math.round((actualDeliveries / targetDeliveries) * 100),
+    percentage,
+    roundedPercentage: Math.round(percentage),
     targetDeliveries,
     actualDeliveries,
   };

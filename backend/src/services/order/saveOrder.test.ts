@@ -63,6 +63,7 @@ testAsUser1("save empty order", async ({ userData }: TestUserData) => {
     alternateDepotId: null,
     offerReason: null,
     validFrom: null,
+    validTo: null,
     requisitionConfigId: configId,
   };
 
@@ -112,6 +113,7 @@ testAsUser1("save order with products", async ({ userData }: TestUserData) => {
     alternateDepotId: null,
     offerReason: null,
     validFrom: dateDeltaDays(-1),
+    validTo: dateDeltaDays(10),
     requisitionConfigId: configId,
   };
 
@@ -302,6 +304,7 @@ const _createCtx = async (
     alternateDepotId: null,
     offerReason: null,
     validFrom: dateDeltaDays(-1),
+    validTo: dateDeltaDays(10),
     requisitionConfigId: configId,
   };
 

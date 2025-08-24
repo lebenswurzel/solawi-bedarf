@@ -15,12 +15,14 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { defineStore, storeToRefs } from "pinia";
-import { computed, ref } from "vue";
+import { computed, ref, watchEffect } from "vue";
 import { useConfigStore } from "./configStore.ts";
 import { useOrderStore } from "./orderStore";
 import {
   CapacityByDepotId,
   DeliveredByProductIdDepotId,
+  Msrp,
+  OrderId,
   ProductId,
   ProductsById,
   SoldByProductId,
@@ -28,6 +30,7 @@ import {
 import { getBI } from "../requests/bi.ts";
 import { useUserStore } from "./userStore.ts";
 import {
+  calculateEffectiveMsrp,
   calculateMsrpWeights,
   calculateOrderValidMonths,
   getMsrp,
@@ -37,6 +40,7 @@ import {
   isRequisitionActive,
 } from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition.ts";
 import { useVersionInfoStore } from "./versionInfoStore.ts";
+import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 
 export const useBIStore = defineStore("bi", () => {
   const now = ref<Date>(new Date());
@@ -45,9 +49,15 @@ export const useBIStore = defineStore("bi", () => {
   const userStore = useUserStore();
   const versionInfoStore = useVersionInfoStore();
 
-  const { depots, config } = storeToRefs(configStore);
-  const { depotId, category, actualOrderItemsByProductId } =
-    storeToRefs(orderStore);
+  const { depots, config, activeConfigId } = storeToRefs(configStore);
+  const {
+    depotId,
+    category,
+    allOrders,
+    ordersWithActualOrderItems,
+    modificationOrder,
+    currentOrder,
+  } = storeToRefs(orderStore);
   const { currentUser } = storeToRefs(userStore);
 
   const soldByProductId = ref<SoldByProductId>({});
@@ -56,13 +66,60 @@ export const useBIStore = defineStore("bi", () => {
   const deliveredByProductIdDepotId = ref<DeliveredByProductIdDepotId>({});
   const offers = ref<number>(0);
 
+  const productMsrpWeightsByOrderId = ref<{
+    [key: OrderId]: { [key: ProductId]: number };
+  }>({});
+
+  // update productMsrpWeightsByOrderId when orderStore.allOrders changes
+  watchEffect(async () => {
+    if (allOrders.value.length === 0) {
+      // skip if information is still missing
+      return;
+    }
+
+    const results = await Promise.all(
+      allOrders.value.map(async (o) => {
+        const {
+          deliveredByProductIdDepotId: requestDeliveredByProductIdDepotId,
+          productsById: requestProductsById,
+        } = await getBI(activeConfigId.value, o.id, true);
+        return {
+          [o.id]: {
+            deliveredByProductIdDepotId: requestDeliveredByProductIdDepotId,
+            productsById: requestProductsById,
+          },
+        };
+      }),
+    );
+
+    productMsrpWeightsByOrderId.value = Object.assign(
+      {},
+      ...results.map((result) => {
+        return {
+          [Object.keys(result)[0]]: calculateMsrpWeights(
+            Object.values(result)[0].productsById,
+            Object.values(result)[0].deliveredByProductIdDepotId,
+            depots.value,
+          ),
+        };
+      }),
+    );
+    console.log("productMsrpWeightsByOrderId", {
+      ...productMsrpWeightsByOrderId.value,
+    });
+  });
+
   const submit = computed(() => {
     if (currentUser.value && config.value) {
-      return isRequisitionActive(
-        currentUser.value.role,
-        currentUser.value.active,
-        config.value,
-        now.value,
+      return (
+        isRequisitionActive(
+          currentUser.value.role,
+          currentUser.value.active,
+          config.value,
+          now.value,
+        ) &&
+        orderStore.modificationOrder?.validFrom &&
+        orderStore.modificationOrder.validFrom.getTime() > now.value.getTime()
       );
     }
     return false;
@@ -75,42 +132,117 @@ export const useBIStore = defineStore("bi", () => {
     false;
   });
 
-  const productMsrpWeights = computed((): { [key: ProductId]: number } => {
-    const result = calculateMsrpWeights(
-      productsById.value,
-      deliveredByProductIdDepotId.value,
-      depots.value,
-    );
-    return result;
+  const msrpByOrderId = computed((): { [key: OrderId]: Msrp } => {
+    if (
+      Object.keys(productsById.value).length === 0 ||
+      !config.value ||
+      Object.keys(productMsrpWeightsByOrderId.value).length === 0 ||
+      // check that productMsrpWeightsByOrderId contains all orders
+      !Object.keys(productMsrpWeightsByOrderId.value).every((orderId) =>
+        ordersWithActualOrderItems.value.some(
+          (o) => o.id === parseInt(orderId),
+        ),
+      )
+    ) {
+      return {};
+    }
+    const orders = ordersWithActualOrderItems.value;
+    const msrpsMap: { [key: OrderId]: Msrp } = {};
+
+    orders.forEach((o) => {
+      const actualOrderItems = o.orderItems.map((item) => ({
+        productId: item.productId,
+        value: item.value,
+      }));
+      const validMonths = calculateOrderValidMonths(
+        o.validFrom,
+        config.value?.validTo,
+        versionInfoStore.versionInfo?.serverTimeZone,
+      );
+      const relevantCategory =
+        o.id === modificationOrder.value?.id ? category.value : o.category;
+      console.log("relevantCategory", o.id, relevantCategory);
+      const msrp = getMsrp(
+        relevantCategory,
+        actualOrderItems,
+        productsById.value,
+        validMonths,
+        productMsrpWeightsByOrderId.value[o.id],
+      );
+      msrpsMap[o.id] = msrp;
+    });
+
+    console.log("msrpsMap", msrpsMap);
+    return msrpsMap;
   });
 
-  const msrp = computed(() => {
-    const actualOrderItems = Object.entries(
-      actualOrderItemsByProductId.value,
-    ).map(([key, value]) => ({ productId: parseInt(key), value }));
-    const validMonths = calculateOrderValidMonths(
-      orderStore.validFrom,
-      config.value?.validTo,
-      versionInfoStore.versionInfo?.serverTimeZone,
-    );
-
-    return getMsrp(
-      category.value,
-      actualOrderItems,
+  const getEffectiveMsrp = (): Msrp | null => {
+    if (!modificationOrder.value) {
+      return null;
+    }
+    if (!currentOrder.value) {
+      // no current order exists, i.e., only the modification order exists
+      // return the msrp of the modification order as is
+      return msrpByOrderId.value[modificationOrder.value.id];
+    }
+    if (
+      activeConfigId.value == -1 ||
+      !config.value ||
+      Object.keys(msrpByOrderId.value).length === 0
+    ) {
+      return null;
+    }
+    const effectiveMsrp = calculateEffectiveMsrp(
+      {
+        earlierOrder: currentOrder.value!,
+        laterOrder: modificationOrder.value!,
+      },
+      msrpByOrderId.value,
+      productMsrpWeightsByOrderId.value,
       productsById.value,
-      validMonths,
-      productMsrpWeights.value,
     );
+    return effectiveMsrp;
+  };
+
+  const effectiveMsrpByOrderId = computed((): { [key: OrderId]: Msrp } => {
+    const result = allOrders.value.reduce(
+      (acc, o, index) => {
+        if (index === allOrders.value.length - 1) {
+          acc[o.id] = getEffectiveMsrp() || msrpByOrderId.value[o.id];
+        } else {
+          acc[o.id] = msrpByOrderId.value[o.id];
+        }
+        return acc;
+      },
+      {} as { [key: OrderId]: Msrp },
+    );
+    console.log("effectiveMsrpByOrderId", result);
+    return result;
   });
 
   const depot = computed(() => {
     return depots.value.find((d) => d.id == depotId.value.actual);
   });
 
+  const getEffectiveMsrpByOrderId = (orderId: OrderId): Msrp => {
+    if (
+      Object.keys(effectiveMsrpByOrderId.value).includes(orderId.toString())
+    ) {
+      return effectiveMsrpByOrderId.value[orderId];
+    }
+    return {
+      monthly: { total: 0, selfgrown: 0, cooperation: 0 },
+      yearly: { total: 0, selfgrown: 0, cooperation: 0 },
+      months: 0,
+      contribution: UserCategory.CAT130,
+    };
+  };
+
   const update = async (
     configId: number,
-    requestUserId?: number,
+    orderId?: number,
     includeForecast?: boolean,
+    dateOfInterest?: Date,
   ) => {
     const {
       soldByProductId: requestSoldByProductId,
@@ -118,7 +250,7 @@ export const useBIStore = defineStore("bi", () => {
       capacityByDepotId: requestCapacityByDepotId,
       productsById: requestedProductsById,
       offers: requestOffers,
-    } = await getBI(configId, requestUserId, includeForecast);
+    } = await getBI(configId, orderId, includeForecast, dateOfInterest);
     soldByProductId.value = requestSoldByProductId;
     capacityByDepotId.value = requestCapacityByDepotId;
     productsById.value = requestedProductsById;
@@ -133,11 +265,12 @@ export const useBIStore = defineStore("bi", () => {
     deliveredByProductIdDepotId,
     productsById,
     depot,
-    msrp,
+    msrpByOrderId,
     submit,
     increaseOnly,
     offers,
     update,
     now,
+    getEffectiveMsrpByOrderId,
   };
 });

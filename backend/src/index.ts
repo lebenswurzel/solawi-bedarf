@@ -29,7 +29,9 @@ import { saveProduct } from "./services/product/saveProduct";
 import { initDb } from "./services/initDb";
 import { getConfig } from "./services/config/getConfig";
 import { getOrder } from "./services/order/getOrder";
+import { getAllOrders } from "./services/order/getAllOrders";
 import { saveOrder } from "./services/order/saveOrder";
+import { modifyOrder } from "./services/order/modifyOrder";
 import { saveConfig } from "./services/config/saveConfig";
 import { saveApplicant } from "./services/applicant/saveApplicant";
 import { getApplicant } from "./services/applicant/getApplicant";
@@ -54,6 +56,8 @@ import { importApplicant } from "./services/applicant/importApplicant";
 import { errorLogger } from "./middleware/errorLogger";
 import { getErrorLog } from "./services/getErrorLog";
 import { getUserShipments } from "./services/shipment/getUserShipments";
+import { calcMsrp } from "./services/bi/calcMsrp";
+import { deleteShipment } from "./services/shipment/deleteShipment";
 
 const port = config.server.serverPort;
 const app = new Koa();
@@ -111,11 +115,15 @@ router.post("/applicant/update", updateApplicant);
 router.put("/applicant/import", importApplicant);
 
 router.get("/shop/order", getOrder);
+router.get("/shop/orders", getAllOrders);
 router.post("/shop/order", saveOrder);
+router.post("/shop/order/modify", modifyOrder);
+router.get("/shop/calcMsrp", calcMsrp);
 
 router.get("/shipment", getUserShipments);
 router.get("/shipments", getShipments);
 router.post("/shipment", saveShipment);
+router.delete("/shipment", deleteShipment);
 
 router.get("/productCategory", getProductCategory);
 router.post("/productCategory", saveProductCategory);

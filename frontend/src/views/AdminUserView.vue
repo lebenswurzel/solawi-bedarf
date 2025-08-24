@@ -24,7 +24,6 @@ import { useConfigStore } from "../store/configStore";
 import {
   NewUser,
   UpdateUserRequest,
-  User,
   UserOrder,
   UserWithOrders,
 } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
@@ -46,25 +45,36 @@ const configStore = useConfigStore();
 const { externalAuthProvider, activeConfigId } = storeToRefs(configStore);
 const route = useRoute();
 
-const defaultUser: NewUser = {
-  role: UserRole.USER,
-  active: false,
+const defaultUser: { user: NewUser; enableValidFrom: boolean } = {
+  user: {
+    role: UserRole.USER,
+    active: false,
+  },
+  enableValidFrom: true,
 };
 
 const ACTION_ACTIVATE = "Aktivieren";
 const ACTION_DEACTIVATE = "Deaktivieren";
 const ACTION_SET_ORDER_VALID_FROM = "Setze 'Bedarf gültig ab'";
+const ACTION_ADD_NEW_ORDER = "Bedarfsänderung hinzufügen";
 
 const userStore = useUserStore();
 const { users } = storeToRefs(userStore);
 const open = ref(false);
-const dialogUser = ref<NewUser | User>({ ...defaultUser });
+const dialogUser = ref<{
+  user: NewUser | UserWithOrders;
+  enableValidFrom: boolean;
+}>({
+  user: { ...defaultUser.user },
+  enableValidFrom: defaultUser.enableValidFrom,
+});
 const search = ref<string>("");
 const selectedUsers = ref<number[]>([]);
 const selectedUserActions = [
   ACTION_ACTIVATE,
   ACTION_DEACTIVATE,
   ACTION_SET_ORDER_VALID_FROM,
+  ACTION_ADD_NEW_ORDER,
 ];
 const selectedAction = ref(selectedUserActions[0]);
 const processedUsers = ref<number>(0);
@@ -88,8 +98,8 @@ const headers = [
     key: "orderUpdatedAt",
     sortRaw(a: UserWithOrders, b: UserWithOrders) {
       return (
-        (getCurrentSeasonOrder(a.orders)?.updatedAt.getTime() ?? 0) -
-        (getCurrentSeasonOrder(b.orders)?.updatedAt.getTime() ?? 0)
+        (getCurrentSeasonOrders(a.orders)?.[0]?.updatedAt.getTime() ?? 0) -
+        (getCurrentSeasonOrders(b.orders)?.[0]?.updatedAt.getTime() ?? 0)
       );
     },
   },
@@ -98,8 +108,8 @@ const headers = [
     key: "orderValidFrom",
     sortRaw(a: UserWithOrders, b: UserWithOrders) {
       return (
-        (getCurrentSeasonOrder(a.orders)?.validFrom?.getTime() ?? 0) -
-        (getCurrentSeasonOrder(b.orders)?.validFrom?.getTime() ?? 0)
+        (getCurrentSeasonOrders(a.orders)?.[0]?.validFrom?.getTime() ?? 0) -
+        (getCurrentSeasonOrders(b.orders)?.[0]?.validFrom?.getTime() ?? 0)
       );
     },
   },
@@ -120,12 +130,21 @@ onMounted(async () => {
 });
 
 const onCreateUser = () => {
-  dialogUser.value = { ...defaultUser };
+  dialogUser.value = {
+    user: { ...defaultUser.user },
+    enableValidFrom: false,
+  };
   open.value = true;
 };
 
-const onEditUser = (user: User) => {
-  dialogUser.value = user;
+const onEditUser = (user: UserWithOrders) => {
+  console.log("onEditUser", { ...user });
+  dialogUser.value = {
+    user: { ...user },
+    enableValidFrom:
+      user.orders.length == 0 ||
+      (user.orders.length < 2 && !user.orders[0].hasItems),
+  };
   open.value = true;
 };
 
@@ -144,11 +163,13 @@ const applySelectedAction = async () => {
   };
   if (
     selectedAction.value == ACTION_ACTIVATE ||
-    selectedAction.value == ACTION_DEACTIVATE
+    selectedAction.value == ACTION_DEACTIVATE ||
+    selectedAction.value == ACTION_ADD_NEW_ORDER
   ) {
     option = {
       ...option,
       active: selectedAction.value == ACTION_ACTIVATE,
+      addNewOrder: selectedAction.value == ACTION_ADD_NEW_ORDER,
     };
     await updateSelectedUsers(option);
   } else if (selectedAction.value == ACTION_SET_ORDER_VALID_FROM) {
@@ -201,26 +222,34 @@ watch(selectedUsers, () => {
   processedUsers.value = 0;
 });
 
-const getCurrentSeasonOrder = (
-  userOrders?: UserOrder[],
-  ifHasItems = false,
-): UserOrder | undefined => {
-  const order = userOrders?.find((o) => o.configId == activeConfigId.value);
-  if (order && (order.hasItems || !ifHasItems)) {
-    return order;
+const getCurrentSeasonOrders = (userOrders?: UserOrder[]): UserOrder[] => {
+  const orders = userOrders?.filter((o) => o.configId == activeConfigId.value);
+  if (orders && orders.length > 0) {
+    return orders;
+  } else {
+    return [];
   }
 };
 
-const tableItems = computed(() => {
+const usersWithCurrentSeasonOrders = computed(() => {
   return users.value.map((user) => {
-    const currentOrder = getCurrentSeasonOrder(user.orders);
-    const currentOrderWithItems = getCurrentSeasonOrder(user.orders, true);
+    return {
+      ...user,
+      orders: getCurrentSeasonOrders(user.orders),
+    };
+  });
+});
+
+const tableItems = computed(() => {
+  return usersWithCurrentSeasonOrders.value.map((user) => {
+    const currentOrders = user.orders;
+    const currentOrdersWithItems = user.orders.filter((o) => o.hasItems);
 
     return {
       ...user,
-      orderUpdatedAt: currentOrderWithItems?.updatedAt,
-      orderValidFrom: currentOrder?.validFrom,
-      depotName: currentOrder?.depotName,
+      orderUpdatedAts: currentOrdersWithItems.map((o) => o.updatedAt),
+      orderValidFroms: currentOrders.map((o) => o.validFrom),
+      depotNames: currentOrders.map((o) => o.depotName),
     };
   });
 });
@@ -234,23 +263,29 @@ const filteredTableItems = computed(() => {
 
 /// filter form validFrom
 const filterValidFromDates = (tableItem: {
-  orderValidFrom: Date | undefined | null;
+  orderValidFroms: (Date | null)[];
 }): boolean => {
   if (displayFilters.value.validFrom.length < 1) {
     return true;
   }
-  return displayFilters.value.validFrom
-    .map((index) => validFromItems.value[index])
-    .includes(getDateTimestampWithoutTime(tableItem.orderValidFrom));
+  // check if any of the validFrom dates in the table item are in the display filters
+  return displayFilters.value.validFrom.some((index) =>
+    tableItem.orderValidFroms
+      .map((o) => getDateTimestampWithoutTime(o))
+      .includes(validFromItems.value[index]),
+  );
 };
 
 const validFromItems = computed(() => {
   return Array.from(
     new Set(
-      users.value.map((user) => {
-        const currentOrder = getCurrentSeasonOrder(user.orders);
-        return getDateTimestampWithoutTime(currentOrder?.validFrom);
-      }),
+      usersWithCurrentSeasonOrders.value
+        .map((user) => {
+          return user.orders.map((o) =>
+            getDateTimestampWithoutTime(o.validFrom),
+          );
+        })
+        .flat(),
     ),
   ).sort();
 });
@@ -270,23 +305,25 @@ const filterUserRoles = (tableItem: { role: UserRole }): boolean => {
     .includes(tableItem.role);
 };
 const userRoleItems = computed(() => {
-  return Array.from(new Set(users.value.map((user) => user.role)));
+  return Array.from(
+    new Set(usersWithCurrentSeasonOrders.value.map((user) => user.role)),
+  );
 });
 
 /// filter for user role
 const filterDepotNames = (tableItem: {
-  depotName: string | undefined;
+  depotNames: (string | null)[];
 }): boolean => {
   if (displayFilters.value.depot.length < 1) {
     return true;
   }
   return displayFilters.value.depot
     .map((index) => depotNameItems.value[index])
-    .includes(tableItem.depotName || "- keins -");
+    .includes(tableItem.depotNames[0] || "- keins -");
 };
 const depotNameItems = computed(() => {
   return Array.from(
-    new Set(tableItems.value.map((item) => item.depotName || "- keins -")),
+    new Set(tableItems.value.map((item) => item.depotNames[0] || "- keins -")),
   ).sort();
 });
 </script>
@@ -408,18 +445,32 @@ const depotNameItems = computed(() => {
                 </v-tooltip>
               </template>
               <template v-slot:item.orderUpdatedAt="{ item }">
-                {{ prettyDate(item.orderUpdatedAt) }}
-                <v-btn
-                  icon="mdi-eye"
-                  variant="plain"
-                  :to="{ path: `/shop/${item.id}` }"
-                ></v-btn>
+                <div
+                  v-for="(orderUpdatedAt, index) in item.orderUpdatedAts"
+                  :key="orderUpdatedAt.getTime()"
+                >
+                  {{ prettyDate(orderUpdatedAt) }}
+                  <v-btn
+                    v-if="index == 0"
+                    icon="mdi-eye"
+                    variant="plain"
+                    :to="{ path: `/shop/${item.id}` }"
+                    size="x-small"
+                  ></v-btn>
+                </div>
               </template>
               <template v-slot:item.orderValidFrom="{ item }">
-                {{ prettyDate(item.orderValidFrom) }}
+                <div
+                  v-for="orderValidFrom in item.orderValidFroms"
+                  :key="orderValidFrom?.getTime()"
+                >
+                  {{ prettyDate(orderValidFrom) }}
+                </div>
               </template>
               <template v-slot:item.depotName="{ item }">
-                {{ item.depotName }}
+                <div v-for="depotName in item.depotNames" :key="depotName">
+                  {{ depotName }}
+                </div>
               </template>
               <template v-slot:item.edit="{ item }">
                 <v-btn

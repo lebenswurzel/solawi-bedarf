@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { parseISO, formatISO } from "date-fns";
 
-export const dateToString = (date: Date) => {
+export const dateToString = (date: Date | string) => {
   const isoDateString = formatISO(date);
   return isoDateString.substring(0, 16);
 };

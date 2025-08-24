@@ -32,30 +32,68 @@ export const getOrder = async (
 
   const configId = getConfigIdFromQuery(ctx);
   const option = getStringQueryParameter(ctx.request.query, "options", "");
+  const orderId = getStringQueryParameter(ctx.request.query, "orderId", "");
 
   let relations = { orderItems: true };
   if (option.includes("no-order-items")) {
     relations = { orderItems: false };
   }
 
+  const columnsToSelect = determineColumnsToSelect(
+    option.includes("no-product-configuration"),
+  );
+
+  // If a specific order ID is requested, return that order
+  if (orderId) {
+    const order = await AppDataSource.getRepository(Order).findOne({
+      select: columnsToSelect as (keyof Order)[],
+      where: {
+        id: parseInt(orderId),
+        userId: requestUserId,
+        requisitionConfigId: configId,
+      },
+      relations,
+    });
+
+    if (order) {
+      ctx.body = order;
+    } else {
+      ctx.body = {};
+    }
+    return;
+  }
+
+  // Get all orders for the user and config
+  const allOrders: OrderType[] = await AppDataSource.getRepository(Order).find({
+    select: columnsToSelect as (keyof Order)[],
+    where: { userId: requestUserId, requisitionConfigId: configId },
+    relations,
+    order: { validFrom: "DESC" }, // Most recent first
+  });
+
+  // If no specific order requested, return the currently valid one
+  const now = new Date();
+  const currentOrder =
+    allOrders.find(
+      (o) =>
+        (!o.validFrom || o.validFrom <= now) && (!o.validTo || o.validTo > now),
+    ) || null;
+
+  ctx.body = currentOrder || {};
+};
+
+export const determineColumnsToSelect = (
+  excludeProductConfiguration: boolean,
+): (keyof Order)[] => {
   const allColumns: string[] = AppDataSource.getRepository(
     Order,
   ).metadata.columns.map((col) => col.propertyName);
 
-  let columnsToSelect = undefined;
-  if (option.includes("no-product-configuration")) {
-    columnsToSelect = allColumns.filter(
+  if (excludeProductConfiguration) {
+    return allColumns.filter(
       (col) => col !== "productConfiguration",
-    );
+    ) as (keyof Order)[];
+  } else {
+    return allColumns as (keyof Order)[];
   }
-
-  const order: OrderType | null = await AppDataSource.getRepository(
-    Order,
-  ).findOne({
-    select: columnsToSelect as (keyof Order)[],
-    where: { userId: requestUserId, requisitionConfigId: configId },
-    relations,
-  });
-
-  ctx.body = order || {};
 };

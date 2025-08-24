@@ -33,7 +33,6 @@ import { useRoute } from "vue-router";
 import { router } from "../routes.ts";
 import SeasonStatusElement from "../components/season/SeasonStatusElement.vue";
 import { getSeasonPhase } from "@lebenswurzel/solawi-bedarf-shared/src/util/configHelper.ts";
-import OrderRangeDisplay from "../components/shop/OrderRangeDisplay.vue";
 import MsrpDisplay from "../components/shop/MsrpDisplay.vue";
 
 const t = language.pages.shop;
@@ -44,10 +43,12 @@ const userStore = useUserStore();
 const orderStore = useOrderStore();
 const biStore = useBIStore();
 
-const { depot, submit, msrp } = storeToRefs(biStore);
+const { depot, submit, msrpByOrderId } = storeToRefs(biStore);
 const { userId } = storeToRefs(userStore);
 const { productCategories } = storeToRefs(productStore);
 const { activeConfigId, config } = storeToRefs(configStore);
+const { allOrders, modificationOrderId, visibleOrderId } =
+  storeToRefs(orderStore);
 
 const open = ref(false);
 const faqOpen = ref(false);
@@ -120,7 +121,11 @@ const refresh = async (keepUserId?: boolean) => {
   if (requestUserId.value && activeConfigId.value != -1) {
     await productStore.update(configStore.activeConfigId);
     await orderStore.update(requestUserId.value, activeConfigId.value);
-    await biStore.update(configStore.activeConfigId, requestUserId.value, true);
+    await biStore.update(
+      configStore.activeConfigId,
+      modificationOrderId.value,
+      true,
+    );
   }
 };
 onMounted(async () => {
@@ -134,6 +139,10 @@ const orderPhase = computed(() => {
     userStore.currentUser?.active || false,
   );
   return orderPhaseValue;
+});
+
+const disableSaveButton = computed(() => {
+  return !submit.value || visibleOrderId.value !== modificationOrderId.value;
 });
 </script>
 
@@ -168,7 +177,14 @@ const orderPhase = computed(() => {
         <u>{{ t.cards.header.faq }}</u
         >.
       </a>
-      <div class="pt-2" v-if="msrp.months < 12">
+      <div
+        class="pt-2"
+        v-if="
+          modificationOrderId &&
+          msrpByOrderId[modificationOrderId] &&
+          msrpByOrderId[modificationOrderId].months < 12
+        "
+      >
         {{ t.cards.header.orderDuringSeason }}
       </div>
       <SeasonStatusElement :phase="orderPhase" no-button class="mt-3" />
@@ -179,14 +195,9 @@ const orderPhase = computed(() => {
     <v-card-title>{{ t.cards.products.title }} für <SeasonText /></v-card-title>
     <v-container fluid class="py-0">
       <v-row dense>
-        <v-col cols="12" sm="6">
+        <v-col cols="12" md="6" v-for="order in allOrders" :key="order.id">
           <v-card-text class="pa-1">
-            <MsrpDisplay :offer="orderStore.offer" />
-          </v-card-text>
-        </v-col>
-        <v-col cols="12" sm="6">
-          <v-card-text class="pa-1">
-            <OrderRangeDisplay :validFrom="orderStore.validFrom" />
+            <MsrpDisplay :order="order" :show-selector="allOrders.length > 1" />
           </v-card-text>
         </v-col>
       </v-row>
@@ -226,7 +237,7 @@ const orderPhase = computed(() => {
           @click="onSave"
           class="text-white bg-success"
           variant="elevated"
-          :disabled="!submit"
+          :disabled="disableSaveButton"
         >
           {{ language.app.actions.save }}
         </v-btn>

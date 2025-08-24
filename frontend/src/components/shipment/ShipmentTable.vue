@@ -91,10 +91,16 @@ const onCreateShipment = () => {
   open.value = true;
 };
 
-const onRowClick = (
+const onRowClick = async (
   _event: MouseEvent,
   { item }: { item: ShipmentWithRevisionMessages & Id },
 ) => {
+  await biStore.update(
+    activeConfigId.value,
+    undefined,
+    undefined,
+    new Date(item.validFrom),
+  );
   editShipmentId.value = item.id;
   open.value = true;
 };

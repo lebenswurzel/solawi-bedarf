@@ -39,6 +39,8 @@ import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import { UserWithOrders } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { useTextContentStore } from "../store/textContentStore.ts";
 import MsrpDisplay from "./shop/MsrpDisplay.vue";
+import { useUserStore } from "../store/userStore.ts";
+import ContributionSelect from "./shop/ContributionSelect.vue";
 
 const props = defineProps<{ open: boolean; requestUser?: UserWithOrders }>();
 const emit = defineEmits(["close"]);
@@ -49,9 +51,10 @@ const orderStore = useOrderStore();
 const biStore = useBIStore();
 const uiFeedback = useUiFeedback();
 const textContentStore = useTextContentStore();
+const userStore = useUserStore();
 
 const { depots, activeConfigId, config } = storeToRefs(configStore);
-const { depot, msrp, capacityByDepotId, increaseOnly } = storeToRefs(biStore);
+const { depot, capacityByDepotId } = storeToRefs(biStore);
 const {
   offer,
   depotId,
@@ -59,8 +62,9 @@ const {
   category,
   categoryReason,
   offerReason,
-  orderItems,
-  validFrom,
+  modificationOrderItems,
+  modificationOrderId,
+  modificationOrder,
 } = storeToRefs(orderStore);
 const { organizationInfo } = storeToRefs(textContentStore);
 
@@ -68,7 +72,7 @@ const confirmGTC = ref(false);
 const confirmContribution = ref(false);
 const openFAQ = ref(false);
 const loading = ref(false);
-const model = ref<string>();
+const offerValue = ref<string>();
 const showDepotNote = ref(false);
 
 const sendConfirmationEmail = ref(false);
@@ -113,7 +117,7 @@ watchEffect(() => {
 });
 
 const modelInt = computed(() => {
-  const tmp = parseInt(model.value || "0");
+  const tmp = parseInt(offerValue.value || "0");
   if (isNaN(tmp)) {
     return 0;
   }
@@ -124,21 +128,25 @@ const alternateDepot = computed(() => {
   return depots.value.find((d) => d.id == alternateDepotId.value);
 });
 
+const effectiveMsrp = computed(() => {
+  return biStore.getEffectiveMsrpByOrderId(modificationOrderId.value!);
+});
+
 const enableOfferReason = computed(() =>
-  needsOfferReason(modelInt.value, msrp.value.monthly.total),
+  needsOfferReason(modelInt.value, effectiveMsrp.value.monthly.total),
 );
 
 const offerReasonHint = computed(
   () =>
     !isOfferReasonValid(
       modelInt.value,
-      msrp.value.monthly.total,
+      effectiveMsrp.value.monthly.total,
       offerReason.value,
     ),
 );
 
 const needsHigherOffer = computed(
-  () => !isOfferValid(modelInt.value, msrp.value.monthly.total),
+  () => !isOfferValid(modelInt.value, effectiveMsrp.value.monthly.total),
 );
 
 const enableCategoryReason = computed(() =>
@@ -178,13 +186,14 @@ const requireConfirmContribution = computed(() => {
 });
 
 watch(offer, () => {
-  model.value = offer.value.toString() || "0";
+  console.log("watch offer", offer.value);
+  offerValue.value = offer.value.toString() || "0";
 });
 watchEffect(() => {
   sendConfirmationEmail.value = props.requestUser?.emailEnabled || false;
 });
 onMounted(() => {
-  model.value = offer.value.toString() || "0";
+  offerValue.value = offer.value.toString() || "0";
 });
 
 const onDepotChanged = (val: number) => {
@@ -201,45 +210,37 @@ const clearAlternateDepot = () => {
 
 const onUpdate = (value: string) => {
   const newOffer = parseInt(value || "0");
-  if (increaseOnly.value) {
-    model.value = Math.max(offer.value, newOffer).toString();
-  } else {
-    model.value = newOffer.toString();
-  }
-};
-
-const onBlur = (blur: boolean) => {
-  if (!blur) {
-    const newOffer = parseInt(model.value || "0");
-    if (increaseOnly.value) {
-      model.value = Math.max(offer.value, newOffer).toString();
-    }
-  }
+  offerValue.value = newOffer.toString();
 };
 
 const onClose = async () => {
-  model.value = offer.value.toString() || "0";
+  offerValue.value = offer.value.toString() || "0";
   emit("close");
 };
 
 const onSave = () => {
   loading.value = true;
+  console.log("onSave", offerValue.value);
   saveOrder({
     userId: props.requestUser?.id!,
-    orderItems: orderItems.value,
-    offer: parseInt(model.value || "0"),
+    orderItems: modificationOrderItems.value,
+    offer: parseInt(offerValue.value || "0"),
     depotId: depotId.value.actual!,
     alternateDepotId: alternateDepotId.value,
     category: category.value,
     offerReason: offerReason.value,
     categoryReason: categoryReason.value,
     confirmGTC: confirmGTC.value,
-    validFrom: validFrom.value,
+    validFrom: null,
+    validTo: null,
     requisitionConfigId: activeConfigId.value,
     sendConfirmationEmail: sendConfirmationEmail.value,
   })
     .then(async () => {
-      await biStore.update(activeConfigId.value, props.requestUser?.id);
+      await biStore.update(
+        activeConfigId.value,
+        orderStore.modificationOrderId,
+      );
       props.requestUser?.id &&
         (await orderStore.update(props.requestUser.id, activeConfigId.value));
       loading.value = false;
@@ -271,20 +272,22 @@ const onSave = () => {
           <div class="text-body-2" v-html="t.alert.text"></div>
         </v-alert>
         <MsrpDisplay
-          :offer="orderStore.offer"
-          :hide-offer="true"
+          v-if="modificationOrder"
+          :order="modificationOrder"
           class="mb-5"
+          fixed-contribution
         />
         <v-text-field
           class="mb-5"
-          :model-value="model"
+          :model-value="offerValue"
           @update:model-value="onUpdate"
-          @update:focused="onBlur"
           type="number"
           :hint="
             needsHigherOffer
               ? interpolate(t.offer.hint, {
-                  msrp: Math.ceil(minOffer(msrp.monthly.total)).toString(),
+                  msrp: Math.ceil(
+                    minOffer(effectiveMsrp.monthly.total),
+                  ).toString(),
                 })
               : undefined
           "
@@ -347,16 +350,7 @@ const onSave = () => {
             </div>
           </v-expand-transition>
         </v-alert>
-        <v-select
-          class="mb-5"
-          v-model="category"
-          :items="categoryOptions"
-          item-props
-          :hint="categoryOptions.find((co) => co.value == category)?.subtitle"
-          persistent-hint
-          :label="t.category.label"
-        >
-        </v-select>
+        <ContributionSelect />
         <v-text-field
           class="mb-5"
           v-if="enableCategoryReason"
@@ -376,6 +370,16 @@ const onSave = () => {
           "
           hide-details
         />
+        <v-alert
+          color="warning"
+          variant="outlined"
+          density="compact"
+          v-if="!modificationOrder?.confirmGTC && userStore.isAdmin"
+        >
+          Hinweis an den Admin: Diese Bedarfsanmeldung ist noch nicht durch den
+          Ernteteiler bestätigt. Sie kann erst aktiv werden, wenn sie mindestens
+          einmalig durch das Mitglied bestätigt und gespeichert wurde.
+        </v-alert>
         <div class="mt-3" v-if="requireConfirmContribution">
           {{
             interpolate(t.confirmContribution.title, {

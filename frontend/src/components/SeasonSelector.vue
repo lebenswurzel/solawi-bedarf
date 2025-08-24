@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
 import { storeToRefs } from "pinia";
-import { computed, onMounted, ref } from "vue";
+import { computed, ref, watchEffect } from "vue";
 import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
 import { useConfigStore } from "../store/configStore.ts";
 
@@ -50,8 +50,7 @@ const selectionAvailable = computed(() => {
   return availableConfigs.value.length > 1;
 });
 
-onMounted(async () => {
-  await configStore.update();
+watchEffect(() => {
   selectedConfig.value = config.value?.id;
 });
 

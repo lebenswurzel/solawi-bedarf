@@ -19,22 +19,78 @@ import { storeToRefs } from "pinia";
 import { useBIStore } from "../../store/biStore";
 import { language } from "../../../../shared/src/lang/lang";
 import Markdown from "../design/Markdown.vue";
+import { Msrp, SavedOrder } from "@lebenswurzel/solawi-bedarf-shared/src/types";
+import { computed } from "vue";
+import { useOrderStore } from "../../store/orderStore";
+import OrderRangeDisplay from "./OrderRangeDisplay.vue";
+import ContributionSelect from "./ContributionSelect.vue";
+import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 
 const biStore = useBIStore();
-const { msrp } = storeToRefs(biStore);
+const orderStore = useOrderStore();
+const { visibleOrderId } = storeToRefs(orderStore);
 
 const t = language.pages.shop;
-
 const props = defineProps<{
-  offer: number;
+  order: SavedOrder;
   hideOffer?: boolean;
+  showSelector?: boolean;
+  fixedContribution?: boolean;
 }>();
+
+const isVisibleOrder = computed(() => {
+  return visibleOrderId.value == props.order?.id;
+});
+
+const isModificationOrder = computed(() => {
+  return props.order.id == orderStore.modificationOrderId;
+});
+
+const msrp = computed((): Msrp => {
+  if (!props.order) {
+    return {
+      monthly: { total: 0, selfgrown: 0, cooperation: 0 },
+      yearly: { total: 0, selfgrown: 0, cooperation: 0 },
+      months: 0,
+      contribution: UserCategory.CAT130,
+    };
+  }
+  return biStore.getEffectiveMsrpByOrderId(props.order.id);
+});
 </script>
 <template>
-  <v-card variant="outlined" color="blue-grey">
+  <v-card
+    :variant="isVisibleOrder ? 'elevated' : 'outlined'"
+    :color="isVisibleOrder ? 'primary' : 'blue-grey'"
+  >
+    <v-card-text class="pb-1 pt-3">
+      <v-container fluid class="pa-0">
+        <v-row dense>
+          <v-col cols="2" sm="1" v-if="props.showSelector">
+            <v-icon size="x-large" v-if="isVisibleOrder"
+              >mdi-radiobox-marked</v-icon
+            >
+            <v-icon
+              size="x-large"
+              v-else
+              @click="
+                () =>
+                  props.order?.id &&
+                  orderStore.setVisibleOrderId(props.order?.id)
+              "
+              >mdi-radiobox-blank</v-icon
+            >
+          </v-col>
+          <v-col :cols="props.showSelector ? 10 : 12" sm="11">
+            <OrderRangeDisplay :order="props.order" plain />
+          </v-col>
+        </v-row>
+      </v-container>
+    </v-card-text>
     <v-card-subtitle class="pt-1 text-wrap"
       ><strong>Zusammensetzung des Orientierungswerts</strong> (Werte auf volle
-      Euros gerundet, bezogen auf {{ msrp.months }} Kalendermonate)
+      Euros gerundet, bezogen auf {{ msrp?.months }}
+      Kalendermonate)
 
       <v-tooltip :text="t.cards.products.msrpTooltip" open-on-click>
         <template v-slot:activator="{ props }">
@@ -46,31 +102,54 @@ const props = defineProps<{
       <Markdown
         :markdown="t.cards.products.msrp"
         :values="{
-          total: msrp.monthly.total.toString(),
+          total: msrp?.monthly.total.toString(),
         }"
       />
       <Markdown
         class="pl-5"
         :markdown="t.cards.products.msrpSelfgrown"
         :values="{
-          selfgrown: msrp.monthly.selfgrown.toString(),
+          selfgrown: msrp?.monthly.selfgrown.toString(),
         }"
       />
       <Markdown
         class="pl-5"
         :markdown="t.cards.products.msrpCooperation"
         :values="{
-          cooperation: msrp.monthly.cooperation.toString(),
+          cooperation: msrp?.monthly.cooperation.toString(),
         }"
       />
       <Markdown
         class="py-1"
         :markdown="t.cards.products.offer"
         :values="{
-          offer: props.offer.toString(),
+          offer: props.order?.offer.toString() || '-',
         }"
         v-if="!props.hideOffer"
       />
+      <ContributionSelect
+        class="mt-2"
+        compact
+        :contribution="
+          isModificationOrder && props.fixedContribution !== true
+            ? undefined
+            : msrp.contribution
+        "
+      />
+    </v-card-text>
+    <v-card-text class="py-2" v-if="!props.order.confirmGTC">
+      <v-alert
+        class="py-2 text-caption font-weight-bold"
+        icon="mdi-lightbulb-alert"
+        variant="outlined"
+      >
+        Diese Bedarfsanmeldung ist noch nicht bestätigt und wird erst aktiv,
+        wenn sie gespeichert wurde.
+        <template v-if="orderStore.currentOrderId"
+          >Bis dahin bleibt die bisherige Bedarfsanmeldung bis zum Ende der
+          Saison gültig.</template
+        >
+      </v-alert>
     </v-card-text>
   </v-card>
 </template>

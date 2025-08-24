@@ -41,8 +41,13 @@ const biStore = useBIStore();
 const userStore = useUserStore();
 const configStore = useConfigStore();
 
-const { actualOrderItemsByProductId, savedOrderItemsByProductId } =
-  storeToRefs(orderStore);
+const {
+  actualOrderItemsByProductId,
+  savedOrderItemsByProductId,
+  currentOrderItemsByProductId,
+  isModifyingOrder,
+  hasPreviousOrder,
+} = storeToRefs(orderStore);
 const {
   soldByProductId,
   submit,
@@ -72,7 +77,6 @@ const deliveryPercentage = computed(() => {
 
   return {
     ...result,
-    roundedPercentage: Math.round(result.percentage),
     roundedDeliveries: Math.round(
       (result.percentage * product.value.frequency) / 100,
     ),
@@ -98,21 +102,25 @@ const maxValueAvailable = computed(() => {
 });
 
 const minValueAvailable = computed(() => {
-  const savedOrderItem = savedOrderItemsByProductId.value[props.productId];
+  if (isModifyingOrder.value) {
+    return 0;
+  }
   if (config.value) {
-    return getMinAvailable(
-      savedOrderItem || 0,
+    const result = getMinAvailable(
+      savedOrderItemsByProductId.value[props.productId] || 0,
       props.productId,
       currentUser.value?.role,
       config.value,
       now.value,
       productsById.value,
     );
+    return result;
   }
   return product.value.quantityMin;
 });
 
 const model = ref<string>();
+const oldValue = ref<string>();
 const errorMessage = ref<string | null>(null);
 
 const onUpdate = (value: string) => {
@@ -159,14 +167,16 @@ watch([productsById, savedOrderItemsByProductId], () => {
 onMounted(() => {
   model.value =
     actualOrderItemsByProductId.value[props.productId]?.toString() || "0";
+  oldValue.value =
+    currentOrderItemsByProductId.value[props.productId]?.toString() || "0";
 });
 </script>
 
 <template>
-  <v-container class="pa-0">
-    <v-row no-gutters align="center" justify="center">
-      <v-col cols="12" sm="5">
-        {{ product.name }}
+  <v-container class="pa-0" fluid>
+    <v-row dense align="center" justify="center">
+      <v-col cols="12" :md="hasPreviousOrder ? 6 : 8">
+        {{ product.name }} {{ product.id }}
         <v-tooltip
           :text="product.description"
           v-if="product.description"
@@ -177,7 +187,7 @@ onMounted(() => {
           </template>
         </v-tooltip>
       </v-col>
-      <v-col cols="3" sm="2">
+      <v-col cols="2" md="1">
         <div>
           <v-tooltip
             :text="
@@ -209,7 +219,7 @@ onMounted(() => {
           {{ deliveryPercentage.roundedDeliveries }}
         </div>
       </v-col>
-      <v-col cols="3" sm="2">
+      <v-col cols="2" md="1">
         <v-tooltip
           :text="interpolate(t.stock, { stock: percentageSold.toString() })"
           open-on-click
@@ -226,7 +236,7 @@ onMounted(() => {
           </template>
         </v-tooltip>
       </v-col>
-      <v-col cols="6" sm="3">
+      <v-col :cols="hasPreviousOrder ? 4 : 6" md="2">
         <v-text-field
           :label="interpolate(t.value, { unit: unit })"
           type="number"
@@ -234,7 +244,7 @@ onMounted(() => {
           :max="maxValueAvailable"
           :step="product.quantityStep"
           :model-value="model"
-          :disabled="!product?.active || !submit"
+          :disabled="!product?.active || !submit || !isModifyingOrder"
           :error-messages="errorMessage"
           @update:model-value="
             (v) => {
@@ -243,6 +253,14 @@ onMounted(() => {
             }
           "
           @update:focused="onBlur"
+        ></v-text-field>
+      </v-col>
+      <v-col cols="4" md="2" v-if="hasPreviousOrder">
+        <v-text-field
+          :label="interpolate(t.oldValue, { unit: unit })"
+          type="number"
+          :model-value="oldValue"
+          :disabled="true"
         ></v-text-field>
       </v-col>
     </v-row>

@@ -26,7 +26,11 @@ import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import { Order } from "../../database/Order";
 import { appConfig } from "@lebenswurzel/solawi-bedarf-shared/src/config";
 import { RequisitionConfig } from "../../database/RequisitionConfig";
-import { SaveUserRequest } from "@lebenswurzel/solawi-bedarf-shared/src/types";
+import {
+  SaveUserRequest,
+  UserId,
+} from "@lebenswurzel/solawi-bedarf-shared/src/types";
+import { getUserOrders } from "../order/getAllOrders";
 
 export const saveUser = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -47,57 +51,70 @@ export const saveUser = async (
       "missing or bad requisition config id " + requestUser.requisitionConfigId,
     );
   }
-  if (requestUser.id) {
-    const user = await AppDataSource.getRepository(User).findOneBy({
-      id: requestUser.id,
-    });
-    if (!user) {
-      ctx.throw(http.bad_request);
+  try {
+    if (requestUser.id) {
+      const user = await AppDataSource.getRepository(User).findOneBy({
+        id: requestUser.id,
+      });
+      if (!user) {
+        ctx.throw(http.bad_request);
+      } else {
+        user.name = requestUser.name;
+        user.role = requestUser.role;
+        user.active = requestUser.active;
+        if (requestUser.password) {
+          user.hash = await hashPassword(requestUser.password);
+          await invalidateTokenForUser(user.id);
+        }
+        await AppDataSource.getRepository(User).save(user);
+        if (requestUser.orderValidFrom) {
+          await updateOrderValidFrom(
+            user.id,
+            requestUser.orderValidFrom,
+            requestUser.requisitionConfigId,
+          );
+        }
+        ctx.status = http.no_content;
+      }
     } else {
+      const user = new User();
       user.name = requestUser.name;
+      user.hash = await hashPassword(requestUser.password!);
       user.role = requestUser.role;
       user.active = requestUser.active;
-      if (requestUser.password) {
-        user.hash = await hashPassword(requestUser.password);
-        await invalidateTokenForUser(user.id);
-      }
       await AppDataSource.getRepository(User).save(user);
       if (requestUser.orderValidFrom) {
         await updateOrderValidFrom(
-          user,
+          user.id,
           requestUser.orderValidFrom,
           requestUser.requisitionConfigId,
         );
       }
-      ctx.status = http.no_content;
+      ctx.status = http.created;
     }
-  } else {
-    const user = new User();
-    user.name = requestUser.name;
-    user.hash = await hashPassword(requestUser.password!);
-    user.role = requestUser.role;
-    user.active = requestUser.active;
-    await AppDataSource.getRepository(User).save(user);
-    if (requestUser.orderValidFrom) {
-      await updateOrderValidFrom(
-        user,
-        requestUser.orderValidFrom,
-        requestUser.requisitionConfigId,
-      );
-    }
-    ctx.status = http.created;
+  } catch (error: any) {
+    ctx.throw(http.bad_request, error.message, error);
   }
 };
 
 export const updateOrderValidFrom = async (
-  user: User,
+  userId: UserId,
   orderValidFrom: Date,
   configId: number,
 ) => {
-  let order = await AppDataSource.getRepository(Order).findOne({
-    where: { userId: user.id, requisitionConfigId: configId },
+  let orders = await AppDataSource.getRepository(Order).find({
+    where: { userId, requisitionConfigId: configId },
+    order: { validFrom: "ASC" },
+    relations: { orderItems: true },
   });
-  if (order) {
+  if (orders.length > 1) {
+    throw new Error("Multiple orders found, cannot update validFrom date!");
+  }
+  if (orders.length === 1) {
+    const order = orders[0];
+    if (order.orderItems && order.orderItems.length > 0) {
+      throw new Error("Order has order items, cannot update validFrom date!");
+    }
     await AppDataSource.getRepository(Order).update(
       { id: order.id },
       {
@@ -106,11 +123,20 @@ export const updateOrderValidFrom = async (
       },
     );
   } else {
-    order = new Order();
-    order.user = user;
+    const config = await AppDataSource.getRepository(
+      RequisitionConfig,
+    ).findOneBy({
+      id: configId,
+    });
+    if (!config) {
+      throw new Error(`Config ${configId} not found`);
+    }
+    const order = new Order();
+    order.userId = userId;
     order.offer = 0;
     order.category = appConfig.defaultCategory;
     order.validFrom = orderValidFrom;
+    order.validTo = config.validTo;
     order.productConfiguration = "";
     order.requisitionConfigId = configId;
     await AppDataSource.getRepository(Order).save(order);
