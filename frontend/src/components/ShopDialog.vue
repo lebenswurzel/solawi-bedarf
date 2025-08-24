@@ -280,7 +280,11 @@ const onSave = () => {
         >
           <div class="text-body-2" v-html="t.alert.text"></div>
         </v-alert>
-        <MsrpDisplay :order="orderStore.modificationOrder" class="mb-5" />
+        <MsrpDisplay
+          v-if="orderStore.modificationOrder"
+          :order="orderStore.modificationOrder"
+          class="mb-5"
+        />
         <v-text-field
           class="mb-5"
           :model-value="offerValue"
