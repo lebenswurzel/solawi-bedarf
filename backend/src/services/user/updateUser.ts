@@ -63,7 +63,7 @@ export const updateUser = async (
   try {
     if (requestUser.orderValidFrom !== undefined) {
       await updateOrderValidFrom(
-        user,
+        user.id,
         requestUser.orderValidFrom,
         requestUser.configId,
       );

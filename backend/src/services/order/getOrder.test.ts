@@ -33,6 +33,7 @@ import { saveOrder } from "./saveOrder";
 import { AppDataSource } from "../../database/database";
 import { RequisitionConfig } from "../../database/RequisitionConfig";
 import { addMonths } from "date-fns";
+import { updateOrderValidFrom } from "../user/saveUser";
 
 test("prevent unauthorized access", async () => {
   const ctx = createBasicTestCtx();
@@ -62,8 +63,16 @@ testAsUser1("get order", async ({ userData }: TestUserData) => {
   // no order yet
   expect(ctx.body).toMatchObject({});
 
+  // create the order by updating the validFrom date for the user
+  // must be set to a future date
+  await updateOrderValidFrom(
+    userData.userId,
+    addMonths(new Date(), 1),
+    configId,
+  );
+
   const depot = await getDepotByName("d1");
-  const createOrderRequest: OrderType = {
+  const saveOrderRequest: OrderType = {
     category: UserCategory.CAT100,
     categoryReason: "nothing special",
     depotId: depot.id,
@@ -71,13 +80,14 @@ testAsUser1("get order", async ({ userData }: TestUserData) => {
     offer: 0,
     alternateDepotId: null,
     offerReason: "",
-    validFrom: null,
+    validFrom: addMonths(new Date(), -1), // update to the past so that getOrder returns this order
+    validTo: addMonths(new Date(), 2),
     requisitionConfigId: configId,
   };
 
   // create order
-  const ctxCreateOrder = createBasicTestCtx(
-    { ...createOrderRequest, confirmGTC: true },
+  const ctxSaveOrder = createBasicTestCtx(
+    { ...saveOrderRequest, confirmGTC: true },
     userData.token,
     undefined,
     {
@@ -85,18 +95,13 @@ testAsUser1("get order", async ({ userData }: TestUserData) => {
       configId,
     },
   );
-  await saveOrder(ctxCreateOrder);
+  await saveOrder(ctxSaveOrder);
 
   const config = await AppDataSource.getRepository(
     RequisitionConfig,
   ).findOneOrFail({ where: { id: configId } });
 
-  const expectedValidFrom = addMonths(config.validFrom, -2);
-
   // get existing order
   await getOrder(ctx);
-  expect(ctx.body as Order).toMatchObject({
-    ...createOrderRequest,
-    validFrom: expectedValidFrom,
-  });
+  expect(ctx.body as Order).toMatchObject(saveOrderRequest);
 });
