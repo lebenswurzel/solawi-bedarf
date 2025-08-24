@@ -101,9 +101,12 @@ const maxValueAvailable = computed(() => {
 });
 
 const minValueAvailable = computed(() => {
+  if (isModifyingOrder.value) {
+    return 0;
+  }
   if (config.value) {
     const result = getMinAvailable(
-      0,
+      savedOrderItemsByProductId.value[props.productId] || 0,
       props.productId,
       currentUser.value?.role,
       config.value,

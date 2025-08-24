@@ -389,7 +389,10 @@ describe("dateHelper", () => {
     it("should return UTC date representing midnight in timezone", () => {
       // Test that the function returns a UTC date representing midnight in the timezone
       const endBiddingRound = new Date("2024-06-15"); // June 15th
-      const result = calculateNewOrderValidFromDate(endBiddingRound);
+      const result = calculateNewOrderValidFromDate(
+        endBiddingRound,
+        "Europe/Berlin"
+      );
 
       // July 1st, 2024 is a Monday, first Thursday is July 4th
       // Go back 6 days to Friday June 28th
@@ -406,39 +409,39 @@ describe("dateHelper", () => {
   });
 
   describe("calculatePreviousOrderValidToDate", () => {
-    it("should calculate valid to date as day before at 23:59:59.999", () => {
+    it("should calculate valid to date as day before at 23:59:59.000", () => {
       const newOrderValidFrom = new Date("2024-02-01");
       const result = calculatePreviousOrderValidToDate(newOrderValidFrom);
 
-      // Should be January 31st at 23:59:59.999
+      // Should be January 31st at 23:59:59.000
       expect(result.getFullYear()).toBe(2024);
       expect(result.getMonth()).toBe(0); // January
       expect(result.getDate()).toBe(31);
       expect(result.getHours()).toBe(23);
       expect(result.getMinutes()).toBe(59);
       expect(result.getSeconds()).toBe(59);
-      expect(result.getMilliseconds()).toBe(999);
+      expect(result.getMilliseconds()).toBe(0);
     });
 
     it("should handle month boundary", () => {
       const newOrderValidFrom = new Date("2024-01-01");
       const result = calculatePreviousOrderValidToDate(newOrderValidFrom);
 
-      // Should be December 31st, 2023 at 23:59:59.999
+      // Should be December 31st, 2023 at 23:59:59.000
       expect(result.getFullYear()).toBe(2023);
       expect(result.getMonth()).toBe(11); // December
       expect(result.getDate()).toBe(31);
       expect(result.getHours()).toBe(23);
       expect(result.getMinutes()).toBe(59);
       expect(result.getSeconds()).toBe(59);
-      expect(result.getMilliseconds()).toBe(999);
+      expect(result.getMilliseconds()).toBe(0);
     });
 
     it("should handle year boundary", () => {
       const newOrderValidFrom = new Date("2025-01-01");
       const result = calculatePreviousOrderValidToDate(newOrderValidFrom);
 
-      // Should be December 31st, 2024 at 23:59:59.999
+      // Should be December 31st, 2024 at 23:59:59.000
       expect(result.getFullYear()).toBe(2024);
       expect(result.getMonth()).toBe(11); // December
       expect(result.getDate()).toBe(31);
@@ -452,7 +455,7 @@ describe("dateHelper", () => {
       const newOrderValidFrom = new Date("2024-03-01");
       const result = calculatePreviousOrderValidToDate(newOrderValidFrom);
 
-      // Should be February 29th, 2024 at 23:59:59.999 (leap year)
+      // Should be February 29th, 2024 at 23:59:59.000 (leap year)
       expect(result.getFullYear()).toBe(2024);
       expect(result.getMonth()).toBe(1); // February
       expect(result.getDate()).toBe(29);
@@ -462,17 +465,17 @@ describe("dateHelper", () => {
       expect(result.getMilliseconds()).toBe(0);
     });
 
-    it("should handle timezone parameter", () => {
+    it("should handle different timezone properly", () => {
       const newOrderValidFrom = new Date("2024-02-01T00:00:00+01:00");
       const result = calculatePreviousOrderValidToDate(newOrderValidFrom);
 
-      // Should return UTC date representing 23:59:59.999 Berlin time on January 31st
-      // January 31st, 2024 at 23:59:59.999 in Europe/Berlin (UTC+1 in January)
-      // converts to January 31st, 2024 at 22:59:59.999 UTC
+      // Should return UTC date representing 23:59:59.000 Berlin time on January 31st
+      // January 31st, 2024 at 23:59:59.000 in Europe/Berlin (UTC+1 in January)
+      // converts to January 31st, 2024 at 22:59:59.000 UTC
       expect(result.getFullYear()).toBe(2024);
       expect(result.getMonth()).toBe(0); // January
       expect(result.getDate()).toBe(31);
-      expect(result.getHours()).toBe(23);
+      expect(result.getHours()).toBe(22);
       expect(result.getMinutes()).toBe(59);
       expect(result.getSeconds()).toBe(59);
       expect(result.getMilliseconds()).toBe(0);

@@ -114,9 +114,6 @@ export const getMinAvailable = (
   productsById: ProductsById
 ) => {
   const product = productsById[productId];
-  if ((savedValue || 0) < product.quantityMin) {
-    return savedValue || 0;
-  }
   if (isIncreaseOnly(userRole, requisitionConfig, now) && savedValue) {
     return Math.max(savedValue, product.quantityMin);
   }
