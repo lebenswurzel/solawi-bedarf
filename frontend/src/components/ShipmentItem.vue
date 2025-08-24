@@ -56,7 +56,7 @@ const neededQuantity = computed(() => {
       deliveredByProductIdDepotId.value[props.shipmentItem.productId];
     if (deliveredByDepotId) {
       const valueForShipment = props.shipmentItem.depotIds.reduce(
-        (acc, cur) => acc + deliveredByDepotId[cur].valueForShipment,
+        (acc, cur) => acc + deliveredByDepotId[cur]?.valueForShipment || 0,
         0,
       );
       const { multiplicator, conversionFrom, conversionTo } =

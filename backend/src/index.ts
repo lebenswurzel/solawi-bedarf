@@ -57,6 +57,7 @@ import { errorLogger } from "./middleware/errorLogger";
 import { getErrorLog } from "./services/getErrorLog";
 import { getUserShipments } from "./services/shipment/getUserShipments";
 import { calcMsrp } from "./services/bi/calcMsrp";
+import { deleteShipment } from "./services/shipment/deleteShipment";
 
 const port = config.server.serverPort;
 const app = new Koa();
@@ -122,6 +123,7 @@ router.get("/shop/calcMsrp", calcMsrp);
 router.get("/shipment", getUserShipments);
 router.get("/shipments", getShipments);
 router.post("/shipment", saveShipment);
+router.delete("/shipment", deleteShipment);
 
 router.get("/productCategory", getProductCategory);
 router.post("/productCategory", saveProductCategory);
