@@ -39,6 +39,7 @@ import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import { UserWithOrders } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { useTextContentStore } from "../store/textContentStore.ts";
 import MsrpDisplay from "./shop/MsrpDisplay.vue";
+import { useUserStore } from "../store/userStore.ts";
 
 const props = defineProps<{ open: boolean; requestUser?: UserWithOrders }>();
 const emit = defineEmits(["close"]);
@@ -49,10 +50,10 @@ const orderStore = useOrderStore();
 const biStore = useBIStore();
 const uiFeedback = useUiFeedback();
 const textContentStore = useTextContentStore();
+const userStore = useUserStore();
 
 const { depots, activeConfigId, config } = storeToRefs(configStore);
-const { depot, effectiveMsrpByOrderId, capacityByDepotId } =
-  storeToRefs(biStore);
+const { depot, capacityByDepotId } = storeToRefs(biStore);
 const {
   offer,
   depotId,
@@ -62,6 +63,7 @@ const {
   offerReason,
   modificationOrderItems,
   modificationOrderId,
+  modificationOrder,
 } = storeToRefs(orderStore);
 const { organizationInfo } = storeToRefs(textContentStore);
 
@@ -126,19 +128,7 @@ const alternateDepot = computed(() => {
 });
 
 const effectiveMsrp = computed(() => {
-  if (
-    modificationOrderId.value &&
-    Object.keys(effectiveMsrpByOrderId.value).includes(
-      modificationOrderId.value.toString(),
-    )
-  ) {
-    return effectiveMsrpByOrderId.value[modificationOrderId.value!];
-  }
-  return {
-    monthly: { total: 0, selfgrown: 0, cooperation: 0 },
-    yearly: { total: 0, selfgrown: 0, cooperation: 0 },
-    months: 0,
-  };
+  return biStore.getEffectiveMsrpByOrderId(modificationOrderId.value!);
 });
 
 const enableOfferReason = computed(() =>
@@ -281,8 +271,8 @@ const onSave = () => {
           <div class="text-body-2" v-html="t.alert.text"></div>
         </v-alert>
         <MsrpDisplay
-          v-if="orderStore.modificationOrder"
-          :order="orderStore.modificationOrder"
+          v-if="modificationOrder"
+          :order="modificationOrder"
           class="mb-5"
         />
         <v-text-field
@@ -387,6 +377,16 @@ const onSave = () => {
           "
           hide-details
         />
+        <v-alert
+          color="warning"
+          variant="outlined"
+          density="compact"
+          v-if="!modificationOrder?.confirmGTC && userStore.isAdmin"
+        >
+          Hinweis an den Admin: Diese Bedarfsanmeldung ist noch nicht durch den
+          Ernteteiler bestätigt. Sie kann erst aktiv werden, wenn sie mindestens
+          einmalig durch das Mitglied bestätigt und gespeichert wurde.
+        </v-alert>
         <div class="mt-3" v-if="requireConfirmContribution">
           {{
             interpolate(t.confirmContribution.title, {

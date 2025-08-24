@@ -25,7 +25,6 @@ import { useOrderStore } from "../../store/orderStore";
 import OrderRangeDisplay from "./OrderRangeDisplay.vue";
 
 const biStore = useBIStore();
-const { effectiveMsrpByOrderId } = storeToRefs(biStore);
 const orderStore = useOrderStore();
 const { visibleOrderId } = storeToRefs(orderStore);
 
@@ -33,6 +32,7 @@ const t = language.pages.shop;
 const props = defineProps<{
   order: SavedOrder;
   hideOffer?: boolean;
+  showSelector?: boolean;
 }>();
 
 const isVisibleOrder = computed(() => {
@@ -47,7 +47,7 @@ const msrp = computed((): Msrp => {
       months: 0,
     };
   }
-  return effectiveMsrpByOrderId.value[props.order.id];
+  return biStore.getEffectiveMsrpByOrderId(props.order.id);
 });
 </script>
 <template>
@@ -58,7 +58,7 @@ const msrp = computed((): Msrp => {
     <v-card-text class="pb-1 pt-3">
       <v-container fluid class="pa-0">
         <v-row dense>
-          <v-col cols="2" sm="1">
+          <v-col cols="2" sm="1" v-if="props.showSelector">
             <v-icon size="x-large" v-if="isVisibleOrder"
               >mdi-radiobox-marked</v-icon
             >
@@ -73,7 +73,7 @@ const msrp = computed((): Msrp => {
               >mdi-radiobox-blank</v-icon
             >
           </v-col>
-          <v-col cols="10" sm="11">
+          <v-col :cols="props.showSelector ? 10 : 12" sm="11">
             <OrderRangeDisplay :order="props.order" plain />
           </v-col>
         </v-row>
