@@ -40,6 +40,7 @@ import { UserWithOrders } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts"
 import { useTextContentStore } from "../store/textContentStore.ts";
 import MsrpDisplay from "./shop/MsrpDisplay.vue";
 import { useUserStore } from "../store/userStore.ts";
+import ContributionSelect from "./shop/ContributionSelect.vue";
 
 const props = defineProps<{ open: boolean; requestUser?: UserWithOrders }>();
 const emit = defineEmits(["close"]);
@@ -274,6 +275,7 @@ const onSave = () => {
           v-if="modificationOrder"
           :order="modificationOrder"
           class="mb-5"
+          fixed-contribution
         />
         <v-text-field
           class="mb-5"
@@ -348,16 +350,7 @@ const onSave = () => {
             </div>
           </v-expand-transition>
         </v-alert>
-        <v-select
-          class="mb-5"
-          v-model="category"
-          :items="categoryOptions"
-          item-props
-          :hint="categoryOptions.find((co) => co.value == category)?.subtitle"
-          persistent-hint
-          :label="t.category.label"
-        >
-        </v-select>
+        <ContributionSelect />
         <v-text-field
           class="mb-5"
           v-if="enableCategoryReason"

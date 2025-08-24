@@ -43,17 +43,17 @@ const getYearlyBaseMsrp = (orderItem: OrderItem, product: Product) => {
 
 const adjustMsrp = (
   baseMsrp: number,
-  category: UserCategory,
+  contribution: UserCategory,
   months: number
 ) => {
   if (baseMsrp > 0) {
-    return (appConfig.msrp[category].relative * baseMsrp) / months;
+    return (appConfig.msrp[contribution].relative * baseMsrp) / months;
   }
   return 0;
 };
 
 export const getOrderItemAdjustedMonthlyMsrp = (
-  category: UserCategory,
+  contribution: UserCategory,
   orderItem: OrderItem,
   productById: ProductsById,
   months: number,
@@ -62,11 +62,11 @@ export const getOrderItemAdjustedMonthlyMsrp = (
   const baseMsrp =
     getYearlyBaseMsrp(orderItem, productById[orderItem.productId]) *
     (productMsrpWeights ? productMsrpWeights[orderItem.productId] : 1);
-  return adjustMsrp(baseMsrp, category, months);
+  return adjustMsrp(baseMsrp, contribution, months);
 };
 
 export const getMsrp = (
-  category: UserCategory,
+  contribution: UserCategory,
   orderItems: OrderItem[],
   productsById: ProductsById,
   months: number,
@@ -77,7 +77,7 @@ export const getMsrp = (
       (acc, orderItem) =>
         acc +
         getOrderItemAdjustedMonthlyMsrp(
-          category,
+          contribution,
           orderItem,
           productsById,
           months,
@@ -97,7 +97,7 @@ export const getMsrp = (
         (acc, orderItem) =>
           acc +
           getOrderItemAdjustedMonthlyMsrp(
-            category,
+            contribution,
             orderItem,
             productsById,
             months,
@@ -119,6 +119,7 @@ export const getMsrp = (
       cooperation: (adjustedMonthlyTotal - adjustedMonthlySelfgrown) * months,
     },
     months,
+    contribution,
   };
 };
 
@@ -183,7 +184,7 @@ export const calculateEffectiveMsrp = (
       productMsrps: o.orderItems.reduce(
         (acc, oi) => {
           acc[productKey(oi, productsById)] = getOrderItemAdjustedMonthlyMsrp(
-            o.category,
+            msrpByOrderId[o.id].contribution,
             oi,
             productsById,
             msrpByOrderId[o.id].months,

@@ -40,6 +40,7 @@ import {
   isRequisitionActive,
 } from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition.ts";
 import { useVersionInfoStore } from "./versionInfoStore.ts";
+import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 
 export const useBIStore = defineStore("bi", () => {
   const now = ref<Date>(new Date());
@@ -158,8 +159,11 @@ export const useBIStore = defineStore("bi", () => {
         config.value?.validTo,
         versionInfoStore.versionInfo?.serverTimeZone,
       );
+      const relevantCategory =
+        o.id === modificationOrder.value?.id ? category.value : o.category;
+      console.log("relevantCategory", o.id, relevantCategory);
       const msrp = getMsrp(
-        category.value,
+        relevantCategory,
         actualOrderItems,
         productsById.value,
         validMonths,
@@ -230,6 +234,7 @@ export const useBIStore = defineStore("bi", () => {
       monthly: { total: 0, selfgrown: 0, cooperation: 0 },
       yearly: { total: 0, selfgrown: 0, cooperation: 0 },
       months: 0,
+      contribution: UserCategory.CAT130,
     };
   };
 

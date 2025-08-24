@@ -420,6 +420,7 @@ export interface Msrp {
     cooperation: number;
   };
   months: number;
+  contribution: UserCategory;
 }
 
 export interface OrganizationInfo {

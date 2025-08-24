@@ -23,6 +23,8 @@ import { Msrp, SavedOrder } from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import { computed } from "vue";
 import { useOrderStore } from "../../store/orderStore";
 import OrderRangeDisplay from "./OrderRangeDisplay.vue";
+import ContributionSelect from "./ContributionSelect.vue";
+import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 
 const biStore = useBIStore();
 const orderStore = useOrderStore();
@@ -33,10 +35,15 @@ const props = defineProps<{
   order: SavedOrder;
   hideOffer?: boolean;
   showSelector?: boolean;
+  fixedContribution?: boolean;
 }>();
 
 const isVisibleOrder = computed(() => {
   return visibleOrderId.value == props.order?.id;
+});
+
+const isModificationOrder = computed(() => {
+  return props.order.id == orderStore.modificationOrderId;
 });
 
 const msrp = computed((): Msrp => {
@@ -45,6 +52,7 @@ const msrp = computed((): Msrp => {
       monthly: { total: 0, selfgrown: 0, cooperation: 0 },
       yearly: { total: 0, selfgrown: 0, cooperation: 0 },
       months: 0,
+      contribution: UserCategory.CAT130,
     };
   }
   return biStore.getEffectiveMsrpByOrderId(props.order.id);
@@ -118,6 +126,15 @@ const msrp = computed((): Msrp => {
           offer: props.order?.offer.toString() || '-',
         }"
         v-if="!props.hideOffer"
+      />
+      <ContributionSelect
+        class="mt-2"
+        compact
+        :contribution="
+          isModificationOrder && props.fixedContribution !== true
+            ? undefined
+            : msrp.contribution
+        "
       />
     </v-card-text>
     <v-card-text class="py-2" v-if="!props.order.confirmGTC">
