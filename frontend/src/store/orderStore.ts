@@ -118,9 +118,12 @@ export const useOrderStore = defineStore("orderStore", () => {
   const isModifyingOrder = computed(() => {
     return (
       modificationOrderId.value !== undefined &&
-      currentOrderId.value !== undefined &&
       visibleOrderId.value === modificationOrderId.value
     );
+  });
+
+  const hasPreviousOrder = computed(() => {
+    return isModifyingOrder.value && currentOrderId.value !== undefined;
   });
 
   const mapOrderItems = (orderItems: OrderItem[]) => {
@@ -209,6 +212,7 @@ export const useOrderStore = defineStore("orderStore", () => {
     currentOrder,
     selectedShipmentDate,
     isModifyingOrder,
+    hasPreviousOrder,
     visibleOrderId,
     updateOrderItem,
     update,

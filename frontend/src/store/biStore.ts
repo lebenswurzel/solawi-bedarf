@@ -220,6 +220,19 @@ export const useBIStore = defineStore("bi", () => {
     return depots.value.find((d) => d.id == depotId.value.actual);
   });
 
+  const getEffectiveMsrpByOrderId = (orderId: OrderId): Msrp => {
+    if (
+      Object.keys(effectiveMsrpByOrderId.value).includes(orderId.toString())
+    ) {
+      return effectiveMsrpByOrderId.value[orderId];
+    }
+    return {
+      monthly: { total: 0, selfgrown: 0, cooperation: 0 },
+      yearly: { total: 0, selfgrown: 0, cooperation: 0 },
+      months: 0,
+    };
+  };
+
   const update = async (
     configId: number,
     orderId?: number,
@@ -253,6 +266,6 @@ export const useBIStore = defineStore("bi", () => {
     offers,
     update,
     now,
-    effectiveMsrpByOrderId,
+    getEffectiveMsrpByOrderId,
   };
 });

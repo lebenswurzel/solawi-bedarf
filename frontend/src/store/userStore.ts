@@ -18,6 +18,7 @@ import { defineStore } from "pinia";
 import { computed, onUnmounted, ref } from "vue";
 import type { UserWithOrders } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { getUser } from "../requests/user.ts";
+import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 
 export enum LoginState {
   ANONYMOUS,
@@ -58,6 +59,10 @@ export const useUserStore = defineStore("userStore", () => {
   const currentUser = computed(() =>
     users.value.find((user) => user.id == userId.value),
   );
+
+  const isAdmin = computed(() => {
+    return currentUser.value?.role === UserRole.ADMIN;
+  });
 
   const userOptions = computed(() =>
     users.value.map((user) => ({ title: user.name, value: user.id })),
@@ -130,6 +135,7 @@ export const useUserStore = defineStore("userStore", () => {
     tokenValidUntil,
     remainingTokenTimeSeconds,
     remainingTimeHumanized,
+    isAdmin,
     update,
     init,
     clear,

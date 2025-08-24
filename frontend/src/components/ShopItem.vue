@@ -46,6 +46,7 @@ const {
   savedOrderItemsByProductId,
   currentOrderItemsByProductId,
   isModifyingOrder,
+  hasPreviousOrder,
 } = storeToRefs(orderStore);
 const {
   soldByProductId,
@@ -174,7 +175,7 @@ onMounted(() => {
 <template>
   <v-container class="pa-0" fluid>
     <v-row dense align="center" justify="center">
-      <v-col cols="12" :md="isModifyingOrder ? 6 : 8">
+      <v-col cols="12" :md="hasPreviousOrder ? 6 : 8">
         {{ product.name }} {{ product.id }}
         <v-tooltip
           :text="product.description"
@@ -235,7 +236,7 @@ onMounted(() => {
           </template>
         </v-tooltip>
       </v-col>
-      <v-col :cols="isModifyingOrder ? 4 : 6" md="2">
+      <v-col :cols="hasPreviousOrder ? 4 : 6" md="2">
         <v-text-field
           :label="interpolate(t.value, { unit: unit })"
           type="number"
@@ -254,7 +255,7 @@ onMounted(() => {
           @update:focused="onBlur"
         ></v-text-field>
       </v-col>
-      <v-col cols="4" md="2" v-if="isModifyingOrder">
+      <v-col cols="4" md="2" v-if="hasPreviousOrder">
         <v-text-field
           :label="interpolate(t.oldValue, { unit: unit })"
           type="number"

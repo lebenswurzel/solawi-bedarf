@@ -193,26 +193,11 @@ const disableSaveButton = computed(() => {
 
   <v-card class="ma-2">
     <v-card-title>{{ t.cards.products.title }} für <SeasonText /></v-card-title>
-    <v-card-text v-if="allOrders.length > 0" class="pb-0">
-      <!-- Debug info -->
-      <div v-if="allOrders.length > 1" class="text-caption text-grey mb-2">
-        {{ allOrders.length }} Bedarfsanmeldungen verfügbar
-        <div v-for="order in allOrders" :key="order.id">
-          {{ order.validFrom }} - {{ order.validTo }}
-        </div>
-      </div>
-      <div
-        v-else-if="allOrders.length === 1"
-        class="text-caption text-grey mb-2"
-      >
-        1 Bedarfsanmeldung verfügbar
-      </div>
-    </v-card-text>
     <v-container fluid class="py-0">
       <v-row dense>
         <v-col cols="12" md="6" v-for="order in allOrders" :key="order.id">
           <v-card-text class="pa-1">
-            <MsrpDisplay :order="order" />
+            <MsrpDisplay :order="order" :show-selector="allOrders.length > 1" />
           </v-card-text>
         </v-col>
       </v-row>
