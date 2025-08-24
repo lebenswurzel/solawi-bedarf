@@ -165,6 +165,7 @@ export const bi = async (
     },
     where: {
       requisitionConfigId: configId,
+      confirmGTC: true,
     },
     order: { userId: "ASC", validFrom: "ASC" }, // Order by user and then by validity
   });
