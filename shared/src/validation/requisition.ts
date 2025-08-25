@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { UserRole } from "../enum";
-import { ExistingConfig, Order, OrderId, SavedOrder } from "../types";
+import { ExistingConfig, Msrp, Order, OrderId, SavedOrder } from "../types";
 import { isDateInRange } from "../util/dateHelper";
 
 export const isRequisitionActive = (
@@ -77,6 +77,77 @@ export const isValidBiddingOrder = (
     }
   }
   return true;
+};
+
+/**
+ * Check if the modification of the monthly msrp is valid based on the following rules:
+ * - previous offer <= modification offer
+ * - previous self grown <= modification self grown
+ * - previous cooperation may only be greater than modification cooperation if the self grown difference >= cooperation difference
+ *
+ * @param previousMsrp
+ * @param modificationMsrp
+ * @returns
+ */
+export const validateModificationMsrp = (
+  previous: {
+    msrp: Msrp;
+    offer: number;
+  },
+  modification: {
+    msrp: Msrp;
+    offer: number;
+  }
+): {
+  errors: string[] | null;
+  offerValid: boolean;
+  selfgrownValid: boolean;
+  cooperationValid: boolean;
+  allValid: boolean;
+} => {
+  const selfgrownDifference =
+    modification.msrp.monthly.selfgrown - previous.msrp.monthly.selfgrown;
+  const cooperationDifference =
+    modification.msrp.monthly.cooperation - previous.msrp.monthly.cooperation;
+
+  const offerValid = previous.offer <= modification.offer;
+  const selfgrownValid =
+    previous.msrp.monthly.selfgrown <= modification.msrp.monthly.selfgrown;
+  const cooperationValid =
+    cooperationDifference >= 0 || cooperationDifference >= -selfgrownDifference;
+  const allValid = offerValid && selfgrownValid && cooperationValid;
+  const errors: string[] = [];
+
+  // Rule 1: previous offer <= modification offer
+  if (!offerValid) {
+    errors.push(
+      "Der neue Solawi-Beitrag darf nicht geringer sein als der alte"
+    );
+  }
+
+  // Rule 2: previous self grown <= modification self grown
+  if (!selfgrownValid) {
+    errors.push(
+      "Der neue Beitrag für selbst angebaute Produkte darf nicht geringer sein als der alte"
+    );
+  }
+
+  // Rule 3: previous cooperation may be greater than modification cooperation,
+  // given that the self grown difference >= cooperation difference
+
+  if (!cooperationValid) {
+    errors.push(
+      "Der neue Beitrag für Kooperationsprodukte darf nicht geringer sein als der alte, falls dadurch der gesamte Orientierungswert sinkt"
+    );
+  }
+
+  return {
+    errors: errors.length > 0 ? errors : null,
+    offerValid,
+    selfgrownValid,
+    cooperationValid,
+    allValid,
+  };
 };
 
 /**

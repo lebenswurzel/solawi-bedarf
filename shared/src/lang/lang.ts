@@ -205,7 +205,7 @@ export const language = {
           msrpCooperation: "{cooperation} € für Kooperationsprodukte",
           msrpTooltip:
             "Der Orientierungswert errechnet sich aus den von Dir gewählten Nahrungsmitteln sowie Mengen und entspricht dem durchschnittlichen Solawi-Beitrag für Deine Auswahl.",
-          offer: "Dein gewählter Beitrag: **{offer} € pro Monat**",
+          offer: "Dein gewählter Beitrag:",
           item: {
             freq: "{freq} vorraussichtliche Häufigkeit (in Wochen)",
             deliveryPercentage:
