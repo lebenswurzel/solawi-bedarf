@@ -212,7 +212,7 @@ export const language = {
               "{percent} % der geplanten Lieferungen sind bereits erfolgt",
             stock: "{stock} % verteilt",
             value: "Menge [{unit}]",
-            oldValue: "Bisherige Menge [{unit}]",
+            oldValue: "Menge vorher [{unit}]",
           },
         },
       },
