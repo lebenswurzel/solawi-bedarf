@@ -39,7 +39,6 @@ import {
   isIncreaseOnly,
   isRequisitionActive,
 } from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition.ts";
-import { useVersionInfoStore } from "./versionInfoStore.ts";
 import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 
 export const useBIStore = defineStore("bi", () => {
@@ -47,7 +46,6 @@ export const useBIStore = defineStore("bi", () => {
   const configStore = useConfigStore();
   const orderStore = useOrderStore();
   const userStore = useUserStore();
-  const versionInfoStore = useVersionInfoStore();
 
   const { depots, config, activeConfigId } = storeToRefs(configStore);
   const {
@@ -57,6 +55,7 @@ export const useBIStore = defineStore("bi", () => {
     ordersWithActualOrderItems,
     modificationOrder,
     currentOrder,
+    isModifyingOrder,
   } = storeToRefs(orderStore);
   const { currentUser } = storeToRefs(userStore);
 
@@ -157,10 +156,12 @@ export const useBIStore = defineStore("bi", () => {
       const validMonths = calculateOrderValidMonths(
         o.validFrom,
         config.value?.validTo,
-        versionInfoStore.versionInfo?.serverTimeZone,
+        "Europe/Berlin",
       );
       const relevantCategory =
-        o.id === modificationOrder.value?.id ? category.value : o.category;
+        o.id === modificationOrder.value?.id && isModifyingOrder.value
+          ? category.value
+          : o.category;
       console.log("relevantCategory", o.id, relevantCategory);
       const msrp = getMsrp(
         relevantCategory,
@@ -183,7 +184,7 @@ export const useBIStore = defineStore("bi", () => {
     if (!currentOrder.value) {
       // no current order exists, i.e., only the modification order exists
       // return the msrp of the modification order as is
-      return msrpByOrderId.value[modificationOrder.value.id];
+      return null;
     }
     if (
       activeConfigId.value == -1 ||
@@ -192,10 +193,22 @@ export const useBIStore = defineStore("bi", () => {
     ) {
       return null;
     }
+    const effectiveModificationOrder = ordersWithActualOrderItems.value.find(
+      (o) => o.id === modificationOrder.value?.id,
+    );
+    if (!effectiveModificationOrder) {
+      return null;
+    }
+    const effectiveCurrentOrder = ordersWithActualOrderItems.value.find(
+      (o) => o.id === currentOrder.value?.id,
+    );
+    if (!effectiveCurrentOrder) {
+      return null;
+    }
     const effectiveMsrp = calculateEffectiveMsrp(
       {
-        earlierOrder: currentOrder.value!,
-        laterOrder: modificationOrder.value!,
+        earlierOrder: effectiveCurrentOrder,
+        laterOrder: effectiveModificationOrder,
       },
       msrpByOrderId.value,
       productMsrpWeightsByOrderId.value,

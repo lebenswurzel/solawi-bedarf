@@ -90,7 +90,7 @@ export const useOrderStore = defineStore("orderStore", () => {
     return allOrders.value.map((o) => ({
       ...o,
       orderItems:
-        o.id === modificationOrderId.value
+        o.id === modificationOrderId.value && isModifyingOrder.value
           ? modificationOrderItems.value
           : o.orderItems,
     }));
@@ -141,7 +141,7 @@ export const useOrderStore = defineStore("orderStore", () => {
 
   const update = async (requestUserId: number, configId: number) => {
     const orders = await getAllOrders(requestUserId, configId);
-    console.log("orderStore.update", { ...orders });
+    console.log("orderStore.update -> allOrders", { ...orders });
     allOrders.value = orders;
 
     const now = new Date();
@@ -150,6 +150,8 @@ export const useOrderStore = defineStore("orderStore", () => {
     const modOrder = orders.find((o) => o.id === modificationOrderId.value);
     currentOrderId.value = determineCurrentOrderId(orders, now);
     const curOrder = orders.find((o) => o.id === currentOrderId.value);
+
+    console.log("modificationOrderId", modificationOrderId.value);
 
     // Find the order that is to be modified
     const order: SavedOrder | undefined =
