@@ -216,9 +216,20 @@ const disableSaveButton = computed(() => {
     <v-card-title>{{ t.cards.products.title }} für <SeasonText /></v-card-title>
     <v-container fluid class="py-0">
       <v-row dense>
-        <v-col cols="12" md="6" v-for="order in allOrders" :key="order.id">
+        <v-col
+          cols="12"
+          md="6"
+          v-for="(order, index) in allOrders"
+          :key="order.id"
+        >
           <v-card-text class="pa-1">
-            <MsrpDisplay :order="order" :show-selector="allOrders.length > 1" />
+            <MsrpDisplay
+              :order="order"
+              :show-selector="allOrders.length > 1"
+              :compare-to-previous="
+                allOrders.length > 1 && index === allOrders.length - 1
+              "
+            />
           </v-card-text>
         </v-col>
       </v-row>

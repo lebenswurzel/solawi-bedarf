@@ -15,14 +15,13 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { computed, onMounted, ref, watchEffect } from "vue";
+import { computed, ref, watchEffect } from "vue";
 import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
 import { interpolate } from "@lebenswurzel/solawi-bedarf-shared/src/lang/template.ts";
 import { useConfigStore } from "../store/configStore.ts";
 import { saveOrder } from "../requests/shop.ts";
 import { useOrderStore } from "../store/orderStore.ts";
 import { storeToRefs } from "pinia";
-import { watch } from "vue";
 import FAQDialog from "./FAQDialog.vue";
 import { useBIStore } from "../store/biStore.ts";
 import {
@@ -72,7 +71,6 @@ const confirmGTC = ref(false);
 const confirmContribution = ref(false);
 const openFAQ = ref(false);
 const loading = ref(false);
-const offerValue = ref<string>();
 const showDepotNote = ref(false);
 
 const sendConfirmationEmail = ref(false);
@@ -117,7 +115,7 @@ watchEffect(() => {
 });
 
 const modelInt = computed(() => {
-  const tmp = parseInt(offerValue.value || "0");
+  const tmp = offer.value;
   if (isNaN(tmp)) {
     return 0;
   }
@@ -185,15 +183,8 @@ const requireConfirmContribution = computed(() => {
   return category.value != UserCategory.CAT130;
 });
 
-watch(offer, () => {
-  console.log("watch offer", offer.value);
-  offerValue.value = offer.value.toString() || "0";
-});
 watchEffect(() => {
   sendConfirmationEmail.value = props.requestUser?.emailEnabled || false;
-});
-onMounted(() => {
-  offerValue.value = offer.value.toString() || "0";
 });
 
 const onDepotChanged = (val: number) => {
@@ -208,23 +199,16 @@ const clearAlternateDepot = () => {
   alternateDepotId.value = null;
 };
 
-const onUpdate = (value: string) => {
-  const newOffer = parseInt(value || "0");
-  offerValue.value = newOffer.toString();
-};
-
 const onClose = async () => {
-  offerValue.value = offer.value.toString() || "0";
   emit("close");
 };
 
 const onSave = () => {
   loading.value = true;
-  console.log("onSave", offerValue.value);
   saveOrder({
     userId: props.requestUser?.id!,
     orderItems: modificationOrderItems.value,
-    offer: parseInt(offerValue.value || "0"),
+    offer: offer.value,
     depotId: depotId.value.actual!,
     alternateDepotId: alternateDepotId.value,
     category: category.value,
@@ -276,11 +260,11 @@ const onSave = () => {
           :order="modificationOrder"
           class="mb-5"
           fixed-contribution
+          :compareToPrevious="true"
         />
         <v-text-field
           class="mb-5"
-          :model-value="offerValue"
-          @update:model-value="onUpdate"
+          v-model="offer"
           type="number"
           :hint="
             needsHigherOffer

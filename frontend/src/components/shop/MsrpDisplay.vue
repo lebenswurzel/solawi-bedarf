@@ -25,10 +25,12 @@ import { useOrderStore } from "../../store/orderStore";
 import OrderRangeDisplay from "./OrderRangeDisplay.vue";
 import ContributionSelect from "./ContributionSelect.vue";
 import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import { validateModificationMsrp } from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition";
+import { interpolate } from "@lebenswurzel/solawi-bedarf-shared/src/lang/template";
 
 const biStore = useBIStore();
 const orderStore = useOrderStore();
-const { visibleOrderId } = storeToRefs(orderStore);
+const { visibleOrderId, currentOrder, offer } = storeToRefs(orderStore);
 
 const t = language.pages.shop;
 const props = defineProps<{
@@ -36,6 +38,7 @@ const props = defineProps<{
   hideOffer?: boolean;
   showSelector?: boolean;
   fixedContribution?: boolean;
+  compareToPrevious?: boolean;
 }>();
 
 const isVisibleOrder = computed(() => {
@@ -44,6 +47,10 @@ const isVisibleOrder = computed(() => {
 
 const isModificationOrder = computed(() => {
   return props.order.id == orderStore.modificationOrderId;
+});
+
+const relevantOffer = computed(() => {
+  return isModificationOrder.value ? offer.value : props.order.offer;
 });
 
 const msrp = computed((): Msrp => {
@@ -56,6 +63,26 @@ const msrp = computed((): Msrp => {
     };
   }
   return biStore.getEffectiveMsrpByOrderId(props.order.id);
+});
+
+const previousMsrp = computed((): { msrp: Msrp; offer: number } | null => {
+  if (!props.compareToPrevious || !currentOrder.value) {
+    return null;
+  }
+  return {
+    msrp: biStore.getEffectiveMsrpByOrderId(currentOrder.value.id),
+    offer: currentOrder.value.offer,
+  };
+});
+
+const msrpValidation = computed(() => {
+  if (!previousMsrp.value) {
+    return null;
+  }
+  return validateModificationMsrp(previousMsrp.value, {
+    msrp: msrp.value,
+    offer: relevantOffer.value,
+  });
 });
 </script>
 <template>
@@ -105,28 +132,42 @@ const msrp = computed((): Msrp => {
           total: msrp?.monthly.total.toString(),
         }"
       />
-      <Markdown
-        class="pl-5"
-        :markdown="t.cards.products.msrpSelfgrown"
-        :values="{
-          selfgrown: msrp?.monthly.selfgrown.toString(),
-        }"
-      />
-      <Markdown
-        class="pl-5"
-        :markdown="t.cards.products.msrpCooperation"
-        :values="{
-          cooperation: msrp?.monthly.cooperation.toString(),
-        }"
-      />
-      <Markdown
-        class="py-1"
-        :markdown="t.cards.products.offer"
-        :values="{
-          offer: props.order?.offer.toString() || '-',
-        }"
-        v-if="!props.hideOffer"
-      />
+      <div class="pl-5">
+        {{
+          interpolate(t.cards.products.msrpSelfgrown, {
+            selfgrown: msrp?.monthly.selfgrown.toString(),
+          })
+        }}
+        <template v-if="msrpValidation">
+          <v-icon v-if="msrpValidation.selfgrownValid" color="success"
+            >mdi-check-circle</v-icon
+          >
+          <v-icon v-else color="warning">mdi-alert</v-icon>
+        </template>
+      </div>
+      <div class="pl-5">
+        {{
+          interpolate(t.cards.products.msrpCooperation, {
+            cooperation: msrp?.monthly.cooperation.toString(),
+          })
+        }}
+        <template v-if="msrpValidation">
+          <v-icon v-if="msrpValidation.cooperationValid" color="success"
+            >mdi-check-circle</v-icon
+          >
+          <v-icon v-else color="warning">mdi-alert</v-icon>
+        </template>
+      </div>
+      <div class="py-1" v-if="!props.hideOffer">
+        {{ t.cards.products.offer }}
+        <strong class="mr-1">{{ relevantOffer.toString() }} € pro Monat</strong>
+        <template v-if="msrpValidation">
+          <v-icon v-if="msrpValidation.offerValid" color="success"
+            >mdi-check-circle</v-icon
+          >
+          <v-icon v-else color="warning">mdi-alert</v-icon>
+        </template>
+      </div>
       <ContributionSelect
         class="mt-2"
         compact
@@ -136,20 +177,38 @@ const msrp = computed((): Msrp => {
             : msrp.contribution
         "
       />
-    </v-card-text>
-    <v-card-text class="py-2" v-if="!props.order.confirmGTC">
-      <v-alert
-        class="py-2 text-caption font-weight-bold"
-        icon="mdi-lightbulb-alert"
-        variant="outlined"
-      >
-        Diese Bedarfsanmeldung ist noch nicht bestätigt und wird erst aktiv,
-        wenn sie gespeichert wurde.
-        <template v-if="orderStore.currentOrderId"
-          >Bis dahin bleibt die bisherige Bedarfsanmeldung bis zum Ende der
-          Saison gültig.</template
+      <template v-if="!props.order.confirmGTC">
+        <v-alert
+          class="py-2 text-caption font-weight-bold mb-2"
+          icon="mdi-lightbulb-alert"
+          variant="outlined"
         >
-      </v-alert>
+          Diese Bedarfsanmeldung ist noch nicht bestätigt und wird erst aktiv,
+          wenn sie gespeichert wurde.
+          <template v-if="orderStore.currentOrderId"
+            >Bis dahin bleibt die bisherige Bedarfsanmeldung bis zum Ende der
+            Saison gültig.</template
+          >
+        </v-alert>
+      </template>
     </v-card-text>
+    <template
+      v-if="compareToPrevious && msrpValidation && !msrpValidation.allValid"
+    >
+      <v-alert
+        color="info"
+        icon="mdi-information-outline"
+        title="Es liegen folgende Hinweise vor:"
+      >
+        <div v-for="error in msrpValidation.errors" :key="error">
+          <v-icon class="mr-1">mdi-alert</v-icon>{{ error }}
+        </div>
+        <div class="mt-2">
+          Du kannst die Bedarfsanmeldung trotzdem speichern, wenn du darauf
+          achtest, dass dein neuer Solawi-Beitrag nicht geringer ist als der
+          alte ({{ previousMsrp?.offer.toString() || "0" }}€).
+        </div>
+      </v-alert>
+    </template>
   </v-card>
 </template>
