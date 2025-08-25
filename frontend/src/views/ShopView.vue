@@ -43,12 +43,16 @@ const userStore = useUserStore();
 const orderStore = useOrderStore();
 const biStore = useBIStore();
 
-const { depot, submit, msrpByOrderId } = storeToRefs(biStore);
+const { depot, submit, msrpByOrderId, productsById } = storeToRefs(biStore);
 const { userId } = storeToRefs(userStore);
 const { productCategories } = storeToRefs(productStore);
 const { activeConfigId, config } = storeToRefs(configStore);
-const { allOrders, modificationOrderId, visibleOrderId } =
-  storeToRefs(orderStore);
+const {
+  allOrders,
+  modificationOrderId,
+  visibleOrderId,
+  modificationOrderItems,
+} = storeToRefs(orderStore);
 
 const open = ref(false);
 const faqOpen = ref(false);
@@ -87,6 +91,23 @@ watch([requestUserId, configStore], async () => {
   requestUser.value = userStore.users.find(
     (user) => user.id == requestUserId.value,
   );
+});
+
+const actualOrderCountByCategoryId = computed(() => {
+  // count how many products have an actual order >0 per category
+  console.log(
+    "recalculate actualOrderCountByCategoryId",
+    modificationOrderItems.value,
+  );
+  const categoryIdToCount = {} as { [key: number]: number };
+  for (const orderItem of modificationOrderItems.value) {
+    const product = productsById.value[orderItem.productId];
+    if (product && orderItem.value > 0) {
+      categoryIdToCount[product.productCategoryId] =
+        (categoryIdToCount[product.productCategoryId] || 0) + 1;
+    }
+  }
+  return categoryIdToCount;
 });
 
 const onClose = async () => {
@@ -209,7 +230,26 @@ const disableSaveButton = computed(() => {
           class="px-0"
           :key="category.id"
         >
-          <v-expansion-panel-title>{{ category.name }}</v-expansion-panel-title>
+          <v-expansion-panel-title
+            >{{ category.name }}
+
+            <template v-slot:actions>
+              <v-chip
+                class="ml-5"
+                rounded
+                size="small"
+                :variant="
+                  actualOrderCountByCategoryId[category.id] > 0
+                    ? 'tonal'
+                    : 'plain'
+                "
+                >{{
+                  actualOrderCountByCategoryId[category.id] || 0
+                }}
+                gewählt</v-chip
+              >
+            </template>
+          </v-expansion-panel-title>
           <v-expansion-panel-text>
             <ShopItem
               v-for="product in category.products"

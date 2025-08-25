@@ -226,7 +226,8 @@ export const useBIStore = defineStore("bi", () => {
 
   const getEffectiveMsrpByOrderId = (orderId: OrderId): Msrp => {
     if (
-      Object.keys(effectiveMsrpByOrderId.value).includes(orderId.toString())
+      Object.keys(effectiveMsrpByOrderId.value).includes(orderId.toString()) &&
+      effectiveMsrpByOrderId.value[orderId]
     ) {
       return effectiveMsrpByOrderId.value[orderId];
     }

@@ -452,10 +452,11 @@ const depotNameItems = computed(() => {
                   {{ prettyDate(orderUpdatedAt) }}
                   <v-btn
                     v-if="index == 0"
-                    icon="mdi-eye"
+                    icon="mdi-storefront-outline"
                     variant="plain"
                     :to="{ path: `/shop/${item.id}` }"
                     size="x-small"
+                    class="ma-0 pa-0"
                   ></v-btn>
                 </div>
               </template>
