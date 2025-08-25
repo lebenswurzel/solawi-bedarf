@@ -119,6 +119,13 @@ const minValueAvailable = computed(() => {
   return product.value.quantityMin;
 });
 
+const hasChanged = computed(() => {
+  return (
+    (actualOrderItemsByProductId.value[props.productId] || 0) !==
+    (savedOrderItemsByProductId.value[props.productId] || 0)
+  );
+});
+
 const model = ref<string>();
 const oldValue = ref<string>();
 const errorMessage = ref<string | null>(null);
@@ -253,13 +260,26 @@ onMounted(() => {
             }
           "
           @update:focused="onBlur"
-        ></v-text-field>
+          variant="outlined"
+        >
+          <template
+            v-slot:append-inner
+            v-if="hasChanged"
+            color="info"
+            size="small"
+          >
+            <v-chip color="info" size="x-small">
+              {{ savedOrderItemsByProductId[props.productId] || 0 }}
+            </v-chip>
+          </template>
+        </v-text-field>
       </v-col>
       <v-col cols="4" md="2" v-if="hasPreviousOrder">
         <v-text-field
           :label="interpolate(t.oldValue, { unit: unit })"
           type="number"
           :model-value="oldValue"
+          variant="outlined"
           :disabled="true"
         ></v-text-field>
       </v-col>
