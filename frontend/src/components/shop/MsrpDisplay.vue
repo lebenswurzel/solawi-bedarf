@@ -172,7 +172,9 @@ const msrpValidation = computed(() => {
         class="mt-2"
         compact
         :contribution="
-          isModificationOrder && props.fixedContribution !== true
+          isModificationOrder &&
+          orderStore.isModifyingOrder &&
+          props.fixedContribution !== true
             ? undefined
             : msrp.contribution
         "

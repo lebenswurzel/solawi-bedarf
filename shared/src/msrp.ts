@@ -199,16 +199,16 @@ export const calculateEffectiveMsrp = (
   };
 
   const aggregateEffectiveMsrp = (
-    laterOrderMsrpValues: OrderMsrpValues,
-    earlierOrderMsrpValues: OrderMsrpValues
+    laterOrder: OrderMsrpValues,
+    earlierOrder: OrderMsrpValues
   ): {
     [key: ProductKey]: { value: number; category: ProductCategoryType };
   } => {
     const result: {
       [key: ProductKey]: { value: number; category: ProductCategoryType };
     } = {};
-    for (const orderItem of laterOrderMsrpValues.order.orderItems) {
-      const earlierOrderItem = earlierOrderMsrpValues.order.orderItems.find(
+    for (const orderItem of laterOrder.order.orderItems) {
+      const earlierOrderItem = earlierOrder.order.orderItems.find(
         (oi) => oi.productId === orderItem.productId
       );
       const pk = productKey(orderItem, productsById);
@@ -216,10 +216,10 @@ export const calculateEffectiveMsrp = (
       if (earlierOrderItem) {
         // calculate over/under price paid
         offset =
-          earlierOrderMsrpValues.productMsrps[pk] *
-          (earlierOrderMsrpValues.msrp.months *
-            laterOrderMsrpValues.productMsrpWeights[orderItem.productId] -
-            laterOrderMsrpValues.msrp.months);
+          earlierOrder.productMsrps[pk] *
+          (earlierOrder.msrp.months *
+            laterOrder.productMsrpWeights[orderItem.productId] -
+            laterOrder.msrp.months);
         // console.log(
         //   pk,
         //   offset,
@@ -231,9 +231,7 @@ export const calculateEffectiveMsrp = (
         // );
       }
       result[pk] = {
-        value:
-          laterOrderMsrpValues.productMsrps[pk] -
-          offset / laterOrderMsrpValues.msrp.months,
+        value: laterOrder.productMsrps[pk] - offset / laterOrder.msrp.months,
         category: productsById[orderItem.productId].productCategoryType,
       };
       // console.log(pk, result[pk]);

@@ -95,10 +95,6 @@ watch([requestUserId, configStore], async () => {
 
 const actualOrderCountByCategoryId = computed(() => {
   // count how many products have an actual order >0 per category
-  console.log(
-    "recalculate actualOrderCountByCategoryId",
-    modificationOrderItems.value,
-  );
   const categoryIdToCount = {} as { [key: number]: number };
   for (const orderItem of modificationOrderItems.value) {
     const product = productsById.value[orderItem.productId];
