@@ -23,10 +23,7 @@ import { OrderItem } from "../../database/OrderItem";
 import { RequisitionConfig } from "../../database/RequisitionConfig";
 import { getRequestUserId, getUserFromContext } from "../getUserFromContext";
 import { getConfigIdFromQuery } from "../../util/requestUtil";
-import {
-  calculateNewOrderValidFromDate,
-  calculatePreviousOrderValidToDate,
-} from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper";
+import { calculateNewOrderValidFromDate } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper";
 import {
   isRequisitionActive,
   isIncreaseOnly,
@@ -125,8 +122,6 @@ export const createAdditionalOrder = async (
     requisitionConfig.endBiddingRound,
     config.timezone,
   );
-  const previousOrderValidTo =
-    calculatePreviousOrderValidToDate(newOrderValidFrom);
 
   // Use a transaction to ensure all operations succeed or fail together
   const result = await AppDataSource.transaction(async (manager) => {
@@ -135,7 +130,7 @@ export const createAdditionalOrder = async (
       Order,
       { id: currentOrder.id },
       {
-        validTo: previousOrderValidTo,
+        validTo: newOrderValidFrom,
         updatedAt: currentOrder.updatedAt, // prevent modification of updatedAt as we use it to indicate whether a user changed his order
       },
     );
@@ -175,7 +170,7 @@ export const createAdditionalOrder = async (
     return {
       newOrderId: savedNewOrder.id,
       validFrom: newOrderValidFrom,
-      previousOrderValidTo: previousOrderValidTo,
+      previousOrderValidTo: newOrderValidFrom,
     };
   });
   return result;

@@ -15,10 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { describe, expect, it } from "vitest";
-import {
-  calculateNewOrderValidFromDate,
-  calculatePreviousOrderValidToDate,
-} from "../dateHelper";
+import { calculateNewOrderValidFromDate } from "../dateHelper";
 
 describe("Order date calculations", () => {
   it("should calculate new order validFrom date correctly", () => {
@@ -35,21 +32,6 @@ describe("Order date calculations", () => {
     expect(validFrom.getMonth()).toBe(2); // March (0-indexed)
     expect(validFrom.getDate()).toBe(29);
     expect(validFrom.getDay()).toBe(5); // Friday
-  });
-
-  it("should calculate previous order validTo date correctly", () => {
-    const newOrderValidFrom = new Date(2024, 2, 29); // March 29, 2024
-
-    // Should return 23:59:59.999 of March 28, 2024
-    const validTo = calculatePreviousOrderValidToDate(newOrderValidFrom);
-
-    expect(validTo.getFullYear()).toBe(2024);
-    expect(validTo.getMonth()).toBe(2); // March (0-indexed)
-    expect(validTo.getDate()).toBe(28);
-    expect(validTo.getHours()).toBe(23);
-    expect(validTo.getMinutes()).toBe(59);
-    expect(validTo.getSeconds()).toBe(59);
-    expect(validTo.getMilliseconds()).toBe(0);
   });
 
   it("should handle edge case when first day of month is Thursday", () => {

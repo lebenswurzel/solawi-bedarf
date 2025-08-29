@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { addSeconds, format } from "date-fns";
+import { format } from "date-fns";
 import { fromZonedTime, toZonedTime } from "date-fns-tz";
 import { de } from "date-fns/locale";
 
@@ -212,16 +212,6 @@ export const calculateNewOrderValidFromDate = (
   return fridayBefore;
 };
 
-/**
- * Calculates the validTo date for the previous order when creating a new order.
- * Returns 23:59 of the day before the new order's validFrom date.
- */
-export const calculatePreviousOrderValidToDate = (
-  newOrderValidFrom: Date
-): Date => {
-  return addSeconds(newOrderValidFrom, -1);
-};
-
 export const isDateInRange = (
   date: Date | string | number,
   range: {
@@ -233,6 +223,6 @@ export const isDateInRange = (
     (range.from === null ||
       new Date(date).getTime() >= new Date(range.from).getTime()) &&
     (range.to === null ||
-      new Date(date).getTime() <= new Date(range.to).getTime())
+      new Date(date).getTime() < new Date(range.to).getTime())
   );
 };
