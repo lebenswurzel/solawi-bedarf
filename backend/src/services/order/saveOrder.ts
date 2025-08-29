@@ -33,6 +33,7 @@ import {
   ConfirmedOrder,
   DeliveredByProductIdDepotId,
   Msrp,
+  ProductId,
   ProductsById,
   OrderItem as SharedOrderItem,
 } from "@lebenswurzel/solawi-bedarf-shared/src/types";
@@ -165,6 +166,7 @@ export const saveOrder = async (
         actualOrderItem,
         soldByProductId,
         productsById,
+        1, // TODO: use actual productMsrpWeight to detect if the product is already sold out
       ),
     )
     .filter((error): error is string => error !== null);

@@ -44,7 +44,8 @@ export const checkOrderItemValid = (
   savedValue: number | null,
   actualOrderItem: OrderItem,
   soldByProductId: SoldByProductId,
-  productsById: ProductsById
+  productsById: ProductsById,
+  productMsrpWeight: number
 ): string | null => {
   if (actualOrderItem.value == 0) {
     return null;
@@ -60,6 +61,12 @@ export const checkOrderItemValid = (
   }
   if (actualOrderItem.value < 0) {
     return `Wert für ${product.name} darf nicht negativ sein`;
+  }
+  if (productMsrpWeight === 0) {
+    return "Produkt wurde bereits vollständig verteilt";
+  }
+  if (productMsrpWeight < 0.2) {
+    return "Produkt wurde bereits zu über 80% verteilt";
   }
 
   const minAvailable = getMinAvailable(

@@ -299,5 +299,6 @@ export const useBIStore = defineStore("bi", () => {
     update,
     now,
     getEffectiveMsrpByOrderId,
+    productMsrpWeightsByOrderId,
   };
 });
