@@ -40,6 +40,7 @@ import {
   isRequisitionActive,
 } from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition.ts";
 import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
+import { getSameOrNextThursday } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper";
 
 export const useBIStore = defineStore("bi", () => {
   const now = ref<Date>(new Date());
@@ -118,7 +119,9 @@ export const useBIStore = defineStore("bi", () => {
           now.value,
         ) &&
         orderStore.modificationOrder?.validFrom &&
-        orderStore.modificationOrder.validFrom.getTime() > now.value.getTime()
+        getSameOrNextThursday(
+          orderStore.modificationOrder.validFrom,
+        ).getTime() > now.value.getTime()
       );
     }
     return false;

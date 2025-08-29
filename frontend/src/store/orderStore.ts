@@ -150,8 +150,20 @@ export const useOrderStore = defineStore("orderStore", () => {
     const modOrder = orders.find((o) => o.id === modificationOrderId.value);
     currentOrderId.value = determineCurrentOrderId(orders, now);
     const curOrder = orders.find((o) => o.id === currentOrderId.value);
+    if (currentOrderId.value == modificationOrderId.value) {
+      console.error(
+        "currentOrderId is the same as modificationOrderId",
+        currentOrderId.value,
+        modificationOrderId.value,
+      );
+    }
 
-    console.log("modificationOrderId", modificationOrderId.value);
+    console.log(
+      "modificationOrderId",
+      modificationOrderId.value,
+      "currentOrderId",
+      currentOrderId.value,
+    );
 
     // Find the order that is to be modified
     const order: SavedOrder | undefined =
