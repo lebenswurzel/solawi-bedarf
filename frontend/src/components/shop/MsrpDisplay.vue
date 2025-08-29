@@ -155,21 +155,8 @@ const msrpValidation = computed(() => {
           <v-icon v-else color="warning">mdi-alert</v-icon>
         </template>
       </div>
-      <div class="pl-5">
-        {{
-          interpolate(t.cards.products.msrpCooperation, {
-            cooperation: msrp?.monthly.cooperation.toString(),
-          })
-        }}
-        <template v-if="msrpValidation">
-          <v-icon v-if="msrpValidation.cooperationValid" color="success"
-            >mdi-check-circle</v-icon
-          >
-          <v-icon v-else color="warning">mdi-alert</v-icon>
-        </template>
-      </div>
       <div class="pl-5" v-if="msrp?.monthly.selfgrownCompensation">
-        {{
+        +{{
           interpolate(t.cards.products.msrpCompensation, {
             compensation: msrp?.monthly.selfgrownCompensation.toString(),
           })
@@ -182,6 +169,19 @@ const msrpValidation = computed(() => {
             <v-icon v-bind="props">mdi-information-outline</v-icon>
           </template>
         </v-tooltip>
+      </div>
+      <div class="pl-5">
+        {{
+          interpolate(t.cards.products.msrpCooperation, {
+            cooperation: msrp?.monthly.cooperation.toString(),
+          })
+        }}
+        <template v-if="msrpValidation">
+          <v-icon v-if="msrpValidation.cooperationValid" color="success"
+            >mdi-check-circle</v-icon
+          >
+          <v-icon v-else color="warning">mdi-alert</v-icon>
+        </template>
       </div>
       <div class="py-1" v-if="!props.hideOffer">
         {{ t.cards.products.offer }}

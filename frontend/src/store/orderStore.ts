@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { defineStore } from "pinia";
-import { computed, ref, watchEffect } from "vue";
+import { computed, ref, watch } from "vue";
 import { getAllOrders } from "../requests/shop.ts";
 import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import { appConfig } from "@lebenswurzel/solawi-bedarf-shared/src/config.ts";
@@ -176,18 +176,25 @@ export const useOrderStore = defineStore("orderStore", () => {
     );
   };
 
-  watchEffect(() => {
-    const order = allOrders.value.find((o) => o.id === visibleOrderId.value);
-    offer.value = order?.offer || 0;
-    offerReason.value = order?.offerReason || null;
-    depotId.value = { saved: order?.depotId, actual: order?.depotId };
-    alternateDepotId.value = order?.alternateDepotId || null;
-    category.value = order?.category || appConfig.defaultCategory;
-    categoryReason.value = order?.categoryReason || null;
+  watch(
+    [allOrders, visibleOrderId],
+    () => {
+      console.log("watchEffect visibleOrderId", visibleOrderId.value);
+      const order = allOrders.value.find((o) => o.id === visibleOrderId.value);
+      offer.value = order?.offer || 0;
+      offerReason.value = order?.offerReason || null;
+      depotId.value = { saved: order?.depotId, actual: order?.depotId };
+      alternateDepotId.value = order?.alternateDepotId || null;
+      category.value = order?.category || appConfig.defaultCategory;
+      categoryReason.value = order?.categoryReason || null;
 
-    savedOrderItemsByProductId.value = mapOrderItems(order?.orderItems || []);
-    actualOrderItemsByProductId.value = mapOrderItems(order?.orderItems || []);
-  });
+      savedOrderItemsByProductId.value = mapOrderItems(order?.orderItems || []);
+      actualOrderItemsByProductId.value = mapOrderItems(
+        order?.orderItems || [],
+      );
+    },
+    { immediate: true },
+  );
 
   const setVisibleOrderId = (orderId: number) => {
     visibleOrderId.value = orderId;
