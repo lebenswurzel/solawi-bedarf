@@ -66,7 +66,8 @@ describe("checkOrderItemValid", () => {
       null,
       orderItem,
       mockSoldByProductId,
-      mockProductsById
+      mockProductsById,
+      1
     );
     expect(result).toBeNull();
   });
@@ -77,7 +78,8 @@ describe("checkOrderItemValid", () => {
       null,
       orderItem,
       mockSoldByProductId,
-      mockProductsById
+      mockProductsById,
+      1
     );
     expect(result).toBeNull();
   });
@@ -90,7 +92,8 @@ describe("checkOrderItemValid", () => {
       null,
       orderItem,
       mockSoldByProductId,
-      productsById
+      productsById,
+      1
     );
     expect(result).toBe("Änderung von Test Product auf 10 nicht möglich");
   });
@@ -101,7 +104,8 @@ describe("checkOrderItemValid", () => {
       null,
       orderItem,
       mockSoldByProductId,
-      mockProductsById
+      mockProductsById,
+      1
     );
     expect(result).toBe(`Produkt id=999 nicht verfügbar`);
   });
@@ -112,7 +116,8 @@ describe("checkOrderItemValid", () => {
       null,
       orderItem,
       mockSoldByProductId,
-      mockProductsById
+      mockProductsById,
+      1
     );
     expect(result).toBe("Wert für Test Product darf nicht negativ sein");
   });
@@ -123,7 +128,8 @@ describe("checkOrderItemValid", () => {
       null,
       orderItem,
       mockSoldByProductId,
-      mockProductsById
+      mockProductsById,
+      1
     );
     expect(result).toBe("Mindestmenge 5 g von Test Product nicht erreicht");
   });
@@ -134,7 +140,8 @@ describe("checkOrderItemValid", () => {
       null,
       orderItem,
       mockSoldByProductId,
-      mockProductsById
+      mockProductsById,
+      1
     );
     expect(result).toBe(
       "Maximal verfügbare Menge 20 g von Test Product überschritten"
@@ -149,7 +156,8 @@ describe("checkOrderItemValid", () => {
       null,
       orderItem,
       mockSoldByProductId,
-      productsById
+      productsById,
+      1
     );
     expect(result).toBe(
       "Menge für Test Product muss ein Vielfaches von 2 g sein"
@@ -162,7 +170,8 @@ describe("checkOrderItemValid", () => {
       20,
       orderItem,
       { ...mockSoldByProductId, 1: { ...mockSoldByProductId[1], sold: 100 } },
-      mockProductsById
+      mockProductsById,
+      1
     );
     expect(result).toBeNull();
   });
@@ -175,9 +184,51 @@ describe("checkOrderItemValid", () => {
       null,
       orderItem,
       mockSoldByProductId,
-      productsById
+      productsById,
+      1
     );
     expect(result).toBe("Mindestmenge 5 Stk. von Test Product nicht erreicht");
+  });
+
+  it("should return null for productMsrpWeight >= 0.2", () => {
+    const productWithStep = { ...mockProduct, quantityStep: 2 };
+    const productsById = { ...mockProductsById, 1: productWithStep };
+    const orderItem: OrderItem = { value: 2, productId: 1 };
+    const result = checkOrderItemValid(
+      null,
+      orderItem,
+      mockSoldByProductId,
+      productsById,
+      0.2
+    );
+    expect(result).toBe(null);
+  });
+
+  it("should return error for productMsrpWeight < 0.2", () => {
+    const productWithStep = { ...mockProduct, quantityStep: 2 };
+    const productsById = { ...mockProductsById, 1: productWithStep };
+    const orderItem: OrderItem = { value: 2, productId: 1 };
+    const result = checkOrderItemValid(
+      null,
+      orderItem,
+      mockSoldByProductId,
+      productsById,
+      0.199
+    );
+    expect(result).toBe("Produkt wurde bereits zu über 80% verteilt");
+  });
+  it("should return error for productMsrpWeight = 0", () => {
+    const productWithStep = { ...mockProduct, quantityStep: 2 };
+    const productsById = { ...mockProductsById, 1: productWithStep };
+    const orderItem: OrderItem = { value: 2, productId: 1 };
+    const result = checkOrderItemValid(
+      null,
+      orderItem,
+      mockSoldByProductId,
+      productsById,
+      0
+    );
+    expect(result).toBe("Produkt wurde bereits vollständig verteilt");
   });
 });
 

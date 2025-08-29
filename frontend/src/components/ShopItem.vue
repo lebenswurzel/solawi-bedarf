@@ -47,6 +47,7 @@ const {
   currentOrderItemsByProductId,
   isModifyingOrder,
   hasPreviousOrder,
+  modificationOrderId,
 } = storeToRefs(orderStore);
 const {
   soldByProductId,
@@ -54,6 +55,7 @@ const {
   productsById,
   now,
   deliveredByProductIdDepotId,
+  productMsrpWeightsByOrderId,
 } = storeToRefs(biStore);
 const { currentUser } = storeToRefs(userStore);
 const { config, depots } = storeToRefs(configStore);
@@ -134,12 +136,34 @@ const onUpdate = (value: string) => {
   model.value = value;
 };
 
+const getProductMsrpWeight = (): number => {
+  if (!modificationOrderId.value) {
+    return 1;
+  }
+  if (
+    productMsrpWeightsByOrderId.value[modificationOrderId.value] === undefined
+  ) {
+    return 1;
+  }
+  if (
+    productMsrpWeightsByOrderId.value[modificationOrderId.value][
+      props.productId
+    ] === undefined
+  ) {
+    return 1;
+  }
+  return productMsrpWeightsByOrderId.value[modificationOrderId.value][
+    props.productId
+  ];
+};
+
 const validateValue = (value: number) => {
   const error = checkOrderItemValid(
     savedOrderItemsByProductId.value[props.productId] || null,
     { value, productId: props.productId },
     soldByProductId.value,
     productsById.value,
+    getProductMsrpWeight(),
   );
   errorMessage.value = error;
   return error === null;
