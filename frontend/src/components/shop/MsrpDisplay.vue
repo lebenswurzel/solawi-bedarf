@@ -56,8 +56,18 @@ const relevantOffer = computed(() => {
 const msrp = computed((): Msrp => {
   if (!props.order) {
     return {
-      monthly: { total: 0, selfgrown: 0, cooperation: 0 },
-      yearly: { total: 0, selfgrown: 0, cooperation: 0 },
+      monthly: {
+        total: 0,
+        selfgrown: 0,
+        cooperation: 0,
+        selfgrownCompensation: undefined,
+      },
+      yearly: {
+        total: 0,
+        selfgrown: 0,
+        cooperation: 0,
+        selfgrownCompensation: undefined,
+      },
       months: 0,
       contribution: UserCategory.CAT130,
     };
@@ -158,6 +168,21 @@ const msrpValidation = computed(() => {
           <v-icon v-else color="warning">mdi-alert</v-icon>
         </template>
       </div>
+      <div class="pl-5" v-if="msrp?.monthly.selfgrownCompensation">
+        {{
+          interpolate(t.cards.products.msrpCompensation, {
+            compensation: msrp?.monthly.selfgrownCompensation.toString(),
+          })
+        }}
+        <v-tooltip
+          :text="t.cards.products.msrpCompensationTooltip"
+          open-on-click
+        >
+          <template v-slot:activator="{ props }">
+            <v-icon v-bind="props">mdi-information-outline</v-icon>
+          </template>
+        </v-tooltip>
+      </div>
       <div class="py-1" v-if="!props.hideOffer">
         {{ t.cards.products.offer }}
         <strong class="mr-1">{{ relevantOffer.toString() }} € pro Monat</strong>
@@ -202,13 +227,13 @@ const msrpValidation = computed(() => {
         icon="mdi-information-outline"
         title="Es liegen folgende Hinweise vor:"
       >
-        <div v-for="error in msrpValidation.errors" :key="error">
-          <v-icon class="mr-1">mdi-alert</v-icon>{{ error }}
-        </div>
-        <div class="mt-2">
-          Du kannst die Bedarfsanmeldung trotzdem speichern, wenn du darauf
-          achtest, dass dein neuer Solawi-Beitrag nicht geringer ist als der
-          alte ({{ previousMsrp?.offer.toString() || "0" }}€).
+        <div v-for="error in msrpValidation.errors" :key="error[0]">
+          <v-icon class="mr-1">mdi-alert</v-icon>{{ error[0] }}
+          <v-tooltip :text="error[1]" open-on-click v-if="error[1]">
+            <template v-slot:activator="{ props }">
+              <v-icon v-bind="props">mdi-information-outline</v-icon>
+            </template>
+          </v-tooltip>
         </div>
       </v-alert>
     </template>

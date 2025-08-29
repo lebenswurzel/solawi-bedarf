@@ -203,8 +203,12 @@ export const language = {
           msrp: "Dein Orientierungswert: **{total} € pro Monat**, davon",
           msrpSelfgrown: "{selfgrown} € für selbst angebaute Produkte",
           msrpCooperation: "{cooperation} € für Kooperationsprodukte",
+          msrpCompensation:
+            "{compensation} € Ausgleich für verringerten Selbstanbauanteil",
           msrpTooltip:
             "Der Orientierungswert errechnet sich aus den von Dir gewählten Nahrungsmitteln sowie Mengen und entspricht dem durchschnittlichen Solawi-Beitrag für Deine Auswahl.",
+          msrpCompensationTooltip:
+            "Dieser Wert wird angezeigt, wenn Du Deinen Selbstanbauanteil verringert hast. Er entspricht der Differenz zwischen dem ursprünglichen Selbstanbauanteil und dem neuen Selbstanbauanteil.",
           offer: "Dein gewählter Beitrag:",
           item: {
             freq: "{freq} vorraussichtliche Häufigkeit (in Wochen)",
