@@ -160,6 +160,11 @@ export const calculateOrderValidMonths = (
 
 /**
  * Calculate the selfgrown compensation for a modified order and adapt the msrp accordingly
+ *
+ * This adds a compensation value that offsets a reduction of the selfgrown contribution.
+ * The compensation is added to the total contribution and the cooperation contribution.
+ * The compensation is not added to the selfgrown contribution.
+ *
  * @param currentMsrp
  * @param modifiedMsrp
  * @returns the adapted msrp
@@ -189,7 +194,7 @@ const adaptSelfgrownCompensation = (
       contribution: modifiedMsrp.contribution,
     };
   }
-  return currentMsrp;
+  return modifiedMsrp;
 };
 
 export const calculateEffectiveMsrp = (
@@ -313,6 +318,6 @@ export const calculateEffectiveMsrp = (
     msrpByOrderId[orders.earlierOrder.id],
     result
   );
-  console.log("effectiveMsrp", adaptedMsrp);
+  console.log("effectiveMsrp", adaptedMsrp, "result", result);
   return adaptedMsrp;
 };
