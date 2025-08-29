@@ -26,10 +26,7 @@ import {
   calculateOrderValidMonths,
   getMsrp,
 } from "@lebenswurzel/solawi-bedarf-shared/src/msrp";
-import { generateUserData } from "@lebenswurzel/solawi-bedarf-shared/src/pdf/overviewPdfs";
-import { createDefaultPdf } from "@lebenswurzel/solawi-bedarf-shared/src/pdf/pdf";
 import {
-  Address,
   ConfirmedOrder,
   DeliveredByProductIdDepotId,
   Msrp,
@@ -61,17 +58,10 @@ import { OrderItem } from "../../database/OrderItem";
 import { RequisitionConfig } from "../../database/RequisitionConfig";
 import { User } from "../../database/User";
 import { bi } from "../bi/bi";
-import { sendEmail } from "../email/email";
-import { buildOrderEmail } from "../email/emailHelper";
-import { getUserOrderOverview } from "../getOverview";
 import { getRequestUserId, getUserFromContext } from "../getUserFromContext";
-import { getProductCategories } from "../product/getProductCategory";
-import { getOrganizationInfo } from "../text/getOrganizationInfo";
-import {
-  formatDateForFilename,
-  getSameOrNextThursday,
-} from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper";
+import { getSameOrNextThursday } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper";
 import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import { sendOrderConfirmationMail } from "../../email/orderConfirmationMail";
 
 export const saveOrder = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -239,115 +229,38 @@ export const saveOrder = async (
   if (body.validTo) {
     order.validTo = body.validTo;
   }
-  await AppDataSource.getRepository(Order).save(order);
 
-  for (const requestOrderItem of body.orderItems) {
-    let item =
-      order.orderItems &&
-      order.orderItems.find(
-        (orderItem) => orderItem.productId == requestOrderItem.productId,
-      );
-    if (item) {
-      item.value = requestOrderItem.value;
-      await AppDataSource.getRepository(OrderItem).save(item);
-    } else {
-      item = new OrderItem();
-      item.productId = requestOrderItem.productId;
-      item.orderId = order.id;
-      item.value = requestOrderItem.value;
-      await AppDataSource.getRepository(OrderItem).save(item);
+  await AppDataSource.transaction(async (entityManager) => {
+    // save order
+    await entityManager.save(order);
+    for (const requestOrderItem of body.orderItems) {
+      let item =
+        order.orderItems &&
+        order.orderItems.find(
+          (orderItem) => orderItem.productId == requestOrderItem.productId,
+        );
+      if (item) {
+        item.value = requestOrderItem.value;
+        await entityManager.save(item);
+      } else {
+        item = new OrderItem();
+        item.productId = requestOrderItem.productId;
+        item.orderId = order.id;
+        item.value = requestOrderItem.value;
+        await entityManager.save(item);
+      }
     }
-  }
-  // cleanup of useless items
-  await AppDataSource.getRepository(OrderItem).delete({ value: LessThan(1) });
+    await entityManager.delete(OrderItem, { value: LessThan(1) });
+  });
 
   // Send confirmation email to user (if option is set) and always to the EMAIL_ORDER_UPDATED_BCC (if set)
-  if (sendConfirmationEmail || config.email.orderUpdatedBccReceiver) {
-    const orderUser = await AppDataSource.getRepository(User).findOneOrFail({
-      where: { id: requestUserId },
-      relations: {
-        applicant: {
-          address: true,
-        },
-      },
-    });
-    let changingUser = orderUser;
-    if (requestUserId !== id) {
-      changingUser = await AppDataSource.getRepository(User).findOneOrFail({
-        where: { id },
-      });
-    }
-
-    let orderUserEmail: string | undefined = undefined;
-    let orderUserFirstname: string = orderUser.name;
-    if (orderUser.applicant && sendConfirmationEmail) {
-      // can only send email to user if his email address is in the database
-      const address = JSON.parse(
-        orderUser.applicant.address.address,
-      ) as Address;
-
-      if (address.email) {
-        orderUserEmail = address.email;
-      }
-      if (address.firstname) {
-        orderUserFirstname = address.firstname;
-      }
-    }
-
-    const currentDate = toZonedTime(new Date(), config.timezone);
-    const organizationInfo = await getOrganizationInfo();
-
-    const { html, subject } = await buildOrderEmail(
-      order.id,
-      orderUser,
-      requisitionConfig.name,
-      toZonedTime(requisitionConfig.validFrom, config.timezone),
-      toZonedTime(requisitionConfig.validTo, config.timezone),
-      changingUser,
-      orderUserFirstname,
-      currentDate,
-      organizationInfo,
-    );
-
-    // create overview pdf
-    const overview = await getUserOrderOverview(
-      requisitionConfig.id,
-      requestUserId,
-    );
-    const productCategories = await getProductCategories(requisitionConfig.id);
-    const dataByUserAndProductCategory = generateUserData(
-      overview,
-      productCategories,
-      requisitionConfig.name,
-    );
-
-    let pdfBlob: Blob | null = null;
-    if (dataByUserAndProductCategory.length > 0) {
-      const pdf = createDefaultPdf(
-        dataByUserAndProductCategory[0],
-        organizationInfo,
-      );
-      pdfBlob = await new Promise((resolve, _) => {
-        pdf.getBlob((blob: Blob) => resolve(blob));
-      });
-    }
-
-    sendEmail({
-      sender: config.email.sender,
-      receiver: orderUserEmail,
-      subject,
-      html,
-      bcc: config.email.orderUpdatedBccReceiver,
-      attachments: pdfBlob
-        ? [
-            {
-              filename: `Bedarfsanmeldung ${orderUser.name} ${formatDateForFilename(currentDate)}.pdf`,
-              data: pdfBlob,
-            },
-          ]
-        : undefined,
-    });
-  }
+  await sendOrderConfirmationMail({
+    orderId: order.id,
+    requestUserId,
+    changingUserId: id,
+    requisitionConfig,
+    sendConfirmationEmail,
+  });
 
   ctx.status = http.no_content;
 };
