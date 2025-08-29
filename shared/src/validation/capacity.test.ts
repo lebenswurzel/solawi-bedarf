@@ -204,19 +204,6 @@ describe("checkOrderItemValid", () => {
     expect(result).toBe(null);
   });
 
-  it("should return error for productMsrpWeight < 0.2", () => {
-    const productWithStep = { ...mockProduct, quantityStep: 2 };
-    const productsById = { ...mockProductsById, 1: productWithStep };
-    const orderItem: OrderItem = { value: 2, productId: 1 };
-    const result = checkOrderItemValid(
-      null,
-      orderItem,
-      mockSoldByProductId,
-      productsById,
-      0.199
-    );
-    expect(result).toBe("Produkt wurde bereits zu über 80% verteilt");
-  });
   it("should return error for productMsrpWeight = 0", () => {
     const productWithStep = { ...mockProduct, quantityStep: 2 };
     const productsById = { ...mockProductsById, 1: productWithStep };

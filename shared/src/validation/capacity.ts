@@ -65,9 +65,6 @@ export const checkOrderItemValid = (
   if (productMsrpWeight === 0) {
     return "Produkt wurde bereits vollständig verteilt";
   }
-  if (productMsrpWeight < 0.2) {
-    return "Produkt wurde bereits zu über 80% verteilt";
-  }
 
   const minAvailable = getMinAvailable(
     savedValue,
