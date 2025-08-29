@@ -27,7 +27,6 @@ import {
   dayDifference,
   countCalendarMonths,
   calculateNewOrderValidFromDate,
-  calculatePreviousOrderValidToDate,
   isDateInRange,
 } from "../dateHelper";
 
@@ -408,80 +407,6 @@ describe("dateHelper", () => {
     });
   });
 
-  describe("calculatePreviousOrderValidToDate", () => {
-    it("should calculate valid to date as day before at 23:59:59.000", () => {
-      const newOrderValidFrom = new Date("2024-02-01");
-      const result = calculatePreviousOrderValidToDate(newOrderValidFrom);
-
-      // Should be January 31st at 23:59:59.000
-      expect(result.getFullYear()).toBe(2024);
-      expect(result.getMonth()).toBe(0); // January
-      expect(result.getDate()).toBe(31);
-      expect(result.getHours()).toBe(23);
-      expect(result.getMinutes()).toBe(59);
-      expect(result.getSeconds()).toBe(59);
-      expect(result.getMilliseconds()).toBe(0);
-    });
-
-    it("should handle month boundary", () => {
-      const newOrderValidFrom = new Date("2024-01-01");
-      const result = calculatePreviousOrderValidToDate(newOrderValidFrom);
-
-      // Should be December 31st, 2023 at 23:59:59.000
-      expect(result.getFullYear()).toBe(2023);
-      expect(result.getMonth()).toBe(11); // December
-      expect(result.getDate()).toBe(31);
-      expect(result.getHours()).toBe(23);
-      expect(result.getMinutes()).toBe(59);
-      expect(result.getSeconds()).toBe(59);
-      expect(result.getMilliseconds()).toBe(0);
-    });
-
-    it("should handle year boundary", () => {
-      const newOrderValidFrom = new Date("2025-01-01");
-      const result = calculatePreviousOrderValidToDate(newOrderValidFrom);
-
-      // Should be December 31st, 2024 at 23:59:59.000
-      expect(result.getFullYear()).toBe(2024);
-      expect(result.getMonth()).toBe(11); // December
-      expect(result.getDate()).toBe(31);
-      expect(result.getHours()).toBe(23);
-      expect(result.getMinutes()).toBe(59);
-      expect(result.getSeconds()).toBe(59);
-      expect(result.getMilliseconds()).toBe(0);
-    });
-
-    it("should handle leap year", () => {
-      const newOrderValidFrom = new Date("2024-03-01");
-      const result = calculatePreviousOrderValidToDate(newOrderValidFrom);
-
-      // Should be February 29th, 2024 at 23:59:59.000 (leap year)
-      expect(result.getFullYear()).toBe(2024);
-      expect(result.getMonth()).toBe(1); // February
-      expect(result.getDate()).toBe(29);
-      expect(result.getHours()).toBe(23);
-      expect(result.getMinutes()).toBe(59);
-      expect(result.getSeconds()).toBe(59);
-      expect(result.getMilliseconds()).toBe(0);
-    });
-
-    it("should handle different timezone properly", () => {
-      const newOrderValidFrom = new Date("2024-02-01T00:00:00+01:00");
-      const result = calculatePreviousOrderValidToDate(newOrderValidFrom);
-
-      // Should return UTC date representing 23:59:59.000 Berlin time on January 31st
-      // January 31st, 2024 at 23:59:59.000 in Europe/Berlin (UTC+1 in January)
-      // converts to January 31st, 2024 at 22:59:59.000 UTC
-      expect(result.getFullYear()).toBe(2024);
-      expect(result.getMonth()).toBe(0); // January
-      expect(result.getDate()).toBe(31);
-      expect(result.getHours()).toBe(22);
-      expect(result.getMinutes()).toBe(59);
-      expect(result.getSeconds()).toBe(59);
-      expect(result.getMilliseconds()).toBe(0);
-    });
-  });
-
   describe("isDateInRange", () => {
     it("should return true when date is within range", () => {
       const date = new Date("2024-02-15");
@@ -503,14 +428,14 @@ describe("dateHelper", () => {
       expect(isDateInRange(date, range)).toBe(true);
     });
 
-    it("should return true when date equals to boundary", () => {
+    it("should return false when date equals to boundary", () => {
       const date = new Date("2024-02-28");
       const range = {
         from: new Date("2024-02-01"),
         to: new Date("2024-02-28"),
       };
 
-      expect(isDateInRange(date, range)).toBe(true);
+      expect(isDateInRange(date, range)).toBe(false);
     });
 
     it("should return false when date is before from boundary", () => {

@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { UserRole } from "../enum";
 import { ExistingConfig, Msrp, Order, OrderId, SavedOrder } from "../types";
-import { isDateInRange } from "../util/dateHelper";
+import { getSameOrNextThursday, isDateInRange } from "../util/dateHelper";
 
 export const isRequisitionActive = (
   userRole: UserRole,
@@ -163,7 +163,9 @@ export const determineModificationOrderId = (
   now: Date
 ): OrderId | undefined => {
   return allOrders.find(
-    (order) => order.validFrom && now.getTime() < order.validFrom?.getTime()
+    (order) =>
+      order.validFrom &&
+      now.getTime() < getSameOrNextThursday(order.validFrom).getTime()
   )?.id;
 };
 
@@ -174,7 +176,7 @@ export const determineCurrentOrderId = (
   return allOrders.find((order) =>
     isDateInRange(now, {
       from: order.validFrom,
-      to: order.validTo,
+      to: order.validTo ? getSameOrNextThursday(order.validTo) : null,
     })
   )?.id;
 };
