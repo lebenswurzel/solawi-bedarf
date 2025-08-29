@@ -99,10 +99,11 @@ export const validateModificationMsrp = (
     offer: number;
   }
 ): {
-  errors: string[] | null;
+  errors: [string, string][] | null;
   offerValid: boolean;
   selfgrownValid: boolean;
   cooperationValid: boolean;
+  totalValid: boolean;
   allValid: boolean;
 } => {
   const selfgrownDifference =
@@ -115,39 +116,72 @@ export const validateModificationMsrp = (
     previous.msrp.monthly.selfgrown <= modification.msrp.monthly.selfgrown;
   const cooperationValid =
     cooperationDifference >= 0 || cooperationDifference >= -selfgrownDifference;
-  const allValid = offerValid && selfgrownValid && cooperationValid;
-  const errors: string[] = [];
+  const totalValid =
+    previous.msrp.monthly.total <= modification.msrp.monthly.total;
+  const allValid =
+    offerValid && selfgrownValid && cooperationValid && totalValid;
+
+  return {
+    offerValid,
+    selfgrownValid,
+    cooperationValid,
+    totalValid,
+    allValid,
+    errors: getMsrpValidationMessages(
+      offerValid,
+      selfgrownValid,
+      cooperationValid,
+      totalValid,
+      previous.offer
+    ),
+  };
+};
+
+const getMsrpValidationMessages = (
+  offerValid: boolean,
+  selfgrownValid: boolean,
+  cooperationValid: boolean,
+  totalValid: boolean,
+  previousOffer: number
+) => {
+  const errors: [string, string][] = [];
 
   // Rule 1: previous offer <= modification offer
   if (!offerValid) {
-    errors.push(
-      "Der neue Solawi-Beitrag darf nicht geringer sein als der alte"
-    );
+    errors.push([
+      "Der neue Solawi-Beitrag darf nicht geringer sein als der alte",
+      "",
+    ]);
   }
 
   // Rule 2: previous self grown <= modification self grown
   if (!selfgrownValid) {
-    errors.push(
-      "Der neue Beitrag für selbst angebaute Produkte darf nicht geringer sein als der alte"
-    );
+    errors.push([
+      "Der neue Beitrag für selbst angebaute Produkte ist geringer als der alte. Daher wurde ein Ausgleichsbeitrag berechnet.",
+      "Hintergrund ist, dass der bisherige Beitrag bereits in das Jahresbudget für den Gemüseanbau eingerechnet ist und daher eine Verringerung dieses Beitrags nicht möglich ist.",
+    ]);
   }
 
   // Rule 3: previous cooperation may be greater than modification cooperation,
   // given that the self grown difference >= cooperation difference
 
   if (!cooperationValid) {
-    errors.push(
-      "Der neue Beitrag für Kooperationsprodukte darf nicht geringer sein als der alte, falls dadurch der gesamte Orientierungswert sinkt"
-    );
+    errors.push([
+      "Der neue Beitrag für Kooperationsprodukte ist geringer als der alte.",
+      "Das ist zulässig, jedoch darf dein monatlicher Solawi-Beitrag nicht verringert werden.",
+    ]);
   }
 
-  return {
-    errors: errors.length > 0 ? errors : null,
-    offerValid,
-    selfgrownValid,
-    cooperationValid,
-    allValid,
-  };
+  if (!totalValid) {
+    errors.push([
+      "Dein neuer Orientierungswert liegt unter dem Orientierungswert der ursprünglichen Bedarfsanmeldung. Du kannst die Bedarfsanmeldung trotzdem speicherng, wenn du darauf achtest, dass dein neuer Solawi-Beitrag nicht geringer ist als der alte (" +
+        previousOffer.toString() +
+        "€)",
+      "",
+    ]);
+  }
+
+  return errors;
 };
 
 /**

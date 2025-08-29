@@ -112,11 +112,13 @@ export const getMsrp = (
       total: adjustedMonthlyTotal,
       selfgrown: adjustedMonthlySelfgrown,
       cooperation: adjustedMonthlyTotal - adjustedMonthlySelfgrown,
+      selfgrownCompensation: undefined,
     },
     yearly: {
       total: adjustedMonthlyTotal * months,
       selfgrown: adjustedMonthlySelfgrown * months,
       cooperation: (adjustedMonthlyTotal - adjustedMonthlySelfgrown) * months,
+      selfgrownCompensation: undefined,
     },
     months,
     contribution,
@@ -154,6 +156,40 @@ export const calculateOrderValidMonths = (
     );
   }
   return 12;
+};
+
+/**
+ * Calculate the selfgrown compensation for a modified order and adapt the msrp accordingly
+ * @param currentMsrp
+ * @param modifiedMsrp
+ * @returns the adapted msrp
+ */
+const adaptSelfgrownCompensation = (
+  currentMsrp: Msrp,
+  modifiedMsrp: Msrp
+): Msrp => {
+  if (modifiedMsrp.monthly.selfgrown < currentMsrp.monthly.selfgrown) {
+    const compensation =
+      currentMsrp.monthly.selfgrown - modifiedMsrp.monthly.selfgrown;
+    return {
+      monthly: {
+        total: modifiedMsrp.monthly.total + compensation,
+        selfgrown: modifiedMsrp.monthly.selfgrown,
+        cooperation: modifiedMsrp.monthly.cooperation,
+        selfgrownCompensation: compensation,
+      },
+      yearly: {
+        total:
+          (modifiedMsrp.monthly.total + compensation) * modifiedMsrp.months,
+        selfgrown: modifiedMsrp.monthly.selfgrown * modifiedMsrp.months,
+        cooperation: modifiedMsrp.monthly.cooperation * modifiedMsrp.months,
+        selfgrownCompensation: compensation * currentMsrp.months,
+      },
+      months: modifiedMsrp.months,
+      contribution: modifiedMsrp.contribution,
+    };
+  }
+  return currentMsrp;
 };
 
 export const calculateEffectiveMsrp = (
@@ -257,26 +293,26 @@ export const calculateEffectiveMsrp = (
   );
   const effectiveMonthlyCooperation =
     effectiveMonthlyTotal - effectiveMonthlySelfgrown;
-  const effectiveYearlyTotal =
-    effectiveMonthlyTotal * laterOrderMsrpValues.msrp.months;
-  const effectiveYearlySelfgrown =
-    effectiveMonthlySelfgrown * laterOrderMsrpValues.msrp.months;
-  const effectiveYearlyCooperation =
-    effectiveMonthlyCooperation * laterOrderMsrpValues.msrp.months;
 
-  const result = {
+  const result: Msrp = {
     ...laterOrderMsrpValues.msrp,
     monthly: {
       total: effectiveMonthlyTotal,
       selfgrown: effectiveMonthlySelfgrown,
       cooperation: effectiveMonthlyCooperation,
+      selfgrownCompensation: undefined,
     },
     yearly: {
-      total: effectiveYearlyTotal,
-      selfgrown: effectiveYearlySelfgrown,
-      cooperation: effectiveYearlyCooperation,
+      total: 0,
+      selfgrown: 0,
+      cooperation: 0,
+      selfgrownCompensation: undefined,
     },
   };
-  console.log("effectiveMsrp", result);
-  return result;
+  const adaptedMsrp = adaptSelfgrownCompensation(
+    msrpByOrderId[orders.earlierOrder.id],
+    result
+  );
+  console.log("effectiveMsrp", adaptedMsrp);
+  return adaptedMsrp;
 };

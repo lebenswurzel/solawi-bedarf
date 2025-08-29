@@ -413,11 +413,13 @@ export interface Msrp {
     total: number;
     selfgrown: number;
     cooperation: number;
+    selfgrownCompensation: number | undefined;
   };
   yearly: {
     total: number;
     selfgrown: number;
     cooperation: number;
+    selfgrownCompensation: number | undefined;
   };
   months: number;
   contribution: UserCategory;
