@@ -122,7 +122,11 @@ export const saveOrder = async (
   });
 
   // Find the currently valid order
-  const orderId = determineModificationOrderId(allOrders, currentTime);
+  const orderId = determineModificationOrderId(
+    allOrders,
+    currentTime,
+    config.timezone,
+  );
   const order = allOrders.find((o) => o.id === orderId);
 
   if (!order) {
@@ -169,7 +173,19 @@ export const saveOrder = async (
     ctx.throw(http.bad_request, `${orderItemErrors.join("\n")}`);
   }
 
-  const previousOrderId = determineCurrentOrderId(allOrders, currentTime);
+  const previousOrderId = determineCurrentOrderId(
+    allOrders,
+    currentTime,
+    config.timezone,
+  );
+
+  if (previousOrderId == orderId) {
+    ctx.throw(
+      http.internal_server_error,
+      "internal error: previous order id is the same as the current order id",
+    );
+  }
+
   const previousOrder = allOrders.find((o) => o.id === previousOrderId);
 
   if (previousOrder) {

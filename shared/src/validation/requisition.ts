@@ -160,23 +160,27 @@ export const validateModificationMsrp = (
  */
 export const determineModificationOrderId = (
   allOrders: SavedOrder[],
-  now: Date
+  now: Date,
+  timezone?: string
 ): OrderId | undefined => {
   return allOrders.find(
     (order) =>
       order.validFrom &&
-      now.getTime() < getSameOrNextThursday(order.validFrom).getTime()
+      now.getTime() < getSameOrNextThursday(order.validFrom, timezone).getTime()
   )?.id;
 };
 
 export const determineCurrentOrderId = (
   allOrders: SavedOrder[],
-  now: Date
+  now: Date,
+  timezone?: string
 ): OrderId | undefined => {
   return allOrders.find((order) =>
     isDateInRange(now, {
-      from: order.validFrom,
-      to: order.validTo ? getSameOrNextThursday(order.validTo) : null,
+      from: order.validFrom
+        ? getSameOrNextThursday(order.validFrom, timezone)
+        : null,
+      to: order.validTo ? getSameOrNextThursday(order.validTo, timezone) : null,
     })
   )?.id;
 };
