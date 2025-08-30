@@ -208,7 +208,7 @@ export const language = {
           msrpTooltip:
             "Der Orientierungswert errechnet sich aus den von Dir gewählten Nahrungsmitteln sowie Mengen und entspricht dem durchschnittlichen Solawi-Beitrag für Deine Auswahl.",
           msrpCompensationTooltip:
-            "Dieser Wert wird angezeigt, wenn Du Deinen Selbstanbauanteil verringert hast. Er entspricht der Differenz zwischen dem ursprünglichen Selbstanbauanteil und dem neuen Selbstanbauanteil.",
+            "Ausgleichsbeitrag, da die Verringerung des Gemüses aus Eigenanbau nicht auf eine Erhöhung der Kooperationsprodukte angerechnet werden kann",
           offer: "Dein gewählter Solawi-Beitrag:",
           item: {
             freq: "{freq} vorraussichtliche Häufigkeit (in Wochen)",
@@ -550,6 +550,8 @@ export const language = {
         "**Folgende Angaben sind auf Grundlage deiner Bedarfsanmeldung bei uns hinterlegt:**",
 
         "* Benutzername: {userId}\n* Monatlicher Beitrag: {offer}\n* Mitgliedschaftsmodell: {contributionModel}\n{contributionKindBulletPoint}* Bestellte Lebensmittel und Depot: siehe PDF im Anhang",
+
+        "Gewählte Zahlungsweise: {paymentMethod}",
 
         "Vielen Dank für Deine Unterstützung des {solawiName} und das Engagement für eine nachhaltige und faire Landwirtschaft.",
 

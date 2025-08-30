@@ -73,6 +73,8 @@ export const buildOrderEmail = async (
   userName: string,
   updatedDate: Date,
   organizationInfo: OrganizationInfo,
+  confirmSepaUpdate: boolean,
+  confirmBankTransfer: boolean,
 ): Promise<{ html: string; subject: string }> => {
   const el = language.email.orderConfirmation;
   const order = await AppDataSource.getRepository(Order).findOne({
@@ -113,6 +115,11 @@ export const buildOrderEmail = async (
         language.app.options.orderUserCategories[order.category].title,
       contributionKindBulletPoint,
       userId: orderUser.name,
+      paymentMethod: confirmSepaUpdate
+        ? "SEPA-Lastschrift"
+        : confirmBankTransfer
+          ? "Überweisung"
+          : "Keine Angabe",
     },
     true,
   );
