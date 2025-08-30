@@ -40,19 +40,16 @@ import { getOrganizationInfoValueByKey } from "@lebenswurzel/solawi-bedarf-share
 export const initDb = async () => {
   const userCount = await AppDataSource.getRepository(User).count();
   if (userCount == 0 && !config.ldap.enabled) {
-    console.log("no user found creating initial one.");
     const user = new User();
     user.name = config.server.initialUsername;
     user.hash = await hashPassword(config.server.initialPassword);
     user.role = UserRole.ADMIN;
     user.active = true;
     await AppDataSource.getRepository(User).save(user);
-    console.log("initial user created.");
   }
   const configCount =
     await AppDataSource.getRepository(RequisitionConfig).count();
   if (configCount == 0) {
-    console.log("no config found creating initial one.");
     const config = new RequisitionConfig();
     config.name = RequisitionConfigName;
     config.budget = 150000;
@@ -62,7 +59,6 @@ export const initDb = async () => {
     config.validFrom = new Date();
     config.validTo = new Date();
     await AppDataSource.getRepository(RequisitionConfig).save(config);
-    console.log("initial config created.");
   }
   await ensureTextContent({
     category: TextContentCategory.IMPRINT,
@@ -133,7 +129,6 @@ const ensureTextContent = async ({
   textContent.content = content;
   textContent.category = category;
   await AppDataSource.getRepository(TextContent).save(textContent);
-  console.log("initial text content created for " + category);
 };
 
 /*

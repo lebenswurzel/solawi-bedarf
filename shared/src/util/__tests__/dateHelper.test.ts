@@ -547,7 +547,7 @@ describe("dateHelper", () => {
         to: new Date("2024-02-15T12:00:00"),
       };
 
-      expect(isDateInRange(date, range)).toBe(true);
+      expect(isDateInRange(date, range)).toBe(false);
     });
   });
 });

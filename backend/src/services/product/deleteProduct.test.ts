@@ -58,6 +58,8 @@ import {
 import { http } from "../../consts/http";
 import { Order } from "../../database/Order";
 import { saveOrder } from "../order/saveOrder";
+import { updateOrderValidFrom } from "../user/saveUser";
+import { addMonths } from "date-fns";
 
 test("prevent unauthorized access", async () => {
   const ctx = createBasicTestCtx();
@@ -117,6 +119,12 @@ testAsAdmin(
   "delete product that is part of an order",
   async ({ userData }: TestUserData) => {
     const configId = await updateRequisition(true);
+    // create default order for the user
+    await updateOrderValidFrom(
+      userData.userId,
+      addMonths(new Date(), 1),
+      configId,
+    );
     const product1 = await getProductByName("p1");
 
     // add product to order
