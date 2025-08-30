@@ -43,6 +43,7 @@ export const makeOrganizationInfo = (
       email: getField("address.email"),
       forumContact: getField("address.forumContact"),
     },
+    bankAccount: getField("bankAccount"),
   };
 };
 
@@ -65,6 +66,8 @@ export const getOrganizationInfoValueByKey = (
       return organizationInfo.address.email;
     case "address.forumContact":
       return organizationInfo.address.forumContact;
+    case "bankAccount":
+      return organizationInfo.bankAccount;
     default:
       return "";
   }

@@ -437,6 +437,7 @@ export interface OrganizationInfo {
     email: string;
     forumContact: string;
   };
+  bankAccount: string;
 }
 
 type FlattenKeys<T, Prefix extends string = ""> = T extends object

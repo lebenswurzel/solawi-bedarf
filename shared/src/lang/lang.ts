@@ -209,7 +209,7 @@ export const language = {
             "Der Orientierungswert errechnet sich aus den von Dir gewählten Nahrungsmitteln sowie Mengen und entspricht dem durchschnittlichen Solawi-Beitrag für Deine Auswahl.",
           msrpCompensationTooltip:
             "Dieser Wert wird angezeigt, wenn Du Deinen Selbstanbauanteil verringert hast. Er entspricht der Differenz zwischen dem ursprünglichen Selbstanbauanteil und dem neuen Selbstanbauanteil.",
-          offer: "Dein gewählter Beitrag:",
+          offer: "Dein gewählter Solawi-Beitrag:",
           item: {
             freq: "{freq} vorraussichtliche Häufigkeit (in Wochen)",
             deliveryPercentage:
@@ -250,14 +250,28 @@ export const language = {
           hint: "Bitte gib an, wie Du mitarbeiten möchtest.",
         },
         confirm: {
-          title: "Deine Zustimmung zu den Bedingungen",
+          title: "Deine Zustimmung zu den Bedingungen:",
           label:
             "Ich haben die »Informationen und Grundlagen« unseres „{solawiName}“ gelesen. Mir ist bewusst, dass meine Bedarfsanmeldung im gesamten Zeitraum vor Ablauf der Anmeldefrist unverbindlich bleibt und jederzeit änderbar ist. Erst mit Ablauf der Anmeldefrist werden meine zuletzt ausgewählten Nahrungsmittel und -mengen, sowie mein Solawi-Beitrag verbindlich. Ich verpflichte mich, mit meinem verbindlichen Solawi-Beitrag für die gesamte {season} (12 Monate) das Solawi-Projekt mitzufinanzieren.",
         },
         confirmContribution: {
-          title: "Bestätigung deines Mitgliedschaftsmodells als {model}",
+          title: "Bestätigung deines Mitgliedschaftsmodells als {model}:",
           label:
             "Ich habe zur Kenntnis genommen, dass es für eine gut funktionierende Solawi essentiell ist, die mit meiner Mitgliedschaft verbundenen Mitarbeitsstunden zu erfüllen und dies zu dokumentieren. Die Bedingungen der Beteiligung und Konsequenzen bei fehlender Beteiligung und Dokumentation sind mir bewusst.",
+        },
+        confirmPaymentMethod: {
+          title: "Bestätigung der Zahlungsmethode (nur zuteffendes auswählen):",
+        },
+        confirmSepaUpdate: {
+          title: "Bestätigung der SEPA-Lastschrift",
+          label:
+            "Ich ermächtige den Lebenswurzel e.V., ab {from} bis {to} den monatlichen Beitrag in Höhe von {total}€ (statt bisher {previousTotal}€) per SEPA-Lastschrift von meinem bekannten Konto einzuziehen.",
+        },
+        confirmBankTransfer: {
+          title: "Bestätigung der Überweisung",
+          label:
+            "Ich überweise den zusätzlichen Gesamtbetrag von {difference}€ bis zum {date} auf folgendes Konto:",
+          reference: "Verwendungszweck: Bedarfsanpassung {userId}",
         },
         depotNote: {
           title: "Hinweis zu Depots mit (*)",
@@ -557,6 +571,7 @@ export const langOrganizationInfo: Record<OrganizationInfoKeys, string> = {
   "address.postalcode": "Postleitzahl",
   "address.city": "Stadt",
   "address.forumContact": "Forum-Kontakt",
+  bankAccount: "Kontoverbindung",
 };
 
 export const langPdfTexts: Record<PdfTextsKeys, string> = {
