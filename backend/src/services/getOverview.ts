@@ -38,6 +38,10 @@ import {
 } from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import { Applicant } from "../database/Applicant";
 import { config } from "../config";
+import {
+  getSameOrNextThursday,
+  prettyDateWithMonthAndYear,
+} from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper";
 
 export const getOverview = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -56,6 +60,7 @@ export const getOverview = async (
   const overview = await getUserOrderOverview(
     configId,
     undefined,
+    undefined,
     options.includes("with-applicant"),
   );
   ctx.body = { overview };
@@ -64,6 +69,7 @@ export const getOverview = async (
 export const getUserOrderOverview = async (
   configId: number,
   userId?: number,
+  orderId?: number,
   withApplicant: boolean = false,
 ): Promise<OrderOverviewWithApplicantItem[]> => {
   const { productsById } = await bi(configId);
@@ -81,12 +87,15 @@ export const getUserOrderOverview = async (
       offer: MoreThan(0),
       requisitionConfigId: configId,
       userId,
+      id: orderId,
     },
     select: {
       offer: true,
       offerReason: true,
       category: true,
       categoryReason: true,
+      validFrom: true,
+      validTo: true,
       depot: {
         name: true,
       },
@@ -169,6 +178,15 @@ export const getUserOrderOverview = async (
         ),
       );
 
+      let startMonth = null;
+      if (
+        order.validFrom &&
+        order.validFrom.getTime() > order.requisitionConfig.validFrom.getTime()
+      ) {
+        startMonth = prettyDateWithMonthAndYear(
+          getSameOrNextThursday(order.validFrom, config.timezone),
+        );
+      }
       const applicantData = await getApplicantAddress(order.user.id);
       return {
         name: order.user.name,
@@ -180,6 +198,8 @@ export const getUserOrderOverview = async (
         depot: order.depot.name,
         alternateDepot: order.alternateDepot?.name,
         msrp: msrp.monthly.total,
+        months: msrp.months,
+        startMonth,
         offer: order.offer,
         offerReason: order.offerReason || "",
         category: order.category,

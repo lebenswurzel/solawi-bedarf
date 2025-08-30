@@ -43,6 +43,7 @@ function genOrder(
     depot: "Main depot",
     alternateDepot: "Alt depot",
     msrp: 0,
+    months: 12,
     offer: 100,
     offerReason: "",
     category: UserCategory.CAT115,

@@ -56,12 +56,11 @@ import { Depot } from "../../database/Depot";
 import { Order } from "../../database/Order";
 import { OrderItem } from "../../database/OrderItem";
 import { RequisitionConfig } from "../../database/RequisitionConfig";
-import { User } from "../../database/User";
 import { bi } from "../bi/bi";
 import { getRequestUserId, getUserFromContext } from "../getUserFromContext";
 import { getSameOrNextThursday } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper";
 import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
-import { sendOrderConfirmationMail } from "../../email/orderConfirmationMail";
+import { sendOrderConfirmationMail } from "../email/orderConfirmationMail";
 
 export const saveOrder = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,

@@ -388,6 +388,8 @@ export interface OrderOverviewItem {
   depot: string;
   alternateDepot?: string;
   msrp: number;
+  months: number;
+  startMonth: string | null;
   offer: number;
   offerReason: string;
   category: UserCategory;
