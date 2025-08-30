@@ -236,3 +236,13 @@ export const isDateInRange = (
       new Date(date).getTime() < new Date(range.to).getTime())
   );
 };
+
+export const isDateEqual = (
+  date1?: Date | string | number,
+  date2?: Date | string | number
+): boolean => {
+  if (!date1 || !date2) {
+    return false;
+  }
+  return new Date(date1).getTime() === new Date(date2).getTime();
+};
