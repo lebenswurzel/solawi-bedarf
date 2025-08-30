@@ -34,6 +34,7 @@ import {
 } from "../util/utils";
 import { language } from "../lang/lang";
 import { getLangUnit } from "../util/unitHelper";
+import { prettyCompactDate } from "../util/dateHelper";
 
 const t = language.pages.overview;
 
@@ -298,7 +299,7 @@ export function generateUserData(
         ([category, products]) =>
           ({
             name: category,
-            headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
+            headers: ["Bezeichnung", "Menge", "geplante Häufigkeit*"],
             widths: ["65%", "15%", "20%"],
             rows: Array.from(products.values(), (item) => {
               const product = item.category.products.find(
@@ -312,6 +313,14 @@ export function generateUserData(
             }).sort(byKey((row) => row[0], inLocaleOrder)),
           }) as PdfTable
       ).sort(byKey((table) => table.name, inLocaleOrder)),
+      additionalContent: [
+        {
+          text: "*) geplante Häufigkeit bezogen auf Gesamtsaison",
+          fontSize: 10,
+          alignment: "right",
+          margin: [0, 20, 0, 5],
+        },
+      ],
     } as PdfSpec;
   }).sort(byKey((pdf) => pdf.receiver, inLocaleOrder));
 }
@@ -319,7 +328,8 @@ export function generateUserData(
 export function generateDepotData(
   overview: OrderOverviewItem[],
   productCategories: ProductCategoryWithProducts[],
-  seasonName: string
+  seasonName: string,
+  dateOfInterest?: Date
 ): PdfSpec[] {
   type Value = {
     depot: string;
@@ -389,12 +399,15 @@ export function generateDepotData(
           season: seasonName,
         }),
         footerTextLeft: `Anmeldung Depot ${depot}`,
+        footerTextRight: dateOfInterest
+          ? `Stichtag ${prettyCompactDate(dateOfInterest)}`
+          : undefined,
         tables: Array.from(
           depotProducts.entries(),
           ([group, products]) =>
             ({
               name: group,
-              headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
+              headers: ["Bezeichnung", "Menge", "geplante Häufigkeit*"],
               widths: ["60%", "20%", "20%"],
               rows: Array.from(products.values(), (item) => [
                 item.name,
@@ -403,6 +416,14 @@ export function generateDepotData(
               ]).sort(byKey((row) => row[0], inLocaleOrder)),
             }) as PdfTable
         ).sort(byKey((table) => table.name, inLocaleOrder)),
+        additionalContent: [
+          {
+            text: "*) geplante Häufigkeit bezogen auf Gesamtsaison",
+            fontSize: 10,
+            alignment: "right",
+            margin: [0, 20, 0, 5],
+          },
+        ],
       }) as PdfSpec
   ).sort(byKey((pdf) => pdf.receiver, inLocaleOrder));
 }

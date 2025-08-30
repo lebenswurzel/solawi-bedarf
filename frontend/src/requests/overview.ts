@@ -20,10 +20,16 @@ import { getUrl, verifyResponse } from "./requests";
 export const getOverview = async (
   configId: number,
   withApplicant: boolean = false,
+  dateOfInterest?: Date,
 ): Promise<OrderOverviewWithApplicantItem[]> => {
   const options = withApplicant ? "with-applicant" : "";
+  const dateOfInterestQuery = dateOfInterest
+    ? `&dateOfInterest=${dateOfInterest.toISOString()}`
+    : "";
   const response = await fetch(
-    getUrl(`/overview?configId=${configId}&options=${options}`),
+    getUrl(
+      `/overview?configId=${configId}&options=${options}${dateOfInterestQuery}`,
+    ),
     {},
   );
 

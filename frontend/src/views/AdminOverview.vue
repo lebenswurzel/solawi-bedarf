@@ -32,6 +32,7 @@ import { useTextContentStore } from "../store/textContentStore.ts";
 import { storeToRefs } from "pinia";
 import { formatDateForFilename } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper.ts";
 import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
+import { dateToString, stringToDate } from "../lib/convert.ts";
 
 const loading = ref({
   csv: false,
@@ -55,6 +56,7 @@ const orderOverviewSeasons = computed(() =>
 const orderOverviewSelectedSeasons = ref<number[]>([
   configStore.activeConfigId,
 ]);
+const dateOfInterest = ref<Date>(new Date());
 
 watchEffect(() => {
   orderOverviewSelectedSeasons.value = [configStore.activeConfigId];
@@ -67,7 +69,11 @@ const onUserCsvClick = async () => {
     const overview = await Promise.all(
       configIds.map(
         async (configId) =>
-          await getOverview(configId, orderOveriewWithApplicant.value),
+          await getOverview(
+            configId,
+            orderOveriewWithApplicant.value,
+            dateOfInterest.value,
+          ),
       ),
     ).then((os) => os.flat());
 
@@ -83,7 +89,7 @@ const onUserCsvClick = async () => {
     const blob = new Blob([csv], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
-    const filename = `uebersicht ${formatDateForFilename(new Date())}.csv`;
+    const filename = `uebersicht (Stichtag ${formatDateForFilename(dateOfInterest.value)}) ${formatDateForFilename(new Date())}.csv`;
     a.href = url;
     a.download = sanitizeFileName(filename);
     document.body.appendChild(a);
@@ -101,7 +107,11 @@ const onUserCsvClick = async () => {
 const onDepotPdfClick = async () => {
   loading.value.depot = true;
   try {
-    const overview = await getOverview(configStore.activeConfigId);
+    const overview = await getOverview(
+      configStore.activeConfigId,
+      undefined,
+      dateOfInterest.value,
+    );
     const productCategories = await getProductCategory(
       configStore.activeConfigId,
     );
@@ -109,6 +119,7 @@ const onDepotPdfClick = async () => {
       overview,
       productCategories,
       configStore.config?.name ?? "SAISON?",
+      dateOfInterest.value,
     );
     const zip = new Zip();
     for (const pdfSpec of dataByDepotAndProductCategory) {
@@ -118,7 +129,7 @@ const onDepotPdfClick = async () => {
       );
     }
 
-    const filename = `depots ${formatDateForFilename(new Date())}.zip`;
+    const filename = `depots (Stichtag ${formatDateForFilename(dateOfInterest.value)}) ${formatDateForFilename(new Date())}.zip`;
     zip.download(filename);
   } catch (e) {
     uiFeedbackStore.setError("" + e);
@@ -131,7 +142,11 @@ const onDepotPdfClick = async () => {
 const onUserPdfClick = async () => {
   loading.value.orders = true;
   try {
-    const overview = await getOverview(configStore.activeConfigId);
+    const overview = await getOverview(
+      configStore.activeConfigId,
+      undefined,
+      dateOfInterest.value,
+    );
     const productCategories = await getProductCategory(
       configStore.activeConfigId,
     );
@@ -147,7 +162,7 @@ const onUserPdfClick = async () => {
         `${sanitizeFileName(pdf.receiver)}.pdf`,
       );
     }
-    const filename = `users ${formatDateForFilename(new Date())}.zip`;
+    const filename = `users (Stichtag ${formatDateForFilename(dateOfInterest.value)}) ${formatDateForFilename(new Date())}.zip`;
     zip.download(filename);
   } catch (e) {
     uiFeedbackStore.setError("" + e);
@@ -159,6 +174,36 @@ const onUserPdfClick = async () => {
 </script>
 
 <template>
+  <v-card class="ma-2" variant="outlined">
+    <v-card-title>Allgemeine Einstellungen</v-card-title>
+    <v-card-text>
+      <v-container fluid class="pa-0">
+        <v-row dense>
+          <v-col cols="12">
+            <v-alert type="info" variant="tonal">
+              Durch Anpassungen der Bedarfsanmeldungen während der Saison hängen
+              die hier erzeugten Übersichten und PDFs vom gewählten Stichtag ab.
+              Dieser kann hier geändert werden und wirkt sich auf alle erzeugten
+              Übersichten und PDFs aus.
+            </v-alert>
+          </v-col>
+        </v-row>
+        <v-row dense>
+          <v-col cols="12" md="4">
+            <v-text-field
+              label="Stichtag für Erstellung der Übersichten"
+              type="datetime-local"
+              :model-value="dateToString(dateOfInterest)"
+              @update:model-value="
+                (val: string) =>
+                  (dateOfInterest = stringToDate(val) || new Date())
+              "
+            ></v-text-field>
+          </v-col>
+        </v-row>
+      </v-container>
+    </v-card-text>
+  </v-card>
   <v-card class="ma-2">
     <v-card-title>Bestellübersicht als CSV</v-card-title>
     <v-card-text class="pb-0">

@@ -69,6 +69,10 @@ export const prettyDate = (
     : "nie";
 };
 
+export const prettyCompactDate = (date?: Date | string | null): string => {
+  return date ? format(date, "dd.MM.yyyy, HH:mm:ss", { locale: de }) : "nie";
+};
+
 export const prettyDateNoTime = (
   date?: Date | string | number | null
 ): string => {
