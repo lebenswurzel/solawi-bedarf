@@ -71,6 +71,7 @@ export interface PdfTable {
 export interface PdfSpec {
   receiver: string;
   description: string;
+  description2?: string;
   footerTextLeft?: string;
   footerTextRight?: string;
   headerTextLeft?: string;
@@ -112,6 +113,12 @@ export function createDefaultPdf(
   content.push({
     text: pdf.description,
   });
+  if (pdf.description2) {
+    content.push({
+      text: pdf.description2,
+      margin: [0, 10, 0, 5],
+    });
+  }
 
   for (const table of pdf.tables) {
     content.push({

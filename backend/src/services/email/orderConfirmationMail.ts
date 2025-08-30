@@ -15,19 +15,18 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { toZonedTime } from "date-fns-tz";
-import { AppDataSource } from "../database/database";
-import { Order } from "../database/Order";
-import { RequisitionConfig } from "../database/RequisitionConfig";
-import { User } from "../database/User";
-import { sendEmail } from "../services/email/email";
-import { buildOrderEmail } from "../services/email/emailHelper";
-import { getUserOrderOverview } from "../services/getOverview";
-import { getProductCategories } from "../services/product/getProductCategory";
-import { getOrganizationInfo } from "../services/text/getOrganizationInfo";
+import { AppDataSource } from "../../database/database";
+import { RequisitionConfig } from "../../database/RequisitionConfig";
+import { User } from "../../database/User";
+import { sendEmail } from "./email";
+import { buildOrderEmail } from "./emailHelper";
+import { getUserOrderOverview } from "../getOverview";
+import { getProductCategories } from "../product/getProductCategory";
+import { getOrganizationInfo } from "../text/getOrganizationInfo";
 import { formatDateForFilename } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper";
 import { createDefaultPdf } from "@lebenswurzel/solawi-bedarf-shared/src/pdf/pdf";
 import { generateUserData } from "@lebenswurzel/solawi-bedarf-shared/src/pdf/overviewPdfs";
-import { config } from "../config";
+import { config } from "../../config";
 
 interface SendOrderConfirmationMailParams {
   orderId: number;
@@ -102,6 +101,7 @@ export const sendOrderConfirmationMail = async ({
   const overview = await getUserOrderOverview(
     requisitionConfig.id,
     requestUserId,
+    orderId,
   );
   const productCategories = await getProductCategories(requisitionConfig.id);
   const dataByUserAndProductCategory = generateUserData(

@@ -256,6 +256,7 @@ export function generateUserData(
     name: string;
     category: ProductCategoryWithProducts;
     value: number;
+    startMonth: string | null;
   };
 
   const grouped = overview
@@ -268,6 +269,7 @@ export function generateUserData(
           name: item.name,
           category: categories.get(item.category)!,
           value: item.value,
+          startMonth: overviewItem.startMonth,
         }))
     )
     .reduce(
@@ -280,11 +282,15 @@ export function generateUserData(
 
   return Array.from(grouped.entries(), ([user, userProducts]) => {
     const [userName, depotName] = user.split("\n");
+    // Get months from the first product item (all items for a user have the same months value)
+    const firstProduct = Array.from(userProducts.values())[0][0];
+    const startMonth = firstProduct.startMonth;
     return {
       receiver: user,
       description: interpolate(t.documents.user.description, {
         season: seasonName,
       }),
+      description2: startMonth ? `Gültig ab ${startMonth}` : undefined,
       footerTextRight: `Bedarf Ernteteiler ${userName}`,
       footerTextLeft: `Depot ${depotName}`,
       tables: Array.from(

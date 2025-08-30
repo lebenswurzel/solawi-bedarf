@@ -88,6 +88,12 @@ export const prettyDateWithDayName = (date?: Date | string | null): string => {
   return date ? format(date, "EEEE, d. MMMM yyyy", { locale: de }) : "nie";
 };
 
+export const prettyDateWithMonthAndYear = (
+  date?: Date | string | null
+): string => {
+  return date ? format(date, "MMMM yyyy", { locale: de }) : "";
+};
+
 export const countThursdaysBetweenDates = (
   earlierDate: Date, // included if Thursday
   laterDate: Date // excluded if Thursday
