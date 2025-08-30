@@ -193,7 +193,7 @@ describe("checkOrderItemValid", () => {
   it("should return null for productMsrpWeight >= 0.2", () => {
     const productWithStep = { ...mockProduct, quantityStep: 2 };
     const productsById = { ...mockProductsById, 1: productWithStep };
-    const orderItem: OrderItem = { value: 2, productId: 1 };
+    const orderItem: OrderItem = { value: 6, productId: 1 };
     const result = checkOrderItemValid(
       null,
       orderItem,
@@ -207,7 +207,7 @@ describe("checkOrderItemValid", () => {
   it("should return error for productMsrpWeight = 0", () => {
     const productWithStep = { ...mockProduct, quantityStep: 2 };
     const productsById = { ...mockProductsById, 1: productWithStep };
-    const orderItem: OrderItem = { value: 2, productId: 1 };
+    const orderItem: OrderItem = { value: 6, productId: 1 };
     const result = checkOrderItemValid(
       null,
       orderItem,

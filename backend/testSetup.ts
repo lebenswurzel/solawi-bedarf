@@ -41,7 +41,6 @@ import { ShipmentItem } from "./src/database/ShipmentItem";
 
 const clearAllTables = async () => {
   const entities = AppDataSource.entityMetadatas;
-  console.log("deleting all tables");
 
   // must delete in specific order to prevent foreign key violations
   await AppDataSource.getRepository(OrderItem).delete({});
@@ -64,7 +63,6 @@ const clearAllTables = async () => {
 };
 
 const reinitializeDatabase = async () => {
-  console.log("initializing database");
   await clearAllTables();
   await initDb();
 
@@ -82,14 +80,11 @@ const reinitializeDatabase = async () => {
       token,
     ),
   );
-  console.log("fill database");
   await fillDatabaseWithTestData();
-  console.log("database filled");
 };
 
 beforeAll(async () => {
   await AppDataSource.initialize().then(async () => {
-    console.log("db is up");
     await reinitializeDatabase();
   });
 });

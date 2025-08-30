@@ -34,6 +34,8 @@ import {
 import { bi } from "../bi/bi";
 import { saveOrder } from "./saveOrder";
 import { Product } from "../../database/Product";
+import { addMonths } from "date-fns";
+import { updateOrderValidFrom } from "../user/saveUser";
 
 test("prevent unauthorized access", async () => {
   const ctx = createBasicTestCtx();
@@ -50,8 +52,16 @@ testAsUser1(
   },
 );
 
-testAsUser1("save empty order", async ({ userData }: TestUserData) => {
+testAsUser1("update default order", async ({ userData }: TestUserData) => {
   const configId = await updateRequisition(true);
+
+  // create default order for the user
+  await updateOrderValidFrom(
+    userData.userId,
+    addMonths(new Date(), 1),
+    configId,
+  );
+
   const depot = await getDepotByName("d1");
   const request: ConfirmedOrder = {
     confirmGTC: true,
@@ -67,13 +77,13 @@ testAsUser1("save empty order", async ({ userData }: TestUserData) => {
     requisitionConfigId: configId,
   };
 
-  // create order
   const ctx = createBasicTestCtx(request, userData.token, undefined, {
     id: userData.userId,
     configId,
   });
 
-  expect((await findOrdersByUser(userData.userId)).length).toBe(0);
+  // one order already exists
+  expect((await findOrdersByUser(userData.userId)).length).toBe(1);
 
   await saveOrder(ctx);
   expect(ctx.status).toBe(204);
@@ -102,6 +112,14 @@ testAsUser1("save empty order", async ({ userData }: TestUserData) => {
 
 testAsUser1("save order with products", async ({ userData }: TestUserData) => {
   const configId = await updateRequisition(true);
+
+  // create default order for the user
+  await updateOrderValidFrom(
+    userData.userId,
+    addMonths(new Date(), 1),
+    configId,
+  );
+
   const depot = await getDepotByName("d1");
   const baseRequest: ConfirmedOrder = {
     confirmGTC: true,
@@ -197,6 +215,14 @@ testAsUser1("save order with products", async ({ userData }: TestUserData) => {
 
 testAsUser1("bad requests", async ({ userData }: TestUserData) => {
   let configId = await updateRequisition(false);
+
+  // create default order for the user
+  await updateOrderValidFrom(
+    userData.userId,
+    addMonths(new Date(), 1),
+    configId,
+  );
+
   // requisition is not active
   let ctx = await _createCtx({}, { userData }, configId);
   await expect(() => saveOrder(ctx)).rejects.toThrowError(
@@ -273,10 +299,14 @@ testAsUser1("bad requests", async ({ userData }: TestUserData) => {
   configId = await updateRequisition(true, true);
   ctx = await _createCtx({ offer: 25 }, { userData }, configId, 4); // increase -> ok
   await saveOrder(ctx);
-  ctx = await _createCtx({}, { userData }, configId, 3); // try decrease -> error
-  await expect(() => saveOrder(ctx)).rejects.toThrowError(
-    "Error 400: not valid in bidding round",
-  );
+
+  // DISABLED: decreasing individual items is now allowed as long as the total offer
+  // for selfgrown productsis not decreased
+  //
+  // ctx = await _createCtx({}, { userData }, configId, 3); // try decrease -> error
+  // await expect(() => saveOrder(ctx)).rejects.toThrowError(
+  //   "Error 400: not valid in bidding round",
+  // );
 
   // requisition not found
   ctx = await _createCtx({}, { userData }, configId + 1);
