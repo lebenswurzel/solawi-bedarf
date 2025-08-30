@@ -255,6 +255,8 @@ const onSave = () => {
     validTo: null,
     requisitionConfigId: activeConfigId.value,
     sendConfirmationEmail: sendConfirmationEmail.value,
+    confirmSepaUpdate: confirmSepaUpdate.value,
+    confirmBankTransfer: confirmBankTransfer.value,
   })
     .then(async () => {
       await biStore.update(
@@ -461,7 +463,9 @@ const onSave = () => {
                 t.confirmBankTransfer.reference,
               ]"
             >
-              {{ text }}
+              {{
+                interpolate(text, { userId: props.requestUser?.name || "???" })
+              }}
             </p>
           </div>
         </div>

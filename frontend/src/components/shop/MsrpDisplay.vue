@@ -129,7 +129,11 @@ const msrpValidation = computed(() => {
       Euros gerundet, bezogen auf {{ msrp?.months }}
       Kalendermonate)
 
-      <v-tooltip :text="t.cards.products.msrpTooltip" open-on-click>
+      <v-tooltip
+        :text="t.cards.products.msrpTooltip"
+        open-on-click
+        location="bottom"
+      >
         <template v-slot:activator="{ props }">
           <v-icon v-bind="props">mdi-information-outline</v-icon>
         </template>
@@ -164,6 +168,7 @@ const msrpValidation = computed(() => {
         <v-tooltip
           :text="t.cards.products.msrpCompensationTooltip"
           open-on-click
+          location="bottom"
         >
           <template v-slot:activator="{ props }">
             <v-icon v-bind="props">mdi-information-outline</v-icon>
@@ -229,7 +234,12 @@ const msrpValidation = computed(() => {
       >
         <div v-for="error in msrpValidation.errors" :key="error[0]">
           <v-icon class="mr-1">mdi-alert</v-icon>{{ error[0] }}
-          <v-tooltip :text="error[1]" open-on-click v-if="error[1]">
+          <v-tooltip
+            :text="error[1]"
+            open-on-click
+            v-if="error[1]"
+            location="bottom"
+          >
             <template v-slot:activator="{ props }">
               <v-icon v-bind="props">mdi-information-outline</v-icon>
             </template>

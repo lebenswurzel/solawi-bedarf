@@ -143,6 +143,8 @@ export interface SavedOrder extends Order {
 
 export interface ConfirmedOrder extends Order {
   sendConfirmationEmail?: boolean;
+  confirmSepaUpdate: boolean;
+  confirmBankTransfer: boolean;
 }
 
 export interface Address {

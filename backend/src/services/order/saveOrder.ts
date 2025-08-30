@@ -256,6 +256,8 @@ export const saveOrder = async (
     changingUserId: id,
     requisitionConfig,
     sendConfirmationEmail,
+    confirmSepaUpdate: body.confirmSepaUpdate,
+    confirmBankTransfer: body.confirmBankTransfer,
   });
 
   ctx.status = http.no_content;

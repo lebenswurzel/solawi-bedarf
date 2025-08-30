@@ -34,6 +34,8 @@ interface SendOrderConfirmationMailParams {
   changingUserId: number;
   requisitionConfig: RequisitionConfig;
   sendConfirmationEmail: boolean;
+  confirmSepaUpdate: boolean;
+  confirmBankTransfer: boolean;
 }
 
 export const sendOrderConfirmationMail = async ({
@@ -42,6 +44,8 @@ export const sendOrderConfirmationMail = async ({
   changingUserId,
   requisitionConfig,
   sendConfirmationEmail,
+  confirmSepaUpdate,
+  confirmBankTransfer,
 }: SendOrderConfirmationMailParams): Promise<void> => {
   // Only send email if confirmation is requested or BCC receiver is configured
   if (!sendConfirmationEmail && !config.email.orderUpdatedBccReceiver) {
@@ -95,6 +99,8 @@ export const sendOrderConfirmationMail = async ({
     orderUserFirstname,
     currentDate,
     organizationInfo,
+    confirmSepaUpdate,
+    confirmBankTransfer,
   );
 
   // create overview pdf
