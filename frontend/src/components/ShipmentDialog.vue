@@ -37,6 +37,7 @@ import {
 import {
   prettyDate,
   prettyDateWithDayName,
+  isDateEqual,
 } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper.ts";
 import { dateToString, stringToDate } from "../lib/convert.ts";
 import { prepareShipment } from "../lib/shipment/prepareShipment.ts";
@@ -55,6 +56,7 @@ import {
   ProductCategoryType,
   ShipmentType,
 } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
+import { isShipmentDifferent } from "@lebenswurzel/solawi-bedarf-shared/src/shipment/shipmentUtil.ts";
 
 const t = language.pages.shipment;
 
@@ -120,6 +122,31 @@ const activeProducts = computed((): Array<number> => {
   return indices;
 });
 
+type ModificationState = "new" | "changed" | "saved";
+
+const modificationState = computed((): ModificationState => {
+  if (!savedShipment.value) {
+    return "new";
+  }
+  if (isShipmentDifferent(savedShipment.value, editShipment.value)) {
+    console.log("changed", savedShipment.value, editShipment.value);
+    return "changed";
+  }
+  return "saved";
+});
+
+const dateChangedHint = computed(() => {
+  if (!savedShipment.value?.validFrom) {
+    return undefined;
+  }
+  if (
+    !isDateEqual(savedShipment.value?.validFrom, editShipment.value.validFrom)
+  ) {
+    return "Das Datum der Verteilung wurde geändert. Bitte Speichern um die benötigten Produktmengen zu aktualisieren.";
+  }
+  return undefined;
+});
+
 const onEditShipment = async (shipmentId: number) => {
   try {
     const shipmentWithItemsResponse: ShipmentFullInformation[] = (
@@ -131,6 +158,13 @@ const onEditShipment = async (shipmentId: number) => {
       return;
     }
     const serverSavedShipment = shipmentWithItemsResponse[0];
+
+    await biStore.update(
+      activeConfigId.value,
+      undefined,
+      undefined,
+      new Date(serverSavedShipment.validFrom),
+    );
 
     const shipmentItems: EditShipmentItem[] = (
       serverSavedShipment.shipmentItems || []
@@ -267,7 +301,6 @@ const onClose = () => {
 };
 
 const onSave = () => {
-  console.log("onSave", isForecast.value);
   if (
     !isForecast.value &&
     savedShipment?.value?.active &&
@@ -400,7 +433,8 @@ watchEffect(async () => {
       "
     >
       <template v-slot:title>
-        {{ savedShipment === undefined ? "[NEU] " : "" }}
+        {{ modificationState == "new" ? "[NEU] " : "" }}
+        {{ modificationState == "changed" ? "[GEÄNDERT] " : "" }}
         <span v-if="isForecast" class="bg-info pa-1">
           {{ t.types[shipmentType] }}
         </span>
@@ -469,138 +503,100 @@ watchEffect(async () => {
             </v-col>
           </v-row>
         </v-container>
-        <div class="text-h5">
-          <v-icon v-if="showShipmentItems" @click="showShipmentItems = false"
-            >mdi-collapse-all</v-icon
-          >
-          <v-icon v-else @click="showShipmentItems = true"
-            >mdi-expand-all</v-icon
-          ><span class="pl-2"
-            >Produkte ({{ editShipment.shipmentItems.length }})</span
-          >
-        </div>
-        <template v-if="showShipmentItems">
-          <v-chip-group
-            :model-value="activeProducts"
-            class="mb-2"
-            column
-            multiple
-          >
-            <v-chip
-              v-for="(visible, productId) in productVisibility"
-              :key="productId"
-              @click="productVisibility[productId] = !visible"
-              :color="
-                productsById[productId].productCategoryType ==
-                ProductCategoryType.SELFGROWN
-                  ? 'green'
-                  : 'blue'
-              "
-              size="small"
-              :variant="
-                productsById[productId].productCategoryType ==
-                ProductCategoryType.SELFGROWN
-                  ? 'tonal'
-                  : 'outlined'
-              "
-            >
-              <v-icon start>{{ visible ? "mdi-eye" : "" }}</v-icon>
-              {{ productsById[productId]?.name }}
-            </v-chip>
-          </v-chip-group>
-        </template>
-        <v-list class="ma-0 pa-0" v-if="showShipmentItems">
-          <v-list-item
-            v-if="!editShipment.shipmentItems.length"
-            class="opacity-50"
-          >
-            <v-icon>mdi-information-outline</v-icon>
-            Bisher keine Produkte hinzugefügt
-          </v-list-item>
-          <template v-for="(item, idx) in editShipment.shipmentItems">
-            <v-list-item
-              class="ma-0 pa-0"
-              v-if="
-                item.isNew ||
-                (item.showItem &&
-                  (item.productId
-                    ? productVisibility[item.productId] !== false
-                    : true))
-              "
-            >
-              <div v-if="shouldAddMargin(idx)" class="text-h6 mb-4">
-                {{ item.isNew ? "NEU: " : "" }}
-                {{
-                  item.productId
-                    ? productsById[item.productId].name
-                    : "Neues Produkt"
-                }}
-              </div>
-              <ShipmentItem
-                :shipment-item="item"
-                :used-depot-ids-by-product-id="usedShipmentDepotIdsByProductId"
-                :is-forecast="isForecast"
-              />
-              <template v-slot:append>
-                <v-btn
-                  icon="mdi-close-thick"
-                  @click="() => onDeleteShipmentItem(idx)"
-                >
-                </v-btn>
-              </template>
-            </v-list-item>
-          </template>
-        </v-list>
-        <v-btn
-          @click="onAddShipmentItem"
-          variant="text"
-          class="mb-6"
-          prepend-icon="mdi-plus"
+        <v-alert
+          v-if="dateChangedHint"
+          type="warning"
+          class="mb-2"
+          variant="outlined"
+          >{{ dateChangedHint }}</v-alert
         >
-          Produkt hinzufügen
-        </v-btn>
-        <template v-if="!isForecast">
+        <v-alert
+          v-if="modificationState == 'new'"
+          type="info"
+          class="mb-2"
+          variant="outlined"
+        >
+          Um Produkte hinzufügen zu können, bitte erst die Verteilung speichern.
+        </v-alert>
+        <template v-else>
           <div class="text-h5">
-            <v-icon
-              v-if="showAdditionalShipmentItems"
-              @click="showAdditionalShipmentItems = false"
+            <v-icon v-if="showShipmentItems" @click="showShipmentItems = false"
               >mdi-collapse-all</v-icon
             >
-            <v-icon v-else @click="showAdditionalShipmentItems = true"
+            <v-icon v-else @click="showShipmentItems = true"
               >mdi-expand-all</v-icon
             ><span class="pl-2"
-              >Zusatzprodukte ({{
-                editShipment.additionalShipmentItems.length
-              }})</span
+              >Produkte ({{ editShipment.shipmentItems.length }})</span
             >
           </div>
-          <v-list class="ma-0 pa-0" v-if="showAdditionalShipmentItems">
-            <div class="text-caption mb-2">
-              Als Zusatzprodukt gelten Lebensmittel, die nicht direkt bestellt
-              wurden, die aber verfügbar sind und frei an die Depots verteilt
-              werden.
-            </div>
+          <template v-if="showShipmentItems">
+            <v-chip-group
+              :model-value="activeProducts"
+              class="mb-2"
+              column
+              multiple
+            >
+              <v-chip
+                v-for="(visible, productId) in productVisibility"
+                :key="productId"
+                @click="productVisibility[productId] = !visible"
+                :color="
+                  productsById[productId].productCategoryType ==
+                  ProductCategoryType.SELFGROWN
+                    ? 'green'
+                    : 'blue'
+                "
+                size="small"
+                :variant="
+                  productsById[productId].productCategoryType ==
+                  ProductCategoryType.SELFGROWN
+                    ? 'tonal'
+                    : 'outlined'
+                "
+              >
+                <v-icon start>{{ visible ? "mdi-eye" : "" }}</v-icon>
+                {{ productsById[productId]?.name }}
+              </v-chip>
+            </v-chip-group>
+          </template>
+          <v-list class="ma-0 pa-0" v-if="showShipmentItems">
             <v-list-item
-              v-if="!editShipment.additionalShipmentItems.length"
+              v-if="!editShipment.shipmentItems.length"
               class="opacity-50"
             >
               <v-icon>mdi-information-outline</v-icon>
-              Bisher keine Zusatzprodukte hinzugefügt
+              Bisher keine Produkte hinzugefügt
             </v-list-item>
-            <template
-              v-for="(item, idx) in editShipment.additionalShipmentItems"
-            >
-              <v-list-item class="ma-0 pa-0" v-if="item.showItem">
-                <AdditionalShipmentItem
-                  :additional-shipment-item="item"
-                  :used-depot-ids-by-product="
-                    usedAdditionalShipmentDepotIdsByProduct
+            <template v-for="(item, idx) in editShipment.shipmentItems">
+              <v-list-item
+                class="ma-0 pa-0"
+                v-if="
+                  item.isNew ||
+                  (item.showItem &&
+                    (item.productId
+                      ? productVisibility[item.productId] !== false
+                      : true))
+                "
+              >
+                <div v-if="shouldAddMargin(idx)" class="text-h6 mb-4">
+                  {{ item.isNew ? "NEU: " : "" }}
+                  {{
+                    item.productId
+                      ? productsById[item.productId].name
+                      : "Neues Produkt"
+                  }}
+                </div>
+                <ShipmentItem
+                  :shipment-item="item"
+                  :used-depot-ids-by-product-id="
+                    usedShipmentDepotIdsByProductId
                   "
+                  :is-forecast="isForecast"
                 />
                 <template v-slot:append>
                   <v-btn
                     icon="mdi-close-thick"
-                    @click="() => onDeleteAdditionalShipmentItem(idx)"
+                    @click="() => onDeleteShipmentItem(idx)"
                   >
                   </v-btn>
                 </template>
@@ -608,13 +604,70 @@ watchEffect(async () => {
             </template>
           </v-list>
           <v-btn
-            @click="onAddAdditionalShipmentItem"
+            @click="onAddShipmentItem"
             variant="text"
             class="mb-6"
             prepend-icon="mdi-plus"
           >
-            Zusatzprodukt hinzufügen
+            Produkt hinzufügen
           </v-btn>
+          <template v-if="!isForecast">
+            <div class="text-h5">
+              <v-icon
+                v-if="showAdditionalShipmentItems"
+                @click="showAdditionalShipmentItems = false"
+                >mdi-collapse-all</v-icon
+              >
+              <v-icon v-else @click="showAdditionalShipmentItems = true"
+                >mdi-expand-all</v-icon
+              ><span class="pl-2"
+                >Zusatzprodukte ({{
+                  editShipment.additionalShipmentItems.length
+                }})</span
+              >
+            </div>
+            <v-list class="ma-0 pa-0" v-if="showAdditionalShipmentItems">
+              <div class="text-caption mb-2">
+                Als Zusatzprodukt gelten Lebensmittel, die nicht direkt bestellt
+                wurden, die aber verfügbar sind und frei an die Depots verteilt
+                werden.
+              </div>
+              <v-list-item
+                v-if="!editShipment.additionalShipmentItems.length"
+                class="opacity-50"
+              >
+                <v-icon>mdi-information-outline</v-icon>
+                Bisher keine Zusatzprodukte hinzugefügt
+              </v-list-item>
+              <template
+                v-for="(item, idx) in editShipment.additionalShipmentItems"
+              >
+                <v-list-item class="ma-0 pa-0" v-if="item.showItem">
+                  <AdditionalShipmentItem
+                    :additional-shipment-item="item"
+                    :used-depot-ids-by-product="
+                      usedAdditionalShipmentDepotIdsByProduct
+                    "
+                  />
+                  <template v-slot:append>
+                    <v-btn
+                      icon="mdi-close-thick"
+                      @click="() => onDeleteAdditionalShipmentItem(idx)"
+                    >
+                    </v-btn>
+                  </template>
+                </v-list-item>
+              </template>
+            </v-list>
+            <v-btn
+              @click="onAddAdditionalShipmentItem"
+              variant="text"
+              class="mb-6"
+              prepend-icon="mdi-plus"
+            >
+              Zusatzprodukt hinzufügen
+            </v-btn>
+          </template>
         </template>
       </v-card-text>
       <v-card-actions>
