@@ -30,6 +30,7 @@ export const organizationInfoKeys: OrganizationInfoKeys[] = [
   "address.city",
   "address.email",
   "address.forumContact",
+  "bankAccount",
 ];
 
 export const basicOrganizationInfo: OrganizationInfo = {
@@ -42,6 +43,7 @@ export const basicOrganizationInfo: OrganizationInfo = {
     email: "solawi@lebenswurzel.org",
     forumContact: "@rike",
   },
+  bankAccount: "Kontoinhaber: ...\nIBAN: ...\nKreditinstitut: ...",
 };
 
 export const appConfig = {

@@ -155,6 +155,15 @@ export const getSameOrNextThursday = (date: Date, timezone?: string): Date => {
   return addDays(dateOnly, daysToThursday);
 };
 
+export const getValidFromMonth = (date: Date, timezone?: string): Date => {
+  const firstDeliveryDate = getSameOrNextThursday(date, timezone);
+  return new Date(
+    firstDeliveryDate.getFullYear(),
+    firstDeliveryDate.getMonth(),
+    1
+  );
+};
+
 export const countCalendarMonths = (
   date1: Date,
   date2: Date,

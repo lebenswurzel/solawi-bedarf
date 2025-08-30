@@ -40,6 +40,12 @@ import { useTextContentStore } from "../store/textContentStore.ts";
 import MsrpDisplay from "./shop/MsrpDisplay.vue";
 import { useUserStore } from "../store/userStore.ts";
 import ContributionSelect from "./shop/ContributionSelect.vue";
+import {
+  getSameOrNextThursday,
+  getValidFromMonth,
+  prettyDateWithMonthAndYear,
+} from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper.ts";
+import { format } from "date-fns";
 
 const props = defineProps<{ open: boolean; requestUser?: UserWithOrders }>();
 const emit = defineEmits(["close"]);
@@ -64,11 +70,15 @@ const {
   modificationOrderItems,
   modificationOrderId,
   modificationOrder,
+  currentOrder,
+  hasPreviousOrder,
 } = storeToRefs(orderStore);
 const { organizationInfo } = storeToRefs(textContentStore);
 
 const confirmGTC = ref(false);
 const confirmContribution = ref(false);
+const confirmSepaUpdate = ref(false);
+const confirmBankTransfer = ref(false);
 const openFAQ = ref(false);
 const loading = ref(false);
 const showDepotNote = ref(false);
@@ -179,9 +189,35 @@ const disableSubmit = computed(() => {
   );
 });
 
+const monthlyOfferDifference = computed(() => {
+  return offer.value - (currentOrder.value?.offer ?? 0);
+});
+
+const totalOfferDifference = computed(() => {
+  return monthlyOfferDifference.value * effectiveMsrp.value.months;
+});
+
 const requireConfirmContribution = computed(() => {
   return category.value != UserCategory.CAT130;
 });
+
+const requireConfirmSepaUpdate = computed(() => {
+  return hasPreviousOrder.value && monthlyOfferDifference.value > 0;
+});
+
+const requireConfirmBankTransfer = computed(() => {
+  return hasPreviousOrder.value && monthlyOfferDifference.value > 0;
+});
+
+const getMiddleDayOfMonth = (): string => {
+  const validFromMonth = getValidFromMonth(
+    modificationOrder.value?.validFrom ?? new Date(),
+  );
+  return format(
+    new Date(validFromMonth.getFullYear(), validFromMonth.getMonth(), 14),
+    "dd.MM.yyyy",
+  );
+};
 
 watchEffect(() => {
   sendConfirmationEmail.value = props.requestUser?.emailEnabled || false;
@@ -353,6 +389,7 @@ const onSave = () => {
             })
           "
           hide-details
+          density="compact"
         />
         <v-alert
           color="warning"
@@ -378,7 +415,57 @@ const onSave = () => {
           :label="t.confirmContribution.label"
           v-if="requireConfirmContribution"
           hide-details
+          density="compact"
         />
+
+        <div
+          class="mt-3"
+          v-if="requireConfirmSepaUpdate || requireConfirmBankTransfer"
+        >
+          {{ t.confirmPaymentMethod.title }}
+          <v-checkbox
+            v-if="requireConfirmSepaUpdate"
+            v-model="confirmSepaUpdate"
+            :label="
+              interpolate(t.confirmSepaUpdate.label, {
+                from: prettyDateWithMonthAndYear(
+                  getSameOrNextThursday(
+                    modificationOrder?.validFrom ?? new Date(),
+                  ),
+                ),
+                to: prettyDateWithMonthAndYear(modificationOrder?.validTo),
+                total: offer.toString() || '?',
+                previousTotal: currentOrder?.offer.toString() || '?',
+              })
+            "
+            hide-details
+            density="compact"
+          />
+          <div v-if="requireConfirmBankTransfer">
+            <v-checkbox
+              v-if="requireConfirmBankTransfer"
+              v-model="confirmBankTransfer"
+              :label="
+                interpolate(t.confirmBankTransfer.label, {
+                  difference: totalOfferDifference.toString(),
+                  date: getMiddleDayOfMonth(),
+                })
+              "
+              hide-details
+              density="compact"
+            />
+            <p
+              class="text-body-2 pl-10"
+              v-for="text in [
+                ...textContentStore.organizationInfo.bankAccount.split('\n'),
+                t.confirmBankTransfer.reference,
+              ]"
+            >
+              {{ text }}
+            </p>
+          </div>
+        </div>
+
         <v-switch
           v-model="sendConfirmationEmail"
           :label="`${t.sendConfirmationEmail.title}`"
