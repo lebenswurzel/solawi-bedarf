@@ -287,13 +287,7 @@ const canSave = computed(() => {
 });
 
 const disableDownloadPdf = computed(() => {
-  return (
-    !savedShipment?.value ||
-    savedShipment.value.shipmentItems.length !=
-      editShipment.value.shipmentItems.length ||
-    savedShipment.value.additionalShipmentItems.length !=
-      editShipment.value.additionalShipmentItems.length
-  );
+  return !savedShipment?.value || modificationState.value == "changed";
 });
 
 const onClose = () => {
