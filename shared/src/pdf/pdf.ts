@@ -23,7 +23,7 @@ import {
 } from "pdfmake/interfaces";
 import { logo } from "../logo";
 import { OrganizationInfo } from "../types";
-import { format } from "date-fns";
+import { prettyCompactDate } from "../util/dateHelper";
 
 (<any>pdfMake).vfs = pdfFonts.vfs;
 
@@ -76,6 +76,7 @@ export interface PdfSpec {
   footerTextRight?: string;
   headerTextLeft?: string;
   tables: PdfTable[];
+  additionalContent?: Content[];
 }
 
 export function createDefaultPdf(
@@ -117,6 +118,7 @@ export function createDefaultPdf(
     content.push({
       text: pdf.description2,
       margin: [0, 10, 0, 5],
+      background: "#cccccc",
     });
   }
 
@@ -144,7 +146,11 @@ export function createDefaultPdf(
     });
   }
 
-  const creationDate = format(new Date(), "dd.MM.yyyy, HH:mm:ss");
+  if (pdf.additionalContent) {
+    content.push(...pdf.additionalContent);
+  }
+
+  const creationDate = prettyCompactDate(new Date());
 
   const footerTextLeft = pdf.footerTextLeft || "";
 

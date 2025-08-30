@@ -20,7 +20,7 @@ import Router from "koa-router";
 import { Order } from "../database/Order";
 import { getUserFromContext } from "./getUserFromContext";
 import { AppDataSource } from "../database/database";
-import { MoreThan } from "typeorm";
+import { FindOptionsWhere, LessThan, MoreThan } from "typeorm";
 import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import {
   calculateOrderValidMonths,
@@ -29,6 +29,7 @@ import {
 import { bi } from "./bi/bi";
 import {
   getConfigIdFromQuery,
+  getDateQueryParameter,
   getStringQueryParameter,
 } from "../util/requestUtil";
 import {
@@ -56,12 +57,18 @@ export const getOverview = async (
     "",
   ).split(",");
 
+  const dateOfInterest = getDateQueryParameter(
+    ctx.request.query,
+    "dateOfInterest",
+  );
+
   const configId = getConfigIdFromQuery(ctx);
   const overview = await getUserOrderOverview(
     configId,
     undefined,
     undefined,
     options.includes("with-applicant"),
+    dateOfInterest,
   );
   ctx.body = { overview };
 };
@@ -71,8 +78,18 @@ export const getUserOrderOverview = async (
   userId?: number,
   orderId?: number,
   withApplicant: boolean = false,
+  dateOfInterest?: Date,
 ): Promise<OrderOverviewWithApplicantItem[]> => {
   const { productsById } = await bi(configId);
+
+  let whereDateOfInterest: FindOptionsWhere<Order> = {};
+  if (dateOfInterest) {
+    whereDateOfInterest = {
+      validFrom: LessThan(dateOfInterest),
+      validTo: MoreThan(dateOfInterest),
+    };
+  }
+
   const orders = await AppDataSource.getRepository(Order).find({
     relations: {
       orderItems: {
@@ -84,6 +101,7 @@ export const getUserOrderOverview = async (
       requisitionConfig: true,
     },
     where: {
+      ...whereDateOfInterest,
       offer: MoreThan(0),
       requisitionConfigId: configId,
       userId,
