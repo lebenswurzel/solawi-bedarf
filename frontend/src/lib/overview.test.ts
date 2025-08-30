@@ -51,6 +51,7 @@ function genOrder(
     items: [],
     identifier: "abc",
     seasonName: "xyz",
+    startMonth: null,
   };
   return { ...base, ...overwrite };
 }
@@ -103,7 +104,7 @@ describe("summarize demand by user", () => {
     expect(actual[0].tables).toStrictEqual([
       {
         name: VEGETABLES.name,
-        headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
+        headers: ["Bezeichnung", "Menge", "geplante Häufigkeit*"],
         widths: ["65%", "15%", "20%"],
         rows: [
           [CUCUMBER.name, "3 Stk.", "20 x"],
@@ -112,11 +113,46 @@ describe("summarize demand by user", () => {
       },
       {
         name: MILK_PRODUCTS.name,
-        headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
+        headers: ["Bezeichnung", "Menge", "geplante Häufigkeit*"],
         widths: ["65%", "15%", "20%"],
         rows: [[MILK.name, "3000 ml", "56 x"]],
       },
     ]);
+    expect(actual[0].additionalContent).toStrictEqual([
+      {
+        text: "*) geplante Häufigkeit bezogen auf Gesamtsaison",
+        fontSize: 10,
+        alignment: "right",
+        margin: [0, 20, 0, 5],
+      },
+    ]);
+  });
+  test("for single order with start month", () => {
+    // ARRANGE
+    const tomato = genProduct(TOMATO);
+    const vegetables = genProductGroupWithProducts({
+      name: VEGETABLES.name,
+      products: [tomato],
+    });
+
+    let productCategories = [vegetables];
+
+    let orders = [
+      genOrder({
+        name: "Order",
+        depot: "Main depot",
+        items: [genOrderItem(tomato, 200)],
+        startMonth: "Januar 2024",
+        months: 3,
+      }),
+    ];
+
+    // ACT
+    let actual = generateUserData(orders, productCategories, "Saison 2024/25");
+
+    // ASSERT
+    expect(actual.length).toBe(1);
+    expect(actual[0].description2).toEqual("Gültig ab Januar 2024");
   });
 
   test("for multiple orders", () => {
@@ -155,16 +191,17 @@ describe("summarize demand by user", () => {
     // ASSERT
     expect(actual.length).toBe(2);
     expect(actual[0].receiver).toEqual("Order1\nMain depot");
+    expect(actual[0].description2).toEqual(undefined);
     expect(actual[0].tables).toEqual([
       {
         name: VEGETABLES.name,
-        headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
+        headers: ["Bezeichnung", "Menge", "geplante Häufigkeit*"],
         widths: ["65%", "15%", "20%"],
         rows: [[TOMATO.name, "200 g", "30 x"]],
       },
       {
         name: MILK_PRODUCTS.name,
-        headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
+        headers: ["Bezeichnung", "Menge", "geplante Häufigkeit*"],
         widths: ["65%", "15%", "20%"],
         rows: [[MILK.name, "3000 ml", "56 x"]],
       },
@@ -173,15 +210,23 @@ describe("summarize demand by user", () => {
     expect(actual[1].tables).toEqual([
       {
         name: VEGETABLES.name,
-        headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
+        headers: ["Bezeichnung", "Menge", "geplante Häufigkeit*"],
         widths: ["65%", "15%", "20%"],
         rows: [[CUCUMBER.name, "3 Stk.", "20 x"]],
       },
       {
         name: MILK_PRODUCTS.name,
-        headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
+        headers: ["Bezeichnung", "Menge", "geplante Häufigkeit*"],
         widths: ["65%", "15%", "20%"],
         rows: [[MILK.name, "1000 ml", "56 x"]],
+      },
+    ]);
+    expect(actual[1].additionalContent).toStrictEqual([
+      {
+        text: "*) geplante Häufigkeit bezogen auf Gesamtsaison",
+        fontSize: 10,
+        alignment: "right",
+        margin: [0, 20, 0, 5],
       },
     ]);
   });
@@ -260,7 +305,7 @@ describe("summarize demand by depot", () => {
     expect(actual[0].tables).toStrictEqual([
       {
         name: VEGETABLES.name,
-        headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
+        headers: ["Bezeichnung", "Menge", "geplante Häufigkeit*"],
         widths: ["60%", "20%", "20%"],
         rows: [
           [CUCUMBER.name, "5 Stk.", "20 x"],
@@ -269,9 +314,17 @@ describe("summarize demand by depot", () => {
       },
       {
         name: MILK_PRODUCTS.name,
-        headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
+        headers: ["Bezeichnung", "Menge", "geplante Häufigkeit*"],
         widths: ["60%", "20%", "20%"],
         rows: [[MILK.name, "10000 ml", "56 x"]],
+      },
+    ]);
+    expect(actual[0].additionalContent).toStrictEqual([
+      {
+        text: "*) geplante Häufigkeit bezogen auf Gesamtsaison",
+        fontSize: 10,
+        alignment: "right",
+        margin: [0, 20, 0, 5],
       },
     ]);
   });
@@ -315,13 +368,13 @@ describe("summarize demand by depot", () => {
     expect(actual[0].tables).toEqual([
       {
         name: VEGETABLES.name,
-        headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
+        headers: ["Bezeichnung", "Menge", "geplante Häufigkeit*"],
         widths: ["60%", "20%", "20%"],
         rows: [[TOMATO.name, "200 g", "30 x"]],
       },
       {
         name: MILK_PRODUCTS.name,
-        headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
+        headers: ["Bezeichnung", "Menge", "geplante Häufigkeit*"],
         widths: ["60%", "20%", "20%"],
         rows: [[MILK.name, "3000 ml", "56 x"]],
       },
@@ -330,15 +383,23 @@ describe("summarize demand by depot", () => {
     expect(actual[1].tables).toEqual([
       {
         name: VEGETABLES.name,
-        headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
+        headers: ["Bezeichnung", "Menge", "geplante Häufigkeit*"],
         widths: ["60%", "20%", "20%"],
         rows: [[CUCUMBER.name, "3 Stk.", "20 x"]],
       },
       {
         name: MILK_PRODUCTS.name,
-        headers: ["Bezeichnung", "Menge", "geplante Häufigkeit"],
+        headers: ["Bezeichnung", "Menge", "geplante Häufigkeit*"],
         widths: ["60%", "20%", "20%"],
         rows: [[MILK.name, "1000 ml", "56 x"]],
+      },
+    ]);
+    expect(actual[0].additionalContent).toStrictEqual([
+      {
+        text: "*) geplante Häufigkeit bezogen auf Gesamtsaison",
+        fontSize: 10,
+        alignment: "right",
+        margin: [0, 20, 0, 5],
       },
     ]);
   });
