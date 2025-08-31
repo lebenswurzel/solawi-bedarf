@@ -18,6 +18,10 @@ export class SolawiError extends Error {
   public static rejected(message: string): SolawiError {
     return new SolawiError(http.conflict, message);
   }
+
+  public static internalError(message: string): SolawiError {
+    return new SolawiError(http.internal_server_error, message);
+  }
 }
 
 export class InfrastructureError extends SolawiError {
