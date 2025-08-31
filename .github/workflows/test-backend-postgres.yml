@@ -1,5 +1,5 @@
 name: Backend unit test with Postgres database
-on: [pull_request, push]
+on: [push]
 
 defaults:
   run:
