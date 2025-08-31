@@ -52,6 +52,7 @@ const {
   modificationOrderId,
   visibleOrderId,
   modificationOrderItems,
+  isModifyingOrder,
 } = storeToRefs(orderStore);
 
 const open = ref(false);
@@ -225,6 +226,7 @@ const disableSaveButton = computed(() => {
               :compare-to-previous="
                 allOrders.length > 1 && index === allOrders.length - 1
               "
+              :fixed-contribution="isModifyingOrder"
             />
           </v-card-text>
         </v-col>

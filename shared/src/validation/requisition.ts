@@ -14,9 +14,19 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+import { format } from "date-fns";
 import { UserRole } from "../enum";
+import { language } from "../lang/lang";
+import { interpolate } from "../lang/template";
 import { ExistingConfig, Msrp, Order, OrderId, SavedOrder } from "../types";
-import { getSameOrNextThursday, isDateInRange } from "../util/dateHelper";
+import {
+  countCalendarMonths,
+  getSameOrNextThursday,
+  getValidFromMonth,
+  getValidToMonth,
+  isDateInRange,
+  prettyDateWithMonthAndYear,
+} from "../util/dateHelper";
 
 export const isRequisitionActive = (
   userRole: UserRole,
@@ -174,7 +184,7 @@ const getMsrpValidationMessages = (
 
   if (!totalValid) {
     errors.push([
-      "Dein neuer Orientierungswert liegt unter dem Orientierungswert der ursprünglichen Bedarfsanmeldung. Du kannst die Bedarfsanmeldung trotzdem speicherng, wenn du darauf achtest, dass dein neuer Solawi-Beitrag nicht geringer ist als der alte (" +
+      "Dein neuer Orientierungswert liegt unter dem Orientierungswert der ursprünglichen Bedarfsanmeldung. Du kannst die Bedarfsanmeldung trotzdem speichern, wenn du darauf achtest, dass dein neuer Solawi-Beitrag nicht geringer ist als der alte (" +
         previousOffer.toString() +
         "€)",
       "",
@@ -217,4 +227,77 @@ export const determineCurrentOrderId = (
       to: order.validTo ? getSameOrNextThursday(order.validTo, timezone) : null,
     })
   )?.id;
+};
+
+export const getSepaUpdateMessage = (
+  validFrom: Date,
+  validTo: Date,
+  offer: number,
+  previousOffer: number
+) => {
+  return interpolate(language.pages.shop.dialog.confirmSepaUpdate.label, {
+    from: prettyDateWithMonthAndYear(getSameOrNextThursday(validFrom)),
+    to: prettyDateWithMonthAndYear(validTo),
+    total: offer.toString() || "?",
+    previousOffer: previousOffer.toString() || "?",
+  });
+};
+
+export const getBankTransferMessage = (
+  orderValidFrom: Date,
+  orderValidTo: Date,
+  requisitionConfigValidFrom: Date,
+  requisitionConfigValidTo: Date,
+  offer: number,
+  previousOffer: number,
+  userName: string,
+  accountDetails: string,
+  timezone?: string
+): {
+  message: string;
+  accountDetails: string;
+} => {
+  const { startMonth, count } = getOrderValidMonths(
+    orderValidFrom,
+    orderValidTo,
+    requisitionConfigValidFrom,
+    requisitionConfigValidTo,
+    timezone
+  );
+  return {
+    message: interpolate(language.pages.shop.dialog.confirmBankTransfer.label, {
+      difference: ((offer - previousOffer) * count).toString(),
+      date: format(
+        new Date(startMonth.getFullYear(), startMonth.getMonth(), 14),
+        "dd.MM.yyyy"
+      ),
+    }),
+    accountDetails:
+      accountDetails +
+      "\n" +
+      interpolate(language.pages.shop.dialog.confirmBankTransfer.reference, {
+        userName,
+      }),
+  };
+};
+
+export const getOrderValidMonths = (
+  orderValidFrom: Date,
+  orderValidTo: Date,
+  requisitionConfigValidFrom: Date,
+  requisitionConfigValidTo: Date,
+  timezone?: string
+): { startMonth: Date; endMonth: Date; count: number } => {
+  const effectiveValidFrom =
+    orderValidFrom.getTime() > requisitionConfigValidFrom.getTime()
+      ? orderValidFrom
+      : requisitionConfigValidFrom;
+  const effectiveValidTo =
+    orderValidTo.getTime() < requisitionConfigValidTo.getTime()
+      ? orderValidTo
+      : requisitionConfigValidTo;
+  const startMonth = getValidFromMonth(effectiveValidFrom, timezone);
+  const endMonth = getValidToMonth(effectiveValidTo, timezone);
+  const count = countCalendarMonths(startMonth, endMonth, timezone);
+  return { startMonth, endMonth, count };
 };
