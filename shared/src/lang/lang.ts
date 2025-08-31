@@ -634,7 +634,7 @@ export const language = {
       body: [
         "Liebe(r) {userName},",
 
-        "dein Passwort wurde zurückgesetzt. Falls du das nicht warst, dann ???TODO???",
+        "dein Passwort wurde zurückgesetzt. Falls du das nicht warst, dann setze dein Passwort bitte neu.",
 
         "Viele Grüße",
 
