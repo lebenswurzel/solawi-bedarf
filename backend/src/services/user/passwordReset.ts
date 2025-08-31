@@ -1,4 +1,3 @@
-import { AppDataSource } from "../../database/database";
 import { User } from "../../database/User";
 import { Address } from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import { SolawiError } from "../../error";
@@ -59,7 +58,7 @@ export class PasswordResetService {
     }
 
     const token = user.startPasswordReset();
-    await this.deps.saveUser(user); // TODO: Transaction handling?
+    await this.deps.saveUser(user);
 
     const text = language.email.passwordResetRequest;
     const organizationInfo = await this.deps.getOrganizationInfo();
@@ -85,6 +84,42 @@ export class PasswordResetService {
     return ok();
   }
 
+  /**
+   * Checks if the token is valid for the user.
+   *
+   * Call this method before asking the user for a new password.
+   *
+   * @param userName The username of the user who requested the password reset.
+   * @param token The token to check.
+   */
+  async checkPasswordResetToken(
+    userName: string,
+    token: string,
+  ): Promise<Result<void, SolawiError>> {
+    if (!userName || !token) {
+      return err(SolawiError.invalidInput("invalid request"));
+    }
+
+    let user = await this.deps.findUserByName(userName);
+    if (!user) {
+      return err(SolawiError.rejected("user does not exist"));
+    }
+
+    if (!user.isPasswordResetTokenValid(token)) {
+      return err(SolawiError.rejected("token invalid"));
+    }
+
+    return ok();
+  }
+
+  /**
+   * Ends the password reset process for the user.
+   *
+   * @param userName The username of the user who requested the password reset.
+   * @param token The password reset token.
+   * @param newPassword The new password to set for the user.
+   * @returns A Result object indicating whether the password reset was successful or not.
+   */
   async endPasswordReset(
     userName: string,
     token: string,
@@ -96,10 +131,10 @@ export class PasswordResetService {
 
     let user = await this.deps.findUserByName(userName);
     if (!user) {
-      return err(SolawiError.rejected("user was removed"));
+      return err(SolawiError.rejected("user does not exist"));
     }
 
-    if (!user.resetPassword(token, newPassword)) {
+    if (!(await user.resetPassword(token, newPassword))) {
       return err(SolawiError.rejected("token invalid"));
     }
 
@@ -110,7 +145,7 @@ export class PasswordResetService {
       return err(email.error);
     }
 
-    await AppDataSource.getRepository(User).save(user); // Transaction handling?
+    await this.deps.saveUser(user);
 
     const organizationInfo = await this.deps.getOrganizationInfo();
     await this.deps.sendEmail({
