@@ -155,8 +155,35 @@ export const getSameOrNextThursday = (date: Date, timezone?: string): Date => {
   return addDays(dateOnly, daysToThursday);
 };
 
+export const getSameOrPreviousThursday = (
+  date: Date,
+  timezone?: string
+): Date => {
+  let relevantDate = date;
+  if (timezone) {
+    relevantDate = toZonedTime(date, timezone);
+  }
+  const dateOnly = new Date(
+    relevantDate.getFullYear(),
+    relevantDate.getMonth(),
+    relevantDate.getDate()
+  );
+  const day = dateOnly.getDay();
+  const daysToThursday = (day - 4 + 7) % 7;
+  return addDays(dateOnly, -daysToThursday);
+};
+
 export const getValidFromMonth = (date: Date, timezone?: string): Date => {
   const firstDeliveryDate = getSameOrNextThursday(date, timezone);
+  return new Date(
+    firstDeliveryDate.getFullYear(),
+    firstDeliveryDate.getMonth(),
+    1
+  );
+};
+
+export const getValidToMonth = (date: Date, timezone?: string): Date => {
+  const firstDeliveryDate = getSameOrPreviousThursday(date, timezone);
   return new Date(
     firstDeliveryDate.getFullYear(),
     firstDeliveryDate.getMonth(),

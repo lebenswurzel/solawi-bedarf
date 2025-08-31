@@ -251,7 +251,8 @@ export const saveOrder = async (
 
   // Send confirmation email to user (if option is set) and always to the EMAIL_ORDER_UPDATED_BCC (if set)
   await sendOrderConfirmationMail({
-    orderId: order.id,
+    order: order,
+    previousOrder: previousOrder ?? null,
     requestUserId,
     changingUserId: id,
     requisitionConfig,

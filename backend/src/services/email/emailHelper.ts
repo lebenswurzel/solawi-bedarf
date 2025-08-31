@@ -64,7 +64,7 @@ const escapeMdTableCell = (value: string): string => {
 };
 
 export const buildOrderEmail = async (
-  orderId: number,
+  order: Order,
   orderUser: User,
   seasonName: string,
   seasonValidFrom: Date,
@@ -73,20 +73,9 @@ export const buildOrderEmail = async (
   userName: string,
   updatedDate: Date,
   organizationInfo: OrganizationInfo,
-  confirmSepaUpdate: boolean,
-  confirmBankTransfer: boolean,
+  paymentMessage: string,
 ): Promise<{ html: string; subject: string }> => {
   const el = language.email.orderConfirmation;
-  const order = await AppDataSource.getRepository(Order).findOne({
-    where: {
-      id: orderId,
-    },
-    relations: { orderItems: { product: true } },
-  });
-
-  if (!order) {
-    throw new Error(`Order with ID ${orderId} not found.`);
-  }
 
   const changingUserNote =
     orderUser.id !== changingUser.id
@@ -115,11 +104,7 @@ export const buildOrderEmail = async (
         language.app.options.orderUserCategories[order.category].title,
       contributionKindBulletPoint,
       userId: orderUser.name,
-      paymentMethod: confirmSepaUpdate
-        ? "SEPA-Lastschrift"
-        : confirmBankTransfer
-          ? "Überweisung"
-          : "Keine Angabe",
+      paymentMessage: paymentMessage,
     },
     true,
   );

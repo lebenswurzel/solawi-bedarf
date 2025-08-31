@@ -27,9 +27,15 @@ import { formatDateForFilename } from "@lebenswurzel/solawi-bedarf-shared/src/ut
 import { createDefaultPdf } from "@lebenswurzel/solawi-bedarf-shared/src/pdf/pdf";
 import { generateUserData } from "@lebenswurzel/solawi-bedarf-shared/src/pdf/overviewPdfs";
 import { config } from "../../config";
+import { Order } from "../../database/Order";
+import {
+  getBankTransferMessage,
+  getSepaUpdateMessage,
+} from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition";
 
 interface SendOrderConfirmationMailParams {
-  orderId: number;
+  order: Order;
+  previousOrder: Order | null;
   requestUserId: number;
   changingUserId: number;
   requisitionConfig: RequisitionConfig;
@@ -39,7 +45,8 @@ interface SendOrderConfirmationMailParams {
 }
 
 export const sendOrderConfirmationMail = async ({
-  orderId,
+  order,
+  previousOrder,
   requestUserId,
   changingUserId,
   requisitionConfig,
@@ -89,8 +96,35 @@ export const sendOrderConfirmationMail = async ({
   const currentDate = toZonedTime(new Date(), config.timezone);
   const organizationInfo = await getOrganizationInfo();
 
+  let paymentMessage: string = "Keine Angabe";
+  if (confirmSepaUpdate) {
+    paymentMessage = getSepaUpdateMessage(
+      order.validFrom ?? new Date(),
+      order.validTo ?? new Date(),
+      order.offer,
+      previousOrder?.offer ?? 0,
+    );
+  } else if (confirmBankTransfer) {
+    const bankTransferMessage = getBankTransferMessage(
+      order.validFrom ?? new Date(),
+      order.validTo ?? new Date(),
+      requisitionConfig.validFrom,
+      requisitionConfig.validTo,
+      order.offer,
+      previousOrder?.offer ?? 0,
+      orderUser.name,
+      organizationInfo.bankAccount,
+      config.timezone,
+    );
+    paymentMessage =
+      bankTransferMessage.message +
+      "\n\n```\n" +
+      bankTransferMessage.accountDetails +
+      "\n```";
+  }
+
   const { html, subject } = await buildOrderEmail(
-    orderId,
+    order,
     orderUser,
     requisitionConfig.name,
     toZonedTime(requisitionConfig.validFrom, config.timezone),
@@ -99,15 +133,14 @@ export const sendOrderConfirmationMail = async ({
     orderUserFirstname,
     currentDate,
     organizationInfo,
-    confirmSepaUpdate,
-    confirmBankTransfer,
+    paymentMessage,
   );
 
   // create overview pdf
   const overview = await getUserOrderOverview(
     requisitionConfig.id,
     requestUserId,
-    orderId,
+    order.id,
   );
   const productCategories = await getProductCategories(requisitionConfig.id);
   const dataByUserAndProductCategory = generateUserData(

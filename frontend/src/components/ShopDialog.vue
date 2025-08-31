@@ -41,11 +41,9 @@ import MsrpDisplay from "./shop/MsrpDisplay.vue";
 import { useUserStore } from "../store/userStore.ts";
 import ContributionSelect from "./shop/ContributionSelect.vue";
 import {
-  getSameOrNextThursday,
-  getValidFromMonth,
-  prettyDateWithMonthAndYear,
-} from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper.ts";
-import { format } from "date-fns";
+  getBankTransferMessage,
+  getSepaUpdateMessage,
+} from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition.ts";
 
 const props = defineProps<{ open: boolean; requestUser?: UserWithOrders }>();
 const emit = defineEmits(["close"]);
@@ -185,16 +183,13 @@ const disableSubmit = computed(() => {
     needsHigherOffer.value ||
     offerReasonHint.value ||
     categoryReasonHint.value ||
-    (requireConfirmContribution.value && !confirmContribution.value)
+    (requireConfirmContribution.value && !confirmContribution.value) ||
+    (confirmBankTransfer.value && confirmSepaUpdate.value)
   );
 });
 
 const monthlyOfferDifference = computed(() => {
   return offer.value - (currentOrder.value?.offer ?? 0);
-});
-
-const totalOfferDifference = computed(() => {
-  return monthlyOfferDifference.value * effectiveMsrp.value.months;
 });
 
 const requireConfirmContribution = computed(() => {
@@ -209,15 +204,18 @@ const requireConfirmBankTransfer = computed(() => {
   return hasPreviousOrder.value && monthlyOfferDifference.value > 0;
 });
 
-const getMiddleDayOfMonth = (): string => {
-  const validFromMonth = getValidFromMonth(
+const bankTransferMessage = computed(() => {
+  return getBankTransferMessage(
     modificationOrder.value?.validFrom ?? new Date(),
+    modificationOrder.value?.validTo ?? new Date(),
+    config.value?.validFrom ?? new Date(),
+    config.value?.validTo ?? new Date(),
+    offer.value,
+    currentOrder.value?.offer ?? 0,
+    props.requestUser?.name || "???",
+    textContentStore.organizationInfo.bankAccount,
   );
-  return format(
-    new Date(validFromMonth.getFullYear(), validFromMonth.getMonth(), 14),
-    "dd.MM.yyyy",
-  );
-};
+});
 
 watchEffect(() => {
   sendConfirmationEmail.value = props.requestUser?.emailEnabled || false;
@@ -429,43 +427,31 @@ const onSave = () => {
             v-if="requireConfirmSepaUpdate"
             v-model="confirmSepaUpdate"
             :label="
-              interpolate(t.confirmSepaUpdate.label, {
-                from: prettyDateWithMonthAndYear(
-                  getSameOrNextThursday(
-                    modificationOrder?.validFrom ?? new Date(),
-                  ),
-                ),
-                to: prettyDateWithMonthAndYear(modificationOrder?.validTo),
-                total: offer.toString() || '?',
-                previousTotal: currentOrder?.offer.toString() || '?',
-              })
+              getSepaUpdateMessage(
+                modificationOrder?.validFrom ?? new Date(),
+                modificationOrder?.validTo ?? new Date(),
+                offer,
+                currentOrder?.offer ?? 0,
+              )
             "
             hide-details
             density="compact"
+            :error="confirmBankTransfer && confirmSepaUpdate"
           />
           <div v-if="requireConfirmBankTransfer">
             <v-checkbox
               v-if="requireConfirmBankTransfer"
               v-model="confirmBankTransfer"
-              :label="
-                interpolate(t.confirmBankTransfer.label, {
-                  difference: totalOfferDifference.toString(),
-                  date: getMiddleDayOfMonth(),
-                })
-              "
+              :label="bankTransferMessage.message"
               hide-details
               density="compact"
+              :error="confirmBankTransfer && confirmSepaUpdate"
             />
             <p
               class="text-body-2 pl-10"
-              v-for="text in [
-                ...textContentStore.organizationInfo.bankAccount.split('\n'),
-                t.confirmBankTransfer.reference,
-              ]"
+              v-for="text in bankTransferMessage.accountDetails.split('\n')"
             >
-              {{
-                interpolate(text, { userId: props.requestUser?.name || "???" })
-              }}
+              {{ text }}
             </p>
           </div>
         </div>

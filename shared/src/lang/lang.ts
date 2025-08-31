@@ -265,13 +265,13 @@ export const language = {
         confirmSepaUpdate: {
           title: "Bestätigung der SEPA-Lastschrift",
           label:
-            "Ich ermächtige den Lebenswurzel e.V., ab {from} bis {to} den monatlichen Beitrag in Höhe von {total}€ (statt bisher {previousTotal}€) per SEPA-Lastschrift von meinem bekannten Konto einzuziehen.",
+            "Ich ermächtige den Lebenswurzel e.V., ab {from} bis {to} den monatlichen Beitrag in Höhe von {total}€ (statt bisher {previousOffer}€) per SEPA-Lastschrift von meinem bekannten Konto einzuziehen.",
         },
         confirmBankTransfer: {
           title: "Bestätigung der Überweisung",
           label:
             "Ich überweise den zusätzlichen Gesamtbetrag von {difference}€ bis zum {date} auf folgendes Konto:",
-          reference: "Verwendungszweck: Bedarfsanpassung {userId}",
+          reference: "Verwendungszweck: Bedarfsanpassung {userName}",
         },
         depotNote: {
           title: "Hinweis zu Depots mit (*)",
@@ -551,7 +551,7 @@ export const language = {
 
         "* Benutzername: {userId}\n* Monatlicher Beitrag: {offer}\n* Mitgliedschaftsmodell: {contributionModel}\n{contributionKindBulletPoint}* Bestellte Lebensmittel und Depot: siehe PDF im Anhang",
 
-        "Gewählte Zahlungsweise: {paymentMethod}",
+        "Gewählte Zahlungsweise: {paymentMessage}",
 
         "Vielen Dank für Deine Unterstützung des {solawiName} und das Engagement für eine nachhaltige und faire Landwirtschaft.",
 
