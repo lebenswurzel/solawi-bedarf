@@ -63,6 +63,10 @@ export class PasswordResetService {
 
     const text = language.email.passwordResetRequest;
     const organizationInfo = await this.deps.getOrganizationInfo();
+    if (!organizationInfo) {
+      return err(SolawiError.internalError("no organization info"));
+    }
+
     await this.deps.sendEmail({
       sender: config.email.sender,
       receiver: email,
