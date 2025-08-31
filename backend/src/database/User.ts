@@ -14,13 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import {
-  Column,
-  Entity,
-  OneToMany,
-  OneToOne,
-  PrimaryGeneratedColumn,
-} from "typeorm";
+import { Column, Entity, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Token } from "./Token";
 import { Order } from "./Order";
 import { BaseEntity } from "./BaseEntity";
@@ -69,7 +63,7 @@ export class User extends BaseEntity {
   applicant: Applicant;
 
   /**
-   * Create new user.
+   * Create a new user.
    *
    * @param name User name
    * @param hash Password hash
@@ -112,13 +106,7 @@ export class User extends BaseEntity {
     token: string,
     newPassword: string,
   ): Promise<boolean> {
-    // Check expire
-    const expires_at = this.password_reset_expire_date;
-    if (!expires_at || new Date() >= expires_at) {
-      return false;
-    }
-
-    if (token === this.password_reset_token) {
+    if (this.isPasswordResetTokenValid(token)) {
       this.hash = await hashPassword(newPassword);
       this.password_reset_token = null;
       this.password_reset_expire_date = null;
@@ -126,5 +114,22 @@ export class User extends BaseEntity {
     } else {
       return false;
     }
+  }
+
+  /**
+   * Check if password reset token is valid.
+   *
+   * @param token Password reset token
+   * @returns {@code true} iff token is valid
+   */
+  public isPasswordResetTokenValid(token: string): boolean {
+    // Check expiry
+    const expires_at = this.password_reset_expire_date;
+    if (!expires_at || new Date() >= expires_at) {
+      return false;
+    }
+
+    // Check token
+    return token === this.password_reset_token;
   }
 }
