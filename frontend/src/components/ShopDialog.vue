@@ -184,8 +184,16 @@ const disableSubmit = computed(() => {
     offerReasonHint.value ||
     categoryReasonHint.value ||
     (requireConfirmContribution.value && !confirmContribution.value) ||
-    (confirmBankTransfer.value && confirmSepaUpdate.value)
+    !(bankTransferSelected.value != sepaUpdateSelected.value) // must select exactly one payment method
   );
+});
+
+const sepaUpdateSelected = computed(() => {
+  return confirmSepaUpdate.value && enableConfirmSepaUpdate.value;
+});
+
+const bankTransferSelected = computed(() => {
+  return confirmBankTransfer.value && enableConfirmBankTransfer.value;
 });
 
 const monthlyOfferDifference = computed(() => {
@@ -196,11 +204,11 @@ const requireConfirmContribution = computed(() => {
   return category.value != UserCategory.CAT130;
 });
 
-const requireConfirmSepaUpdate = computed(() => {
-  return hasPreviousOrder.value && monthlyOfferDifference.value > 0;
+const enableConfirmSepaUpdate = computed(() => {
+  return hasPreviousOrder.value && monthlyOfferDifference.value >= 10;
 });
 
-const requireConfirmBankTransfer = computed(() => {
+const enableConfirmBankTransfer = computed(() => {
   return hasPreviousOrder.value && monthlyOfferDifference.value > 0;
 });
 
@@ -253,8 +261,8 @@ const onSave = () => {
     validTo: null,
     requisitionConfigId: activeConfigId.value,
     sendConfirmationEmail: sendConfirmationEmail.value,
-    confirmSepaUpdate: confirmSepaUpdate.value,
-    confirmBankTransfer: confirmBankTransfer.value,
+    confirmSepaUpdate: sepaUpdateSelected.value,
+    confirmBankTransfer: bankTransferSelected.value,
   })
     .then(async () => {
       await biStore.update(
@@ -420,11 +428,11 @@ const onSave = () => {
 
         <div
           class="mt-3"
-          v-if="requireConfirmSepaUpdate || requireConfirmBankTransfer"
+          v-if="enableConfirmSepaUpdate || enableConfirmBankTransfer"
         >
           {{ t.confirmPaymentMethod.title }}
           <v-checkbox
-            v-if="requireConfirmSepaUpdate"
+            v-if="enableConfirmSepaUpdate"
             v-model="confirmSepaUpdate"
             :label="
               getSepaUpdateMessage(
@@ -436,16 +444,16 @@ const onSave = () => {
             "
             hide-details
             density="compact"
-            :error="confirmBankTransfer && confirmSepaUpdate"
+            :error="bankTransferSelected && sepaUpdateSelected"
           />
-          <div v-if="requireConfirmBankTransfer">
+          <div v-if="enableConfirmBankTransfer">
             <v-checkbox
-              v-if="requireConfirmBankTransfer"
+              v-if="enableConfirmBankTransfer"
               v-model="confirmBankTransfer"
               :label="bankTransferMessage.message"
               hide-details
               density="compact"
-              :error="confirmBankTransfer && confirmSepaUpdate"
+              :error="bankTransferSelected && sepaUpdateSelected"
             />
             <p
               class="text-body-2 pl-10"

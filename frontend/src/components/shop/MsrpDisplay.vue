@@ -152,12 +152,6 @@ const msrpValidation = computed(() => {
             selfgrown: msrp?.monthly.selfgrown.toString(),
           })
         }}
-        <template v-if="msrpValidation">
-          <v-icon v-if="msrpValidation.selfgrownValid" color="success"
-            >mdi-check-circle</v-icon
-          >
-          <v-icon v-else color="warning">mdi-alert</v-icon>
-        </template>
       </div>
       <div class="pl-5" v-if="msrp?.monthly.selfgrownCompensation">
         +{{
@@ -165,15 +159,6 @@ const msrpValidation = computed(() => {
             compensation: msrp?.monthly.selfgrownCompensation.toString(),
           })
         }}
-        <v-tooltip
-          :text="t.cards.products.msrpCompensationTooltip"
-          open-on-click
-          location="bottom"
-        >
-          <template v-slot:activator="{ props }">
-            <v-icon v-bind="props">mdi-information-outline</v-icon>
-          </template>
-        </v-tooltip>
       </div>
       <div class="pl-5">
         {{
@@ -181,12 +166,6 @@ const msrpValidation = computed(() => {
             cooperation: msrp?.monthly.cooperation.toString(),
           })
         }}
-        <template v-if="msrpValidation">
-          <v-icon v-if="msrpValidation.cooperationValid" color="success"
-            >mdi-check-circle</v-icon
-          >
-          <v-icon v-else color="warning">mdi-alert</v-icon>
-        </template>
       </div>
       <div class="py-1" v-if="!props.hideOffer">
         {{ t.cards.products.offer }}

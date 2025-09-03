@@ -204,7 +204,7 @@ export const language = {
           msrpSelfgrown: "{selfgrown} € für selbst angebaute Produkte",
           msrpCooperation: "{cooperation} € für Kooperationsprodukte",
           msrpCompensation:
-            "{compensation} € Ausgleich für verringerten Selbstanbauanteil",
+            "{compensation} € Differenz für Verringerung selbst angebauter Produkte",
           msrpTooltip:
             "Der Orientierungswert errechnet sich aus den von Dir gewählten Nahrungsmitteln sowie Mengen und entspricht dem durchschnittlichen Solawi-Beitrag für Deine Auswahl.",
           msrpCompensationTooltip:
