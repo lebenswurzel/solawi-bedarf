@@ -17,6 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { pdfTextsDefaults } from "../config";
 import {
   OrganizationInfo,
+  OrganizationInfoFlat,
   OrganizationInfoKeys,
   PdfTexts,
   PdfTextsKeys,
@@ -35,6 +36,7 @@ export const makeOrganizationInfo = (
   };
   return {
     appUrl: getField("appUrl"),
+    name: getField("name"),
     address: {
       name: getField("address.name"),
       street: getField("address.street"),
@@ -47,6 +49,22 @@ export const makeOrganizationInfo = (
   };
 };
 
+export const makeFlatOrganizationInfo = (
+  organizationInfo: OrganizationInfo
+): OrganizationInfoFlat => {
+  return {
+    "organization.appUrl": organizationInfo.appUrl,
+    "organization.name": organizationInfo.name,
+    "organization.address.name": organizationInfo.address.name,
+    "organization.address.street": organizationInfo.address.street,
+    "organization.address.postalcode": organizationInfo.address.postalcode,
+    "organization.address.city": organizationInfo.address.city,
+    "organization.address.email": organizationInfo.address.email,
+    "organization.address.forumContact": organizationInfo.address.forumContact,
+    "organization.bankAccount": organizationInfo.bankAccount,
+  };
+};
+
 export const getOrganizationInfoValueByKey = (
   organizationInfo: OrganizationInfo,
   key: OrganizationInfoKeys
@@ -54,6 +72,8 @@ export const getOrganizationInfoValueByKey = (
   switch (key) {
     case "appUrl":
       return organizationInfo.appUrl;
+    case "name":
+      return organizationInfo.name;
     case "address.name":
       return organizationInfo.address.name;
     case "address.street":

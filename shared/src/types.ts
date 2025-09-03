@@ -431,6 +431,7 @@ export interface Msrp {
 
 export interface OrganizationInfo {
   appUrl: string;
+  name: string;
   address: {
     name: string;
     street: string;
@@ -451,6 +452,19 @@ type FlattenKeys<T, Prefix extends string = ""> = T extends object
   : never;
 
 export type OrganizationInfoKeys = FlattenKeys<OrganizationInfo>;
+
+export type OrganizationInfoFlatKeys =
+  | "organization.appUrl"
+  | "organization.name"
+  | "organization.address.name"
+  | "organization.address.street"
+  | "organization.address.postalcode"
+  | "organization.address.city"
+  | "organization.address.email"
+  | "organization.address.forumContact"
+  | "organization.bankAccount";
+
+export type OrganizationInfoFlat = Record<OrganizationInfoFlatKeys, string>;
 
 export interface PdfTexts {
   packagingListFooter: string;

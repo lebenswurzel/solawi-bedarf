@@ -265,7 +265,7 @@ export const language = {
         confirmSepaUpdate: {
           title: "Bestätigung der SEPA-Lastschrift",
           label:
-            "Ich ermächtige den Lebenswurzel e.V., ab {from} bis {to} den monatlichen Beitrag in Höhe von {total}€ (statt bisher {previousOffer}€) per SEPA-Lastschrift von meinem bekannten Konto einzuziehen.",
+            "Ich ermächtige den {organization.name}, ab {from} bis {to} den monatlichen Beitrag in Höhe von {total}€ (statt bisher {previousOffer}€) per SEPA-Lastschrift von meinem bekannten Konto einzuziehen.",
         },
         confirmBankTransfer: {
           title: "Bestätigung der Überweisung",
@@ -566,6 +566,7 @@ export const language = {
 
 export const langOrganizationInfo: Record<OrganizationInfoKeys, string> = {
   appUrl: "URL",
+  name: "Name des Vereins",
   "address.email": "E-Mail-Addresse",
   address: "Addresse",
   "address.name": "Name",

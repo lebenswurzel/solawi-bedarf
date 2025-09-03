@@ -18,7 +18,14 @@ import { format } from "date-fns";
 import { UserRole } from "../enum";
 import { language } from "../lang/lang";
 import { interpolate } from "../lang/template";
-import { ExistingConfig, Msrp, Order, OrderId, SavedOrder } from "../types";
+import {
+  ExistingConfig,
+  Msrp,
+  Order,
+  OrderId,
+  OrganizationInfoFlat,
+  SavedOrder,
+} from "../types";
 import {
   countCalendarMonths,
   getSameOrNextThursday,
@@ -233,9 +240,12 @@ export const getSepaUpdateMessage = (
   validFrom: Date,
   validTo: Date,
   offer: number,
-  previousOffer: number
+  previousOffer: number,
+  organizationInfo: OrganizationInfoFlat
 ) => {
+  console.log(organizationInfo);
   return interpolate(language.pages.shop.dialog.confirmSepaUpdate.label, {
+    ...organizationInfo,
     from: prettyDateWithMonthAndYear(getSameOrNextThursday(validFrom)),
     to: prettyDateWithMonthAndYear(validTo),
     total: offer.toString() || "?",
