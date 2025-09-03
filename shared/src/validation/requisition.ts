@@ -167,7 +167,7 @@ const getMsrpValidationMessages = (
   // Rule 2: previous self grown <= modification self grown
   if (!selfgrownValid) {
     errors.push([
-      "Der neue Beitrag für selbst angebaute Produkte ist geringer als der alte. Daher wurde ein Ausgleichsbeitrag berechnet.",
+      "Der neue Orientierungswert für selbst angebaute Produkte ist geringer als der alte. Daher wurde der Differenzbetrag hinzugefügt.",
       "Hintergrund ist, dass der bisherige Beitrag bereits in das Jahresbudget für den Gemüseanbau eingerechnet ist und daher eine Verringerung dieses Beitrags nicht möglich ist.",
     ]);
   }
@@ -177,7 +177,7 @@ const getMsrpValidationMessages = (
 
   if (!cooperationValid) {
     errors.push([
-      "Der neue Beitrag für Kooperationsprodukte ist geringer als der alte.",
+      "Der neue Orientierungswert für Kooperationsprodukte ist geringer als der alte.",
       "Das ist zulässig, jedoch darf dein monatlicher Solawi-Beitrag nicht verringert werden.",
     ]);
   }
