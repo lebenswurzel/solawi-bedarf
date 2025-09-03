@@ -440,6 +440,7 @@ const onSave = () => {
                 modificationOrder?.validTo ?? new Date(),
                 offer,
                 currentOrder?.offer ?? 0,
+                textContentStore.organizationInfoFlat,
               )
             "
             hide-details

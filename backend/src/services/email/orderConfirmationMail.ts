@@ -32,6 +32,12 @@ import {
   getBankTransferMessage,
   getSepaUpdateMessage,
 } from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition";
+import { TextContentCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import { TextContent } from "../../database/TextContent";
+import {
+  makeFlatOrganizationInfo,
+  makeOrganizationInfo,
+} from "@lebenswurzel/solawi-bedarf-shared/src/text/textContent";
 
 interface SendOrderConfirmationMailParams {
   order: Order;
@@ -68,6 +74,9 @@ export const sendOrderConfirmationMail = async ({
     },
   });
 
+  const organizationInfo = await getOrganizationInfo();
+  const organizationInfoFlat = makeFlatOrganizationInfo(organizationInfo);
+
   let changingUser = orderUser;
   if (requestUserId !== changingUserId) {
     changingUser = await AppDataSource.getRepository(User).findOneOrFail({
@@ -94,7 +103,6 @@ export const sendOrderConfirmationMail = async ({
   }
 
   const currentDate = toZonedTime(new Date(), config.timezone);
-  const organizationInfo = await getOrganizationInfo();
 
   let paymentMessage: string = "Keine Angabe";
   if (confirmSepaUpdate) {
@@ -103,6 +111,7 @@ export const sendOrderConfirmationMail = async ({
       order.validTo ?? new Date(),
       order.offer,
       previousOrder?.offer ?? 0,
+      organizationInfoFlat,
     );
   } else if (confirmBankTransfer) {
     const bankTransferMessage = getBankTransferMessage(

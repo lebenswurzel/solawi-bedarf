@@ -24,6 +24,7 @@ import {
 
 export const organizationInfoKeys: OrganizationInfoKeys[] = [
   "appUrl",
+  "name",
   "address.name",
   "address.street",
   "address.postalcode",
@@ -35,6 +36,7 @@ export const organizationInfoKeys: OrganizationInfoKeys[] = [
 
 export const basicOrganizationInfo: OrganizationInfo = {
   appUrl: "https://bedarf.lebenswurzel.biz",
+  name: "Lebenswurzel e.V.",
   address: {
     name: "Solawi-Projekt Gemüseanbau in Graupa",
     street: "Lindengrundstrasse 20",

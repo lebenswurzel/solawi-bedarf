@@ -15,11 +15,9 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { marked } from "marked";
-import { AppDataSource } from "../../database/database";
 import { Order } from "../../database/Order";
 import { User } from "../../database/User";
 import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang";
-import { RequisitionConfig } from "../../database/RequisitionConfig";
 import { interpolate } from "@lebenswurzel/solawi-bedarf-shared/src/lang/template";
 import { format } from "date-fns";
 import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum";

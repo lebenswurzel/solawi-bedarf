@@ -18,6 +18,7 @@ import { defineStore } from "pinia";
 import { computed, ref } from "vue";
 import {
   OrganizationInfo,
+  OrganizationInfoFlat,
   PdfTexts,
   TextContent,
 } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
@@ -26,6 +27,7 @@ import { marked } from "marked";
 import { TextContentCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import { faqAlphabeticalDown } from "../lib/compare.ts";
 import {
+  makeFlatOrganizationInfo,
   makeOrganizationInfo,
   makePdfTexts,
 } from "@lebenswurzel/solawi-bedarf-shared/src/text/textContent.ts";
@@ -80,6 +82,10 @@ export const useTextContentStore = defineStore("textContent", () => {
     return makeOrganizationInfo(values);
   });
 
+  const organizationInfoFlat = computed((): OrganizationInfoFlat => {
+    return makeFlatOrganizationInfo(organizationInfo.value);
+  });
+
   const pdfTexts = computed((): PdfTexts => {
     const values = textContent.value
       .filter((content) => content.category == TextContentCategory.PDF)
@@ -96,6 +102,7 @@ export const useTextContentStore = defineStore("textContent", () => {
     imprint,
     privacyNotice,
     organizationInfo,
+    organizationInfoFlat,
     pdfTexts,
     update,
   };
