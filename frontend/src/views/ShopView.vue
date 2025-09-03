@@ -226,7 +226,7 @@ const disableSaveButton = computed(() => {
               :compare-to-previous="
                 allOrders.length > 1 && index === allOrders.length - 1
               "
-              :fixed-contribution="isModifyingOrder"
+              :fixed-contribution="!isModifyingOrder || !submit"
             />
           </v-card-text>
         </v-col>
