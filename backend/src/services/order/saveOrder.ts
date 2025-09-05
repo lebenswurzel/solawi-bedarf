@@ -44,6 +44,7 @@ import {
   canEditOrder,
   determineModificationOrderId,
   determinePredecessorOrder,
+  isOfferChangeValid,
   isRequisitionActive,
   isValidBiddingOrder,
 } from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition";
@@ -117,10 +118,6 @@ export const saveOrder = async (
     config.timezone,
   );
 
-  if (!modificationOrderId) {
-    ctx.throw(http.bad_request, `no order to modify (${modificationOrderId})`);
-  }
-
   if (body.id) {
     if (!canEditOrder(role, modificationOrderId, body.id)) {
       ctx.throw(http.bad_request, `not allowed to edit order (${body.id})`);
@@ -129,8 +126,8 @@ export const saveOrder = async (
 
   const selectedOrderId = body.id || modificationOrderId;
   const selectedOrder = allOrders.find((o) => o.id === selectedOrderId);
-  if (!selectedOrder) {
-    ctx.throw(http.bad_request, `no order to modify (${selectedOrderId})`);
+  if (!selectedOrder || !selectedOrderId) {
+    ctx.throw(http.bad_request, `no order selected (${selectedOrderId})`);
   }
 
   if (!isValidBiddingOrder(role, requisitionConfig, currentTime, null, body)) {
@@ -182,7 +179,7 @@ export const saveOrder = async (
   );
 
   if (predecessorOrder) {
-    if (predecessorOrder.offer > body.offer) {
+    if (!isOfferChangeValid(role, body.offer, predecessorOrder.offer)) {
       ctx.throw(
         http.bad_request,
         language.pages.shop.messages.newOfferLowerThanPreviousOffer,

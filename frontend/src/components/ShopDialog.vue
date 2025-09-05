@@ -66,7 +66,7 @@ const {
   categoryReason,
   offerReason,
   modificationOrderItems,
-  visibleOrderId,
+  modificationOrderId,
   modificationOrder,
 } = storeToRefs(orderStore);
 const { organizationInfo } = storeToRefs(textContentStore);
@@ -133,7 +133,7 @@ const alternateDepot = computed(() => {
 });
 
 const effectiveMsrp = computed(() => {
-  return biStore.getEffectiveMsrpByOrderId(visibleOrderId.value!);
+  return biStore.getEffectiveMsrpByOrderId(modificationOrderId.value!);
 });
 
 const enableOfferReason = computed(() =>
@@ -202,8 +202,8 @@ const bankTransferSelected = computed(() => {
 });
 
 const predecessorOffer = computed((): number => {
-  return orderStore.getPredecessorOrder(visibleOrderId.value)
-    ? (orderStore.getPredecessorOrder(visibleOrderId.value)?.offer ?? 0)
+  return orderStore.getPredecessorOrder(modificationOrderId.value)
+    ? (orderStore.getPredecessorOrder(modificationOrderId.value)?.offer ?? 0)
     : 0;
 });
 
@@ -217,7 +217,7 @@ const requireConfirmContribution = computed(() => {
 
 const enableConfirmSepaUpdate = computed((): boolean => {
   return (
-    (orderStore.getPredecessorOrder(visibleOrderId.value) &&
+    (orderStore.getPredecessorOrder(modificationOrderId.value) &&
       monthlyOfferDifference.value >= 10) ??
     false
   );
@@ -225,7 +225,7 @@ const enableConfirmSepaUpdate = computed((): boolean => {
 
 const enableConfirmBankTransfer = computed((): boolean => {
   return (
-    (orderStore.getPredecessorOrder(visibleOrderId.value) &&
+    (orderStore.getPredecessorOrder(modificationOrderId.value) &&
       monthlyOfferDifference.value > 0) ??
     false
   );
@@ -282,9 +282,10 @@ const onSave = () => {
     sendConfirmationEmail: sendConfirmationEmail.value,
     confirmSepaUpdate: sepaUpdateSelected.value,
     confirmBankTransfer: bankTransferSelected.value,
+    id: modificationOrderId.value,
   })
     .then(async () => {
-      await biStore.update(activeConfigId.value, visibleOrderId.value);
+      await biStore.update(activeConfigId.value, modificationOrderId.value);
       props.requestUser?.id &&
         (await orderStore.update(props.requestUser.id, activeConfigId.value));
       loading.value = false;

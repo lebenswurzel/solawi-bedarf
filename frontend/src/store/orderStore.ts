@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { defineStore } from "pinia";
+import { defineStore, storeToRefs } from "pinia";
 import { computed, ref, watch } from "vue";
 import { getAllOrders } from "../requests/shop.ts";
 import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
@@ -26,8 +26,11 @@ import {
 } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { isDateInRange } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper.ts";
 import { determineModificationOrderId } from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition.ts";
+import { useUserStore } from "./userStore.ts";
 
 export const useOrderStore = defineStore("orderStore", () => {
+  const userStore = useUserStore();
+  const { isAdmin } = storeToRefs(userStore);
   const savedOrderItemsByProductId = ref<{
     [key: number]: number;
   }>({});
@@ -151,12 +154,18 @@ export const useOrderStore = defineStore("orderStore", () => {
 
     const now = new Date();
 
-    modificationOrderId.value = determineModificationOrderId(orders, now);
-    const modOrder = allOrders.value.find(
-      (o) => o.id === modificationOrderId.value,
-    );
+    const modOrderId = determineModificationOrderId(orders, now);
+    const predecessorOrder = getPredecessorOrder(modOrderId);
+
+    visibleOrderId.value =
+      modOrderId || predecessorOrder?.id || orders[orders.length - 1].id;
+    console.log("orderStore.update visibleOrderId", visibleOrderId.value);
+  };
+
+  const setModificationOrderId = (orderId: number | undefined) => {
+    const modOrder = allOrders.value.find((o) => o.id === orderId);
+    modificationOrderId.value = orderId;
     predecessorOrderId.value = modOrder?.predecessorId || undefined;
-    const predecessorOrder = getPredecessorOrder(modificationOrderId.value);
 
     console.log(
       "modificationOrderId",
@@ -164,13 +173,6 @@ export const useOrderStore = defineStore("orderStore", () => {
       "predecessorOrderId",
       predecessorOrderId.value,
     );
-
-    // Find the order that is to be modified
-    const order: SavedOrder | undefined =
-      modOrder || predecessorOrder || orders[orders.length - 1];
-
-    visibleOrderId.value = order?.id;
-    console.log("orderStore.update visibleOrderId", visibleOrderId.value);
   };
 
   const getPredecessorOrder = (
@@ -198,6 +200,18 @@ export const useOrderStore = defineStore("orderStore", () => {
       actualOrderItemsByProductId.value = mapOrderItems(
         order?.orderItems || [],
       );
+
+      const validModOrderId = determineModificationOrderId(
+        allOrders.value,
+        new Date(),
+      );
+      if (validModOrderId === visibleOrderId.value || isAdmin.value) {
+        // allow admin to edit any order
+        setModificationOrderId(visibleOrderId.value);
+      } else {
+        // allow regular users to edit only the current modification order
+        setModificationOrderId(undefined);
+      }
     },
     { immediate: true },
   );

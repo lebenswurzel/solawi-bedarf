@@ -36,6 +36,7 @@ export const saveOrder = async (order: ConfirmedOrder & { userId: number }) => {
     sendConfirmationEmail: order.sendConfirmationEmail,
     confirmSepaUpdate: order.confirmSepaUpdate,
     confirmBankTransfer: order.confirmBankTransfer,
+    id: order.id,
   };
   const response = await fetch(getUrl(`/shop/order?id=${order.userId}`), {
     method: "POST",

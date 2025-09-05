@@ -33,7 +33,7 @@ import { interpolate } from "@lebenswurzel/solawi-bedarf-shared/src/lang/templat
 
 const biStore = useBIStore();
 const orderStore = useOrderStore();
-const { visibleOrderId, offer } = storeToRefs(orderStore);
+const { visibleOrderId, offer, modificationOrderId } = storeToRefs(orderStore);
 
 const t = language.pages.shop;
 const props = defineProps<{
@@ -121,8 +121,19 @@ const msrpValidation = computed(() => {
               >mdi-radiobox-blank</v-icon
             >
           </v-col>
-          <v-col :cols="props.showSelector ? 10 : 12" sm="11">
+          <v-col :cols="props.showSelector ? 9 : 11" sm="10">
             <OrderRangeDisplay :order="props.order" plain />
+          </v-col>
+          <v-col cols="1">
+            <v-icon v-if="modificationOrderId !== props.order.id"
+              >mdi-lock</v-icon
+            >
+            <v-icon
+              v-else
+              @click="orderStore.setVisibleOrderId(props.order.id)"
+            >
+              mdi-pencil
+            </v-icon>
           </v-col>
         </v-row>
       </v-container>
