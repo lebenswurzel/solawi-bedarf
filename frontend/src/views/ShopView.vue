@@ -43,7 +43,7 @@ const userStore = useUserStore();
 const orderStore = useOrderStore();
 const biStore = useBIStore();
 
-const { depot, submit, msrpByOrderId, productsById } = storeToRefs(biStore);
+const { depot, submit, rawMsrpByOrderId, productsById } = storeToRefs(biStore);
 const { userId } = storeToRefs(userStore);
 const { productCategories } = storeToRefs(productStore);
 const { activeConfigId, config } = storeToRefs(configStore);
@@ -199,8 +199,8 @@ const disableSaveButton = computed(() => {
         class="pt-2"
         v-if="
           modificationOrderId &&
-          msrpByOrderId[modificationOrderId] &&
-          msrpByOrderId[modificationOrderId].months < 12
+          rawMsrpByOrderId[modificationOrderId] &&
+          rawMsrpByOrderId[modificationOrderId].months < 12
         "
       >
         {{ t.cards.header.orderDuringSeason }}

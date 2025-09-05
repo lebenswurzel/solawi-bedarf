@@ -134,7 +134,7 @@ export const useBIStore = defineStore("bi", () => {
     false;
   });
 
-  const msrpByOrderId = computed((): { [key: OrderId]: Msrp } => {
+  const rawMsrpByOrderId = computed((): { [key: OrderId]: Msrp } => {
     if (
       Object.keys(productsById.value).length === 0 ||
       !config.value ||
@@ -192,7 +192,7 @@ export const useBIStore = defineStore("bi", () => {
     if (
       activeConfigId.value == -1 ||
       !config.value ||
-      Object.keys(msrpByOrderId.value).length === 0
+      Object.keys(rawMsrpByOrderId.value).length === 0
     ) {
       return null;
     }
@@ -213,7 +213,7 @@ export const useBIStore = defineStore("bi", () => {
         earlierOrder: effectiveCurrentOrder,
         laterOrder: effectiveModificationOrder,
       },
-      msrpByOrderId.value,
+      rawMsrpByOrderId.value,
       productMsrpWeightsByOrderId.value,
       productsById.value,
     );
@@ -224,9 +224,9 @@ export const useBIStore = defineStore("bi", () => {
     const result = allOrders.value.reduce(
       (acc, o, index) => {
         if (index === allOrders.value.length - 1) {
-          acc[o.id] = getEffectiveMsrp() || msrpByOrderId.value[o.id];
+          acc[o.id] = getEffectiveMsrp() || rawMsrpByOrderId.value[o.id];
         } else {
-          acc[o.id] = msrpByOrderId.value[o.id];
+          acc[o.id] = rawMsrpByOrderId.value[o.id];
         }
         return acc;
       },
@@ -292,7 +292,7 @@ export const useBIStore = defineStore("bi", () => {
     deliveredByProductIdDepotId,
     productsById,
     depot,
-    msrpByOrderId,
+    rawMsrpByOrderId,
     submit,
     increaseOnly,
     offers,
