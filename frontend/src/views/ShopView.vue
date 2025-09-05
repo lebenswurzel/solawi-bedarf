@@ -175,7 +175,7 @@ const disableSaveButton = computed(() => {
     <v-card-title v-else>
       {{ t.cards.header.hello }} {{ userStore.currentUser?.name }}
     </v-card-title>
-    <v-card-subtitle v-if="depot" style="white-space: normal">
+    <v-card-subtitle v-if="depot">
       {{ t.cards.header.depot }} <br /><br />
       {{ depot?.name }} <br />
       {{ depot?.address }} <br /><br />

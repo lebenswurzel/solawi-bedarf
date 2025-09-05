@@ -64,7 +64,7 @@ const selfGrownProductSum = computed(() => {
 </script>
 
 <template>
-  <v-card-title style="white-space: normal">
+  <v-card-title>
     {{ t.productsCard.title }}
   </v-card-title>
   <v-card-text>

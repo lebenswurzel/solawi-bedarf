@@ -77,7 +77,7 @@ const click = async () => {
 <template>
   <v-card class="ma-2" v-if="success === undefined">
     <v-card-title>Registrierung</v-card-title>
-    <v-card-subtitle style="white-space: normal">
+    <v-card-subtitle>
       Du hast schon einen Login?
       <router-link to="/login">Hier einloggen</router-link>
     </v-card-subtitle>
@@ -194,7 +194,7 @@ const click = async () => {
   <div style="display: flex; justify-content: center" v-else>
     <div style="max-width: 400px">
       <v-card class="ma-2" v-if="success">
-        <v-card-title class="text-center" style="white-space: normal">
+        <v-card-title class="text-center">
           Registrierung erfolgreich
         </v-card-title>
         <v-card-item class="justify-center">
@@ -208,7 +208,7 @@ const click = async () => {
         </v-card-text>
       </v-card>
       <v-card class="ma-2" v-else>
-        <v-card-title class="text-center" style="white-space: normal">
+        <v-card-title class="text-center">
           Upps, da ist etwas schief gegangen!
         </v-card-title>
         <v-card-item class="justify-center">

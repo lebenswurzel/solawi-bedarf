@@ -49,12 +49,12 @@ const phase = computed(() => {
 
 <template>
   <v-card class="ma-2">
-    <v-card-title style="white-space: normal">
+    <v-card-title>
       Herzlich willkommen zur Bedarfsanmeldung des Solawi-Projektes in der
       <SeasonText />!
     </v-card-title>
 
-    <v-card-subtitle style="white-space: normal">
+    <v-card-subtitle>
       Hier siehst du eine Übersicht über den aktuellen Status der gewählten
       Saison und ob eine Bedarfsanpassung möglich ist. Bei laufender Saison
       findest du weiter unten Informationen über die Verteilungen. Bitte achte
