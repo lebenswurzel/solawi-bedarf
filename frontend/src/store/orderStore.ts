@@ -150,9 +150,12 @@ export const useOrderStore = defineStore("orderStore", () => {
     const modOrder = orders.find((o) => o.id === modificationOrderId.value);
     currentOrderId.value = determineCurrentOrderId(orders, now);
     const curOrder = orders.find((o) => o.id === currentOrderId.value);
-    if (currentOrderId.value == modificationOrderId.value) {
+    if (
+      currentOrderId.value !== undefined &&
+      currentOrderId.value == modificationOrderId.value
+    ) {
       console.error(
-        "currentOrderId is the same as modificationOrderId",
+        "currentOrderId is the same as modificationOrderId; this should not happen",
         currentOrderId.value,
         modificationOrderId.value,
       );

@@ -199,7 +199,7 @@ const adaptSelfgrownCompensation = (
 
 export const calculateEffectiveMsrp = (
   orders: { laterOrder: SavedOrder; earlierOrder: SavedOrder },
-  msrpByOrderId: { [key: OrderId]: Msrp },
+  rawMsrpByOrderId: { [key: OrderId]: Msrp },
   productMsrpWeightsByOrderId: { [key: OrderId]: { [key: ProductId]: number } },
   productsById: ProductsById
 ): Msrp => {
@@ -221,14 +221,14 @@ export const calculateEffectiveMsrp = (
     return {
       order: o,
       validFrom: o.validFrom,
-      msrp: msrpByOrderId[o.id],
+      msrp: rawMsrpByOrderId[o.id],
       productMsrps: o.orderItems.reduce(
         (acc, oi) => {
           acc[productKey(oi, productsById)] = getOrderItemAdjustedMonthlyMsrp(
-            msrpByOrderId[o.id].contribution,
+            rawMsrpByOrderId[o.id].contribution,
             oi,
             productsById,
-            msrpByOrderId[o.id].months,
+            rawMsrpByOrderId[o.id].months,
             productMsrpWeightsByOrderId[o.id]
           );
           return acc;
@@ -315,7 +315,7 @@ export const calculateEffectiveMsrp = (
     },
   };
   const adaptedMsrp = adaptSelfgrownCompensation(
-    msrpByOrderId[orders.earlierOrder.id],
+    rawMsrpByOrderId[orders.earlierOrder.id],
     result
   );
   console.log("effectiveMsrp", adaptedMsrp, "result", result);
