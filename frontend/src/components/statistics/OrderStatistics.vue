@@ -286,9 +286,7 @@ const overallContribution = computed(() => {
 </script>
 
 <template>
-  <v-card-title style="white-space: normal">
-    {{ t.ordersCard.title }} <SeasonText />
-  </v-card-title>
+  <v-card-title> {{ t.ordersCard.title }} <SeasonText /> </v-card-title>
   <v-card-text>
     <p class="mb-4">
       {{ t.ordersCard.text }}

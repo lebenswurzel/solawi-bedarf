@@ -192,9 +192,7 @@ const isSelected = (id: number) => !!selectedShippingItems.value[id];
 
 <template>
   <v-card class="ma-2">
-    <v-card-title style="white-space: normal"
-      >{{ t.cards.list.title }} <SeasonText
-    /></v-card-title>
+    <v-card-title>{{ t.cards.list.title }} <SeasonText /></v-card-title>
     <v-card-text v-if="dateOptionsMonths.length > 0" class="pb-0">
       <v-container fluid style="max-width: 800px">
         <v-row dense justify="center">
@@ -265,7 +263,7 @@ const isSelected = (id: number) => !!selectedShippingItems.value[id];
           class="mx-auto my-4"
         >
           <template v-slot:title
-            ><div style="white-space: normal">
+            ><div>
               {{
                 interpolate(t.cards.list.shipment, {
                   from: format(shipment.validFrom, "EEEE, dd.MM.", {
@@ -277,7 +275,7 @@ const isSelected = (id: number) => !!selectedShippingItems.value[id];
           </template>
           <v-card-text
             v-if="shipment.description"
-            style="white-space: normal; max-width: 800px"
+            style="max-width: 800px"
             class="mx-auto"
           >
             {{ shipment.description }}

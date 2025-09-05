@@ -139,7 +139,7 @@ watch(isSessionExpired, (value) => {
       <v-row justify="center">
         <v-col cols="12" md="8">
           <Login @login-ok="showLogin = false">
-            <v-card-subtitle style="white-space: normal">
+            <v-card-subtitle>
               {{ language.app.status.autoLogout }}
             </v-card-subtitle>
             <template v-slot:actions>
