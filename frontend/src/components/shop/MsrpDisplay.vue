@@ -19,7 +19,10 @@ import { storeToRefs } from "pinia";
 import { useBIStore } from "../../store/biStore";
 import { language } from "../../../../shared/src/lang/lang";
 import Markdown from "../design/Markdown.vue";
-import { Msrp, SavedOrder } from "@lebenswurzel/solawi-bedarf-shared/src/types";
+import {
+  Msrp,
+  SavedOrderWithPredecessor,
+} from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import { computed } from "vue";
 import { useOrderStore } from "../../store/orderStore";
 import OrderRangeDisplay from "./OrderRangeDisplay.vue";
@@ -30,11 +33,11 @@ import { interpolate } from "@lebenswurzel/solawi-bedarf-shared/src/lang/templat
 
 const biStore = useBIStore();
 const orderStore = useOrderStore();
-const { visibleOrderId, currentOrder, offer } = storeToRefs(orderStore);
+const { visibleOrderId, offer } = storeToRefs(orderStore);
 
 const t = language.pages.shop;
 const props = defineProps<{
-  order: SavedOrder;
+  order: SavedOrderWithPredecessor;
   hideOffer?: boolean;
   showSelector?: boolean;
   fixedContribution?: boolean;
@@ -76,12 +79,12 @@ const msrp = computed((): Msrp => {
 });
 
 const previousMsrp = computed((): { msrp: Msrp; offer: number } | null => {
-  if (!props.compareToPrevious || !currentOrder.value) {
+  if (!props.compareToPrevious || !props.order.predecessorId) {
     return null;
   }
   return {
-    msrp: biStore.getEffectiveMsrpByOrderId(currentOrder.value.id),
-    offer: currentOrder.value.offer,
+    msrp: biStore.getEffectiveMsrpByOrderId(props.order.predecessorId),
+    offer: orderStore.findOrderById(props.order.predecessorId)?.offer ?? 0,
   };
 });
 
@@ -196,7 +199,7 @@ const msrpValidation = computed(() => {
         >
           Diese Bedarfsanmeldung ist noch nicht bestätigt und wird erst aktiv,
           wenn sie gespeichert wurde.
-          <template v-if="orderStore.currentOrderId"
+          <template v-if="props.order.predecessorId !== null"
             >Bis dahin bleibt die bisherige Bedarfsanmeldung bis zum Ende der
             Saison gültig.</template
           >

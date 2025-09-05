@@ -292,6 +292,10 @@ export const language = {
           faq: "Informationen & Grundlagen",
         },
       },
+      messages: {
+        newOfferLowerThanPreviousOffer:
+          "Der neue Solawi-Beitrag darf nicht geringer sein als der alte",
+      },
     },
     faq: {
       title: "Informationen und Grundlagen",

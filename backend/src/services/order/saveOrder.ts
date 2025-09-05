@@ -41,8 +41,9 @@ import {
   isOfferValid,
 } from "@lebenswurzel/solawi-bedarf-shared/src/validation/reason";
 import {
-  determineCurrentOrderId,
+  canEditOrder,
   determineModificationOrderId,
+  determinePredecessorOrder,
   isRequisitionActive,
   isValidBiddingOrder,
 } from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition";
@@ -58,6 +59,7 @@ import { getRequestUserId, getUserFromContext } from "../getUserFromContext";
 import { getSameOrNextThursday } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper";
 import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import { sendOrderConfirmationMail } from "../email/orderConfirmationMail";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang";
 
 export const saveOrder = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -109,21 +111,34 @@ export const saveOrder = async (
   });
 
   // Find the currently valid order
-  const orderId = determineModificationOrderId(
+  const modificationOrderId = determineModificationOrderId(
     allOrders,
     currentTime,
     config.timezone,
   );
-  const order = allOrders.find((o) => o.id === orderId);
 
-  if (!order) {
-    ctx.throw(http.bad_request, "no order to modify");
+  if (!modificationOrderId) {
+    ctx.throw(http.bad_request, `no order to modify (${modificationOrderId})`);
+  }
+
+  if (body.id) {
+    if (!canEditOrder(role, modificationOrderId, body.id)) {
+      ctx.throw(http.bad_request, `not allowed to edit order (${body.id})`);
+    }
+  }
+
+  const selectedOrderId = body.id || modificationOrderId;
+  const selectedOrder = allOrders.find((o) => o.id === selectedOrderId);
+  if (!selectedOrder) {
+    ctx.throw(http.bad_request, `no order to modify (${selectedOrderId})`);
   }
 
   if (!isValidBiddingOrder(role, requisitionConfig, currentTime, null, body)) {
     ctx.throw(http.bad_request, "not valid in bidding round");
   }
-  const dateOfInterest = getSameOrNextThursday(order.validFrom || currentTime);
+  const dateOfInterest = getSameOrNextThursday(
+    selectedOrder.validFrom || currentTime,
+  );
   const {
     soldByProductId,
     capacityByDepotId,
@@ -131,14 +146,14 @@ export const saveOrder = async (
     deliveredByProductIdDepotId,
   } = await bi(
     requisitionConfig.id,
-    order.validFrom || undefined,
+    selectedOrder.validFrom || undefined,
     true,
     new Date(), // TODO: use dateOfInterest?
   );
   const remainingDepotCapacity = getRemainingDepotCapacity(
     depot,
     capacityByDepotId[body.depotId].reserved,
-    order?.depotId || 0,
+    selectedOrder?.depotId || 0,
   );
   if (remainingDepotCapacity != null && remainingDepotCapacity == 0) {
     ctx.throw(http.bad_request, "no depot capacity left");
@@ -146,7 +161,7 @@ export const saveOrder = async (
   const orderItemErrors = body.orderItems
     .map((actualOrderItem) =>
       checkOrderItemValid(
-        order?.orderItems.find(
+        selectedOrder?.orderItems.find(
           (item) => item.productId === actualOrderItem.productId,
         )?.value || null,
         actualOrderItem,
@@ -161,26 +176,16 @@ export const saveOrder = async (
     ctx.throw(http.bad_request, `${orderItemErrors.join("\n")}`);
   }
 
-  const previousOrderId = determineCurrentOrderId(
+  const predecessorOrder = determinePredecessorOrder(
     allOrders,
-    currentTime,
-    config.timezone,
+    selectedOrderId,
   );
 
-  if (previousOrderId == orderId) {
-    ctx.throw(
-      http.internal_server_error,
-      "internal error: previous order id is the same as the current order id",
-    );
-  }
-
-  const previousOrder = allOrders.find((o) => o.id === previousOrderId);
-
-  if (previousOrder) {
-    if (previousOrder.offer > body.offer) {
+  if (predecessorOrder) {
+    if (predecessorOrder.offer > body.offer) {
       ctx.throw(
         http.bad_request,
-        "new bid must not be lower than previous bid",
+        language.pages.shop.messages.newOfferLowerThanPreviousOffer,
       );
     }
   }
@@ -192,8 +197,8 @@ export const saveOrder = async (
     deliveredByProductIdDepotId,
     depots,
     requisitionConfig,
-    order,
-    previousOrder,
+    selectedOrder,
+    predecessorOrder,
   );
   if (!isOfferValid(body.offer, modificationMsrp.monthly.total)) {
     ctx.throw(http.bad_request, "bid too low");
@@ -208,31 +213,31 @@ export const saveOrder = async (
     ctx.throw(http.bad_request, "no offer reason");
   }
 
-  order.offer = body.offer;
-  order.depotId = body.depotId;
-  order.alternateDepotId = body.alternateDepotId;
-  order.productConfiguration = ""; // storing this produces a lot of data in the database, so we don't do it anymore; JSON.stringify(productCategories);
-  order.offerReason = body.offerReason || "";
-  order.category = body.category;
-  order.categoryReason = body.categoryReason || "";
+  selectedOrder.offer = body.offer;
+  selectedOrder.depotId = body.depotId;
+  selectedOrder.alternateDepotId = body.alternateDepotId;
+  selectedOrder.productConfiguration = ""; // storing this produces a lot of data in the database, so we don't do it anymore; JSON.stringify(productCategories);
+  selectedOrder.offerReason = body.offerReason || "";
+  selectedOrder.category = body.category;
+  selectedOrder.categoryReason = body.categoryReason || "";
   if (!isEditedByOtherUser) {
     // only the user who has created the order can confirm it
-    order.confirmGTC = body.confirmGTC || false;
+    selectedOrder.confirmGTC = body.confirmGTC || false;
   }
   if (body.validFrom) {
-    order.validFrom = body.validFrom;
+    selectedOrder.validFrom = body.validFrom;
   }
   if (body.validTo) {
-    order.validTo = body.validTo;
+    selectedOrder.validTo = body.validTo;
   }
 
   await AppDataSource.transaction(async (entityManager) => {
     // save order
-    await entityManager.save(order);
+    await entityManager.save(selectedOrder);
     for (const requestOrderItem of body.orderItems) {
       let item =
-        order.orderItems &&
-        order.orderItems.find(
+        selectedOrder.orderItems &&
+        selectedOrder.orderItems.find(
           (orderItem) => orderItem.productId == requestOrderItem.productId,
         );
       if (item) {
@@ -241,7 +246,7 @@ export const saveOrder = async (
       } else {
         item = new OrderItem();
         item.productId = requestOrderItem.productId;
-        item.orderId = order.id;
+        item.orderId = selectedOrder.id;
         item.value = requestOrderItem.value;
         await entityManager.save(item);
       }
@@ -251,8 +256,8 @@ export const saveOrder = async (
 
   // Send confirmation email to user (if option is set) and always to the EMAIL_ORDER_UPDATED_BCC (if set)
   await sendOrderConfirmationMail({
-    order: order,
-    previousOrder: previousOrder ?? null,
+    order: selectedOrder,
+    previousOrder: predecessorOrder ?? null,
     requestUserId,
     changingUserId: id,
     requisitionConfig,
@@ -272,7 +277,7 @@ const determineEffectiveMsrp = async (
   depots: Depot[],
   requisitionConfig: RequisitionConfig,
   modificationOrder: Order,
-  currentOrder?: Order,
+  predecessorOrder?: Order,
 ): Promise<{
   modificationMsrp: Msrp;
   previousMsrp: Msrp | null;
@@ -293,7 +298,7 @@ const determineEffectiveMsrp = async (
     ),
     productMsrpWeights,
   );
-  if (!currentOrder) {
+  if (!predecessorOrder) {
     return {
       modificationMsrp: msrp,
       previousMsrp: null,
@@ -302,7 +307,7 @@ const determineEffectiveMsrp = async (
 
   const {
     deliveredByProductIdDepotId: currentOrderDeliveredByProductIdDepotId,
-  } = await bi(requisitionConfig.id, currentOrder.validFrom || undefined);
+  } = await bi(requisitionConfig.id, predecessorOrder.validFrom || undefined);
 
   const currentProductMsrpWeights = calculateMsrpWeights(
     productsById,
@@ -311,11 +316,11 @@ const determineEffectiveMsrp = async (
   );
 
   const previousMsrp = getMsrp(
-    currentOrder.category,
-    currentOrder.orderItems,
+    predecessorOrder.category,
+    predecessorOrder.orderItems,
     productsById,
     calculateOrderValidMonths(
-      currentOrder.validFrom,
+      predecessorOrder.validFrom,
       requisitionConfig.validTo,
       config.timezone,
     ),
@@ -324,13 +329,13 @@ const determineEffectiveMsrp = async (
 
   const effectiveMsrp = calculateEffectiveMsrp(
     {
-      earlierOrder: currentOrder,
+      earlierOrder: predecessorOrder,
       laterOrder: modificationOrder,
     },
-    { [modificationOrder.id]: msrp, [currentOrder.id]: previousMsrp },
+    { [modificationOrder.id]: msrp, [predecessorOrder.id]: previousMsrp },
     {
       [modificationOrder.id]: productMsrpWeights,
-      [currentOrder.id]: currentProductMsrpWeights,
+      [predecessorOrder.id]: currentProductMsrpWeights,
     },
     productsById,
   );

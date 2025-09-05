@@ -55,7 +55,6 @@ export const useBIStore = defineStore("bi", () => {
     allOrders,
     ordersWithActualOrderItems,
     modificationOrder,
-    currentOrder,
     isModifyingOrder,
   } = storeToRefs(orderStore);
   const { currentUser } = storeToRefs(userStore);
@@ -180,13 +179,9 @@ export const useBIStore = defineStore("bi", () => {
     return msrpsMap;
   });
 
-  const getEffectiveMsrp = (): Msrp | null => {
-    if (!modificationOrder.value) {
-      return null;
-    }
-    if (!currentOrder.value) {
-      // no current order exists, i.e., only the modification order exists
-      // return the msrp of the modification order as is
+  const getEffectiveMsrp = (orderId: OrderId): Msrp | null => {
+    const order = allOrders.value.find((o) => o.id === orderId);
+    if (!order) {
       return null;
     }
     if (
@@ -196,22 +191,26 @@ export const useBIStore = defineStore("bi", () => {
     ) {
       return null;
     }
-    const effectiveModificationOrder = ordersWithActualOrderItems.value.find(
-      (o) => o.id === modificationOrder.value?.id,
+
+    const effectiveOrder = ordersWithActualOrderItems.value.find(
+      (o) => o.id === orderId,
     );
-    if (!effectiveModificationOrder) {
+    if (!effectiveOrder) {
       return null;
     }
-    const effectiveCurrentOrder = ordersWithActualOrderItems.value.find(
-      (o) => o.id === currentOrder.value?.id,
+
+    const effectivePredecessorOrder = ordersWithActualOrderItems.value.find(
+      (o) => o.id === order.predecessorId,
     );
-    if (!effectiveCurrentOrder) {
+
+    if (!effectivePredecessorOrder) {
       return null;
     }
+
     const effectiveMsrp = calculateEffectiveMsrp(
       {
-        earlierOrder: effectiveCurrentOrder,
-        laterOrder: effectiveModificationOrder,
+        earlierOrder: effectivePredecessorOrder,
+        laterOrder: effectiveOrder,
       },
       rawMsrpByOrderId.value,
       productMsrpWeightsByOrderId.value,
@@ -222,12 +221,8 @@ export const useBIStore = defineStore("bi", () => {
 
   const effectiveMsrpByOrderId = computed((): { [key: OrderId]: Msrp } => {
     const result = allOrders.value.reduce(
-      (acc, o, index) => {
-        if (index === allOrders.value.length - 1) {
-          acc[o.id] = getEffectiveMsrp() || rawMsrpByOrderId.value[o.id];
-        } else {
-          acc[o.id] = rawMsrpByOrderId.value[o.id];
-        }
+      (acc, o) => {
+        acc[o.id] = getEffectiveMsrp(o.id) || rawMsrpByOrderId.value[o.id];
         return acc;
       },
       {} as { [key: OrderId]: Msrp },

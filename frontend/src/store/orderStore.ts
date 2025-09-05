@@ -22,17 +22,12 @@ import { appConfig } from "@lebenswurzel/solawi-bedarf-shared/src/config.ts";
 import {
   OrderItem,
   SavedOrder,
+  SavedOrderWithPredecessor,
 } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { isDateInRange } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper.ts";
-import {
-  determineCurrentOrderId,
-  determineModificationOrderId,
-} from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition.ts";
+import { determineModificationOrderId } from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition.ts";
 
 export const useOrderStore = defineStore("orderStore", () => {
-  const currentOrderItemsByProductId = ref<{
-    [key: number]: number;
-  }>({});
   const savedOrderItemsByProductId = ref<{
     [key: number]: number;
   }>({});
@@ -50,15 +45,15 @@ export const useOrderStore = defineStore("orderStore", () => {
   const categoryReason = ref<string | null>(null);
   const visibleOrderId = ref<number | undefined>(undefined);
 
-  // id of the order that is currently valid based on the current date
-  const currentOrderId = ref<number | undefined>(undefined);
+  // id of the order that is valid previous to the modification order
+  const predecessorOrderId = ref<number | undefined>(undefined);
   // id of the order that is to be modified
   const modificationOrderId = ref<number | undefined>(undefined);
 
   const selectedShipmentDate = ref<Date>(new Date());
 
   // New fields for multiple orders support
-  const allOrders = ref<SavedOrder[]>([]);
+  const allOrders = ref<SavedOrderWithPredecessor[]>([]);
 
   const modificationOrderItems = computed(() =>
     Object.entries(actualOrderItemsByProductId.value).map(
@@ -68,6 +63,10 @@ export const useOrderStore = defineStore("orderStore", () => {
       }),
     ),
   );
+
+  const findOrderById = (id: number) => {
+    return allOrders.value.find((o) => o.id === id);
+  };
 
   const shipmentOrderItems = computed(() => {
     const result =
@@ -96,23 +95,25 @@ export const useOrderStore = defineStore("orderStore", () => {
     }));
   });
 
-  const modificationOrder = computed((): SavedOrder | undefined => {
-    const order = allOrders.value.find(
-      (o) => o.id === modificationOrderId.value,
-    );
-    console.log("actualOrderItemsByProductId", {
-      ...actualOrderItemsByProductId.value,
-    });
-    if (order) {
-      return {
-        ...order,
-        orderItems: modificationOrderItems.value,
-      };
-    }
-  });
+  const modificationOrder = computed(
+    (): SavedOrderWithPredecessor | undefined => {
+      const order = allOrders.value.find(
+        (o) => o.id === modificationOrderId.value,
+      );
+      console.log("actualOrderItemsByProductId", {
+        ...actualOrderItemsByProductId.value,
+      });
+      if (order) {
+        return {
+          ...order,
+          orderItems: modificationOrderItems.value,
+        };
+      }
+    },
+  );
 
-  const currentOrder = computed((): SavedOrder | undefined => {
-    return allOrders.value.find((o) => o.id === currentOrderId.value);
+  const predecessorOrder = computed((): SavedOrder | undefined => {
+    return allOrders.value.find((o) => o.id === predecessorOrderId.value);
   });
 
   const isModifyingOrder = computed(() => {
@@ -120,10 +121,6 @@ export const useOrderStore = defineStore("orderStore", () => {
       modificationOrderId.value !== undefined &&
       visibleOrderId.value === modificationOrderId.value
     );
-  });
-
-  const hasPreviousOrder = computed(() => {
-    return isModifyingOrder.value && currentOrderId.value !== undefined;
   });
 
   const mapOrderItems = (orderItems: OrderItem[]) => {
@@ -141,42 +138,48 @@ export const useOrderStore = defineStore("orderStore", () => {
 
   const update = async (requestUserId: number, configId: number) => {
     const orders = await getAllOrders(requestUserId, configId);
-    console.log("orderStore.update -> allOrders", { ...orders });
-    allOrders.value = orders;
+    allOrders.value = orders.map((order) => {
+      return {
+        ...order,
+        predecessorId:
+          orders.find(
+            (o) => order.validFrom?.getTime() === o.validTo?.getTime(),
+          )?.id || null,
+      };
+    });
+    console.log("orderStore.update -> allOrders", { ...allOrders.value });
 
     const now = new Date();
 
     modificationOrderId.value = determineModificationOrderId(orders, now);
-    const modOrder = orders.find((o) => o.id === modificationOrderId.value);
-    currentOrderId.value = determineCurrentOrderId(orders, now);
-    const curOrder = orders.find((o) => o.id === currentOrderId.value);
-    if (
-      currentOrderId.value !== undefined &&
-      currentOrderId.value == modificationOrderId.value
-    ) {
-      console.error(
-        "currentOrderId is the same as modificationOrderId; this should not happen",
-        currentOrderId.value,
-        modificationOrderId.value,
-      );
-    }
+    const modOrder = allOrders.value.find(
+      (o) => o.id === modificationOrderId.value,
+    );
+    predecessorOrderId.value = modOrder?.predecessorId || undefined;
+    const predecessorOrder = getPredecessorOrder(modificationOrderId.value);
 
     console.log(
       "modificationOrderId",
       modificationOrderId.value,
-      "currentOrderId",
-      currentOrderId.value,
+      "predecessorOrderId",
+      predecessorOrderId.value,
     );
 
     // Find the order that is to be modified
     const order: SavedOrder | undefined =
-      modOrder || curOrder || orders[orders.length - 1];
-    console.log("orderStore.update order", order);
+      modOrder || predecessorOrder || orders[orders.length - 1];
 
     visibleOrderId.value = order?.id;
-    currentOrderItemsByProductId.value = JSON.parse(
-      JSON.stringify(mapOrderItems(currentOrder.value?.orderItems || [])),
-    );
+    console.log("orderStore.update visibleOrderId", visibleOrderId.value);
+  };
+
+  const getPredecessorOrder = (
+    orderId: number | undefined,
+  ): SavedOrderWithPredecessor | undefined => {
+    const predecessorId = allOrders.value.find(
+      (o) => o.id === orderId,
+    )?.predecessorId;
+    return allOrders.value.find((o) => o.id === predecessorId);
   };
 
   watch(
@@ -212,12 +215,10 @@ export const useOrderStore = defineStore("orderStore", () => {
     categoryReason.value = null;
     savedOrderItemsByProductId.value = {};
     actualOrderItemsByProductId.value = {};
-    currentOrderItemsByProductId.value = {};
     allOrders.value = [];
   };
 
   return {
-    currentOrderItemsByProductId,
     actualOrderItemsByProductId,
     savedOrderItemsByProductId,
     offer,
@@ -229,18 +230,18 @@ export const useOrderStore = defineStore("orderStore", () => {
     modificationOrderItems,
     shipmentOrderItems,
     allOrders,
-    currentOrderId,
     modificationOrderId,
     ordersWithActualOrderItems,
     modificationOrder,
-    currentOrder,
+    predecessorOrder,
     selectedShipmentDate,
     isModifyingOrder,
-    hasPreviousOrder,
     visibleOrderId,
     updateOrderItem,
     update,
     clear,
     setVisibleOrderId,
+    findOrderById,
+    getPredecessorOrder,
   };
 });

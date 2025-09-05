@@ -31,7 +31,6 @@ import {
   getSameOrNextThursday,
   getValidFromMonth,
   getValidToMonth,
-  isDateInRange,
   prettyDateWithMonthAndYear,
 } from "../util/dateHelper";
 
@@ -61,6 +60,20 @@ export const isIncreaseOnly = (
   return (
     now > requisitionConfig.startBiddingRound && userRole != UserRole.ADMIN
   );
+};
+
+/**
+ * Make sure a regular user can only edit the current modification order
+ */
+export const canEditOrder = (
+  userRole: UserRole,
+  modificationOrderId: OrderId,
+  orderId: OrderId
+) => {
+  if (userRole != UserRole.ADMIN) {
+    return modificationOrderId === orderId;
+  }
+  return true;
 };
 
 export const isValidBiddingOrder = (
@@ -207,7 +220,7 @@ const getMsrpValidationMessages = (
  *
  * @param allOrders All orders for the user and config
  * @param now Current date
- * @returns The id of the order to be modified
+ * @returns The id of the order to be modified or undefined if no order is found
  */
 export const determineModificationOrderId = (
   allOrders: SavedOrder[],
@@ -221,19 +234,17 @@ export const determineModificationOrderId = (
   )?.id;
 };
 
-export const determineCurrentOrderId = (
-  allOrders: SavedOrder[],
-  now: Date,
-  timezone?: string
-): OrderId | undefined => {
-  return allOrders.find((order) =>
-    isDateInRange(now, {
-      from: order.validFrom
-        ? getSameOrNextThursday(order.validFrom, timezone)
-        : null,
-      to: order.validTo ? getSameOrNextThursday(order.validTo, timezone) : null,
-    })
-  )?.id;
+export const determinePredecessorOrder = <T extends SavedOrder>(
+  allOrders: T[],
+  orderId: OrderId
+): T | undefined => {
+  const thisOrder = allOrders.find((order) => order.id === orderId);
+  if (!thisOrder) {
+    return undefined;
+  }
+  return allOrders.find(
+    (order) => order.validTo?.getTime() === thisOrder.validFrom?.getTime()
+  );
 };
 
 export const getSepaUpdateMessage = (

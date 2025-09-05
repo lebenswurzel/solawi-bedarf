@@ -469,7 +469,7 @@ const depotNameItems = computed(() => {
                 </div>
               </template>
               <template v-slot:item.depotName="{ item }">
-                <div v-for="depotName in item.depotNames" :key="depotName">
+                <div v-for="depotName in item.depotNames">
                   {{ depotName }}
                 </div>
               </template>

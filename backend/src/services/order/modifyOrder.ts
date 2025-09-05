@@ -101,6 +101,12 @@ export const createAdditionalOrder = async (
     order: { validFrom: "DESC" },
   });
 
+  if (allOrders.length > 1) {
+    throw new Error(
+      "Currently only one additional order is allowed. This will be fixed in the future.",
+    );
+  }
+
   // Find the currently valid order (no validTo or validTo in the future)
   const currentOrder = allOrders.find(
     (o) =>
