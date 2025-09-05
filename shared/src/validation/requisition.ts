@@ -67,7 +67,7 @@ export const isIncreaseOnly = (
  */
 export const canEditOrder = (
   userRole: UserRole,
-  modificationOrderId: OrderId,
+  modificationOrderId: OrderId | undefined,
   orderId: OrderId
 ) => {
   if (userRole != UserRole.ADMIN) {
@@ -105,6 +105,20 @@ export const isValidBiddingOrder = (
     ) {
       return false;
     }
+  }
+  return true;
+};
+
+export const isOfferChangeValid = (
+  userRole: UserRole,
+  offer: number,
+  previousOffer: number | undefined
+) => {
+  if (!previousOffer) {
+    return true;
+  }
+  if (userRole != UserRole.ADMIN) {
+    return offer >= previousOffer;
   }
   return true;
 };
@@ -254,7 +268,6 @@ export const getSepaUpdateMessage = (
   previousOffer: number,
   organizationInfo: OrganizationInfoFlat
 ) => {
-  console.log(organizationInfo);
   return interpolate(language.pages.shop.dialog.confirmSepaUpdate.label, {
     ...organizationInfo,
     from: prettyDateWithMonthAndYear(getSameOrNextThursday(validFrom)),

@@ -39,7 +39,10 @@ import {
   isIncreaseOnly,
   isRequisitionActive,
 } from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition.ts";
-import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
+import {
+  UserCategory,
+  UserRole,
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import { getSameOrNextThursday } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper";
 
 export const useBIStore = defineStore("bi", () => {
@@ -117,10 +120,11 @@ export const useBIStore = defineStore("bi", () => {
           config.value,
           now.value,
         ) &&
-        orderStore.modificationOrder?.validFrom &&
-        getSameOrNextThursday(
-          orderStore.modificationOrder.validFrom,
-        ).getTime() > now.value.getTime()
+        (currentUser.value.role === UserRole.ADMIN ||
+          (orderStore.modificationOrder?.validFrom &&
+            getSameOrNextThursday(
+              orderStore.modificationOrder.validFrom,
+            ).getTime() > now.value.getTime()))
       );
     }
     return false;
