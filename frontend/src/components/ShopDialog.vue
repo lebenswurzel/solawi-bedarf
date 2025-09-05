@@ -66,10 +66,8 @@ const {
   categoryReason,
   offerReason,
   modificationOrderItems,
-  modificationOrderId,
+  visibleOrderId,
   modificationOrder,
-  currentOrder,
-  hasPreviousOrder,
 } = storeToRefs(orderStore);
 const { organizationInfo } = storeToRefs(textContentStore);
 
@@ -135,7 +133,7 @@ const alternateDepot = computed(() => {
 });
 
 const effectiveMsrp = computed(() => {
-  return biStore.getEffectiveMsrpByOrderId(modificationOrderId.value!);
+  return biStore.getEffectiveMsrpByOrderId(visibleOrderId.value!);
 });
 
 const enableOfferReason = computed(() =>
@@ -176,6 +174,13 @@ const alternateDepotHint = computed(() => {
     : t.alternateDepot.hint;
 });
 
+const isPaymentSelectionValid = computed(() => {
+  if (!enableConfirmBankTransfer.value && !enableConfirmSepaUpdate.value) {
+    return true;
+  }
+  return bankTransferSelected.value != sepaUpdateSelected.value;
+});
+
 const disableSubmit = computed(() => {
   return (
     !confirmGTC.value ||
@@ -184,7 +189,7 @@ const disableSubmit = computed(() => {
     offerReasonHint.value ||
     categoryReasonHint.value ||
     (requireConfirmContribution.value && !confirmContribution.value) ||
-    !(bankTransferSelected.value != sepaUpdateSelected.value) // must select exactly one payment method
+    !isPaymentSelectionValid.value // must select exactly one payment method
   );
 });
 
@@ -196,20 +201,34 @@ const bankTransferSelected = computed(() => {
   return confirmBankTransfer.value && enableConfirmBankTransfer.value;
 });
 
+const predecessorOffer = computed((): number => {
+  return orderStore.getPredecessorOrder(visibleOrderId.value)
+    ? (orderStore.getPredecessorOrder(visibleOrderId.value)?.offer ?? 0)
+    : 0;
+});
+
 const monthlyOfferDifference = computed(() => {
-  return offer.value - (currentOrder.value?.offer ?? 0);
+  return offer.value - predecessorOffer.value;
 });
 
 const requireConfirmContribution = computed(() => {
   return category.value != UserCategory.CAT130;
 });
 
-const enableConfirmSepaUpdate = computed(() => {
-  return hasPreviousOrder.value && monthlyOfferDifference.value >= 10;
+const enableConfirmSepaUpdate = computed((): boolean => {
+  return (
+    (orderStore.getPredecessorOrder(visibleOrderId.value) &&
+      monthlyOfferDifference.value >= 10) ??
+    false
+  );
 });
 
-const enableConfirmBankTransfer = computed(() => {
-  return hasPreviousOrder.value && monthlyOfferDifference.value > 0;
+const enableConfirmBankTransfer = computed((): boolean => {
+  return (
+    (orderStore.getPredecessorOrder(visibleOrderId.value) &&
+      monthlyOfferDifference.value > 0) ??
+    false
+  );
 });
 
 const bankTransferMessage = computed(() => {
@@ -219,7 +238,7 @@ const bankTransferMessage = computed(() => {
     config.value?.validFrom ?? new Date(),
     config.value?.validTo ?? new Date(),
     offer.value,
-    currentOrder.value?.offer ?? 0,
+    predecessorOffer.value,
     props.requestUser?.name || "???",
     textContentStore.organizationInfo.bankAccount,
   );
@@ -265,10 +284,7 @@ const onSave = () => {
     confirmBankTransfer: bankTransferSelected.value,
   })
     .then(async () => {
-      await biStore.update(
-        activeConfigId.value,
-        orderStore.modificationOrderId,
-      );
+      await biStore.update(activeConfigId.value, visibleOrderId.value);
       props.requestUser?.id &&
         (await orderStore.update(props.requestUser.id, activeConfigId.value));
       loading.value = false;
@@ -439,7 +455,7 @@ const onSave = () => {
                 modificationOrder?.validFrom ?? new Date(),
                 modificationOrder?.validTo ?? new Date(),
                 offer,
-                currentOrder?.offer ?? 0,
+                predecessorOffer,
                 textContentStore.organizationInfoFlat,
               )
             "

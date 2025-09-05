@@ -44,10 +44,8 @@ const configStore = useConfigStore();
 const {
   actualOrderItemsByProductId,
   savedOrderItemsByProductId,
-  currentOrderItemsByProductId,
   isModifyingOrder,
-  hasPreviousOrder,
-  modificationOrderId,
+  visibleOrderId,
 } = storeToRefs(orderStore);
 const {
   soldByProductId,
@@ -137,22 +135,19 @@ const onUpdate = (value: string) => {
 };
 
 const getProductMsrpWeight = (): number => {
-  if (!modificationOrderId.value) {
+  if (!visibleOrderId.value) {
+    return 1;
+  }
+  if (productMsrpWeightsByOrderId.value[visibleOrderId.value] === undefined) {
     return 1;
   }
   if (
-    productMsrpWeightsByOrderId.value[modificationOrderId.value] === undefined
+    productMsrpWeightsByOrderId.value[visibleOrderId.value][props.productId] ===
+    undefined
   ) {
     return 1;
   }
-  if (
-    productMsrpWeightsByOrderId.value[modificationOrderId.value][
-      props.productId
-    ] === undefined
-  ) {
-    return 1;
-  }
-  return productMsrpWeightsByOrderId.value[modificationOrderId.value][
+  return productMsrpWeightsByOrderId.value[visibleOrderId.value][
     props.productId
   ];
 };
@@ -195,18 +190,25 @@ watch([productsById, savedOrderItemsByProductId], () => {
   model.value =
     savedOrderItemsByProductId.value[props.productId]?.toString() || "0";
 });
+
+const visiblePredecessorOrder = computed(() => {
+  return orderStore.getPredecessorOrder(visibleOrderId.value);
+});
+
 onMounted(() => {
   model.value =
     actualOrderItemsByProductId.value[props.productId]?.toString() || "0";
   oldValue.value =
-    currentOrderItemsByProductId.value[props.productId]?.toString() || "0";
+    visiblePredecessorOrder.value?.orderItems
+      .find((item) => item.productId === props.productId)
+      ?.value?.toString() || "0";
 });
 </script>
 
 <template>
   <v-container class="pa-0" fluid>
     <v-row dense align="center" justify="center">
-      <v-col cols="12" :md="hasPreviousOrder ? 6 : 8">
+      <v-col cols="12" :md="visiblePredecessorOrder ? 6 : 8">
         {{ product.name }} {{ product.id }}
         <v-tooltip
           :text="product.description"
@@ -267,7 +269,7 @@ onMounted(() => {
           </template>
         </v-tooltip>
       </v-col>
-      <v-col :cols="hasPreviousOrder ? 4 : 6" md="2">
+      <v-col :cols="visiblePredecessorOrder ? 4 : 6" md="2">
         <v-text-field
           :label="interpolate(t.value, { unit: unit })"
           type="number"
@@ -298,7 +300,7 @@ onMounted(() => {
           </template>
         </v-text-field>
       </v-col>
-      <v-col cols="4" md="2" v-if="hasPreviousOrder">
+      <v-col cols="4" md="2" v-if="visiblePredecessorOrder">
         <v-text-field
           :label="interpolate(t.oldValue, { unit: unit })"
           type="number"

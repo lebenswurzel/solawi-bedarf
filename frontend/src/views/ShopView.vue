@@ -141,7 +141,7 @@ const refresh = async (keepUserId?: boolean) => {
     await orderStore.update(requestUserId.value, activeConfigId.value);
     await biStore.update(
       configStore.activeConfigId,
-      modificationOrderId.value,
+      visibleOrderId.value,
       true,
     );
   }

@@ -23,7 +23,7 @@ export const needsCategoryReason = (category: UserCategory) => {
 
 export const isCategoryReasonValid = (
   category: UserCategory,
-  categoryReason: String | null,
+  categoryReason: String | null
 ) => {
   return (
     !needsCategoryReason(category) ||
@@ -38,7 +38,7 @@ export const needsOfferReason = (offer: number, msrp: number) => {
 export const isOfferReasonValid = (
   offer: number,
   msrp: number,
-  offerReason: String | null,
+  offerReason: String | null
 ) => {
   return (
     !needsOfferReason(offer, msrp) ||

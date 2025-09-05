@@ -141,10 +141,15 @@ export interface SavedOrder extends Order {
   userId?: UserId;
 }
 
+export interface SavedOrderWithPredecessor extends SavedOrder {
+  predecessorId: OrderId | null;
+}
+
 export interface ConfirmedOrder extends Order {
   sendConfirmationEmail?: boolean;
   confirmSepaUpdate: boolean;
   confirmBankTransfer: boolean;
+  id?: OrderId;
 }
 
 export interface Address {
