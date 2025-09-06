@@ -99,7 +99,7 @@ testAsAdmin("create new shipment", async ({ userData }: TestUserData) => {
   const merged = mergeShipmentWithForecast(shipments, forecastShipments);
   expect(merged.length).toBe(18);
 
-  console.log("merged", merged);
+  // console.log("merged", merged);
 
   const forecastItems = merged.filter((si) =>
     si.description?.includes("forecast"),

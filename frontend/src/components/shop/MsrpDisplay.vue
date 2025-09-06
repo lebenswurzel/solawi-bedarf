@@ -124,7 +124,7 @@ const msrpValidation = computed(() => {
           <v-col :cols="props.showSelector ? 9 : 11" sm="10">
             <OrderRangeDisplay :order="props.order" plain />
           </v-col>
-          <v-col cols="1">
+          <v-col cols="1" v-if="isVisibleOrder">
             <v-icon v-if="modificationOrderId !== props.order.id"
               >mdi-lock</v-icon
             >
