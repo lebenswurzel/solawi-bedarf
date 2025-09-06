@@ -567,7 +567,7 @@ export const language = {
 
         "vielen Dank für die Änderung Deiner Bedarfsanmeldung für die {season} im {solawiName}. Deine Angaben wurden erfolgreich gespeichert.",
 
-        "Im Anhang befindet sich ein PDF-Dokument mit einer Übersicht der von Dir angemeldeten Mengen für Gemüse und Kooperationsprodukte für die kommende Saison. Die Saison läuft vom {seasonStart} bis zum{seasonEnd}. Deine Änderung gilt ab {orderStartMonth}.",
+        "Im Anhang befindet sich ein PDF-Dokument mit einer Übersicht der von Dir angemeldeten Mengen für Gemüse und Kooperationsprodukte für die kommende Saison. Die Saison läuft vom {seasonStart} bis zum {seasonEnd}. Deine Änderung gilt ab {orderStartMonth}.",
 
         "Beim Speichern der Bedarfsmeldung hast Du bestätigt, dass Du die „[Grundlagen und Informationen]({appUrl}/#/faq)“ der Solawi gelesen und verstanden hast. Sollten dennoch Unklarheiten bestehen, kannst Du Dich bei Rückfragen jederzeit an die Mitgliederbetreuung unter {solawiEmail} wenden.",
 
