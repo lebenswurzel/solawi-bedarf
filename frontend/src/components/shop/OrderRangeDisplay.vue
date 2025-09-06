@@ -26,6 +26,7 @@ import {
   getSameOrNextThursday,
 } from "../../../../shared/src/util/dateHelper";
 import { SavedOrder } from "@lebenswurzel/solawi-bedarf-shared/src/types";
+import DebugOnly from "../debug/DebugOnly.vue";
 
 const configStore = useConfigStore();
 const { config } = storeToRefs(configStore);
@@ -101,7 +102,7 @@ const isFirstDeliveryInThePast = computed(() => {
       </template>
       <template v-else>Aktuelle Bedarfsanmeldung</template>
     </strong>
-    {{ order?.id }}
+    <DebugOnly>{{ order?.id }}</DebugOnly>
   </div>
 
   <div>

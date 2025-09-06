@@ -44,6 +44,7 @@ import {
   UserRole,
 } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import { getSameOrNextThursday } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper";
+import { isDebugEnabled } from "../lib/debug.ts";
 
 export const useBIStore = defineStore("bi", () => {
   const now = ref<Date>(new Date());
@@ -106,9 +107,11 @@ export const useBIStore = defineStore("bi", () => {
         };
       }),
     );
-    console.log("productMsrpWeightsByOrderId", {
-      ...productMsrpWeightsByOrderId.value,
-    });
+    if (isDebugEnabled()) {
+      console.log("productMsrpWeightsByOrderId", {
+        ...productMsrpWeightsByOrderId.value,
+      });
+    }
   });
 
   const submit = computed(() => {

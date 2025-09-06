@@ -32,6 +32,7 @@ import { useConfigStore } from "../store/configStore.ts";
 import { isIncreaseOnly } from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition.ts";
 import { getLangUnit } from "@lebenswurzel/solawi-bedarf-shared/src/util/unitHelper.ts";
 import { calculateDeliveries } from "@lebenswurzel/solawi-bedarf-shared/src/order/orderUtil.ts";
+import DebugOnly from "./debug/DebugOnly.vue";
 
 const t = language.pages.shop.cards.products.item;
 
@@ -209,7 +210,7 @@ onMounted(() => {
   <v-container class="pa-0" fluid>
     <v-row dense align="center" justify="center">
       <v-col cols="12" :md="visiblePredecessorOrder ? 6 : 8">
-        {{ product.name }} {{ product.id }}
+        {{ product.name }} <DebugOnly>{{ product.id }}</DebugOnly>
         <v-tooltip
           :text="product.description"
           v-if="product.description"

@@ -318,6 +318,6 @@ export const calculateEffectiveMsrp = (
     rawMsrpByOrderId[orders.earlierOrder.id],
     result
   );
-  console.log("effectiveMsrp", adaptedMsrp, "result", result);
+  // console.log("effectiveMsrp", adaptedMsrp, "result", result);
   return adaptedMsrp;
 };
