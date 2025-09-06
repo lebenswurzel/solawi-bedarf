@@ -234,4 +234,8 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #227 Mitglieder können ihren Bedarf während der Saison anpassen
 #227 Leere Verteilungen können gelöscht werden
 
+# v0.9.1 - 2025-09-06 - Fix für neue Nutzer in der Saison
+
+#227 Fix: Bedarfsmeldung neuer Nutzer während der Saison wieder möglich
+
 # NEW
