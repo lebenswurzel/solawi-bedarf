@@ -69,7 +69,7 @@ export const saveOrder = async (
   const { role, active, id } = await getUserFromContext(ctx);
   const requestUserId = await getRequestUserId(ctx);
   const body = ctx.request.body as ConfirmedOrder;
-  const sendConfirmationEmail = body.sendConfirmationEmail || false;
+  const sendConfirmationEmailToUser = body.sendConfirmationEmail || false;
 
   const isEditedByOtherUser = requestUserId !== id;
 
@@ -187,7 +187,7 @@ export const saveOrder = async (
     }
   }
 
-  const { modificationMsrp } = await determineEffectiveMsrp(
+  const { effectiveMsrp } = await determineEffectiveMsrp(
     body.category,
     body.orderItems,
     productsById,
@@ -197,13 +197,13 @@ export const saveOrder = async (
     selectedOrder,
     predecessorOrder,
   );
-  if (!isOfferValid(body.offer, modificationMsrp.monthly.total)) {
+  if (!isOfferValid(body.offer, effectiveMsrp.monthly.total)) {
     ctx.throw(http.bad_request, "bid too low");
   }
   if (
     !isOfferReasonValid(
       body.offer,
-      modificationMsrp.monthly.total,
+      effectiveMsrp.monthly.total,
       body.offerReason,
     )
   ) {
@@ -258,9 +258,10 @@ export const saveOrder = async (
     requestUserId,
     changingUserId: id,
     requisitionConfig,
-    sendConfirmationEmail,
+    sendConfirmationEmailToUser,
     confirmSepaUpdate: body.confirmSepaUpdate,
     confirmBankTransfer: body.confirmBankTransfer,
+    effectiveMsrp,
   });
 
   ctx.status = http.no_content;
@@ -276,7 +277,7 @@ const determineEffectiveMsrp = async (
   modificationOrder: Order,
   predecessorOrder?: Order,
 ): Promise<{
-  modificationMsrp: Msrp;
+  effectiveMsrp: Msrp;
   previousMsrp: Msrp | null;
 }> => {
   const productMsrpWeights = calculateMsrpWeights(
@@ -297,7 +298,7 @@ const determineEffectiveMsrp = async (
   );
   if (!predecessorOrder) {
     return {
-      modificationMsrp: msrp,
+      effectiveMsrp: msrp,
       previousMsrp: null,
     };
   }
@@ -337,7 +338,7 @@ const determineEffectiveMsrp = async (
     productsById,
   );
   return {
-    modificationMsrp: effectiveMsrp,
+    effectiveMsrp,
     previousMsrp,
   };
 };

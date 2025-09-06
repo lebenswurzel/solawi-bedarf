@@ -43,6 +43,7 @@ export const saveTextContent = async (
     case TextContentCategory.FAQ:
     case TextContentCategory.ORGANIZATION_INFO:
     case TextContentCategory.PDF:
+    case TextContentCategory.EMAIL:
       await updateTextContent(
         ctx,
         requestTextContent.category,
