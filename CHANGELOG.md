@@ -230,3 +230,6 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #270 Fix: Negative Berechnung des Orientierungswerts behoben
 
 # NEW
+
+#227 Mitglieder können ihren Bedarf während der Saison anpassen
+#227 Leere Verteilungen können gelöscht werden
