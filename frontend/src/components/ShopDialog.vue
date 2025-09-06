@@ -167,6 +167,18 @@ const depotHint = computed(() => {
     : t.depot.hint;
 });
 
+const offerHint = computed((): string | undefined => {
+  if (needsHigherOffer.value) {
+    return interpolate(t.offer.hint, {
+      msrp: Math.ceil(minOffer(effectiveMsrp.value.monthly.total)).toString(),
+    });
+  }
+  if (enableOfferReason.value) {
+    return t.offer.lowOfferHint;
+  }
+  return undefined;
+});
+
 const alternateDepotHint = computed(() => {
   return alternateDepot.value
     ? depotOptions.value.find((co) => co.value == alternateDepot.value!.id)
@@ -327,16 +339,8 @@ const onSave = () => {
           class="mb-5"
           v-model="offer"
           type="number"
-          :hint="
-            needsHigherOffer
-              ? interpolate(t.offer.hint, {
-                  msrp: Math.ceil(
-                    minOffer(effectiveMsrp.monthly.total),
-                  ).toString(),
-                })
-              : undefined
-          "
-          :persistent-hint="needsHigherOffer"
+          :hint="offerHint"
+          :persistent-hint="!!offerHint"
           :label="t.offer.label"
         />
         <v-text-field
