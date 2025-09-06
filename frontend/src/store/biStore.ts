@@ -39,11 +39,7 @@ import {
   isIncreaseOnly,
   isRequisitionActive,
 } from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition.ts";
-import {
-  UserCategory,
-  UserRole,
-} from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
-import { getSameOrNextThursday } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper";
+import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import { isDebugEnabled } from "../lib/debug.ts";
 
 export const useBIStore = defineStore("bi", () => {
@@ -116,18 +112,11 @@ export const useBIStore = defineStore("bi", () => {
 
   const submit = computed(() => {
     if (currentUser.value && config.value) {
-      return (
-        isRequisitionActive(
-          currentUser.value.role,
-          currentUser.value.active,
-          config.value,
-          now.value,
-        ) &&
-        (currentUser.value.role === UserRole.ADMIN ||
-          (orderStore.modificationOrder?.validFrom &&
-            getSameOrNextThursday(
-              orderStore.modificationOrder.validFrom,
-            ).getTime() > now.value.getTime()))
+      return isRequisitionActive(
+        currentUser.value.role,
+        currentUser.value.active,
+        config.value,
+        now.value,
       );
     }
     return false;

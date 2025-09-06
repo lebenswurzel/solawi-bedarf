@@ -18,15 +18,21 @@ import { SeasonPhase } from "../enum";
 import { ExistingConfig, RequisitionConfig } from "../types";
 
 export const getSeasonPhase = (
-  config: RequisitionConfig | ExistingConfig,
+  config: RequisitionConfig | ExistingConfig | undefined,
   now: Date,
   userActive: boolean
 ): { seasonPhase: SeasonPhase; orderPhase: SeasonPhase } => {
-  const startOrder = config?.startOrder!;
-  const startBiddingRound = config?.startBiddingRound!;
-  const endBiddingRound = config?.endBiddingRound!;
-  const startSeason = config?.validFrom!;
-  const endSeason = config?.validTo!;
+  if (!config) {
+    return {
+      seasonPhase: SeasonPhase.BEFORE_SEASON,
+      orderPhase: SeasonPhase.ORDER_CLOSED,
+    };
+  }
+  const startOrder = config.startOrder;
+  const startBiddingRound = config.startBiddingRound;
+  const endBiddingRound = config.endBiddingRound;
+  const startSeason = config.validFrom;
+  const endSeason = config.validTo;
 
   let seasonPhase = SeasonPhase.BEFORE_SEASON;
   if (endSeason <= now) {
@@ -40,11 +46,7 @@ export const getSeasonPhase = (
     if (startBiddingRound <= now && now < endBiddingRound) {
       orderPhase = SeasonPhase.INCREASE_ONLY;
     }
-    if (
-      seasonPhase == SeasonPhase.BEFORE_SEASON &&
-      startOrder <= now &&
-      now < startBiddingRound
-    ) {
+    if (startOrder <= now && now < startBiddingRound) {
       orderPhase = SeasonPhase.FREE_ORDER;
     }
   }

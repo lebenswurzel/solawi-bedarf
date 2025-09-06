@@ -52,13 +52,6 @@ export const isRequisitionActive = (
       // cannot modify an order when the bidding round is over
       return false;
     }
-    if (
-      now < requisitionConfig.startBiddingRound &&
-      now > requisitionConfig.validFrom
-    ) {
-      // cannot modify an order when the season is active and bidding round not started
-      return false;
-    }
   }
   return true;
 };

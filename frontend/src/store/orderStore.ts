@@ -161,7 +161,9 @@ export const useOrderStore = defineStore("orderStore", () => {
     const predecessorOrder = getPredecessorOrder(modOrderId);
 
     visibleOrderId.value =
-      modOrderId || predecessorOrder?.id || orders[orders.length - 1].id;
+      modOrderId ||
+      predecessorOrder?.id ||
+      (orders.length > 0 ? orders[orders.length - 1].id : undefined);
     console.log("orderStore.update visibleOrderId", visibleOrderId.value);
   };
 
