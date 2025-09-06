@@ -229,10 +229,11 @@ export const language = {
         offer: {
           label: "Solawi-Beitrag pro Monat [€]",
           hint: "Mindestwert für Deinen Solawi-Beitrag: {msrp}€",
+          lowOfferHint: "Begründung für Deinen Solawi-Beitrag erforderlich",
         },
         offerReason: {
           label: "Warum möchtest Du weniger zahlen?",
-          hint: "Bitte gib an, warum Du weniger als den Orientierungswert zahlen möchtest.",
+          hint: "Bitte gib an, warum Du weniger als den Orientierungswert zahlen möchtest (mehr als 10 Zeichen)",
         },
         depot: {
           label: "Depot (Abholstation)",
