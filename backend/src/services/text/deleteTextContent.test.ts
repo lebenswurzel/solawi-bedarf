@@ -208,7 +208,9 @@ const validateTextContentsWithoutOrgInfo = async (
   const ctx = createBasicTestCtx(undefined, userData.token);
   await getTextContent(ctx);
   const filteredTexts = ctx.body.textContent.filter(
-    (t: TextContent) => t.category != TextContentCategory.ORGANIZATION_INFO,
+    (t: TextContent) =>
+      t.category != TextContentCategory.ORGANIZATION_INFO &&
+      t.category != TextContentCategory.EMAIL,
   );
   expect(new Set(filteredTexts.map((v: TextContent) => v.content))).toEqual(
     new Set(expectedTexts),
