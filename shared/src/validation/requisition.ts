@@ -43,11 +43,22 @@ export const isRequisitionActive = (
   if (!userActive) {
     return false;
   }
-  if (now < requisitionConfig.startOrder && userRole != UserRole.ADMIN) {
-    return false;
-  }
-  if (now > requisitionConfig.endBiddingRound && userRole != UserRole.ADMIN) {
-    return false;
+  if (userRole != UserRole.ADMIN) {
+    if (now < requisitionConfig.startOrder) {
+      // cannot modify an order when the start order is in the future
+      return false;
+    }
+    if (now > requisitionConfig.endBiddingRound) {
+      // cannot modify an order when the bidding round is over
+      return false;
+    }
+    if (
+      now < requisitionConfig.startBiddingRound &&
+      now > requisitionConfig.validFrom
+    ) {
+      // cannot modify an order when the season is active and bidding round not started
+      return false;
+    }
   }
   return true;
 };
