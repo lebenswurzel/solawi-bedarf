@@ -36,11 +36,17 @@ export const getSeasonPhase = (
   }
 
   let orderPhase = SeasonPhase.ORDER_CLOSED;
-  if (userActive && startBiddingRound <= now && now < endBiddingRound) {
-    orderPhase = SeasonPhase.INCREASE_ONLY;
-  }
-  if (userActive && startOrder <= now && now < startBiddingRound) {
-    orderPhase = SeasonPhase.FREE_ORDER;
+  if (userActive) {
+    if (startBiddingRound <= now && now < endBiddingRound) {
+      orderPhase = SeasonPhase.INCREASE_ONLY;
+    }
+    if (
+      seasonPhase == SeasonPhase.BEFORE_SEASON &&
+      startOrder <= now &&
+      now < startBiddingRound
+    ) {
+      orderPhase = SeasonPhase.FREE_ORDER;
+    }
   }
   return { seasonPhase, orderPhase };
 };
