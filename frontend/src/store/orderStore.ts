@@ -27,6 +27,7 @@ import {
 import { isDateInRange } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper.ts";
 import { determineModificationOrderId } from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition.ts";
 import { useUserStore } from "./userStore.ts";
+import { isDebugEnabled } from "../lib/debug";
 
 export const useOrderStore = defineStore("orderStore", () => {
   const userStore = useUserStore();
@@ -150,7 +151,9 @@ export const useOrderStore = defineStore("orderStore", () => {
           )?.id || null,
       };
     });
-    console.log("orderStore.update -> allOrders", { ...allOrders.value });
+    if (isDebugEnabled()) {
+      console.log("orderStore.update -> allOrders", { ...allOrders.value });
+    }
 
     const now = new Date();
 
