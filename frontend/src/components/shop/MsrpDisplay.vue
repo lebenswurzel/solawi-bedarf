@@ -185,10 +185,16 @@ const msrpValidation = computed(() => {
         {{ t.cards.products.offer }}
         <strong class="mr-1">{{ relevantOffer.toString() }} € pro Monat</strong>
         <template v-if="msrpValidation">
-          <v-icon v-if="msrpValidation.offerValid" color="success"
+          <v-icon
+            v-if="
+              msrpValidation.offerValid && relevantOffer >= msrp.monthly.total
+            "
+            color="success"
             >mdi-check-circle</v-icon
           >
-          <v-icon v-else color="warning">mdi-alert</v-icon>
+          <v-icon v-else-if="!msrpValidation.offerValid" color="warning"
+            >mdi-alert</v-icon
+          >
         </template>
       </div>
       <ContributionSelect
