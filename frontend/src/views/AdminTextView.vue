@@ -20,6 +20,7 @@ import { useTextContentStore } from "../store/textContentStore";
 import { computed, provide, ref } from "vue";
 import TextContentDialog from "../components/text/TextContentDialog.vue";
 import {
+  EmailTextsKeys,
   NewTextContent,
   OrganizationInfoKeys,
   PdfTextsKeys,
@@ -30,6 +31,7 @@ import {
   TextContentTyp,
 } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import {
+  langEmailTextLabels,
   langOrganizationInfo,
   langPdfTexts,
   language,
@@ -57,6 +59,11 @@ const organizationInfo = computed(() =>
 const pdfTexts = computed(() =>
   textContent.value
     .filter((c) => c.category == TextContentCategory.PDF)
+    .sort((a, b) => (a.title < b.title ? -1 : 1)),
+);
+const emailTexts = computed(() =>
+  textContent.value
+    .filter((c) => c.category == TextContentCategory.EMAIL)
     .sort((a, b) => (a.title < b.title ? -1 : 1)),
 );
 
@@ -136,6 +143,7 @@ const onClose = async () => {
         language.pages.content.organizationInfo
       }}</v-tab>
       <v-tab value="pdf">{{ language.pages.content.pdf }}</v-tab>
+      <v-tab value="email">{{ language.pages.content.email }}</v-tab>
       <v-tab value="general">{{ language.pages.content.general }}</v-tab>
     </v-tabs>
 
@@ -188,6 +196,22 @@ const onClose = async () => {
             >
               {{ langPdfTexts[text.title as PdfTextsKeys] ?? text.title }}
               <code class="opacity-50">{pdf.{{ text.title }}}</code>
+              <v-list-item-subtitle>{{ text.content }}</v-list-item-subtitle>
+            </v-list-item>
+          </v-list>
+        </v-card-text>
+      </v-tabs-window-item>
+
+      <v-tabs-window-item value="email">
+        <v-card-text>
+          <v-list>
+            <v-list-item
+              v-for="text in emailTexts"
+              @click="() => onEditTextContent(text)"
+            >
+              {{
+                langEmailTextLabels[text.title as EmailTextsKeys] ?? text.title
+              }}
               <v-list-item-subtitle>{{ text.content }}</v-list-item-subtitle>
             </v-list-item>
           </v-list>

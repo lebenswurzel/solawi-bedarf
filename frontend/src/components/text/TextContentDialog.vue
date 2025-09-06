@@ -41,6 +41,10 @@ const dialogTextContent = inject<Ref<NewTextContent | TextContent>>(
   "dialogTextContent",
 ) as Ref<NewTextContent | TextContent>;
 
+const isMD = computed(() => {
+  return dialogTextContent.value.typ == TextContentTyp.MD;
+});
+
 const html = computed(() => {
   if (dialogTextContent.value.typ == TextContentTyp.MD) {
     return marked.parse(dialogTextContent!.value.content);
@@ -88,9 +92,25 @@ const onDelete = () => {
 <template>
   <v-dialog :model-value="open" @update:model-value="onClose">
     <v-card>
-      <v-card-title>
-        <span class="text-h5"> Text Editor </span>
-      </v-card-title>
+      <v-container fluid class="pa-2">
+        <v-row dense>
+          <v-col cols="6">
+            <v-card-title>
+              <span class="text-h5"> Text Editor </span>
+            </v-card-title>
+          </v-col>
+          <v-col cols="6">
+            Modus:
+            <v-chip :color="isMD ? 'primary' : 'secondary'">
+              <v-icon v-if="isMD">mdi-check</v-icon> Markdown
+            </v-chip>
+            <v-chip :color="!isMD ? 'primary' : 'secondary'">
+              <v-icon v-if="!isMD">mdi-check</v-icon>
+              Text
+            </v-chip>
+          </v-col>
+        </v-row>
+      </v-container>
       <v-card-text>
         <v-text-field
           v-model="dialogTextContent!.title"
@@ -98,7 +118,8 @@ const onDelete = () => {
           :disabled="titleDisabled"
         ></v-text-field>
         <v-textarea v-model="dialogTextContent!.content"></v-textarea>
-        <div class="html" v-html="html"></div>
+        <div class="text-h6">Vorschau:</div>
+        <div class="text-body-2" v-html="html"></div>
       </v-card-text>
       <v-card-actions>
         <v-btn @click="onClose"> {{ language.app.actions.close }} </v-btn>

@@ -16,6 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { Unit, UserCategory } from "./enum";
 import {
+  EmailTextsKeys,
   OrganizationInfo,
   OrganizationInfoKeys,
   PdfTexts,
@@ -92,3 +93,8 @@ export const pdfTextsDefaults: PdfTexts = {
   packagingListFooter: "",
   packagingListHeader: "",
 };
+
+export const emailTextsKeys: EmailTextsKeys[] = [
+  "orderConfirmationFullSeason",
+  "orderConfirmationChangedOrder",
+];

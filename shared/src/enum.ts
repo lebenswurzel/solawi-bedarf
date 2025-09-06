@@ -46,6 +46,7 @@ export enum TextContentCategory {
   MAINTENANCE_MESSAGE = "MAINTENANCE_MESSAGE",
   ORGANIZATION_INFO = "ORGANIZATION_INFO",
   PDF = "PDF",
+  EMAIL = "EMAIL",
 }
 
 /**
@@ -55,6 +56,7 @@ export enum TextContentCategory {
 export const multiContentCategories = [
   TextContentCategory.ORGANIZATION_INFO,
   TextContentCategory.PDF,
+  TextContentCategory.EMAIL,
 ];
 export const isMultiContentCategory = (
   category: TextContentCategory

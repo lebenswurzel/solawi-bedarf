@@ -38,6 +38,9 @@ import {
   makeFlatOrganizationInfo,
   makeOrganizationInfo,
 } from "@lebenswurzel/solawi-bedarf-shared/src/text/textContent";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang";
+import { FindOptionsWhere } from "typeorm";
+import { Msrp } from "@lebenswurzel/solawi-bedarf-shared/src/types";
 
 interface SendOrderConfirmationMailParams {
   order: Order;
@@ -45,9 +48,10 @@ interface SendOrderConfirmationMailParams {
   requestUserId: number;
   changingUserId: number;
   requisitionConfig: RequisitionConfig;
-  sendConfirmationEmail: boolean;
+  sendConfirmationEmailToUser: boolean;
   confirmSepaUpdate: boolean;
   confirmBankTransfer: boolean;
+  effectiveMsrp: Msrp;
 }
 
 export const sendOrderConfirmationMail = async ({
@@ -56,12 +60,13 @@ export const sendOrderConfirmationMail = async ({
   requestUserId,
   changingUserId,
   requisitionConfig,
-  sendConfirmationEmail,
+  sendConfirmationEmailToUser,
   confirmSepaUpdate,
   confirmBankTransfer,
+  effectiveMsrp,
 }: SendOrderConfirmationMailParams): Promise<void> => {
   // Only send email if confirmation is requested or BCC receiver is configured
-  if (!sendConfirmationEmail && !config.email.orderUpdatedBccReceiver) {
+  if (!sendConfirmationEmailToUser && !config.email.orderUpdatedBccReceiver) {
     return;
   }
 
@@ -87,7 +92,7 @@ export const sendOrderConfirmationMail = async ({
   let orderUserEmail: string | undefined = undefined;
   let orderUserFirstname: string = orderUser.name;
 
-  if (orderUser.applicant && sendConfirmationEmail) {
+  if (orderUser.applicant && sendConfirmationEmailToUser) {
     // can only send email to user if his email address is in the database
     const address = JSON.parse(orderUser.applicant.address.address) as {
       email?: string;
@@ -132,8 +137,25 @@ export const sendOrderConfirmationMail = async ({
       "\n```";
   }
 
+  const textContentFilter: FindOptionsWhere<TextContent> = {
+    category: TextContentCategory.EMAIL,
+  };
+  if (previousOrder) {
+    textContentFilter.title = "orderConfirmationChangedOrder";
+  } else {
+    textContentFilter.title = "orderConfirmationFullSeason";
+  }
+
+  const bodyTemplate = await AppDataSource.getRepository(
+    TextContent,
+  ).findOneOrFail({
+    where: textContentFilter,
+  });
+
   const { html, subject } = await buildOrderEmail(
+    bodyTemplate.content,
     order,
+    effectiveMsrp,
     orderUser,
     requisitionConfig.name,
     toZonedTime(requisitionConfig.validFrom, config.timezone),
@@ -143,6 +165,7 @@ export const sendOrderConfirmationMail = async ({
     currentDate,
     organizationInfo,
     paymentMessage,
+    config.timezone,
   );
 
   // create overview pdf

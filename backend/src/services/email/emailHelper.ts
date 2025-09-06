@@ -21,7 +21,14 @@ import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang";
 import { interpolate } from "@lebenswurzel/solawi-bedarf-shared/src/lang/template";
 import { format } from "date-fns";
 import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
-import { OrganizationInfo } from "@lebenswurzel/solawi-bedarf-shared/src/types";
+import {
+  Msrp,
+  OrganizationInfo,
+} from "@lebenswurzel/solawi-bedarf-shared/src/types";
+import {
+  getSameOrNextThursday,
+  prettyDateWithMonthAndYear,
+} from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper";
 
 const emailHtmlTemplate = `<html>
   <head>
@@ -62,7 +69,9 @@ const escapeMdTableCell = (value: string): string => {
 };
 
 export const buildOrderEmail = async (
+  bodyTemplate: string,
   order: Order,
+  effectiveMsrp: Msrp,
   orderUser: User,
   seasonName: string,
   seasonValidFrom: Date,
@@ -72,6 +81,7 @@ export const buildOrderEmail = async (
   updatedDate: Date,
   organizationInfo: OrganizationInfo,
   paymentMessage: string,
+  timezone: string,
 ): Promise<{ html: string; subject: string }> => {
   const el = language.email.orderConfirmation;
 
@@ -87,8 +97,16 @@ export const buildOrderEmail = async (
         })
       : "";
 
+  const relevantValidFromDate =
+    order.validFrom && order.validFrom.getTime() > seasonValidFrom.getTime()
+      ? order.validFrom
+      : seasonValidFrom;
+  const startMonth = prettyDateWithMonthAndYear(
+    getSameOrNextThursday(relevantValidFromDate, timezone),
+  );
+
   const emailBody = interpolate(
-    el.body.join("\n\n"),
+    bodyTemplate,
     {
       userName,
       solawiName: organizationInfo.address.name,
@@ -103,6 +121,8 @@ export const buildOrderEmail = async (
       contributionKindBulletPoint,
       userId: orderUser.name,
       paymentMessage: paymentMessage,
+      orderStartMonth: startMonth,
+      orderValidMonths: effectiveMsrp.months.toString(),
     },
     true,
   );

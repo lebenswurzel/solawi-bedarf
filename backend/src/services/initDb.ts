@@ -31,11 +31,13 @@ import {
 } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import {
   basicOrganizationInfo,
+  emailTextsKeys,
   organizationInfoKeys,
   pdfTextsDefaults,
   pdfTextsKeys,
 } from "@lebenswurzel/solawi-bedarf-shared/src/config";
 import { getOrganizationInfoValueByKey } from "@lebenswurzel/solawi-bedarf-shared/src/text/textContent";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang";
 
 export const initDb = async () => {
   const userCount = await AppDataSource.getRepository(User).count();
@@ -93,6 +95,27 @@ export const initDb = async () => {
       title: key,
       content,
       typ: TextContentTyp.PLAIN,
+    });
+  }
+
+  const emailTextsDefaults = {
+    orderConfirmationFullSeason:
+      language.email.orderConfirmation.defaultOrderConfirmationFullSeason.join(
+        "\n\n",
+      ),
+    orderConfirmationChangedOrder:
+      language.email.orderConfirmation.defaultOrderConfirmationChangedOrder.join(
+        "\n\n",
+      ),
+  };
+
+  for (const key of emailTextsKeys) {
+    const content = emailTextsDefaults[key];
+    await ensureTextContent({
+      category: TextContentCategory.EMAIL,
+      title: key,
+      content,
+      typ: TextContentTyp.MD,
     });
   }
 };

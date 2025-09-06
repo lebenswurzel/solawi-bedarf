@@ -477,6 +477,13 @@ export interface PdfTexts {
 }
 export type PdfTextsKeys = FlattenKeys<PdfTexts>;
 
+export interface EmailTexts {
+  orderConfirmationFullSeason: string;
+  orderConfirmationChangedOrder: string;
+}
+
+export type EmailTextsKeys = FlattenKeys<EmailTexts>;
+
 export interface ErrorLogEntry {
   id: number;
   createdAt: Date;
