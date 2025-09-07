@@ -32,14 +32,9 @@ export class PasswordResetService {
 
   async beginPasswordReset(
     userName: string,
-    email: string,
   ): Promise<Result<void, SolawiError>> {
     if (!userName) {
       return err(SolawiError.invalidInput("user name should not be empty"));
-    }
-
-    if (!email) {
-      return err(SolawiError.invalidInput("email should not be empty"));
     }
 
     const user = await this.deps.findUserByName(userName);
@@ -52,12 +47,8 @@ export class PasswordResetService {
     if (userEmail.isErr()) {
       return err(userEmail.error);
     }
-    if (userEmail.value !== email) {
-      console.log("Password request rejected because of wrong email address");
-      return ok(); // SEC: Protect against username/email enumeration
-    }
 
-    const token = user.startPasswordReset();
+    const reset = await user.startPasswordReset();
     await this.deps.saveUser(user);
 
     const text = language.email.passwordResetRequest;
@@ -68,14 +59,14 @@ export class PasswordResetService {
 
     await this.deps.sendEmail({
       sender: config.email.sender,
-      receiver: email,
+      receiver: userEmail.value,
       subject: text.subject,
       paragraphs: interpolate(
         text.body.join("\n\n"),
         {
           userName,
           solawiName: organizationInfo.address.name,
-          passwordResetLink: `${organizationInfo.appUrl}/passwordReset?token=${token}`, // TODO: url build service interface
+          passwordResetLink: `${organizationInfo.appUrl}/passwordReset?token=${reset.token}`, // TODO: url build service interface
         },
         false,
       ).split("\n\n"),
@@ -105,7 +96,7 @@ export class PasswordResetService {
       return err(SolawiError.rejected("user does not exist"));
     }
 
-    if (!user.isPasswordResetTokenValid(token)) {
+    if (!(await user.isPasswordResetTokenValid(token))) {
       return err(SolawiError.rejected("token invalid"));
     }
 
@@ -115,21 +106,19 @@ export class PasswordResetService {
   /**
    * Ends the password reset process for the user.
    *
-   * @param userName The username of the user who requested the password reset.
    * @param token The password reset token.
    * @param newPassword The new password to set for the user.
    * @returns A Result object indicating whether the password reset was successful or not.
    */
   async endPasswordReset(
-    userName: string,
     token: string,
     newPassword: string,
   ): Promise<Result<void, SolawiError>> {
-    if (!userName || !token || !newPassword) {
+    if (!token || !newPassword) {
       return err(SolawiError.invalidInput("invalid request"));
     }
 
-    let user = await this.deps.findUserByName(userName);
+    let user = await this.deps.findUserByPasswordResetToken(token);
     if (!user) {
       return err(SolawiError.rejected("user does not exist"));
     }
@@ -155,7 +144,7 @@ export class PasswordResetService {
       paragraphs: interpolate(
         text.body.join("\n\n"),
         {
-          userName,
+          userName: user.name,
           solawiName: organizationInfo.address.name,
         },
         false,

@@ -9,6 +9,7 @@
     "format-check": "prettier .  --check --write",
     "tsc": "tsc",
     "typeorm": "typeorm-ts-node-commonjs",
+    "create-migrations": "typeorm-ts-node-commonjs migration:generate -d src/database/database.ts",
     "test": "vitest",
     "test-cov": "vitest --coverage.enabled true"
   },
