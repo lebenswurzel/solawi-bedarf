@@ -1,7 +1,7 @@
 import { describe, expect, MockInstance, test, vi } from "vitest";
 import { PasswordResetService } from "./passwordReset";
 import { EmailService, SendEmailRequest } from "../../ports/email";
-import { err, ok, Result } from "neverthrow";
+import { err, ok, okAsync, ResultAsync } from "neverthrow";
 import { InfrastructureError, SolawiError } from "../../error";
 import { TextContentRepo } from "../text/repo";
 import { UserRepo } from "./repo";
@@ -41,8 +41,8 @@ class FakedDependencies implements EmailService, TextContentRepo, UserRepo {
     this.user.applicant.address.address = JSON.stringify({ email: EMAIL });
   }
 
-  sendEmail(_: SendEmailRequest): Promise<Result<void, InfrastructureError>> {
-    return Promise.resolve(ok());
+  sendEmail(_: SendEmailRequest): ResultAsync<void, InfrastructureError> {
+    return okAsync();
   }
 
   findUserByName(userName: string): Promise<User | null> {
@@ -58,6 +58,10 @@ class FakedDependencies implements EmailService, TextContentRepo, UserRepo {
       this.user = user;
     }
     return Promise.resolve();
+  }
+
+  findUserByPasswordResetToken(token: string): Promise<User | null> {
+    return Promise.resolve(null);
   }
 }
 
@@ -84,13 +88,13 @@ describe("password reset request", () => {
     let service = new PasswordResetService(dependencies);
 
     // ACT
-    const startResult = await service.beginPasswordReset(USERNAME, EMAIL);
+    const startResult = await service.beginPasswordReset(USERNAME);
 
     // ASSERT
     expect(startResult).toEqual(ok());
     expect(sendEmailMock).toHaveBeenCalled();
     expect(
-      dependencies.user.isPasswordResetTokenValid(tokenStore.value),
+      await dependencies.user.isPasswordResetTokenValid(tokenStore.value),
     ).toEqual(true);
   });
 
@@ -101,7 +105,7 @@ describe("password reset request", () => {
     let service = new PasswordResetService(dependencies);
 
     // ACT
-    let result = await service.beginPasswordReset("OTHER USER", EMAIL);
+    let result = await service.beginPasswordReset("OTHER USER");
 
     // ASSERT
     expect(result).toEqual(ok());
@@ -115,7 +119,7 @@ describe("password reset request", () => {
     let service = new PasswordResetService(dependencies);
 
     // ACT
-    await service.beginPasswordReset("OTHER USER", EMAIL);
+    await service.beginPasswordReset("OTHER USER");
 
     // ASSERT
     expect(sendEmailMock).not.toHaveBeenCalled();
@@ -127,12 +131,15 @@ describe("checking token", () => {
     // ARRANGE
     let dependencies = new FakedDependencies();
 
-    let token = dependencies.user.startPasswordReset();
+    let reset = await dependencies.user.startPasswordReset();
 
     let service = new PasswordResetService(dependencies);
 
     // ACT
-    const checkResult = await service.checkPasswordResetToken(USERNAME, token);
+    const checkResult = await service.checkPasswordResetToken(
+      USERNAME,
+      reset.token,
+    );
 
     // ASSERT
     expect(checkResult).toEqual(ok());
@@ -160,12 +167,12 @@ describe("password reset", () => {
     // ARRANGE
     let dependencies = new FakedDependencies();
 
-    let token = dependencies.user.startPasswordReset();
+    let reset = await dependencies.user.startPasswordReset();
 
     let service = new PasswordResetService(dependencies);
 
     // ACT
-    const endResult = await service.endPasswordReset(USERNAME, token, PASSWORD);
+    const endResult = await service.endPasswordReset(reset.token, PASSWORD);
 
     // ASSERT
     expect(endResult).toEqual(ok());
@@ -181,47 +188,23 @@ describe("password reset", () => {
     let service = new PasswordResetService(dependencies);
 
     // ACT
-    const endResult = await service.endPasswordReset(
-      USERNAME,
-      "WRONG",
-      PASSWORD,
-    );
+    const endResult = await service.endPasswordReset("WRONG", PASSWORD);
 
     // ASSERT
     expect(endResult).toEqual(err(SolawiError.rejected("token invalid")));
     expect(dependencies.user.hash).toEqual(OLD_HASH);
   });
 
-  test("should reject invalid user", async () => {
-    // ARRANGE
-    let dependencies = new FakedDependencies();
-
-    dependencies.user.startPasswordReset();
-
-    let service = new PasswordResetService(dependencies);
-
-    // ACT
-    const endResult = await service.endPasswordReset(
-      "INVALID USER",
-      "WRONG",
-      PASSWORD,
-    );
-
-    // ASSERT
-    expect(endResult).toEqual(err(SolawiError.rejected("user does not exist")));
-    expect(dependencies.user.hash).toEqual(OLD_HASH);
-  });
-
   test("should send e-mail", async () => {
     // ARRANGE
     let dependencies = new FakedDependencies();
-    let token = dependencies.user.startPasswordReset();
+    let reset = await dependencies.user.startPasswordReset();
     let [sendEmailMock, _] = mockSendEmail(dependencies);
 
     let service = new PasswordResetService(dependencies);
 
     // ACT
-    const endResult = await service.endPasswordReset(USERNAME, token, PASSWORD);
+    const endResult = await service.endPasswordReset(reset.token, PASSWORD);
 
     // ASSERT
     expect(endResult).toEqual(ok());
