@@ -1,4 +1,4 @@
-import { Result } from "neverthrow";
+import { ResultAsync } from "neverthrow";
 import { InfrastructureError } from "../error.js";
 
 export interface AttachedFile {
@@ -17,5 +17,5 @@ export interface SendEmailRequest {
 }
 
 export interface EmailService {
-  sendEmail(req: SendEmailRequest): Promise<Result<void, InfrastructureError>>;
+  sendEmail(req: SendEmailRequest): ResultAsync<void, InfrastructureError>;
 }

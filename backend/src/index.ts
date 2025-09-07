@@ -62,12 +62,23 @@ import { getErrorLog } from "./services/getErrorLog";
 import { getUserShipments } from "./services/shipment/getUserShipments";
 import { deleteShipment } from "./services/shipment/deleteShipment";
 import { availabilityWeightsHandler } from "./services/bi/availabilityWeights";
+import { Server } from "http";
+import { IAppContext } from "./controllers/ctx";
+import { useDependencies } from "./middleware/dependencies";
+import { passwordReset } from "./controllers/user/passwordReset";
 
-const port = config.server.serverPort;
-const app = new Koa();
-const router = new Router();
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
-// Add duration logger middleware (before error logger to measure full request duration)
+export async function startServer(): Promise<Server> {
+  const port = config.server.serverPort;
+  const app = new Koa<Koa.DefaultState, IAppContext>();
+  const router = new Router<Koa.DefaultState, IAppContext>();
+
+  useDependencies(app);
+
+  // Add duration logger middleware (before error logger to measure full request duration)
 if (config.debug.logDuration) {
   console.log("Duration logging enabled");
   app.use(durationLogger);
@@ -78,90 +89,96 @@ if (config.debug.logDuration) {
 }
 
 // Add error logger middleware
-app.use(errorLogger);
+  app.use(errorLogger);
 
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-const connectToDatabase = async (tries: number = 10) => {
-  while (true) {
-    let connected = false;
-    try {
-      await AppDataSource.initialize();
-      console.log("db is up.");
-      await initDb();
-      connected = true;
-    } catch (error) {
-      tries--;
-      console.log(error);
-      console.log(`Retrying after 2 s (${tries} more to go) ...`);
-      await sleep(2000); // Sleep for 2000 milliseconds (2 seconds)
+  const connectToDatabase = async (tries: number = 10) => {
+    while (true) {
+      let connected = false;
+      try {
+        await AppDataSource.initialize();
+        console.log("db is up.");
+        await initDb();
+        connected = true;
+      } catch (error) {
+        tries--;
+        console.log(error);
+        console.log(`Retrying after 2 s (${tries} more to go) ...`);
+        await sleep(2000); // Sleep for 2000 milliseconds (2 seconds)
+      }
+      if (tries <= 0) {
+        console.error(`Unable to connect to the database!`);
+        break;
+      }
+      if (connected) {
+        break;
+      }
     }
-    if (tries <= 0) {
-      console.error(`Unable to connect to the database!`);
-      break;
-    }
-    if (connected) {
-      break;
-    }
-  }
-};
+  };
 
-connectToDatabase().then(() => {});
+  connectToDatabase().then(() => {});
 
-router.get("/config", getConfig);
-router.post("/config", createConfig);
-router.put("/config", saveConfig);
-router.delete("/config", deleteConfig);
-router.get("/depot", getDepot);
-router.post("/depot", saveDepot);
-router.post("/depot/update", updateDepot);
+  router.get("/config", getConfig);
+  router.post("/config", createConfig);
+  router.put("/config", saveConfig);
+  router.delete("/config", deleteConfig);
+  router.get("/depot", getDepot);
+  router.post("/depot", saveDepot);
+  router.post("/depot/update", updateDepot);
 
-router.get("/user", getUser);
-router.get("/user/token", login);
-router.delete("/user/token", logout);
-router.get("/user/data", getOrder);
-router.post("/user", saveUser);
-router.put("/user", updateUser);
+  router.get("/user", getUser);
+  router.get("/user/token", login);
+  router.post("/user/passwordReset", passwordReset);
+  router.post("/user/password", login);
+  router.delete("/user/token", logout);
+  router.get("/user/data", getOrder);
+  router.post("/user", saveUser);
+  router.put("/user", updateUser);
 
-router.post("/applicant", saveApplicant);
-router.get("/applicant", getApplicant);
-router.post("/applicant/:id/convert-to-user", convertApplicantToUser);
+  router.post("/applicant", saveApplicant);
+  router.get("/applicant", getApplicant);
+  router.post("/applicant/:id/convert-to-user", convertApplicantToUser);
 router.post("/applicant/:id/activate", activateApplicant);
 router.post("/applicant/:id/deactivate", deactivateApplicant);
 router.delete("/applicant", deleteApplicant);
-router.put("/applicant/import", importApplicant);
+  router.put("/applicant/import", importApplicant);
 
-router.get("/shop/order", getOrder);
-router.get("/shop/orders", getAllOrders);
-router.post("/shop/order", saveOrder);
-router.post("/shop/order/modify", modifyOrder);
+  router.get("/shop/order", getOrder);
+  router.get("/shop/orders", getAllOrders);
+  router.post("/shop/order", saveOrder);
+  router.post("/shop/order/modify", modifyOrder);
 
-router.get("/shipment", getUserShipments);
-router.get("/shipments", getShipments);
-router.post("/shipment", saveShipment);
-router.delete("/shipment", deleteShipment);
 
-router.get("/productCategory", getProductCategory);
-router.post("/productCategory", saveProductCategory);
-router.delete("/productCategory", deleteProductCategory);
-router.post("/productCategory/product", saveProduct);
-router.delete("/productCategory/product", deleteProduct);
+  router.get("/shipment", getUserShipments);
+  router.get("/shipments", getShipments);
+  router.post("/shipment", saveShipment);
+  router.delete("/shipment", deleteShipment);
 
-router.get("/content/text", getTextContent);
-router.post("/content/text", saveTextContent);
-router.delete("/content/text", deleteTextContent);
+  router.get("/productCategory", getProductCategory);
+  router.post("/productCategory", saveProductCategory);
+  router.delete("/productCategory", deleteProductCategory);
+  router.post("/productCategory/product", saveProduct);
+  router.delete("/productCategory/product", deleteProduct);
 
-router.get("/bi", biHandler);
-router.get("/bi/availabilityWeights", availabilityWeightsHandler);
+  router.get("/content/text", getTextContent);
+  router.post("/content/text", saveTextContent);
+  router.delete("/content/text", deleteTextContent);
+
+  router.get("/bi", biHandler);
+  router.get("/bi/availabilityWeights", availabilityWeightsHandler);
 router.get("/overview", getOverview);
 
-router.get("/version", getVersion);
+  router.get("/version", getVersion);
 
-router.get("/error-log", getErrorLog);
+  router.get("/error-log", getErrorLog);
 
-app.use(bodyParser());
-app.use(router.routes()).use(router.allowedMethods());
+  app.use(bodyParser());
+  app.use(router.routes()).use(router.allowedMethods());
 
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
+  return app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+  });
+}
+
+export const server = (async (): Promise<Server> => {
+  return await startServer();
+})();
