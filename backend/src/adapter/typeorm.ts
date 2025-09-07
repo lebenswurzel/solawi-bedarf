@@ -1,0 +1,50 @@
+import { DataSource, Repository } from "typeorm";
+import { UserRepo } from "../services/user/repo";
+import { User } from "../database/User";
+import { TextContentRepo } from "../services/text/repo";
+import { OrganizationInfo } from "@lebenswurzel/solawi-bedarf-shared/src/types";
+import { TextContent } from "../database/TextContent";
+import { TextContentCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import { makeOrganizationInfo } from "@lebenswurzel/solawi-bedarf-shared/src/text/textContent";
+import { PasswordReset } from "../database/PasswordReset";
+
+export class TypeormUserRepo implements UserRepo {
+  private repo: Repository<User>;
+  private db: DataSource;
+
+  constructor(db: DataSource) {
+    this.db = db;
+    this.repo = db.getRepository(User);
+  }
+
+  async findUserByName(name: string): Promise<User | null> {
+    return await this.repo.findOneBy({ name });
+  }
+
+  async saveUser(user: User): Promise<void> {
+    await this.repo.save(user);
+  }
+
+  async findUserByPasswordResetToken(token: string): Promise<User | null> {
+    const reset = await this.db
+      .getRepository(PasswordReset)
+      .findOneBy({ token });
+    return reset ? reset.user : null;
+  }
+}
+
+export class TypeormTextContentRepo implements TextContentRepo {
+  private repo: Repository<TextContent>;
+
+  constructor(db: DataSource) {
+    this.repo = db.getRepository(TextContent);
+  }
+
+  async getOrganizationInfo(): Promise<OrganizationInfo> {
+    return makeOrganizationInfo(
+      await this.repo.find({
+        where: { category: TextContentCategory.ORGANIZATION_INFO },
+      }),
+    );
+  }
+}
