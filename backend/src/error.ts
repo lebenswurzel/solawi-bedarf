@@ -1,4 +1,4 @@
-import { http } from "./consts/http.js";
+import { http } from "./consts/http";
 
 export class SolawiError extends Error {
   public code: number;
