@@ -35,34 +35,34 @@ describe("password reset", () => {
     vi.useRealTimers();
   });
 
-  it("start generates token", () => {
+  it("start generates token", async () => {
     const tester = newTester();
 
-    expect(tester.startPasswordReset()).toHaveLength(16);
+    expect((await tester.startPasswordReset()).token).toHaveLength(128);
   });
 
   it("accepts valid token", async () => {
     const tester = newTester();
     const start = new Date();
     vi.setSystemTime(start);
-    let token = tester.startPasswordReset();
+    let reset = await tester.startPasswordReset();
 
     vi.setSystemTime(addHours(start, 23));
-    expect(await tester.resetPassword(token, "PWD")).true;
+    expect(await tester.resetPassword(reset.token, "PWD")).true;
   });
 
   it("changes hash", async () => {
     const tester = newTester();
-    let token = tester.startPasswordReset();
+    let reset = await tester.startPasswordReset();
 
-    await tester.resetPassword(token, "PWD");
+    await tester.resetPassword(reset.token, "PWD");
 
     expect(await comparePassword("PWD", tester.hash)).true;
   });
 
   it("not accepts invalid token", async () => {
     const tester = newTester();
-    const token = tester.startPasswordReset();
+    const token = await tester.startPasswordReset();
 
     expect(await tester.resetPassword(token + "+", "PWD")).false;
     expect(tester.hash).eq(INITIAL_PASSWORD_HASH);
@@ -80,19 +80,19 @@ describe("password reset", () => {
 
     const start = new Date();
     vi.setSystemTime(start);
-    let token = tester.startPasswordReset();
+    let reset = await tester.startPasswordReset();
 
     vi.setSystemTime(addHours(start, 25));
-    expect(await tester.resetPassword(token, "PWD")).false;
+    expect(await tester.resetPassword(reset.token, "PWD")).false;
     expect(tester.hash).eq(INITIAL_PASSWORD_HASH);
   });
 
   it("not reaccepts token", async () => {
     const tester = newTester();
-    let token = tester.startPasswordReset();
+    let reset = await tester.startPasswordReset();
 
-    await tester.resetPassword(token, "PWD1");
-    const last = await tester.resetPassword(token, "PWD2");
+    await tester.resetPassword(reset.token, "PWD1");
+    const last = await tester.resetPassword(reset.token, "PWD2");
 
     expect(last).false;
     expect(await comparePassword("PWD1", tester.hash)).true;
