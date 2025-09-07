@@ -20,8 +20,8 @@ import { Order } from "./Order";
 import { BaseEntity } from "./BaseEntity";
 import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import { Applicant } from "./Applicant";
-import { generateRandomString, hashPassword } from "../security";
-import { addHours } from "date-fns";
+import { hashPassword } from "../security";
+import { PasswordReset } from "./PasswordReset";
 
 @Entity()
 export class User extends BaseEntity {
@@ -37,11 +37,11 @@ export class User extends BaseEntity {
   @Column()
   hash: string;
 
-  @Column({ nullable: true, type: "varchar", length: 32, collation: "C" })
-  private password_reset_token: string | null;
-
-  @Column({ nullable: true, type: "timestamp" })
-  private password_reset_expire_date: Date | null;
+  @OneToMany(() => PasswordReset, (reset) => reset.user, {
+    nullable: true,
+    cascade: true,
+  })
+  passwordReset: Promise<PasswordReset[]>;
 
   @Column({
     type: "enum",
@@ -80,16 +80,23 @@ export class User extends BaseEntity {
    *
    * Flow:
    * * User requests password reset (call this function)
-   * * Token is sent to user by a known channel (like e-mail)
+   * * Token is sent to user by a known channel (for example e-mail)
    * * User sends token and new password ({@link resetPassword})
    *
-   * @returns Password reset token, needed for real password reset
+   * @returns Password reset with token, needed for real password reset
    */
-  public startPasswordReset(): string {
-    const token = generateRandomString(16);
-    this.password_reset_token = token;
-    this.password_reset_expire_date = addHours(new Date(), 24);
-    return token;
+  public async startPasswordReset(): Promise<PasswordReset> {
+    let passwordResets = await this.passwordReset;
+
+    const reset = new PasswordReset();
+
+    if (!this.passwordReset) {
+      this.passwordReset = Promise.resolve([reset]);
+    } else {
+      passwordResets.push(reset);
+    }
+
+    return reset;
   }
 
   /**
@@ -103,10 +110,14 @@ export class User extends BaseEntity {
     token: string,
     newPassword: string,
   ): Promise<boolean> {
-    if (this.isPasswordResetTokenValid(token)) {
+    let passwordResets = await this.passwordReset;
+    if (
+      passwordResets &&
+      passwordResets.some((reset) => reset.isTokenValid(token))
+    ) {
       this.hash = await hashPassword(newPassword);
-      this.password_reset_token = null;
-      this.password_reset_expire_date = null;
+      this.passwordReset = Promise.resolve([]);
+      this.invalidateSessions();
       return true;
     } else {
       return false;
@@ -119,14 +130,20 @@ export class User extends BaseEntity {
    * @param token Password reset token
    * @returns {@code true} iff token is valid
    */
-  public isPasswordResetTokenValid(token: string): boolean {
-    // Check expiry
-    const expires_at = this.password_reset_expire_date;
-    if (!expires_at || new Date() >= expires_at) {
-      return false;
-    }
+  public async isPasswordResetTokenValid(token: string): Promise<boolean> {
+    let passwordResets = await this.passwordReset;
+    return (
+      passwordResets &&
+      passwordResets.some((reset) => reset.isTokenValid(token))
+    );
+  }
 
-    // Check token
-    return token === this.password_reset_token;
+  /**
+   * Invalidate all sessions.
+   */
+  public invalidateSessions() {
+    if (this.token) {
+      this.token.forEach((token) => (token.active = false));
+    }
   }
 }
