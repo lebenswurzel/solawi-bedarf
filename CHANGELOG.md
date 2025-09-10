@@ -239,3 +239,6 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #227 Fix: Bedarfsmeldung neuer Nutzer während der Saison wieder möglich
 
 # NEW
+
+#274 Fix: Berechnung des Orientierungswertes einer angepassten Bedarfsmeldung für Benutzer, die während der Saison dazugekommen sind.
+#274 Admin: Verbesserte Sortierung der Nutzer-Tabelle
