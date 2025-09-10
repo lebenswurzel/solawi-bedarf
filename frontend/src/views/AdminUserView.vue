@@ -295,8 +295,11 @@ const usersWithCurrentSeasonOrders = computed(() => {
 
 const tableItems = computed(() => {
   return usersWithCurrentSeasonOrders.value.map((user) => {
-    const currentOrders = user.orders;
-    const currentOrdersWithItems = user.orders.filter((o) => o.hasItems);
+    const currentOrders = [...user.orders].sort(
+      (a, b) =>
+        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+    );
+    const currentOrdersWithItems = currentOrders.filter((o) => o.hasItems);
 
     return {
       ...user,
