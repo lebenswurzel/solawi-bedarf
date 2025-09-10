@@ -117,7 +117,19 @@ const headers = [
     title: "Depot",
     key: "depotName",
     sortRaw(a: UserTableItem, b: UserTableItem) {
-      return a.depotNames[0]?.localeCompare(b.depotNames[0] ?? "") ?? 0;
+      const depotA = a.depotNames[0];
+      const depotB = b.depotNames[0];
+
+      // If both have no depot, they are equal
+      if (!depotA && !depotB) return 0;
+
+      // If only A has no depot, A comes after B
+      if (!depotA) return 1;
+
+      // If only B has no depot, B comes after A
+      if (!depotB) return -1;
+
+      return depotA.localeCompare(depotB);
     },
   },
   { title: "ID", key: "id" },
