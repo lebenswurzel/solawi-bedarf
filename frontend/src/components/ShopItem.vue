@@ -196,6 +196,16 @@ const visiblePredecessorOrder = computed(() => {
   return orderStore.getPredecessorOrder(visibleOrderId.value);
 });
 
+const shouldHighlightMainField = computed(() => {
+  const currentValue = parseInt(model.value || "0");
+  return currentValue !== 0;
+});
+
+const shouldHighlightOldField = computed(() => {
+  const oldValueNum = parseInt(oldValue.value || "0");
+  return oldValueNum !== 0;
+});
+
 onMounted(() => {
   model.value =
     actualOrderItemsByProductId.value[props.productId]?.toString() || "0";
@@ -288,6 +298,7 @@ onMounted(() => {
           "
           @update:focused="onBlur"
           variant="outlined"
+          :class="{ 'highlighted-field': shouldHighlightMainField }"
         >
           <template
             v-slot:append-inner
@@ -308,8 +319,16 @@ onMounted(() => {
           :model-value="oldValue"
           variant="outlined"
           :disabled="true"
+          :class="{ 'highlighted-field': shouldHighlightOldField }"
         ></v-text-field>
       </v-col>
     </v-row>
   </v-container>
 </template>
+
+<style scoped>
+.highlighted-field :deep(.v-field__input) {
+  background-color: rgba(76, 175, 80, 0.05) !important;
+  font-weight: bold;
+}
+</style>
