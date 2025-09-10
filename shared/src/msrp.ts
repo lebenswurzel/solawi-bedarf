@@ -214,6 +214,12 @@ export const calculateEffectiveMsrp = (
     };
   }
 
+  interface ProductMsrp {
+    msrp: number; // monthly msrp
+    weight: number; // remaining amount of the product in the season when the msrp was calculated (0..1)
+    months: number; // number of months of start of order until end of season
+  }
+
   const productKey = (oi: OrderItem, productsById: ProductsById): ProductKey =>
     `${productsById[oi.productId].name}_${oi.productId}`;
 
@@ -239,6 +245,18 @@ export const calculateEffectiveMsrp = (
     };
   };
 
+  const calculateTotalOffset = (
+    oldProductMsrp: ProductMsrp,
+    newProductMsrp: ProductMsrp
+  ) => {
+    return (
+      oldProductMsrp.msrp *
+      (oldProductMsrp.months *
+        (1 - oldProductMsrp.weight + newProductMsrp.weight) -
+        newProductMsrp.months)
+    );
+  };
+
   const aggregateEffectiveMsrp = (
     laterOrder: OrderMsrpValues,
     earlierOrder: OrderMsrpValues
@@ -246,7 +264,11 @@ export const calculateEffectiveMsrp = (
     [key: ProductKey]: { value: number; category: ProductCategoryType };
   } => {
     const result: {
-      [key: ProductKey]: { value: number; category: ProductCategoryType };
+      [key: ProductKey]: {
+        value: number;
+        oldValue?: number;
+        category: ProductCategoryType;
+      };
     } = {};
     for (const orderItem of laterOrder.order.orderItems) {
       const earlierOrderItem = earlierOrder.order.orderItems.find(
@@ -256,26 +278,42 @@ export const calculateEffectiveMsrp = (
       let offset = 0;
       if (earlierOrderItem) {
         // calculate over/under price paid
-        offset =
-          earlierOrder.productMsrps[pk] *
-          (earlierOrder.msrp.months *
-            laterOrder.productMsrpWeights[orderItem.productId] -
-            laterOrder.msrp.months);
-        // console.log(
-        //   pk,
-        //   offset,
-        //   earlierOrder.productMsrps[pk],
-        //   earlierOrder.msrp.months,
-        //   earlierOrder.productMsrpWeights[orderItem.productId],
-        //   laterOrder.msrp.months,
-        //   laterOrder.productMsrpWeights[orderItem.productId]
-        // );
+        offset = calculateTotalOffset(
+          {
+            msrp: earlierOrder.productMsrps[pk],
+            weight: earlierOrder.productMsrpWeights[orderItem.productId],
+            months: earlierOrder.msrp.months,
+          },
+          {
+            msrp: laterOrder.productMsrps[pk],
+            weight: laterOrder.productMsrpWeights[orderItem.productId],
+            months: laterOrder.msrp.months,
+          }
+        );
+
+        // if (pk == "Möhre_172") {
+        //   console.log(
+        //     pk,
+        //     offset,
+        //     earlierOrder.productMsrps[pk],
+        //     earlierOrder.msrp.months,
+        //     earlierOrder.productMsrpWeights[orderItem.productId],
+        //     laterOrder.msrp.months,
+        //     laterOrder.productMsrpWeights[orderItem.productId]
+        //   );
+        // }
       }
       result[pk] = {
         value: laterOrder.productMsrps[pk] - offset / laterOrder.msrp.months,
+        oldValue: earlierOrder.productMsrps[pk],
         category: productsById[orderItem.productId].productCategoryType,
       };
-      // console.log(pk, result[pk]);
+
+      // const oldTotal = (result[pk].oldValue ?? 0) * earlierOrder.msrp.months;
+      // const newTotal = result[pk].value * laterOrder.msrp.months;
+      // if (oldTotal != newTotal) {
+      //   console.log(pk, newTotal, oldTotal, result[pk]);
+      // }
     }
     return result;
   };
