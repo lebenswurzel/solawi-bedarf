@@ -206,6 +206,10 @@ const shouldHighlightOldField = computed(() => {
   return oldValueNum !== 0;
 });
 
+const valueIsDifferent = computed(() => {
+  return parseInt(model.value || "0") !== parseInt(oldValue.value || "0");
+});
+
 onMounted(() => {
   model.value =
     actualOrderItemsByProductId.value[props.productId]?.toString() || "0";
@@ -320,7 +324,11 @@ onMounted(() => {
           variant="outlined"
           :disabled="true"
           :class="{ 'highlighted-field': shouldHighlightOldField }"
-        ></v-text-field>
+        >
+          <template v-slot:prepend-inner v-if="valueIsDifferent">
+            <v-icon>mdi-not-equal-variant</v-icon>
+          </template>
+        </v-text-field>
       </v-col>
     </v-row>
   </v-container>
