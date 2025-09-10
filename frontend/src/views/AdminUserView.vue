@@ -53,6 +53,12 @@ const defaultUser: { user: NewUser; enableValidFrom: boolean } = {
   enableValidFrom: true,
 };
 
+type UserTableItem = UserWithOrders & {
+  orderUpdatedAts: Date[];
+  orderValidFroms: (Date | null)[];
+  depotNames: string[];
+};
+
 const ACTION_ACTIVATE = "Aktivieren";
 const ACTION_DEACTIVATE = "Deaktivieren";
 const ACTION_SET_ORDER_VALID_FROM = "Setze 'Bedarf gültig ab'";
@@ -96,26 +102,23 @@ const headers = [
   {
     title: "Letzte Bedarfsänderung",
     key: "orderUpdatedAt",
-    sortRaw(a: UserWithOrders, b: UserWithOrders) {
-      return (
-        (getCurrentSeasonOrders(a.orders)?.[0]?.updatedAt.getTime() ?? 0) -
-        (getCurrentSeasonOrders(b.orders)?.[0]?.updatedAt.getTime() ?? 0)
-      );
+    sortRaw(a: UserTableItem, b: UserTableItem) {
+      return getUpdatedAtSortKey(a.orders) - getUpdatedAtSortKey(b.orders);
     },
   },
   {
     title: "Bedarf gültig ab",
     key: "orderValidFrom",
-    sortRaw(a: UserWithOrders, b: UserWithOrders) {
-      return (
-        (getCurrentSeasonOrders(a.orders)?.[0]?.validFrom?.getTime() ?? 0) -
-        (getCurrentSeasonOrders(b.orders)?.[0]?.validFrom?.getTime() ?? 0)
-      );
+    sortRaw(a: UserTableItem, b: UserTableItem) {
+      return getValidFromSortKey(a.orders) - getValidFromSortKey(b.orders);
     },
   },
   {
     title: "Depot",
     key: "depotName",
+    sortRaw(a: UserTableItem, b: UserTableItem) {
+      return a.depotNames[0]?.localeCompare(b.depotNames[0] ?? "") ?? 0;
+    },
   },
   { title: "ID", key: "id" },
   { title: "Bearbeiten", key: "edit" },
@@ -231,6 +234,44 @@ const getCurrentSeasonOrders = (userOrders?: UserOrder[]): UserOrder[] => {
   }
 };
 
+const getMaxUpdatedAt = (userOrders?: UserOrder[]): number => {
+  return (
+    userOrders
+      ?.reduce((max, o) => {
+        if (o.hasItems) {
+          return new Date(o.updatedAt).getTime() > max.getTime()
+            ? new Date(o.updatedAt)
+            : max;
+        }
+        return max;
+      }, new Date(0))
+      .getTime() ?? 0
+  );
+};
+
+const getUpdatedAtSortKey = (userOrders?: UserOrder[]): number => {
+  return getMaxUpdatedAt(getCurrentSeasonOrders(userOrders)) ?? 0;
+};
+
+const getMaxValidFrom = (userOrders?: UserOrder[]): number => {
+  return (
+    userOrders
+      ?.reduce((max, o) => {
+        if (o.validFrom) {
+          return new Date(o.validFrom).getTime() > max.getTime()
+            ? new Date(o.validFrom)
+            : max;
+        }
+        return max;
+      }, new Date(0))
+      .getTime() ?? 0
+  );
+};
+
+const getValidFromSortKey = (userOrders?: UserOrder[]): number => {
+  return getMaxValidFrom(getCurrentSeasonOrders(userOrders));
+};
+
 const usersWithCurrentSeasonOrders = computed(() => {
   return users.value.map((user) => {
     return {
@@ -254,7 +295,7 @@ const tableItems = computed(() => {
   });
 });
 
-const filteredTableItems = computed(() => {
+const filteredTableItems = computed((): UserTableItem[] => {
   return tableItems.value
     .filter(filterValidFromDates)
     .filter(filterUserRoles)
