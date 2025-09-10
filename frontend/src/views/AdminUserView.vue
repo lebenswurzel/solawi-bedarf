@@ -176,19 +176,24 @@ const applySelectedAction = async () => {
   let option: Omit<UpdateUserRequest, "id"> = {
     configId: activeConfigId.value,
   };
-  if (
-    selectedAction.value == ACTION_ACTIVATE ||
-    selectedAction.value == ACTION_DEACTIVATE ||
-    selectedAction.value == ACTION_ADD_NEW_ORDER
-  ) {
-    option = {
-      ...option,
-      active: selectedAction.value == ACTION_ACTIVATE,
-      addNewOrder: selectedAction.value == ACTION_ADD_NEW_ORDER,
-    };
-    await updateSelectedUsers(option);
-  } else if (selectedAction.value == ACTION_SET_ORDER_VALID_FROM) {
+  if (selectedAction.value == ACTION_SET_ORDER_VALID_FROM) {
     openDatePicker.value = true;
+  } else {
+    if (
+      selectedAction.value == ACTION_ACTIVATE ||
+      selectedAction.value == ACTION_DEACTIVATE
+    ) {
+      option = {
+        ...option,
+        active: selectedAction.value == ACTION_ACTIVATE,
+      };
+    } else if (selectedAction.value == ACTION_ADD_NEW_ORDER) {
+      option = {
+        ...option,
+        addNewOrder: selectedAction.value == ACTION_ADD_NEW_ORDER,
+      };
+    }
+    await updateSelectedUsers(option);
   }
 };
 
