@@ -29,6 +29,7 @@ import { getNumericQueryParameter } from "../../util/requestUtil";
 import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import { User } from "../../database/User";
 import { Order } from "../../database/Order";
+import { LessThan, MoreThan } from "typeorm";
 
 export const getConfig = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -60,7 +61,7 @@ export const getConfig = async (
     if (configs.length == 1) {
       requisitionConfig = configs[0];
     } else if (configs.length > 1) {
-      requisitionConfig = await getFirstConfigWithActiveOrderOrLast(
+      requisitionConfig = await getCurrentConfigWithActiveOrderOrLast(
         user.id,
         configs,
       );
@@ -104,13 +105,19 @@ export const getConfig = async (
   } satisfies ConfigResponse;
 };
 
-const getFirstConfigWithActiveOrderOrLast = async (
+const getCurrentConfigWithActiveOrderOrLast = async (
   userId: number,
   configs: RequisitionConfig[],
 ): Promise<RequisitionConfig | null> => {
   for (let config of configs) {
+    const now = new Date();
     const foundOrders = await AppDataSource.getRepository(Order).find({
-      where: { userId, requisitionConfigId: config.id },
+      where: {
+        userId,
+        requisitionConfigId: config.id,
+        validFrom: LessThan(now),
+        validTo: MoreThan(now),
+      },
     });
 
     if (foundOrders.length > 0) {
