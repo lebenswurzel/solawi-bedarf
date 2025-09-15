@@ -244,3 +244,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #274 Admin: Verbesserte Sortierung der Nutzer-Tabelle
 
 # NEW
+
+#276 Standardsaison ist jetzt die aktuelle Saison
