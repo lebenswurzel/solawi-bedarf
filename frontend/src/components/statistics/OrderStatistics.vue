@@ -21,7 +21,7 @@ import {
   Msrp,
   SavedOrder,
 } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
-import { getOrder } from "../../requests/shop.ts";
+import { getAllOrders } from "../../requests/shop.ts";
 import { useConfigStore } from "../../store/configStore.ts";
 import { useUserStore } from "../../store/userStore.ts";
 import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
@@ -52,6 +52,16 @@ interface OrderExt extends SavedOrder {
   depotName: string;
   msrp: Msrp;
   validMonths: number;
+}
+
+interface OrdersGroupedByMonth {
+  month: string;
+  orders: OrderExt[];
+  offerSum: number;
+  msrpSum: number;
+  differenceSum: number;
+  count: number;
+  isSumOrAverage: boolean;
 }
 
 const orders = ref<OrderExt[]>([]);
@@ -92,34 +102,129 @@ onMounted(async () => {
   processedOrders.value = 0;
   isProcessing.value = true;
 
-  const allOrders = userStore.userOptions.map(async (u) => {
-    const order = await getOrder(
-      u.value,
-      configStore.activeConfigId,
-      false,
-      true,
-    );
-    processedOrders.value++;
-    if (isEmpty(order) || !order.orderItems) {
-      return undefined;
-    }
-    const depot = depots.value.filter((d) => d.id == order.depotId);
-    const validMonths = calculateOrderValidMonths(
-      order.validFrom,
-      configStore.config?.validTo,
-      versionInfoStore.versionInfo?.serverTimeZone,
-    );
-    return {
-      ...order,
-      msrp: getMsrp(order.category, order.orderItems, biStore.productsById, 12),
-      validMonths,
-      userName: u.title,
-      depotName: depot.length ? depot[0].name : "unbekannt",
-    };
-  });
+  const allOrderExts: OrderExt[] = [];
+  await Promise.all(
+    userStore.userOptions.map(async (u) => {
+      const orders = await getAllOrders(u.value, configStore.activeConfigId);
+      processedOrders.value++;
+      for (const order of orders) {
+        if (isEmpty(order) || !order.orderItems) {
+          return undefined;
+        }
+        const depot = depots.value.filter((d) => d.id == order.depotId);
+        const validMonths = calculateOrderValidMonths(
+          order.validFrom,
+          configStore.config?.validTo,
+          versionInfoStore.versionInfo?.serverTimeZone,
+        );
+        allOrderExts.push({
+          ...order,
+          msrp: getMsrp(
+            order.category,
+            order.orderItems,
+            biStore.productsById,
+            12,
+          ),
+          validMonths,
+          userName: u.title,
+          depotName: depot.length ? depot[0].name : "unbekannt",
+        });
+      }
+    }),
+  );
 
-  orders.value = (await Promise.all(allOrders)).filter((o) => !!o);
+  orders.value = allOrderExts.filter((o) => !!o);
   isProcessing.value = false;
+});
+
+/**
+ * Group orders by month. Uses all months between validFrom and validTo of the current config.
+ */
+const ordersGroupedByMonth = computed((): OrdersGroupedByMonth[] => {
+  if (!configStore.config?.validFrom || !configStore.config?.validTo) {
+    return [];
+  }
+  const months: { middleOfMonth: Date; name: string }[] = [];
+  for (
+    let i = new Date(configStore.config?.validFrom);
+    i <= configStore.config?.validTo;
+    i.setMonth(i.getMonth() + 1)
+  ) {
+    months.push({
+      middleOfMonth: new Date(i.getFullYear(), i.getMonth(), 15),
+      name: format(i, "yyyy-MM"),
+    });
+  }
+  const result = Object.values(
+    relevantOrders.value.reduce(
+      (acc, o) => {
+        months.forEach((month) => {
+          if (o.validFrom && o.validFrom > month.middleOfMonth) {
+            return;
+          }
+          if (o.validTo && o.validTo < month.middleOfMonth) {
+            return;
+          }
+          acc[month.name] = acc[month.name] || {
+            orders: [],
+            offerSum: 0,
+            msrpSum: 0,
+            differenceSum: 0,
+            count: 0,
+            month: month.name,
+          };
+          acc[month.name] = {
+            orders: [...acc[month.name].orders, o],
+            offerSum: o.offer + acc[month.name].offerSum,
+            msrpSum: o.msrp.monthly.total + acc[month.name].msrpSum,
+            differenceSum:
+              o.offer - o.msrp.monthly.total + acc[month.name].differenceSum,
+            count: 1 + acc[month.name].count,
+            month: month.name,
+            isSumOrAverage: false,
+          };
+        });
+        return acc;
+      },
+      {} as {
+        [key: string]: {
+          orders: OrderExt[];
+          offerSum: number;
+          msrpSum: number;
+          differenceSum: number;
+          count: number;
+          month: string;
+          isSumOrAverage: boolean;
+        };
+      },
+    ),
+  );
+
+  const count = result.filter((r) => !r.isSumOrAverage).length;
+
+  // add sum row
+  const sumRow = {
+    orders: result.map((r) => r.orders).flat(),
+    offerSum: result.reduce((acc, r) => acc + r.offerSum, 0),
+    msrpSum: result.reduce((acc, r) => acc + r.msrpSum, 0),
+    differenceSum: result.reduce((acc, r) => acc + r.differenceSum, 0),
+    count: result.reduce((acc, r) => acc + r.count, 0) / count,
+    month: "Summe",
+    isSumOrAverage: true,
+  };
+
+  // add average row
+  const averageRow = {
+    orders: sumRow.orders,
+    offerSum: sumRow.offerSum / count,
+    msrpSum: sumRow.msrpSum / count,
+    differenceSum: sumRow.differenceSum / count,
+    count: sumRow.count,
+    month: "Durchschnitt",
+    isSumOrAverage: true,
+  };
+
+  return [...result, sumRow, averageRow];
 });
 
 const relevantOrders = computed(() => {
@@ -391,6 +496,46 @@ const overallContribution = computed(() => {
       </v-data-table>
       <div class="text-h6">Zusammenfassung</div>
       <v-container fluid>
+        <v-row>
+          <v-col cols="12">
+            <div class="text-subtitle-1">Beiträge (Monatlich)</div>
+            <v-table>
+              <thead>
+                <tr>
+                  <th>Monat</th>
+                  <th>Beiträge</th>
+                  <th>Orientierungswerte</th>
+                  <th>Differenz</th>
+                  <th>Anzahl</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="monthly in ordersGroupedByMonth"
+                  :key="monthly.month"
+                >
+                  <td :class="{ 'font-weight-bold': monthly.isSumOrAverage }">
+                    {{ monthly.month }}
+                  </td>
+                  <td :class="{ 'font-weight-bold': monthly.isSumOrAverage }">
+                    {{ monthly.offerSum.toFixed(0) }} €
+                  </td>
+                  <td :class="{ 'font-weight-bold': monthly.isSumOrAverage }">
+                    {{ monthly.msrpSum.toFixed(0) }}
+                    €
+                  </td>
+                  <td :class="{ 'font-weight-bold': monthly.isSumOrAverage }">
+                    {{ (monthly.offerSum - monthly.msrpSum).toFixed(0) }}
+                    €
+                  </td>
+                  <td :class="{ 'font-weight-bold': monthly.isSumOrAverage }">
+                    {{ monthly.count.toFixed(0) }}
+                  </td>
+                </tr>
+              </tbody>
+            </v-table>
+          </v-col>
+        </v-row>
         <v-row>
           <v-col cols="12" lg="6">
             <div class="text-subtitle-1">Beiträge (Summe)</div>
