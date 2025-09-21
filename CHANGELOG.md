@@ -243,7 +243,9 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #274 Fix: Berechnung des Orientierungswertes einer angepassten Bedarfsmeldung für Benutzer, die während der Saison dazugekommen sind.
 #274 Admin: Verbesserte Sortierung der Nutzer-Tabelle
 
-# NEW
+# v0.9.3 - 2025-09-21 - Statistiken je Monat
 
 #276 Standardsaison ist jetzt die aktuelle Saison
 #278 Admin: Statistik der Bedarfsanmeldungen: Monatliche Aufschlüsselung der Beiträge
+
+# NEW
