@@ -246,3 +246,4 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 # NEW
 
 #276 Standardsaison ist jetzt die aktuelle Saison
+#278 Admin: Statistik der Bedarfsanmeldungen: Monatliche Aufschlüsselung der Beiträge
