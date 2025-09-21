@@ -29,7 +29,11 @@ import {
   ProductsById,
   SavedOrder,
 } from "./types";
-import { countCalendarMonths, getSameOrNextThursday } from "./util/dateHelper";
+import {
+  countCalendarMonths,
+  getSameOrNextThursday,
+  getSameOrPreviousThursday,
+} from "./util/dateHelper";
 
 const getYearlyBaseMsrp = (orderItem: OrderItem, product: Product) => {
   if (product) {
@@ -143,6 +147,12 @@ export const calculateMsrpWeights = (
   );
 };
 
+/**
+ * Calculate the effective number of months of an order.
+ * This is the number of months between the first shipment and the end of the season.
+ * If the first shipment is after the end of the season, the number of months is 12.
+ * If the first shipment is before the start of the season, the number of months is 0.
+ */
 export const calculateOrderValidMonths = (
   orderValidFrom?: Date | null,
   seasonValidTo?: Date,
@@ -152,6 +162,28 @@ export const calculateOrderValidMonths = (
     let firstShipment = getSameOrNextThursday(orderValidFrom, timezone);
     return Math.min(
       countCalendarMonths(firstShipment, seasonValidTo, timezone),
+      12
+    );
+  }
+  return 12;
+};
+
+/**
+ * Calculate the effective number of months of an order.
+ * This is the number of months between the first shipment and the end of the order.
+ * If the first shipment is after the end of the order, the number of months is 12.
+ * If the first shipment is before the start of the order, the number of months is 0.
+ */
+export const calculateEffectiveOrderValidMonths = (
+  orderValidFrom?: Date | null,
+  orderValidTo?: Date,
+  timezone?: string
+): number => {
+  if (orderValidFrom && orderValidTo) {
+    const firstShipment = getSameOrNextThursday(orderValidFrom, timezone);
+    const lastShipment = getSameOrPreviousThursday(orderValidTo, timezone);
+    return Math.min(
+      countCalendarMonths(firstShipment, lastShipment, timezone),
       12
     );
   }

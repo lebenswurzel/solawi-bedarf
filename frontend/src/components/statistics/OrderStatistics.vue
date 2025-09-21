@@ -34,7 +34,7 @@ import DistributionPlot, {
 } from "./DistributionPlot.vue";
 import SeasonText from "../styled/SeasonText.vue";
 import {
-  calculateOrderValidMonths,
+  calculateEffectiveOrderValidMonths,
   getMsrp,
 } from "@lebenswurzel/solawi-bedarf-shared/src/msrp.ts";
 import { useBIStore } from "../../store/biStore.ts";
@@ -112,9 +112,9 @@ onMounted(async () => {
           return undefined;
         }
         const depot = depots.value.filter((d) => d.id == order.depotId);
-        const validMonths = calculateOrderValidMonths(
+        const validMonths = calculateEffectiveOrderValidMonths(
           order.validFrom,
-          configStore.config?.validTo,
+          order.validTo || configStore.config?.validTo,
           versionInfoStore.versionInfo?.serverTimeZone,
         );
         allOrderExts.push({
@@ -236,7 +236,7 @@ const categoriesDistribution = computed((): DistributionData => {
     (acc, cur) => {
       return acc.map((c) => {
         if (c.label == cur.category) {
-          return { ...c, value: c.value + 1 };
+          return { ...c, value: c.value + cur.validMonths / 12 };
         } else {
           return c;
         }
@@ -264,7 +264,7 @@ const offerRanges = computed(
       (acc, cur) => {
         return acc.map((c) => {
           if (cur.offer >= c.offerMin && cur.offer < c.offerMax) {
-            return { ...c, count: c.count + 1 };
+            return { ...c, count: c.count + cur.validMonths / 12 };
           } else {
             return c;
           }
@@ -287,10 +287,15 @@ const offerRanges = computed(
           value: i.count,
         })),
       },
-      offersSum: relevantOrders.value.reduce((acc, cur) => acc + cur.offer, 0),
+      offersSum: relevantOrders.value.reduce(
+        (acc, cur) => acc + (cur.offer * cur.validMonths) / 12,
+        0,
+      ),
       offersMean:
-        relevantOrders.value.reduce((acc, cur) => acc + cur.offer, 0) /
-        relevantOrders.value.length,
+        relevantOrders.value.reduce(
+          (acc, cur) => acc + (cur.offer * cur.validMonths) / 12,
+          0,
+        ) / relevantOrders.value.length,
     };
   },
 );
@@ -302,7 +307,7 @@ const depotDistribution = computed((): DistributionData => {
         (acc, order) => {
           return acc.map((c) => {
             if (c.label == order.depotName) {
-              return { ...c, value: c.value + 1 };
+              return { ...c, value: c.value + order.validMonths / 12 };
             } else {
               return c;
             }
@@ -371,23 +376,6 @@ const updatedAtDistribution = computed(
   (): DistributionData =>
     computeDistribution(relevantOrders.value, (order) => order.updatedAt),
 );
-
-const overallContribution = computed(() => {
-  return relevantOrders.value.reduce(
-    (acc, o) => ({
-      total: o.msrp.monthly.total + acc.total,
-      selfgrown: o.msrp.monthly.selfgrown + acc.selfgrown,
-      cooperation: o.msrp.monthly.cooperation + acc.cooperation,
-      offer: o.offer + acc.offer,
-    }),
-    {
-      total: 0,
-      selfgrown: 0,
-      cooperation: 0,
-      offer: 0,
-    },
-  );
-});
 </script>
 
 <template>
@@ -498,13 +486,15 @@ const overallContribution = computed(() => {
       <v-container fluid>
         <v-row>
           <v-col cols="12">
-            <div class="text-subtitle-1">Beiträge (Monatlich)</div>
+            <div class="text-subtitle-1">
+              Monatliche Aufschlüsselung der Beiträge
+            </div>
             <v-table>
               <thead>
                 <tr>
                   <th>Monat</th>
-                  <th>Beiträge</th>
-                  <th>Orientierungswerte</th>
+                  <th>Beiträge (Durchschnitt)</th>
+                  <th>Orientierungswerte (Durchschnitt)</th>
                   <th>Differenz</th>
                   <th>Anzahl</th>
                 </tr>
@@ -518,47 +508,22 @@ const overallContribution = computed(() => {
                     {{ monthly.month }}
                   </td>
                   <td :class="{ 'font-weight-bold': monthly.isSumOrAverage }">
-                    {{ monthly.offerSum.toFixed(0) }} €
+                    {{ monthly.offerSum.toFixed(0) }} € (⌀{{
+                      (monthly.offerSum / monthly.count).toFixed(0)
+                    }}
+                    €)
                   </td>
                   <td :class="{ 'font-weight-bold': monthly.isSumOrAverage }">
-                    {{ monthly.msrpSum.toFixed(0) }}
-                    €
+                    {{ monthly.msrpSum.toFixed(0) }} € (⌀{{
+                      (monthly.msrpSum / monthly.count).toFixed(0)
+                    }}
+                    €)
                   </td>
                   <td :class="{ 'font-weight-bold': monthly.isSumOrAverage }">
-                    {{ (monthly.offerSum - monthly.msrpSum).toFixed(0) }}
-                    €
+                    {{ (monthly.offerSum - monthly.msrpSum).toFixed(0) }} €
                   </td>
                   <td :class="{ 'font-weight-bold': monthly.isSumOrAverage }">
                     {{ monthly.count.toFixed(0) }}
-                  </td>
-                </tr>
-              </tbody>
-            </v-table>
-          </v-col>
-        </v-row>
-        <v-row>
-          <v-col cols="12" lg="6">
-            <div class="text-subtitle-1">Beiträge (Summe)</div>
-            <v-table>
-              <thead>
-                <tr>
-                  <th>Monatsbeiträge</th>
-                  <th>Orientierungswerte</th>
-                  <th>Differenz</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>{{ overallContribution.offer }} €</td>
-                  <td>{{ overallContribution.total }} €</td>
-                  <td color="success">
-                    {{
-                      overallContribution.offer > overallContribution.total
-                        ? "+"
-                        : ""
-                    }}
-                    {{ overallContribution.offer - overallContribution.total }}
-                    €
                   </td>
                 </tr>
               </tbody>
@@ -571,22 +536,25 @@ const overallContribution = computed(() => {
         <v-row>
           <v-col cols="12" sm="6" lg="4">
             <div class="text-subtitle-1">Mitgliedschaftsmodell</div>
-            <DistributionPlot :distribution-data="categoriesDistribution" />
+            <DistributionPlot
+              :distribution-data="categoriesDistribution"
+              :fixed-digits="1"
+            />
           </v-col>
 
           <v-col cols="12" sm="6" lg="4">
             <div class="text-subtitle-1">Gewählter Monatsbeitrag</div>
-            <div class="text-subtitle-2 opacity-60">
-              Summe: {{ offerRanges.offersSum }} €
-            </div>
-            <div class="text-subtitle-2 opacity-60">
-              Durchschnitt: {{ offerRanges.offersMean.toFixed(0) }} €
-            </div>
-            <DistributionPlot :distribution-data="offerRanges.data" />
+            <DistributionPlot
+              :distribution-data="offerRanges.data"
+              :fixed-digits="1"
+            />
           </v-col>
           <v-col cols="12" sm="6" lg="4">
             <div class="text-subtitle-1">Depot-Belegung</div>
-            <DistributionPlot :distribution-data="depotDistribution" />
+            <DistributionPlot
+              :distribution-data="depotDistribution"
+              :fixed-digits="1"
+            />
           </v-col>
           <v-col cols="12" sm="6" lg="4">
             <div class="text-subtitle-1">
