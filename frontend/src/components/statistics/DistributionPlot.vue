@@ -25,19 +25,34 @@ export type DistributionData = {
   items: DistributionDataItem[];
 };
 
-const props = defineProps<{ distributionData: DistributionData }>();
+const props = defineProps<{
+  distributionData: DistributionData;
+  fixedDigits?: number;
+}>();
 
 const maxValue = computed(() => {
   return Math.max(...props.distributionData.items.map((v) => v.value));
 });
+
+const toFixedValue = (value: number) => {
+  return props.fixedDigits ? value.toFixed(props.fixedDigits) : value;
+};
 </script>
 
 <template>
+  <div class="text-subtitle-2 opacity-60">
+    Anzahl:
+    {{
+      toFixedValue(
+        props.distributionData.items.reduce((acc, item) => acc + item.value, 0),
+      )
+    }}
+  </div>
   <table class="w-100">
     <tbody>
       <tr v-for="item in props.distributionData.items">
         <td class="pr-2">
-          {{ item.value }}
+          {{ toFixedValue(item.value) }}
         </td>
         <td class="w-100">
           <v-progress-linear
