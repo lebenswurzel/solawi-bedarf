@@ -248,6 +248,8 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #276 Standardsaison ist jetzt die aktuelle Saison
 #278 Admin: Statistik der Bedarfsanmeldungen: Monatliche Aufschlüsselung der Beiträge
 
-# NEW
+# v0.10.0 - 2025-09-22 - Nachricht auf Home-Ansicht
 
 #282 Admin kann Nachrichten auf der Home-Seite als Textinhalt hinzufügen
+
+# NEW
