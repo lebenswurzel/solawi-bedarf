@@ -58,6 +58,7 @@ export const multiContentCategories = [
   TextContentCategory.ORGANIZATION_INFO,
   TextContentCategory.PDF,
   TextContentCategory.EMAIL,
+  TextContentCategory.PAGE_ELEMENTS,
 ];
 export const isMultiContentCategory = (
   category: TextContentCategory
