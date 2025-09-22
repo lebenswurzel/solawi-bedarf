@@ -16,6 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
 import { computed, onMounted } from "vue";
+import { useTheme } from "vuetify";
 import HomeStatsCard from "../components/HomeStatsCard.vue";
 import ShipmentCard from "../components/ShipmentCard.vue";
 import { useBIStore } from "../store/biStore";
@@ -24,11 +25,18 @@ import { useUserStore } from "../store/userStore.ts";
 import SeasonText from "../components/styled/SeasonText.vue";
 import { getSeasonPhase } from "@lebenswurzel/solawi-bedarf-shared/src/util/configHelper.ts";
 import SeasonStatusElement from "../components/season/SeasonStatusElement.vue";
-import { SeasonPhase } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
+import {
+  SeasonPhase,
+  TextContentCategory,
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
+import { useTextContentStore } from "../store/textContentStore.ts";
+import { marked } from "marked";
 
 const configStore = useConfigStore();
 const biStore = useBIStore();
 const userStore = useUserStore();
+const textContentStore = useTextContentStore();
+const theme = useTheme();
 
 onMounted(async () => {
   await configStore.update();
@@ -45,6 +53,17 @@ const phase = computed(() => {
     userStore.currentUser?.active || false,
   );
 });
+
+const homeMessage = computed((): undefined | string | Promise<string> => {
+  const content = textContentStore.textContent.find(
+    (c) =>
+      c.category == TextContentCategory.PAGE_ELEMENTS &&
+      c.title == "homeMessage",
+  )?.content;
+  return content ? marked.parse(content) : undefined;
+});
+
+const isDarkTheme = computed(() => theme.global.current.value.dark);
 </script>
 
 <template>
@@ -66,6 +85,17 @@ const phase = computed(() => {
         v-if="phase.seasonPhase != SeasonPhase.AFTER_SEASON"
       />
       <SeasonStatusElement :phase="phase.seasonPhase" class="mt-3" />
+    </v-card-text>
+  </v-card>
+  <v-card
+    v-if="homeMessage"
+    class="ma-2"
+    :class="isDarkTheme ? 'text-lime-darken-2' : 'text-grey-darken-2'"
+    variant="elevated"
+    :color="isDarkTheme ? 'grey-darken-3' : 'yellow-lighten-4'"
+  >
+    <v-card-text>
+      <div v-html="homeMessage" />
     </v-card-text>
   </v-card>
   <ShipmentCard :season-phase="phase.seasonPhase" />

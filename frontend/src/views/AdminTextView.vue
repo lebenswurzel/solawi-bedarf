@@ -32,10 +32,12 @@ import {
 } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import {
   langEmailTextLabels,
+  langPageElementLabels,
   langOrganizationInfo,
   langPdfTexts,
   language,
 } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
+import { PageElementKeys } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 
 const defaultTextContent: NewTextContent = {
   title: "Beispieltitel",
@@ -64,6 +66,11 @@ const pdfTexts = computed(() =>
 const emailTexts = computed(() =>
   textContent.value
     .filter((c) => c.category == TextContentCategory.EMAIL)
+    .sort((a, b) => (a.title < b.title ? -1 : 1)),
+);
+const pageElements = computed(() =>
+  textContent.value
+    .filter((c) => c.category == TextContentCategory.PAGE_ELEMENTS)
     .sort((a, b) => (a.title < b.title ? -1 : 1)),
 );
 
@@ -145,6 +152,9 @@ const onClose = async () => {
       <v-tab value="pdf">{{ language.pages.content.pdf }}</v-tab>
       <v-tab value="email">{{ language.pages.content.email }}</v-tab>
       <v-tab value="general">{{ language.pages.content.general }}</v-tab>
+      <v-tab value="pageElements">{{
+        language.pages.content.pageElements
+      }}</v-tab>
     </v-tabs>
 
     <v-tabs-window v-model="currentTab">
@@ -242,6 +252,22 @@ const onClose = async () => {
             {{ privacyNotice.title }}
             <v-list-item-subtitle> Datenschutzerklärung </v-list-item-subtitle>
           </v-list-item>
+        </v-card-text>
+      </v-tabs-window-item>
+      <v-tabs-window-item value="pageElements">
+        <v-card-text>
+          <v-list>
+            <v-list-item
+              v-for="text in pageElements"
+              @click="() => onEditTextContent(text)"
+            >
+              {{
+                langPageElementLabels[text.title as PageElementKeys] ??
+                text.title
+              }}
+              <v-list-item-subtitle>{{ text.content }}</v-list-item-subtitle>
+            </v-list-item>
+          </v-list>
         </v-card-text>
       </v-tabs-window-item>
     </v-tabs-window>

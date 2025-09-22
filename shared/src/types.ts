@@ -484,6 +484,12 @@ export interface EmailTexts {
 
 export type EmailTextsKeys = FlattenKeys<EmailTexts>;
 
+export interface PageElements {
+  homeMessage: string;
+}
+
+export type PageElementKeys = FlattenKeys<PageElements>;
+
 export interface ErrorLogEntry {
   id: number;
   createdAt: Date;

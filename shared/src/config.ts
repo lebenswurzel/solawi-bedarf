@@ -19,6 +19,7 @@ import {
   EmailTextsKeys,
   OrganizationInfo,
   OrganizationInfoKeys,
+  PageElementKeys,
   PdfTexts,
   PdfTextsKeys,
 } from "./types";
@@ -98,3 +99,5 @@ export const emailTextsKeys: EmailTextsKeys[] = [
   "orderConfirmationFullSeason",
   "orderConfirmationChangedOrder",
 ];
+
+export const pageElementKeys: PageElementKeys[] = ["homeMessage"];

@@ -20,7 +20,12 @@ import {
   UserCategory,
   UserRole,
 } from "../enum";
-import { EmailTextsKeys, OrganizationInfoKeys, PdfTextsKeys } from "../types";
+import {
+  EmailTextsKeys,
+  OrganizationInfoKeys,
+  PageElementKeys,
+  PdfTextsKeys,
+} from "../types";
 
 // info i: 24D8
 // black truck: 26DF
@@ -464,6 +469,7 @@ export const language = {
       pdf: "PDF",
       email: "E-Mail",
       general: "Allgemein",
+      pageElements: "Seitenelemente",
       dialog: {},
     },
     overview: {
@@ -635,4 +641,8 @@ export const langEmailTextLabels: Record<EmailTextsKeys, string> = {
   orderConfirmationFullSeason: "Bestätigungsmail für die gesamte Saison",
   orderConfirmationChangedOrder:
     "Bestätigungsmail für die geänderte Bedarfsmeldung",
+};
+
+export const langPageElementLabels: Record<PageElementKeys, string> = {
+  homeMessage: "Nachricht auf der Home-Seite",
 };
