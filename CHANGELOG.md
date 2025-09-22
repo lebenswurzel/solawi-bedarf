@@ -249,3 +249,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #278 Admin: Statistik der Bedarfsanmeldungen: Monatliche Aufschlüsselung der Beiträge
 
 # NEW
+
+#282 Admin kann Nachrichten auf der Home-Seite als Textinhalt hinzufügen
