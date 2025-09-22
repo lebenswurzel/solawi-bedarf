@@ -33,6 +33,7 @@ import {
   basicOrganizationInfo,
   emailTextsKeys,
   organizationInfoKeys,
+  pageElementKeys,
   pdfTextsDefaults,
   pdfTextsKeys,
 } from "@lebenswurzel/solawi-bedarf-shared/src/config";
@@ -115,6 +116,15 @@ export const initDb = async () => {
       category: TextContentCategory.EMAIL,
       title: key,
       content,
+      typ: TextContentTyp.MD,
+    });
+  }
+
+  for (const key of pageElementKeys) {
+    await ensureTextContent({
+      category: TextContentCategory.PAGE_ELEMENTS,
+      title: key,
+      content: "",
       typ: TextContentTyp.MD,
     });
   }

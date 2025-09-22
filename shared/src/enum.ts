@@ -47,6 +47,7 @@ export enum TextContentCategory {
   ORGANIZATION_INFO = "ORGANIZATION_INFO",
   PDF = "PDF",
   EMAIL = "EMAIL",
+  PAGE_ELEMENTS = "PAGE_ELEMENTS",
 }
 
 /**
