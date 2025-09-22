@@ -101,10 +101,10 @@ const onDelete = () => {
           </v-col>
           <v-col cols="6">
             Modus:
-            <v-chip :color="isMD ? 'primary' : 'secondary'">
+            <v-chip :color="isMD ? 'primary' : 'grey'">
               <v-icon v-if="isMD">mdi-check</v-icon> Markdown
             </v-chip>
-            <v-chip :color="!isMD ? 'primary' : 'secondary'">
+            <v-chip :color="!isMD ? 'primary' : 'grey'">
               <v-icon v-if="!isMD">mdi-check</v-icon>
               Text
             </v-chip>
