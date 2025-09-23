@@ -28,6 +28,7 @@ import {
   ProductId,
   ProductsById,
   SavedOrder,
+  ValidRange,
 } from "./types";
 import {
   countCalendarMonths,
@@ -175,13 +176,23 @@ export const calculateOrderValidMonths = (
  * If the first shipment is before the start of the order, the number of months is 0.
  */
 export const calculateEffectiveOrderValidMonths = (
-  orderValidFrom?: Date | null,
-  orderValidTo?: Date,
+  seasonRange: ValidRange,
+  orderRange: ValidRange,
   timezone?: string
 ): number => {
-  if (orderValidFrom && orderValidTo) {
-    const firstShipment = getSameOrNextThursday(orderValidFrom, timezone);
-    const lastShipment = getSameOrPreviousThursday(orderValidTo, timezone);
+  if (orderRange.validFrom && orderRange.validTo && seasonRange.validFrom) {
+    const effectiveOrderValidFrom =
+      orderRange.validFrom.getTime() > seasonRange.validFrom.getTime()
+        ? orderRange.validFrom
+        : seasonRange.validFrom;
+    const firstShipment = getSameOrNextThursday(
+      effectiveOrderValidFrom,
+      timezone
+    );
+    const lastShipment = getSameOrPreviousThursday(
+      orderRange.validTo,
+      timezone
+    );
     return Math.min(
       countCalendarMonths(firstShipment, lastShipment, timezone),
       12

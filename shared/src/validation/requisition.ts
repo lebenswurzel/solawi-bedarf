@@ -19,9 +19,9 @@ import { UserRole } from "../enum";
 import { language } from "../lang/lang";
 import { interpolate } from "../lang/template";
 import {
+  ConfirmedOrder,
   ExistingConfig,
   Msrp,
-  Order,
   OrderId,
   OrganizationInfoFlat,
   SavedOrder,
@@ -84,8 +84,8 @@ export const isValidBiddingOrder = (
   userRole: UserRole,
   requisitionConfig: ExistingConfig,
   now: Date,
-  savedOrder: Order | null,
-  actualOrder: Order
+  savedOrder: ConfirmedOrder | null,
+  actualOrder: ConfirmedOrder
 ) => {
   if (!isIncreaseOnly(userRole, requisitionConfig, now)) {
     return true;
