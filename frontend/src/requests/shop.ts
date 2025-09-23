@@ -38,7 +38,7 @@ export const getOrder = async (
   noOrderItems?: boolean,
   noProductConfiguration?: boolean,
   orderId?: number,
-): Promise<SavedOrder> => {
+): Promise<SavedOrder | null> => {
   const options = [
     noOrderItems ? "no-order-items" : "",
     noProductConfiguration ? "no-product-configuration" : "",
@@ -59,11 +59,13 @@ export const getOrder = async (
   await verifyResponse(response);
 
   const result = await response.json();
-  return {
-    ...(result as SavedOrder),
-    validFrom: new Date(result.validFrom),
-    validTo: new Date(result.validTo),
-  };
+  return result.id
+    ? {
+        ...(result as SavedOrder),
+        validFrom: new Date(result.validFrom),
+        validTo: new Date(result.validTo),
+      }
+    : null;
 };
 
 export const getAllOrders = async (

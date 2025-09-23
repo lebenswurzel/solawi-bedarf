@@ -40,10 +40,11 @@ const orderValidFrom = ref<Date | null>(null);
 const loading = ref(false);
 const error = ref<string>();
 const password = ref<string>();
+const enableValidFrom = ref(false);
 
-const dialogUser = inject<
-  Ref<{ user: NewUser | User; enableValidFrom: boolean }>
->("dialogUser") as Ref<{ user: NewUser | User; enableValidFrom: boolean }>;
+const dialogUser = inject<Ref<{ user: NewUser | User }>>("dialogUser") as Ref<{
+  user: NewUser | User;
+}>;
 const roleOptions = [
   {
     title: language.app.options.userRoles[UserRole.USER],
@@ -66,7 +67,7 @@ const onClose = () => {
 
 const onSave = () => {
   loading.value = true;
-  const includeValidFrom = dialogUser.value.enableValidFrom;
+  const includeValidFrom = enableValidFrom.value;
   saveUser({
     id: isIdType(dialogUser.value.user) ? dialogUser.value.user.id : undefined,
     name: dialogUser.value.user.name!,
@@ -93,10 +94,11 @@ watchEffect(async () => {
       dialogUser.value.user.id,
       activeConfigId.value,
     );
-    orderValidFrom.value = order.validFrom;
+    orderValidFrom.value = order?.validFrom || null;
   } else {
     orderValidFrom.value = null;
   }
+  enableValidFrom.value = !!orderValidFrom.value;
 });
 </script>
 
@@ -134,10 +136,12 @@ watchEffect(async () => {
           color="primary"
         ></v-switch>
         <v-text-field
-          v-if="dialogUser.enableValidFrom"
+          v-if="enableValidFrom"
           :label="t.orderValidFrom"
           type="datetime-local"
-          :model-value="orderValidFrom ? dateToString(orderValidFrom) : null"
+          :model-value="
+            orderValidFrom ? dateToString(orderValidFrom || null) : null
+          "
           @update:model-value="
             (val: string) =>
               (orderValidFrom = stringToDate(val) || orderValidFrom)

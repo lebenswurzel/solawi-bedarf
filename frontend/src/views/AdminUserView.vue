@@ -45,12 +45,11 @@ const configStore = useConfigStore();
 const { externalAuthProvider, activeConfigId } = storeToRefs(configStore);
 const route = useRoute();
 
-const defaultUser: { user: NewUser; enableValidFrom: boolean } = {
+const defaultUser: { user: NewUser } = {
   user: {
     role: UserRole.USER,
     active: false,
   },
-  enableValidFrom: true,
 };
 
 type UserTableItem = UserWithOrders & {
@@ -69,10 +68,8 @@ const { users } = storeToRefs(userStore);
 const open = ref(false);
 const dialogUser = ref<{
   user: NewUser | UserWithOrders;
-  enableValidFrom: boolean;
 }>({
   user: { ...defaultUser.user },
-  enableValidFrom: defaultUser.enableValidFrom,
 });
 const search = ref<string>("");
 const selectedUsers = ref<number[]>([]);
@@ -147,7 +144,6 @@ onMounted(async () => {
 const onCreateUser = () => {
   dialogUser.value = {
     user: { ...defaultUser.user },
-    enableValidFrom: false,
   };
   open.value = true;
 };
@@ -156,9 +152,6 @@ const onEditUser = (user: UserWithOrders) => {
   console.log("onEditUser", { ...user });
   dialogUser.value = {
     user: { ...user },
-    enableValidFrom:
-      user.orders.length == 0 ||
-      (user.orders.length < 2 && !user.orders[0].hasItems),
   };
   open.value = true;
 };
