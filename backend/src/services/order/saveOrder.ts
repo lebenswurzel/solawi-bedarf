@@ -141,7 +141,7 @@ export const saveOrder = async (
     deliveredByProductIdDepotId,
   } = await bi(
     requisitionConfig.id,
-    selectedOrder.validFrom || undefined,
+    selectedOrder.validFrom,
     true,
     new Date(), // TODO: use dateOfInterest?
   );
@@ -297,7 +297,7 @@ const determineEffectiveMsrp = async (
 
   const {
     deliveredByProductIdDepotId: currentOrderDeliveredByProductIdDepotId,
-  } = await bi(requisitionConfig.id, predecessorOrder.validFrom || undefined);
+  } = await bi(requisitionConfig.id, predecessorOrder.validFrom);
 
   const currentProductMsrpWeights = calculateMsrpWeights(
     productsById,

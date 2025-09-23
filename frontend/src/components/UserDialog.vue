@@ -93,7 +93,7 @@ watchEffect(async () => {
       dialogUser.value.user.id,
       activeConfigId.value,
     );
-    orderValidFrom.value = order.validFrom || null;
+    orderValidFrom.value = order.validFrom;
   } else {
     orderValidFrom.value = null;
   }

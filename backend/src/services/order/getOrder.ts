@@ -74,10 +74,7 @@ export const getOrder = async (
   // If no specific order requested, return the currently valid one
   const now = new Date();
   const currentOrder =
-    allOrders.find(
-      (o) =>
-        (!o.validFrom || o.validFrom <= now) && (!o.validTo || o.validTo > now),
-    ) || null;
+    allOrders.find((o) => o.validFrom <= now && o.validTo > now) || null;
 
   ctx.body = currentOrder || {};
 };

@@ -109,8 +109,7 @@ export const createAdditionalOrder = async (
 
   // Find the currently valid order (no validTo or validTo in the future)
   const currentOrder = allOrders.find(
-    (o) =>
-      (!o.validFrom || o.validFrom <= now) && (!o.validTo || o.validTo > now),
+    (o) => o.validFrom <= now && o.validTo > now,
   );
 
   if (!currentOrder) {

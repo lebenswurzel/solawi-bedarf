@@ -54,7 +54,7 @@ export type SaveUserRequest = Required<NewUser> & {
 export type UserOrder = {
   updatedAt: Date;
   configId: number;
-  validFrom: Date | null;
+  validFrom: Date;
   hasItems: boolean;
   depotId: number;
   depotName: string;

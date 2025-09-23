@@ -44,15 +44,10 @@ const validTo = computed(() => {
 });
 
 const isPastOrder = computed(() => {
-  return (
-    props.order?.validTo && props.order.validTo.getTime() < new Date().getTime()
-  );
+  return props.order && props.order?.validTo.getTime() < new Date().getTime();
 });
 const isFutureOrder = computed(() => {
-  return (
-    props.order?.validFrom &&
-    props.order.validFrom.getTime() > new Date().getTime()
-  );
+  return props.order && props.order?.validFrom.getTime() > new Date().getTime();
 });
 
 const prettyDate = (date?: Date | string | null): string => {
