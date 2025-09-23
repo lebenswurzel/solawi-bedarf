@@ -44,11 +44,11 @@ export class Order extends BaseEntity {
   })
   confirmGTC: boolean;
 
-  @Column({ type: "timestamp", nullable: true })
-  validFrom: Date | null;
+  @Column({ type: "timestamp", nullable: false })
+  validFrom: Date;
 
-  @Column({ type: "timestamp", nullable: true })
-  validTo: Date | null;
+  @Column({ type: "timestamp", nullable: false })
+  validTo: Date;
 
   @Column({ type: "varchar", nullable: true })
   offerReason: string | null;

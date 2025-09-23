@@ -128,8 +128,8 @@ export interface Order {
   offerReason: string | null;
   category: UserCategory;
   categoryReason: string | null;
-  validFrom: Date | null;
-  validTo: Date | null;
+  validFrom: Date;
+  validTo: Date;
   requisitionConfigId: number;
   confirmGTC: boolean;
   createdAt?: string | Date;
@@ -145,7 +145,8 @@ export interface SavedOrderWithPredecessor extends SavedOrder {
   predecessorId: OrderId | null;
 }
 
-export interface ConfirmedOrder extends Order {
+//omit validFrom and validTo as they are set by the server
+export interface ConfirmedOrder extends Omit<Order, "validFrom" | "validTo"> {
   sendConfirmationEmail?: boolean;
   confirmSepaUpdate: boolean;
   confirmBankTransfer: boolean;
@@ -518,4 +519,9 @@ export interface BIData {
   capacityByDepotId: CapacityByDepotId;
   productsById: ProductsById;
   offers: number;
+}
+
+export interface ValidRange {
+  validFrom: Date;
+  validTo: Date;
 }
