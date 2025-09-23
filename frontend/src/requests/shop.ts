@@ -20,10 +20,27 @@ import {
 } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { getUrl, verifyResponse } from "./requests.ts";
 
-export const saveOrder = async (order: ConfirmedOrder, userId: number) => {
-  const response = await fetch(getUrl(`/shop/order?id=${userId}`), {
+export const saveOrder = async (order: ConfirmedOrder & { userId: number }) => {
+  const payload: ConfirmedOrder = {
+    orderItems: order.orderItems,
+    offer: order.offer,
+    offerReason: order.offerReason,
+    depotId: order.depotId,
+    alternateDepotId: order.alternateDepotId,
+    category: order.category,
+    categoryReason: order.categoryReason,
+    confirmGTC: order.confirmGTC,
+    validFrom: order.validFrom,
+    validTo: order.validTo,
+    requisitionConfigId: order.requisitionConfigId,
+    sendConfirmationEmail: order.sendConfirmationEmail,
+    confirmSepaUpdate: order.confirmSepaUpdate,
+    confirmBankTransfer: order.confirmBankTransfer,
+    id: order.id,
+  };
+  const response = await fetch(getUrl(`/shop/order?id=${order.userId}`), {
     method: "POST",
-    body: JSON.stringify(order),
+    body: JSON.stringify(payload),
     headers: {
       "Content-Type": "application/json",
     },
@@ -61,8 +78,8 @@ export const getOrder = async (
   const result = await response.json();
   return {
     ...(result as SavedOrder),
-    validFrom: new Date(result.validFrom),
-    validTo: new Date(result.validTo),
+    validFrom: result.validFrom ? new Date(result.validFrom) : null,
+    validTo: result.validTo ? new Date(result.validTo) : null,
   };
 };
 

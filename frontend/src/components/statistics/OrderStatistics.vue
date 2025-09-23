@@ -113,8 +113,8 @@ onMounted(async () => {
         }
         const depot = depots.value.filter((d) => d.id == order.depotId);
         const validMonths = calculateEffectiveOrderValidMonths(
-          configStore.config!,
-          order,
+          order.validFrom,
+          order.validTo || configStore.config?.validTo,
           versionInfoStore.versionInfo?.serverTimeZone,
         );
         allOrderExts.push({

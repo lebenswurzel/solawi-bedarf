@@ -278,24 +278,24 @@ const onClose = async () => {
 
 const onSave = () => {
   loading.value = true;
-  saveOrder(
-    {
-      orderItems: modificationOrderItems.value,
-      offer: offer.value,
-      depotId: depotId.value.actual!,
-      alternateDepotId: alternateDepotId.value,
-      category: category.value,
-      offerReason: offerReason.value,
-      categoryReason: categoryReason.value,
-      confirmGTC: confirmGTC.value,
-      requisitionConfigId: activeConfigId.value,
-      sendConfirmationEmail: sendConfirmationEmail.value,
-      confirmSepaUpdate: sepaUpdateSelected.value,
-      confirmBankTransfer: bankTransferSelected.value,
-      id: modificationOrderId.value,
-    },
-    props.requestUser?.id!,
-  )
+  saveOrder({
+    userId: props.requestUser?.id!,
+    orderItems: modificationOrderItems.value,
+    offer: offer.value,
+    depotId: depotId.value.actual!,
+    alternateDepotId: alternateDepotId.value,
+    category: category.value,
+    offerReason: offerReason.value,
+    categoryReason: categoryReason.value,
+    confirmGTC: confirmGTC.value,
+    validFrom: null,
+    validTo: null,
+    requisitionConfigId: activeConfigId.value,
+    sendConfirmationEmail: sendConfirmationEmail.value,
+    confirmSepaUpdate: sepaUpdateSelected.value,
+    confirmBankTransfer: bankTransferSelected.value,
+    id: modificationOrderId.value,
+  })
     .then(async () => {
       await biStore.update(activeConfigId.value, modificationOrderId.value);
       props.requestUser?.id &&

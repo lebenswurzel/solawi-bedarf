@@ -54,7 +54,6 @@ import { AddOrderValidTo1755284922330 } from "../migrations/1755284922330-add-or
 import { OrderConfirm1756065235682 } from "../migrations/1756065235682-order-confirm";
 import { EmailTexts1757146546682 } from "../migrations/1757146546682-email-texts";
 import { PageElementTexts1758569141622 } from "../migrations/1758569141622-page-element-texts";
-import { OrderNonNullValidRange1758647660837 } from "../migrations/1758647660837-order-non-null-valid-range";
 
 const entities = [
   User,
@@ -100,7 +99,6 @@ const migrations = [
   OrderConfirm1756065235682,
   EmailTexts1757146546682,
   PageElementTexts1758569141622,
-  OrderNonNullValidRange1758647660837,
 ];
 
 const configuredPort = config.testing.isTesting
