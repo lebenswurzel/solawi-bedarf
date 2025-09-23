@@ -115,7 +115,7 @@ testAsAdminAndUser(
     expect(response.showSeasonSelectorHint).toEqual(false);
 
     // create an order in season1
-    await _createOrder(userData.userToken, userData.userId, season1.id);
+    await _createOrder(userData.userToken, userData.userId, season1);
 
     // return season2 as it is the latest season
     const ctxNoId2 = createBasicTestCtx(undefined, userData.userToken);
@@ -166,7 +166,7 @@ const _createConfig = async (
 const _createOrder = async (
   token: string,
   userId: number,
-  configId: number,
+  config: RequisitionConfig,
 ) => {
   const depot = await getDepotByName("d1");
   const order = {
@@ -177,8 +177,9 @@ const _createOrder = async (
     offer: 0,
     alternateDepotId: null,
     offerReason: null,
-    validFrom: null,
-    requisitionConfigId: configId,
+    validFrom: config.validFrom,
+    validTo: config.validTo,
+    requisitionConfigId: config.id,
     productConfiguration: "{}",
     userId,
   };

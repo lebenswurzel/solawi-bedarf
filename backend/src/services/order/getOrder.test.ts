@@ -80,8 +80,6 @@ testAsUser1("get order", async ({ userData }: TestUserData) => {
     offer: 0,
     alternateDepotId: null,
     offerReason: "",
-    validFrom: addMonths(new Date(), -1), // update to the past so that getOrder returns this order
-    validTo: addMonths(new Date(), 2),
     requisitionConfigId: configId,
   };
 
@@ -96,6 +94,13 @@ testAsUser1("get order", async ({ userData }: TestUserData) => {
     },
   );
   await saveOrder(ctxSaveOrder);
+
+  // update to the past so that getOrder returns this order
+  await updateOrderValidFrom(
+    userData.userId,
+    addMonths(new Date(), -1),
+    configId,
+  );
 
   const config = await AppDataSource.getRepository(
     RequisitionConfig,
