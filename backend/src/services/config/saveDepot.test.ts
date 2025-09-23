@@ -176,6 +176,8 @@ testAsAdmin("update depot info", async ({ userData }: TestUserData) => {
   order.productConfiguration = "{}";
   order.userId = userData.userId;
   order.requisitionConfigId = configId;
+  order.validFrom = new Date();
+  order.validTo = new Date();
   await AppDataSource.getRepository(Order).save(order);
 
   // Set Depot 1 inactive --> fails

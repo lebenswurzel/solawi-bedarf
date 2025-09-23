@@ -130,8 +130,6 @@ testAsUser1("save order with products", async ({ userData }: TestUserData) => {
     offer: 0,
     alternateDepotId: null,
     offerReason: null,
-    validFrom: dateDeltaDays(-1),
-    validTo: dateDeltaDays(10),
     requisitionConfigId: configId,
   };
 
@@ -169,8 +167,12 @@ testAsUser1("save order with products", async ({ userData }: TestUserData) => {
     expect(orders[0].userId).toBe(userData.userId);
     expect(orders[0].orderItems).toMatchObject([orderItem1, orderItem2]);
 
-    const { soldByProductId, capacityByDepotId, productsById } =
-      await bi(configId);
+    const { soldByProductId, capacityByDepotId, productsById } = await bi(
+      configId,
+      undefined,
+      false,
+      addMonths(new Date(), 2),
+    );
     expect(soldByProductId[product1.id].sold).toBe(60);
     expect(soldByProductId[product2.id].sold).toBe(40);
     expect(capacityByDepotId[depot.id].reserved).toBe(1);
