@@ -133,9 +133,7 @@ export const saveOrder = async (
   if (!isValidBiddingOrder(role, requisitionConfig, currentTime, null, body)) {
     ctx.throw(http.bad_request, "not valid in bidding round");
   }
-  const dateOfInterest = getSameOrNextThursday(
-    selectedOrder.validFrom || currentTime,
-  );
+  const dateOfInterest = getSameOrNextThursday(selectedOrder.validFrom);
   const {
     soldByProductId,
     capacityByDepotId,
@@ -220,12 +218,6 @@ export const saveOrder = async (
   if (!isEditedByOtherUser) {
     // only the user who has created the order can confirm it
     selectedOrder.confirmGTC = body.confirmGTC || false;
-  }
-  if (body.validFrom) {
-    selectedOrder.validFrom = body.validFrom;
-  }
-  if (body.validTo) {
-    selectedOrder.validTo = body.validTo;
   }
 
   await AppDataSource.transaction(async (entityManager) => {
