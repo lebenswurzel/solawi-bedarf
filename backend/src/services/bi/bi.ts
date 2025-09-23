@@ -43,10 +43,7 @@ import { LessThan, MoreThan } from "typeorm";
 import { mergeShipmentWithForecast } from "../../util/shipmentUtil";
 
 const isOrderValidOnDate = (order: Order, targetDate: Date): boolean => {
-  return (
-    (!order.validFrom || order.validFrom <= targetDate) &&
-    (!order.validTo || order.validTo > targetDate)
-  );
+  return order.validFrom <= targetDate && order.validTo > targetDate;
 };
 
 /**
@@ -131,7 +128,7 @@ export const biHandler = async (
     if (!userOrder) {
       throw new Error(`Order ${orderId} not found in season ${configId}`);
     }
-    orderValidFrom = userOrder.validFrom || undefined;
+    orderValidFrom = userOrder.validFrom;
   }
   ctx.body = await bi(
     configId,

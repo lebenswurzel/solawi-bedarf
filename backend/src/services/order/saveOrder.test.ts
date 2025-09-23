@@ -72,8 +72,8 @@ testAsUser1("update default order", async ({ userData }: TestUserData) => {
     offer: 0,
     alternateDepotId: null,
     offerReason: null,
-    validFrom: null,
-    validTo: null,
+    validFrom: new Date("2024-01-01"),
+    validTo: new Date("2024-12-31"),
     requisitionConfigId: configId,
   };
 

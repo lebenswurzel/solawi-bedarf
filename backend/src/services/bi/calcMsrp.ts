@@ -96,7 +96,7 @@ export const calcMsrp = async (
     orders.map(async (order) => {
       const { deliveredByProductIdDepotId, productsById } = await bi(
         configId,
-        order.validFrom || undefined,
+        order.validFrom,
         true,
       );
 

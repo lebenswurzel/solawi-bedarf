@@ -155,11 +155,11 @@ export const calculateMsrpWeights = (
  * If the first shipment is before the start of the season, the number of months is 0.
  */
 export const calculateOrderValidMonths = (
-  orderValidFrom?: Date | null,
+  orderValidFrom: Date,
   seasonValidTo?: Date,
   timezone?: string
 ): number => {
-  if (orderValidFrom && seasonValidTo) {
+  if (seasonValidTo) {
     let firstShipment = getSameOrNextThursday(orderValidFrom, timezone);
     return Math.min(
       countCalendarMonths(firstShipment, seasonValidTo, timezone),
@@ -249,7 +249,7 @@ export const calculateEffectiveMsrp = (
   type ProductKey = string;
   interface OrderMsrpValues {
     order: Order;
-    validFrom: Date | null;
+    validFrom: Date;
     msrp: Msrp;
     productMsrpWeights: { [key: ProductId]: number };
     productMsrps: {

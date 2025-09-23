@@ -57,7 +57,7 @@ export const getUser = async (): Promise<GetUserResponse> => {
       orders: u.orders?.map((userOrder) => ({
         ...userOrder,
         updatedAt: parseISO(userOrder.updatedAt),
-        validFrom: userOrder.validFrom ? parseISO(userOrder.validFrom) : null,
+        validFrom: parseISO(userOrder.validFrom),
         depotId: userOrder.depotId,
         depotName: userOrder.depotName,
       })),

@@ -79,8 +79,8 @@ export const getAllOrders = async (
   const result = await response.json();
   return result.map((order: any) => ({
     ...order,
-    validFrom: order.validFrom ? new Date(order.validFrom) : null,
-    validTo: order.validTo ? new Date(order.validTo) : null,
+    validFrom: new Date(order.validFrom),
+    validTo: new Date(order.validTo),
   }));
 };
 
@@ -100,7 +100,7 @@ export const modifyOrder = async (userId: number, configId: number) => {
   const result = await response.json();
   return {
     ...result,
-    validFrom: result.validFrom ? new Date(result.validFrom) : null,
+    validFrom: new Date(result.validFrom),
     previousOrderValidTo: result.previousOrderValidTo
       ? new Date(result.previousOrderValidTo)
       : null,

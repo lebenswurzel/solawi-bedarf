@@ -324,7 +324,7 @@ const filteredTableItems = computed((): UserTableItem[] => {
 
 /// filter form validFrom
 const filterValidFromDates = (tableItem: {
-  orderValidFroms: (Date | null)[];
+  orderValidFroms: Date[];
 }): boolean => {
   if (displayFilters.value.validFrom.length < 1) {
     return true;
