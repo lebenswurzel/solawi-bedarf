@@ -259,3 +259,6 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #290 Admin: In der Benutertabelle können jetzt unbestätigte Bedarfsänderungen gelöscht werden
 
 # NEW
+
+#287 Verteilungsübersicht: Tabellenkopf wird auf jeder Seite angezeigt
+#287 Verteilungsübersicht: Informationen in der Fußzeile
