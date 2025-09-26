@@ -255,3 +255,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 # NEW
 
 #278 order validity non optional in the database
+#287 Verteilungsübersicht: Tabellenkopf wird auf jeder Seite angezeigt
+#287 Verteilungsübersicht: Informationen in der Fußzeile
