@@ -171,6 +171,7 @@ export const createShipmentOverviewPdf = async (
   depots: Depot[],
   productsById: ProductsById,
   productCategories: ProductCategoryWithProducts[],
+  userName: string,
 ) => {
   const dataByProductCategoryAndProduct = createShipmentOverviewPdfSpec(
     shipment,
@@ -187,6 +188,7 @@ export const createShipmentOverviewPdf = async (
     const pdf = generateOverviewPdf(
       dataByProduct,
       description,
+      `Erstellt von ${userName}`,
       getOverviewSortKeys(depots),
     );
     const blob: Blob = await new Promise((resolve, _) => {
