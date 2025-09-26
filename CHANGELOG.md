@@ -255,3 +255,4 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 # NEW
 
 #278 order validity non optional in the database
+#286 Verteilungen können jetzt gelöscht werden auch wenn sie noch Produkte enthalten
