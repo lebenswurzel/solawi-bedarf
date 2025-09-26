@@ -253,3 +253,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #282 Admin kann Nachrichten auf der Home-Seite als Textinhalt hinzufügen
 
 # NEW
+
+#278 order validity non optional in the database
