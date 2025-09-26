@@ -212,6 +212,7 @@ export function createDefaultPdf(
 const createOverviewPdf = (
   data: { [key: string]: { [key: string]: number } },
   description: string,
+  footerLeftText: string,
   headerSortKeys?: HeaderSortKeys
 ): TDocumentDefinitions => {
   const content: Content = [
@@ -228,9 +229,37 @@ const createOverviewPdf = (
     table: {
       widths: ["*", ...new Array(tableData[0].length - 1).fill(40)],
       body: tableData,
+      headerRows: 1,
     },
     layout: "light-horizontal-lines",
   });
+
+  const footer: DynamicContent = (currentPage, pageCount): Content => {
+    const creationDate = prettyCompactDate(new Date());
+    return {
+      columns: [
+        {
+          text: `${footerLeftText}`,
+          width: "*",
+          fontSize: 10,
+        },
+        {
+          text: `Seite ${currentPage} / ${pageCount}`,
+          alignment: "center",
+          width: "auto",
+          fontSize: 10,
+        },
+        {
+          text: `Erstellt am ${creationDate}`,
+          alignment: "right",
+          width: "*",
+          fontSize: 10,
+        },
+      ],
+      margin: [40, 5, 40, -20],
+    };
+  };
+
   return {
     pageOrientation: "landscape",
     content: content,
@@ -240,14 +269,21 @@ const createOverviewPdf = (
         fontSize: 11,
       },
     },
+    footer,
   };
 };
 
 export const generateOverviewPdf = (
   data: { [key: string]: { [key: string]: number } },
   description: string,
+  footerLeftText: string,
   headerSortKeys?: HeaderSortKeys
 ) => {
-  const pdfDefinition = createOverviewPdf(data, description, headerSortKeys);
+  const pdfDefinition = createOverviewPdf(
+    data,
+    description,
+    footerLeftText,
+    headerSortKeys
+  );
   return pdfMake.createPdf(pdfDefinition);
 };

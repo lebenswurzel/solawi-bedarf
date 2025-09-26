@@ -57,6 +57,7 @@ import {
   ShipmentType,
 } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import { isShipmentDifferent } from "@lebenswurzel/solawi-bedarf-shared/src/shipment/shipmentUtil.ts";
+import { useUserStore } from "../store/userStore.ts";
 
 const t = language.pages.shipment;
 
@@ -365,6 +366,7 @@ const onShipmentOverviewPdfClick = async () => {
     depots.value,
     productsById.value,
     productCategories.value,
+    useUserStore().currentUser?.name ?? "unknown",
   ).then(() => {
     loading.value = false;
   });
