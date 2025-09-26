@@ -22,6 +22,8 @@ import { AppDataSource } from "../../database/database";
 import { Shipment } from "../../database/Shipment";
 import { getUserFromContext } from "../getUserFromContext";
 import { getNumericQueryParameter } from "../../util/requestUtil";
+import { ShipmentItem } from "../../database/ShipmentItem";
+import { AdditionalShipmentItem } from "../../database/AdditionalShipmentItem";
 
 export const deleteShipment = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -44,12 +46,19 @@ export const deleteShipment = async (
   if (!shipment) {
     ctx.throw(http.not_found);
   }
-  if (
-    shipment.additionalShipmentItems.length > 0 ||
-    shipment.shipmentItems.length > 0
-  ) {
-    ctx.throw(http.bad_request, "shipment has items");
+  if (shipment.active) {
+    ctx.throw(
+      http.bad_request,
+      "Aktive Verteilungen können nicht gelöscht werden",
+    );
   }
+
+  // delete all ShipmentItems and AdditionalShipmentItems
+  await AppDataSource.getRepository(ShipmentItem).delete({ shipmentId });
+  await AppDataSource.getRepository(AdditionalShipmentItem).delete({
+    shipmentId,
+  });
+
   await AppDataSource.getRepository(Shipment).delete(shipmentId);
   console.log("shipment deleted", shipmentId);
   ctx.status = http.ok;
