@@ -23,7 +23,7 @@ export async function passwordResetRequest(ctx: KoaAppContext) {
   const username = getStringQueryParameter(ctx.request.query, "username");
 
   let service = new PasswordResetService(ctx.deps);
-  return handleError(ctx, await service.beginPasswordReset(username));
+  return handleError(ctx, await service.requestPasswordReset(username));
 }
 
 export async function passwordReset(ctx: KoaAppContext) {
@@ -31,5 +31,5 @@ export async function passwordReset(ctx: KoaAppContext) {
   const password = getStringQueryParameter(ctx.request.query, "password");
 
   let service = new PasswordResetService(ctx.deps);
-  return handleError(ctx, await service.endPasswordReset(token, password));
+  return handleError(ctx, await service.resetPassword(token, password));
 }

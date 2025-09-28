@@ -82,7 +82,7 @@ export class User extends BaseEntity {
   }
 
   /**
-   * Start password reset.
+   * Create password reset.
    *
    * Flow:
    * * User requests password reset (call this function)
@@ -91,7 +91,7 @@ export class User extends BaseEntity {
    *
    * @returns Password reset with token, needed for real password reset
    */
-  public async startPasswordReset(): Promise<PasswordReset> {
+  public async createPasswordReset(): Promise<PasswordReset> {
     let passwordResets = await this.passwordReset;
 
     const reset = new PasswordReset();
@@ -108,7 +108,7 @@ export class User extends BaseEntity {
   /**
    * Reset password
    *
-   * @param token Token from {@link startPasswordReset}
+   * @param token Token from {@link createPasswordReset}
    * @param newPassword New password hash
    * @returns {@code true} iff password reset succeeded
    */
