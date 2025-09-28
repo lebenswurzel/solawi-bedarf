@@ -252,4 +252,23 @@ describe("password reset", () => {
     expect(endResult).toEqual(ok());
     expect(dependencies.user.token[0].active).is.false;
   });
+
+  test("should only work once", async () => {
+    // ARRANGE
+    let dependencies = new FakedDependencies();
+
+    let reset = await dependencies.user.createPasswordReset();
+
+    let service = new PasswordResetService(dependencies);
+
+    // ACT
+    const endResult1 = await service.resetPassword(reset.token, PASSWORD);
+    const endResult2 = await service.resetPassword(reset.token, PASSWORD);
+
+    // ASSERT
+    expect(endResult1).toEqual(ok());
+    expect(endResult2).toEqual(
+      err(SolawiError.invalidInput("request is invalid")),
+    );
+  });
 });
