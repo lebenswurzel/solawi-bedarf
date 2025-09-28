@@ -18,18 +18,21 @@ import { Result } from "neverthrow";
 import { KoaAppContext } from "./ctx";
 import { SolawiError } from "../error";
 
-export function handleError<T>(
+export function handleResult<T>(
   ctx: KoaAppContext,
   result: Result<T, SolawiError>,
 ) {
   if (result.isErr()) {
-    const err = result.error;
-    ctx.status = err.code;
-    ctx.body = {
-      code: err.code,
-      message: err.message,
-    };
+    handleError(ctx, result.error);
   } else {
     ctx.status = 200;
   }
+}
+
+export function handleError(ctx: KoaAppContext, err: SolawiError) {
+  ctx.status = err.code;
+  ctx.body = {
+    code: err.code,
+    message: err.message,
+  };
 }
