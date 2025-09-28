@@ -44,6 +44,7 @@ export const getUser = async (
               validFrom: true,
               orderItems: true,
               validTo: true,
+              confirmGTC: true,
             },
           },
           relations: {
@@ -83,6 +84,7 @@ export const getUser = async (
             hasItems: o.orderItems?.length > 0,
             depotId: o.depotId,
             depotName: o.depot?.name,
+            confirmGTC: o.confirmGTC,
           })),
           emailEnabled: hasApplicant,
         };
