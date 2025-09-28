@@ -58,6 +58,7 @@ export type UserOrder = {
   hasItems: boolean;
   depotId: number;
   depotName: string;
+  confirmGTC: boolean;
 };
 
 export type UserWithOrders = Required<User> & {

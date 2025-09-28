@@ -56,6 +56,7 @@ type UserTableItem = UserWithOrders & {
   orderUpdatedAts: Date[];
   orderValidFroms: (Date | null)[];
   depotNames: string[];
+  confirmGTCs: boolean[];
 };
 
 const ACTION_ACTIVATE = "Aktivieren";
@@ -84,11 +85,19 @@ const processedUsers = ref<number>(0);
 const isProcessing = ref(false);
 const openDatePicker = ref(false);
 const selectedDate = ref(new Date());
+
+const confirmGTCItems = ["bestätigt", "nicht bestätigt", "beliebig"];
 const displayFilters = ref<{
   validFrom: Array<number>;
   role: Array<number>;
   depot: Array<number>;
-}>({ validFrom: [], role: [], depot: [] });
+  confirmGTC: number;
+}>({
+  validFrom: [],
+  role: [],
+  depot: [],
+  confirmGTC: confirmGTCItems.indexOf("beliebig"),
+});
 
 provide("dialogUser", dialogUser);
 
@@ -304,6 +313,7 @@ const tableItems = computed(() => {
       orderUpdatedAts: currentOrdersWithItems.map((o) => o.updatedAt),
       orderValidFroms: currentOrders.map((o) => o.validFrom),
       depotNames: currentOrders.map((o) => o.depotName),
+      confirmGTCs: currentOrders.map((o) => o.confirmGTC),
     };
   });
 });
@@ -312,7 +322,8 @@ const filteredTableItems = computed((): UserTableItem[] => {
   return tableItems.value
     .filter(filterValidFromDates)
     .filter(filterUserRoles)
-    .filter(filterDepotNames);
+    .filter(filterDepotNames)
+    .filter(filterConfirmGTCs);
 });
 
 /// filter form validFrom
@@ -380,6 +391,26 @@ const depotNameItems = computed(() => {
     new Set(tableItems.value.map((item) => item.depotNames[0] || "- keins -")),
   ).sort();
 });
+
+// filter for confirm GTC
+const filterConfirmGTCs = (tableItem: { confirmGTCs: boolean[] }): boolean => {
+  if (
+    displayFilters.value.confirmGTC === undefined ||
+    displayFilters.value.confirmGTC == confirmGTCItems.indexOf("beliebig")
+  ) {
+    return true;
+  }
+  if (tableItem.confirmGTCs.length === 0) {
+    // if no confirm GTCs are set, return don't match
+    return false;
+  }
+
+  if (displayFilters.value.confirmGTC == confirmGTCItems.indexOf("bestätigt")) {
+    return tableItem.confirmGTCs.every((confirmGTC) => confirmGTC);
+  }
+  // if not bestätigt, return true if any confirm GTC is false
+  return tableItem.confirmGTCs.some((confirmGTC) => !confirmGTC);
+};
 </script>
 
 <template>
@@ -503,6 +534,17 @@ const depotNameItems = computed(() => {
                   v-for="(orderUpdatedAt, index) in item.orderUpdatedAts"
                   :key="orderUpdatedAt.getTime()"
                 >
+                  <v-tooltip
+                    text="Bedarf nicht bestätigt"
+                    open-on-click
+                    v-if="!item.confirmGTCs[index]"
+                  >
+                    <template v-slot:activator="{ props }">
+                      <v-icon size="small" color="warning" v-bind="props"
+                        >mdi-comment-alert-outline</v-icon
+                      >
+                    </template>
+                  </v-tooltip>
                   {{ prettyDate(orderUpdatedAt) }}
                   <v-btn
                     v-if="index == 0"
@@ -555,7 +597,7 @@ const depotNameItems = computed(() => {
               ></v-chip>
             </v-chip-group>
           </v-col>
-          <v-col cols="12" md="6">
+          <v-col cols="12" md="3">
             <div class="text-caption">Rolle</div>
             <v-chip-group
               multiple
@@ -571,7 +613,22 @@ const depotNameItems = computed(() => {
               ></v-chip>
             </v-chip-group>
           </v-col>
-          <v-col cols="12">
+          <v-col cols="12" md="3">
+            <div class="text-caption">Bedarf bestätigt</div>
+            <v-chip-group
+              selected-class="text-primary"
+              column
+              v-model="displayFilters.confirmGTC"
+            >
+              <v-chip
+                v-for="confirmGTC in confirmGTCItems"
+                :key="confirmGTC"
+                :text="confirmGTC"
+                filter
+              ></v-chip>
+            </v-chip-group>
+          </v-col>
+          <v-col cols="9">
             <div class="text-caption">Depot</div>
             <v-chip-group
               multiple
