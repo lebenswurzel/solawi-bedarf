@@ -27,6 +27,7 @@ import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import { Applicant } from "../../database/Applicant";
 import { UserAddress } from "../../database/UserAddress";
 import { comparePassword } from "../../security";
+import { Token } from "../../database/Token";
 
 const ORG_INFO: OrganizationInfo = {
   address: {
@@ -55,6 +56,7 @@ class FakedDependencies implements EmailService, TextContentRepo, UserRepo {
     this.user.applicant.address = new UserAddress();
     this.user.applicant.address.active = true;
     this.user.applicant.address.address = JSON.stringify({ email: EMAIL });
+    this.user.passwordReset = Promise.resolve([]);
   }
 
   sendEmail(_: SendEmailRequest): ResultAsync<void, InfrastructureError> {
@@ -76,8 +78,10 @@ class FakedDependencies implements EmailService, TextContentRepo, UserRepo {
     return Promise.resolve();
   }
 
-  findUserByPasswordResetToken(token: string): Promise<User | null> {
-    return Promise.resolve(null);
+  async findUserByPasswordResetToken(token: string): Promise<User | null> {
+    return (await this.user.passwordReset).some((pr) => pr.token === token)
+      ? this.user
+      : null;
   }
 }
 
@@ -199,7 +203,7 @@ describe("password reset", () => {
     // ARRANGE
     let dependencies = new FakedDependencies();
 
-    dependencies.user.startPasswordReset();
+    await dependencies.user.startPasswordReset();
 
     let service = new PasswordResetService(dependencies);
 
@@ -207,7 +211,9 @@ describe("password reset", () => {
     const endResult = await service.endPasswordReset("WRONG", PASSWORD);
 
     // ASSERT
-    expect(endResult).toEqual(err(SolawiError.rejected("token invalid")));
+    expect(endResult).toEqual(
+      err(SolawiError.invalidInput("request is invalid")),
+    );
     expect(dependencies.user.hash).toEqual(OLD_HASH);
   });
 
