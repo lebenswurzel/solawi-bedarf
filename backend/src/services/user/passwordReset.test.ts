@@ -108,7 +108,7 @@ describe("password reset request", () => {
     let service = new PasswordResetService(dependencies);
 
     // ACT
-    const startResult = await service.beginPasswordReset(USERNAME);
+    const startResult = await service.requestPasswordReset(USERNAME);
 
     // ASSERT
     expect(startResult).toEqual(ok());
@@ -125,7 +125,7 @@ describe("password reset request", () => {
     let service = new PasswordResetService(dependencies);
 
     // ACT
-    let result = await service.beginPasswordReset("OTHER USER");
+    let result = await service.requestPasswordReset("OTHER USER");
 
     // ASSERT
     expect(result).toEqual(ok());
@@ -139,7 +139,7 @@ describe("password reset request", () => {
     let service = new PasswordResetService(dependencies);
 
     // ACT
-    await service.beginPasswordReset("OTHER USER");
+    await service.requestPasswordReset("OTHER USER");
 
     // ASSERT
     expect(sendEmailMock).not.toHaveBeenCalled();
@@ -151,7 +151,7 @@ describe("checking token", () => {
     // ARRANGE
     let dependencies = new FakedDependencies();
 
-    let reset = await dependencies.user.startPasswordReset();
+    let reset = await dependencies.user.createPasswordReset();
 
     let service = new PasswordResetService(dependencies);
 
@@ -187,12 +187,12 @@ describe("password reset", () => {
     // ARRANGE
     let dependencies = new FakedDependencies();
 
-    let reset = await dependencies.user.startPasswordReset();
+    let reset = await dependencies.user.createPasswordReset();
 
     let service = new PasswordResetService(dependencies);
 
     // ACT
-    const endResult = await service.endPasswordReset(reset.token, PASSWORD);
+    const endResult = await service.resetPassword(reset.token, PASSWORD);
 
     // ASSERT
     expect(endResult).toEqual(ok());
@@ -203,12 +203,12 @@ describe("password reset", () => {
     // ARRANGE
     let dependencies = new FakedDependencies();
 
-    await dependencies.user.startPasswordReset();
+    await dependencies.user.createPasswordReset();
 
     let service = new PasswordResetService(dependencies);
 
     // ACT
-    const endResult = await service.endPasswordReset("WRONG", PASSWORD);
+    const endResult = await service.resetPassword("WRONG", PASSWORD);
 
     // ASSERT
     expect(endResult).toEqual(
@@ -220,13 +220,13 @@ describe("password reset", () => {
   test("should send e-mail", async () => {
     // ARRANGE
     let dependencies = new FakedDependencies();
-    let reset = await dependencies.user.startPasswordReset();
+    let reset = await dependencies.user.createPasswordReset();
     let [sendEmailMock, _] = mockSendEmail(dependencies);
 
     let service = new PasswordResetService(dependencies);
 
     // ACT
-    const endResult = await service.endPasswordReset(reset.token, PASSWORD);
+    const endResult = await service.resetPassword(reset.token, PASSWORD);
 
     // ASSERT
     expect(endResult).toEqual(ok());
@@ -237,7 +237,7 @@ describe("password reset", () => {
     // ARRANGE
     let dependencies = new FakedDependencies();
 
-    let reset = await dependencies.user.startPasswordReset();
+    let reset = await dependencies.user.createPasswordReset();
     let token = new Token();
     token.exp = new Date(Date.now() + 24 * 60 * 60 * 1000);
     token.active = true;
@@ -246,7 +246,7 @@ describe("password reset", () => {
     let service = new PasswordResetService(dependencies);
 
     // ACT
-    const endResult = await service.endPasswordReset(reset.token, PASSWORD);
+    const endResult = await service.resetPassword(reset.token, PASSWORD);
 
     // ASSERT
     expect(endResult).toEqual(ok());
