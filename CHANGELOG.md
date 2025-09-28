@@ -256,3 +256,4 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 
 #278 order validity non optional in the database
 #286 Verteilungen können jetzt gelöscht werden auch wenn sie noch Produkte enthalten
+#290 Admin: In der Benutertabelle können jetzt unbestätigte Bedarfsänderungen gelöscht werden
