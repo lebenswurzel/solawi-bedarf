@@ -57,7 +57,10 @@ import { getErrorLog } from "./services/getErrorLog";
 import { Server } from "http";
 import { IAppContext } from "./controllers/ctx";
 import { useDependencies } from "./middleware/dependencies";
-import { passwordReset } from "./controllers/user/passwordReset";
+import {
+  passwordReset,
+  passwordResetRequest,
+} from "./controllers/user/passwordReset";
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -109,6 +112,7 @@ export async function startServer(): Promise<Server> {
 
   router.get("/user", getUser);
   router.get("/user/token", login);
+  router.post("/user/requestPasswordReset", passwordResetRequest);
   router.post("/user/passwordReset", passwordReset);
   router.post("/user/password", login);
   router.delete("/user/token", logout);
