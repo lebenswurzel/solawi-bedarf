@@ -46,7 +46,7 @@ export class PasswordResetService {
     return ok(addressData.email);
   }
 
-  async beginPasswordReset(
+  async requestPasswordReset(
     userName: string,
   ): Promise<Result<void, SolawiError>> {
     if (!userName) {
@@ -64,7 +64,7 @@ export class PasswordResetService {
       return err(userEmail.error);
     }
 
-    const reset = await user.startPasswordReset();
+    const reset = await user.createPasswordReset();
     await this.deps.saveUser(user);
 
     const text = language.email.passwordResetRequest;
@@ -126,7 +126,7 @@ export class PasswordResetService {
    * @param newPassword The new password to set for the user.
    * @returns A Result object indicating whether the password reset was successful or not.
    */
-  async endPasswordReset(
+  async resetPassword(
     token: string,
     newPassword: string,
   ): Promise<Result<void, SolawiError>> {
