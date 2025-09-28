@@ -180,3 +180,50 @@ export const createAdditionalOrder = async (
   });
   return result;
 };
+
+/**
+ * Opposite of createAdditionalOrder:
+ *
+ * If the latest order of the user in the given season is unconfirmed,
+ * this function deletes it and all order items.
+ * Sets the previous order validTo to the current order validTo.
+ * Throws an error if the latest order is confirmed.
+ */
+export const deleteUnconfirmedOrders = async (
+  requestUserId: number,
+  requisitionConfig: RequisitionConfig,
+) => {
+  const allOrders = await AppDataSource.getRepository(Order).find({
+    where: {
+      userId: requestUserId,
+      requisitionConfigId: requisitionConfig.id,
+    },
+    relations: { orderItems: true },
+    order: { validFrom: "DESC" },
+  });
+
+  if (allOrders.length < 2) {
+    throw new Error(
+      "At least one order is required to delete unconfirmed orders.",
+    );
+  }
+
+  if (allOrders[0].confirmGTC) {
+    throw new Error("The latest order is already confirmed.");
+  }
+
+  await AppDataSource.transaction(async (manager) => {
+    // set previous order validTo to the current order validTo
+    await manager.save(Order, {
+      ...allOrders[1],
+      validTo: allOrders[0].validTo,
+    });
+    // delete unconfirmed order and all order items
+    await manager.delete(OrderItem, {
+      orderId: allOrders[0].id,
+    });
+    await manager.delete(Order, {
+      id: allOrders[0].id,
+    });
+  });
+};
