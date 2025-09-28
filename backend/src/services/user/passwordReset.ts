@@ -136,11 +136,11 @@ export class PasswordResetService {
 
     let user = await this.deps.findUserByPasswordResetToken(token);
     if (!user) {
-      return err(SolawiError.rejected("user does not exist"));
+      return err(SolawiError.invalidInput("request is invalid"));
     }
 
     if (!(await user.resetPassword(token, newPassword))) {
-      return err(SolawiError.rejected("token invalid"));
+      return err(SolawiError.rejected("request is expired"));
     }
 
     const text = language.email.passwordReset;
