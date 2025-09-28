@@ -63,6 +63,7 @@ const ACTION_ACTIVATE = "Aktivieren";
 const ACTION_DEACTIVATE = "Deaktivieren";
 const ACTION_SET_ORDER_VALID_FROM = "Setze 'Bedarf gültig ab'";
 const ACTION_ADD_NEW_ORDER = "Bedarfsänderung hinzufügen";
+const ACTION_DELETE_UNCONFIRMED_ORDERS = "Unbestätigte Bedarfsänderung löschen";
 
 const userStore = useUserStore();
 const { users } = storeToRefs(userStore);
@@ -79,6 +80,7 @@ const selectedUserActions = [
   ACTION_DEACTIVATE,
   ACTION_SET_ORDER_VALID_FROM,
   ACTION_ADD_NEW_ORDER,
+  ACTION_DELETE_UNCONFIRMED_ORDERS,
 ];
 const selectedAction = ref(selectedUserActions[0]);
 const processedUsers = ref<number>(0);
@@ -193,6 +195,12 @@ const applySelectedAction = async () => {
       option = {
         ...option,
         addNewOrder: selectedAction.value == ACTION_ADD_NEW_ORDER,
+      };
+    } else if (selectedAction.value == ACTION_DELETE_UNCONFIRMED_ORDERS) {
+      option = {
+        ...option,
+        deleteUnconfirmedOrders:
+          selectedAction.value == ACTION_DELETE_UNCONFIRMED_ORDERS,
       };
     }
     await updateSelectedUsers(option);
