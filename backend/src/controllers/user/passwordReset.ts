@@ -17,19 +17,38 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { KoaAppContext } from "../ctx";
 import { PasswordResetService } from "../../services/user/passwordReset";
 import { getStringQueryParameter } from "../../util/requestUtil";
-import { handleError } from "../error";
+import { handleError, handleResult } from "../error";
+import {
+  PasswordResetRequest,
+  RequestPasswordResetRequest,
+} from "@lebenswurzel/solawi-bedarf-shared/src/types";
+import { SolawiError } from "../../error";
 
 export async function passwordResetRequest(ctx: KoaAppContext) {
-  const username = getStringQueryParameter(ctx.request.query, "username");
+  const request = ctx.request.body as Partial<RequestPasswordResetRequest>;
+  if (!request.username) {
+    return handleError(ctx, SolawiError.invalidInput("username empty"));
+  }
 
   let service = new PasswordResetService(ctx.deps);
-  return handleError(ctx, await service.requestPasswordReset(username));
+  return handleResult(
+    ctx,
+    await service.requestPasswordReset(request.username),
+  );
 }
 
 export async function passwordReset(ctx: KoaAppContext) {
-  const token = getStringQueryParameter(ctx.request.query, "token");
-  const password = getStringQueryParameter(ctx.request.query, "password");
+  const request = ctx.request.body as Partial<PasswordResetRequest>;
+  if (!request.token) {
+    return handleError(ctx, SolawiError.invalidInput("token empty"));
+  }
+  if (!request.password) {
+    return handleError(ctx, SolawiError.invalidInput("password empty"));
+  }
 
   let service = new PasswordResetService(ctx.deps);
-  return handleError(ctx, await service.resetPassword(token, password));
+  return handleResult(
+    ctx,
+    await service.resetPassword(request.token, request.password),
+  );
 }
