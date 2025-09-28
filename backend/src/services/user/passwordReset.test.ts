@@ -232,4 +232,24 @@ describe("password reset", () => {
     expect(endResult).toEqual(ok());
     expect(sendEmailMock).toHaveBeenCalled();
   });
+
+  test("should reset all existing sessions", async () => {
+    // ARRANGE
+    let dependencies = new FakedDependencies();
+
+    let reset = await dependencies.user.startPasswordReset();
+    let token = new Token();
+    token.exp = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    token.active = true;
+    dependencies.user.token = [token];
+
+    let service = new PasswordResetService(dependencies);
+
+    // ACT
+    const endResult = await service.endPasswordReset(reset.token, PASSWORD);
+
+    // ASSERT
+    expect(endResult).toEqual(ok());
+    expect(dependencies.user.token[0].active).is.false;
+  });
 });
