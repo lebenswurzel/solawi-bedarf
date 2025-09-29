@@ -258,8 +258,10 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #286 Verteilungen können jetzt gelöscht werden auch wenn sie noch Produkte enthalten
 #290 Admin: In der Benutertabelle können jetzt unbestätigte Bedarfsänderungen gelöscht werden
 
-# NEW
+# v0.11.1 - 2025-09-29 - Verteilungsübersichts-PDF
 
 #287 Verteilungsübersicht: Tabellenkopf wird auf jeder Seite angezeigt
 #287 Verteilungsübersicht: Informationen in der Fußzeile
 #287 Verteilungsübersicht: Optionaler Gewichts-Multiplikator +5%
+
+# NEW
