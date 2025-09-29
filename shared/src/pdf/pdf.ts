@@ -235,21 +235,39 @@ const createOverviewPdf = (
     };
   };
 
+  const cellTransformer = (
+    cell: string | number,
+    rowIndex: number,
+    columnIndex: number
+  ) => {
+    if (rowIndex > 0 && columnIndex === 1) {
+      return {
+        text: cell,
+        margin: [0, 0, 0, 10],
+      };
+    }
+    return {
+      text: cell,
+    };
+  };
+
   const tableData = jsonToTableData(
     Object.entries(data).map(([k, v]) => ({ Bezeichnung: k, ...v })),
     headerSortKeys
   ).map((row, rowIndex) =>
     row.map((cell, columnIndex) => ({
-      text: cell,
+      ...cellTransformer(cell, rowIndex, columnIndex),
       ...cellStyle(rowIndex, columnIndex),
     }))
   );
+
   console.log(data, tableData);
   content.push({
     table: {
       widths: ["*", ...new Array(tableData[0].length - 1).fill(40)],
       body: tableData,
       headerRows: 1,
+      dontBreakRows: true,
     },
     layout: "light-horizontal-lines",
   });
@@ -276,7 +294,7 @@ const createOverviewPdf = (
           fontSize: 10,
         },
       ],
-      margin: [90, 5, 20, 10],
+      margin: [90, 5, 25, 15],
     };
   };
 
