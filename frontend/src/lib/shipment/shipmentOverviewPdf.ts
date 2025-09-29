@@ -29,6 +29,7 @@ import {
   generateOverviewPdf,
   HeaderSortKeys,
 } from "@lebenswurzel/solawi-bedarf-shared/src/pdf/pdf.ts";
+import { Unit } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 
 type DepotKey = string;
 type ProductCategoryKey = string;
@@ -68,10 +69,18 @@ const ensureObjectKeys = (
 const createProductDescription = (
   item: BaseShipmentItem,
   productName: string,
+  productWeightMultiplier?: number,
 ): ProductDescription => {
+  const useMultiplier = item.unit === Unit.WEIGHT && productWeightMultiplier;
+  const amount = useMultiplier
+    ? Math.round(item.totalShipedQuantity * productWeightMultiplier)
+    : item.totalShipedQuantity;
+
+  const multiplierText = useMultiplier ? `\nx${productWeightMultiplier}` : "";
+
   return {
-    Bezeichnung: `${productName}${item.isBio ? " [BIO]" : ""} [${getLangUnit(item.unit)}]`,
-    Menge: item.totalShipedQuantity,
+    Bezeichnung: `${productName}${item.isBio ? " [BIO]" : ""} [${getLangUnit(item.unit)}]${multiplierText}`,
+    Menge: amount,
   };
 };
 
@@ -80,6 +89,7 @@ export const createShipmentOverviewPdfSpec = (
   depots: Depot[],
   productsById: ProductsById,
   productCategories: ProductCategoryWithProducts[],
+  productWeightMultiplier?: number,
 ): DataByProductCategoryAndProduct => {
   const findDepotName = (depotId: number): DepotKey => {
     return depots.find((d) => d.id == depotId)?.name || "Unbekanntes Depot";
@@ -103,7 +113,7 @@ export const createShipmentOverviewPdfSpec = (
     const productCategory = findProductCategory(product.productCategoryId);
     ensureObjectKeys(dataByDepotAndProductCategory, depotKey, productCategory);
     dataByDepotAndProductCategory[depotKey][productCategory].push(
-      createProductDescription(item, product.name),
+      createProductDescription(item, product.name, productWeightMultiplier),
     );
   }
 
@@ -113,7 +123,7 @@ export const createShipmentOverviewPdfSpec = (
     const productCategory = "Zusätzliches Angebot";
     ensureObjectKeys(dataByDepotAndProductCategory, depotKey, productCategory);
     dataByDepotAndProductCategory[depotKey][productCategory].push(
-      createProductDescription(item, item.product),
+      createProductDescription(item, item.product, productWeightMultiplier),
     );
   }
 
@@ -172,12 +182,14 @@ export const createShipmentOverviewPdf = async (
   productsById: ProductsById,
   productCategories: ProductCategoryWithProducts[],
   userName: string,
+  productWeightMultiplier?: number,
 ) => {
   const dataByProductCategoryAndProduct = createShipmentOverviewPdfSpec(
     shipment,
     depots,
     productsById,
     productCategories,
+    productWeightMultiplier,
   );
   const zip = new JSZip();
   const productCategoryKeys = Object.keys(dataByProductCategoryAndProduct);
@@ -203,7 +215,10 @@ export const createShipmentOverviewPdf = async (
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `overview-${format(shipment.validFrom, "yyyy-MM-dd")}.zip`;
+    const suffix = productWeightMultiplier
+      ? `-x${productWeightMultiplier}`
+      : "";
+    a.download = `overview-${format(shipment.validFrom, "yyyy-MM-dd")}${suffix}.zip`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

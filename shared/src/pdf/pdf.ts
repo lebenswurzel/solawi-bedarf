@@ -261,7 +261,6 @@ const createOverviewPdf = (
     }))
   );
 
-  console.log(data, tableData);
   content.push({
     table: {
       widths: ["*", ...new Array(tableData[0].length - 1).fill(40)],
