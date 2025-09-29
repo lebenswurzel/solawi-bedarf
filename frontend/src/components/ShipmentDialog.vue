@@ -356,7 +356,7 @@ const onShipmentPdfClick = async () => {
   });
 };
 
-const onShipmentOverviewPdfClick = async () => {
+const onShipmentOverviewPdfClick = async (productWeightMultiplier?: number) => {
   if (!savedShipment?.value) {
     return;
   }
@@ -367,6 +367,7 @@ const onShipmentOverviewPdfClick = async () => {
     productsById.value,
     productCategories.value,
     useUserStore().currentUser?.name ?? "unknown",
+    productWeightMultiplier,
   ).then(() => {
     loading.value = false;
   });
@@ -684,13 +685,25 @@ watchEffect(async () => {
         >
           Lieferscheine
         </v-btn>
-        <v-btn
-          :loading="loading"
-          @click="onShipmentOverviewPdfClick"
-          :disabled="disableDownloadPdf"
-        >
-          Übersicht
-        </v-btn>
+        <v-menu>
+          <template v-slot:activator="{ props }">
+            <v-btn
+              :loading="loading"
+              v-bind="props"
+              :disabled="disableDownloadPdf"
+            >
+              Übersicht
+            </v-btn>
+          </template>
+          <v-list>
+            <v-list-item @click="onShipmentOverviewPdfClick()">
+              <v-list-item-title>Standard</v-list-item-title>
+            </v-list-item>
+            <v-list-item @click="onShipmentOverviewPdfClick(1.05)">
+              <v-list-item-title>Gewicht +5%</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
       </v-card-actions>
     </v-card>
   </v-dialog>
