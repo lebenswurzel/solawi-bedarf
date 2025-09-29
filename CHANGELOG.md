@@ -252,8 +252,14 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 
 #282 Admin kann Nachrichten auf der Home-Seite als Textinhalt hinzufügen
 
-# NEW
+# v0.11.0 - 2025-09-28 - Unbestätigte Bedarfsanmeldungen löschen
 
 #278 order validity non optional in the database
+#286 Verteilungen können jetzt gelöscht werden auch wenn sie noch Produkte enthalten
+#290 Admin: In der Benutertabelle können jetzt unbestätigte Bedarfsänderungen gelöscht werden
+
+# NEW
+
 #287 Verteilungsübersicht: Tabellenkopf wird auf jeder Seite angezeigt
 #287 Verteilungsübersicht: Informationen in der Fußzeile
+

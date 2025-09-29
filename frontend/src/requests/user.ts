@@ -31,6 +31,7 @@ export type SerializedUserOrders = {
   hasItems: boolean;
   depotId: number;
   depotName: string;
+  confirmGTC: boolean;
 };
 
 export type SerializedGetUserResponse = {
@@ -60,6 +61,7 @@ export const getUser = async (): Promise<GetUserResponse> => {
         validFrom: parseISO(userOrder.validFrom),
         depotId: userOrder.depotId,
         depotName: userOrder.depotName,
+        confirmGTC: userOrder.confirmGTC,
       })),
     })),
   };

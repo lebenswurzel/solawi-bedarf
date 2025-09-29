@@ -58,6 +58,7 @@ export type UserOrder = {
   hasItems: boolean;
   depotId: number;
   depotName: string;
+  confirmGTC: boolean;
 };
 
 export type UserWithOrders = Required<User> & {
@@ -74,6 +75,7 @@ export type UpdateUserRequest = Id & {
   active?: boolean;
   orderValidFrom?: Date;
   addNewOrder?: boolean;
+  deleteUnconfirmedOrders?: boolean;
   configId: number;
 };
 

@@ -378,16 +378,6 @@ const onDeleteShipment = async () => {
   }
 
   if (
-    savedShipment.value.additionalShipmentItems.length > 0 ||
-    savedShipment.value.shipmentItems.length > 0
-  ) {
-    alert(
-      "Es gibt noch Produkte in dieser Verteilung. Es können nur Verteilungen gelöscht werden, die keine Produkte enthalten.\n\n(Wenn alle Produkte entfernt wurden, muss die Verteilung zunächst gespeichert werden, bevor sie gelöscht werden kann)",
-    );
-    return;
-  }
-
-  if (
     !confirm(
       "Soll die Verteilung gelöscht werden? Diese Aktion kann nicht rückgängig gemacht werden.",
     )
