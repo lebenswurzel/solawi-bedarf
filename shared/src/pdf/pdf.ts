@@ -218,13 +218,33 @@ const createOverviewPdf = (
   const content: Content = [
     {
       text: description,
-      margin: [0, 20],
+      margin: [0, 0, 0, 10],
     },
   ];
+
+  const cellStyle = (rowIndex: number, columnIndex: number) => {
+    if (rowIndex === 0) {
+      return {
+        bold: true,
+      };
+    }
+    return {
+      fontSize: columnIndex === 0 ? 10 : undefined,
+      alignment: columnIndex === 0 ? "left" : "right",
+      verticalAlignment: "middle",
+    };
+  };
+
   const tableData = jsonToTableData(
     Object.entries(data).map(([k, v]) => ({ Bezeichnung: k, ...v })),
     headerSortKeys
+  ).map((row, rowIndex) =>
+    row.map((cell, columnIndex) => ({
+      text: cell,
+      ...cellStyle(rowIndex, columnIndex),
+    }))
   );
+  console.log(data, tableData);
   content.push({
     table: {
       widths: ["*", ...new Array(tableData[0].length - 1).fill(40)],
@@ -256,12 +276,13 @@ const createOverviewPdf = (
           fontSize: 10,
         },
       ],
-      margin: [40, 5, 40, -20],
+      margin: [90, 5, 20, 10],
     };
   };
 
   return {
     pageOrientation: "landscape",
+    pageMargins: [90, 25, 20, 35],
     content: content,
     styles: {
       tableHeader: {
