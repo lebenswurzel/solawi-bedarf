@@ -37,6 +37,7 @@ import { useConfigStore } from "../store/configStore.ts";
 import SeasonText from "./styled/SeasonText.vue";
 import { getLangUnit } from "@lebenswurzel/solawi-bedarf-shared/src/util/unitHelper.ts";
 import { de } from "date-fns/locale";
+import { useTextContentStore } from "../store/textContentStore.ts";
 
 const t = language.pages.home;
 
@@ -258,14 +259,9 @@ const isSelected = (id: number) => !!selectedShippingItems.value[id];
           class="text-medium-emphasis mb-2 mx-auto"
           style="max-width: 800px"
         >
-          Bitte entnimm in deinem Depot
-          <b>genau die hier angegebenen Mengen</b>. Diese berücksichtigen
-          bereits mögliche Abweichungen in der Lieferung durch variierende
-          Erntemengen (z.B. bei doppelter Verteilmenge eines Produkts).
-          <br />
-          Die genauen Verteilmengen stehen in der Regel erst Donnerstagmittag
-          fest. Bis dahin kann es bei der Angabe unten noch zu Änderungen
-          kommen.
+          <div
+            v-html="useTextContentStore().getPageElement('shipmentMessage')"
+          />
         </v-alert>
         <v-card
           variant="outlined"

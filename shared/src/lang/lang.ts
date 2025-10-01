@@ -644,4 +644,5 @@ export const langEmailTextLabels: Record<EmailTextsKeys, string> = {
 
 export const langPageElementLabels: Record<PageElementKeys, string> = {
   homeMessage: "Nachricht auf der Home-Seite",
+  shipmentMessage: "Allgemeine Nachricht auf der Verteilungsseite",
 };

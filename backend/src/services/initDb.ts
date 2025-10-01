@@ -33,6 +33,7 @@ import {
   basicOrganizationInfo,
   emailTextsKeys,
   organizationInfoKeys,
+  pageElementDefaults,
   pageElementKeys,
   pdfTextsDefaults,
   pdfTextsKeys,
@@ -121,10 +122,11 @@ export const initDb = async () => {
   }
 
   for (const key of pageElementKeys) {
+    const content = pageElementDefaults[key];
     await ensureTextContent({
       category: TextContentCategory.PAGE_ELEMENTS,
       title: key,
-      content: "",
+      content,
       typ: TextContentTyp.MD,
     });
   }

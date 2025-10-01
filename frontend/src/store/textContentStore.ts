@@ -19,6 +19,7 @@ import { computed, ref } from "vue";
 import {
   OrganizationInfo,
   OrganizationInfoFlat,
+  PageElementKeys,
   PdfTexts,
   TextContent,
 } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
@@ -31,6 +32,7 @@ import {
   makeOrganizationInfo,
   makePdfTexts,
 } from "@lebenswurzel/solawi-bedarf-shared/src/text/textContent.ts";
+import { pageElementDefaults } from "@lebenswurzel/solawi-bedarf-shared/src/config.ts";
 
 export const useTextContentStore = defineStore("textContent", () => {
   const textContent = ref<TextContent[]>([]);
@@ -96,6 +98,22 @@ export const useTextContentStore = defineStore("textContent", () => {
     return makePdfTexts(values);
   });
 
+  const getPageElement = (title: PageElementKeys) => {
+    const values = textContent.value
+      .filter(
+        (content) => content.category == TextContentCategory.PAGE_ELEMENTS,
+      )
+      .map((content) => ({
+        title: content.title,
+        content: content.content,
+      }))
+      .filter((value) => value.title == title);
+    if (values.length > 0) {
+      return marked.parse(values[0].content);
+    }
+    return marked.parse(pageElementDefaults[title]);
+  };
+
   return {
     textContent,
     faqs,
@@ -104,6 +122,7 @@ export const useTextContentStore = defineStore("textContent", () => {
     organizationInfo,
     organizationInfoFlat,
     pdfTexts,
+    getPageElement,
     update,
   };
 });
