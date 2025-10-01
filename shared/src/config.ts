@@ -112,5 +112,5 @@ export const pageElementKeys: PageElementKeys[] = [
 export const pageElementDefaults: PageElements = {
   homeMessage: "",
   shipmentMessage:
-    " Bitte entnimm in deinem Depot *genau die hier angegebenen Mengen*. Diese berücksichtigen bereits mögliche Abweichungen in der Lieferung durch variierende Erntemengen (z.B. bei doppelter Verteilmenge eines Produkts).\n\n Die genauen Verteilmengen stehen in der Regel erst Donnerstagmittag fest. Bis dahin kann es bei der Angabe unten noch zu Änderungen kommen.",
+    "Bitte entnimm in deinem Depot *genau die hier angegebenen Mengen*. Diese berücksichtigen bereits mögliche Abweichungen in der Lieferung durch variierende Erntemengen (z.B. bei doppelter Verteilmenge eines Produkts).\n\n Die genauen Verteilmengen stehen in der Regel erst Donnerstagmittag fest. Bis dahin kann es bei der Angabe unten noch zu Änderungen kommen.",
 };
