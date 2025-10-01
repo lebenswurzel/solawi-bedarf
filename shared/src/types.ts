@@ -477,6 +477,7 @@ export type OrganizationInfoFlat = Record<OrganizationInfoFlatKeys, string>;
 export interface PdfTexts {
   packagingListFooter: string;
   packagingListHeader: string;
+  packagingListDetailText: string;
 }
 export type PdfTextsKeys = FlattenKeys<PdfTexts>;
 

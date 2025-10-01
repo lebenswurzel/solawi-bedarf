@@ -178,8 +178,6 @@ export const language = {
         },
         list: {
           title: "Nahrungsmittel entsprechend Deiner Bedarfsanmeldung für",
-          detailText:
-            "Bitte entnimm in deinem Depot genau die hier angegebenen Mengen. Diese berücksichtigen bereits mögliche Abweichungen in der Lieferung durch variierende Erntemengen.",
           subtitle: "KW {kw}",
           text: "Hier erscheinen zu gegebener Zeit die Nahrungsmittel, die Du entsprechend Deiner Bedarfsanmeldung in Deinem Depot abholen kannst.",
           shipment: "Nach der Bedarfsanmeldung gibt es ab {from}",
@@ -635,6 +633,7 @@ export const langOrganizationInfo: Record<OrganizationInfoKeys, string> = {
 export const langPdfTexts: Record<PdfTextsKeys, string> = {
   packagingListFooter: "Fußzeile im Lieferschein",
   packagingListHeader: "Kopfzeile im Lieferschein",
+  packagingListDetailText: "Detailtext im Lieferschein",
 };
 
 export const langEmailTextLabels: Record<EmailTextsKeys, string> = {

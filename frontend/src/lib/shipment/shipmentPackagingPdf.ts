@@ -85,6 +85,7 @@ export function createShipmentPackagingPdfSpecs(
   productCategories: ProductCategoryWithProducts[],
   headerText?: string,
   footerText?: string,
+  detailText?: string,
 ): PdfSpec[] {
   const dataByDepotAndProductCategory: DepotGroupedProducts = new Map();
   for (let item of shipment.shipmentItems) {
@@ -156,12 +157,23 @@ export function createShipmentPackagingPdfSpecs(
         footerLeft = `${footerText}\n`;
       }
 
+      let additionalTopMessage = undefined;
+      if (detailText) {
+        additionalTopMessage = {
+          text: detailText,
+          fontSize: 10,
+          marginBottom: 10,
+          background: "#eeeeee",
+        };
+      }
+
       return {
         receiver: depotKey,
         description,
         headerTextLeft: headerText,
         footerTextLeft: `${footerLeft}Depot ${depotKey}`,
         footerTextRight: `Lieferschein ${prettyDate}`,
+        additionalTopMessage,
         tables: Array.from(
           dataByProductCategory.entries(),
           ([name, tableData]) =>
@@ -191,6 +203,7 @@ export async function createShipmentPackagingPdfs(
   organizationInfo: OrganizationInfo,
   headerText: string,
   footerText: string,
+  detailText: string,
 ) {
   const pdfSpecs = createShipmentPackagingPdfSpecs(
     shipment,
@@ -199,6 +212,7 @@ export async function createShipmentPackagingPdfs(
     productCategories,
     headerText,
     footerText,
+    detailText,
   );
 
   const prettyDate = format(shipment.validFrom, "yyyy-MM-dd");
