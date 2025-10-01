@@ -36,6 +36,10 @@ import { AppDataSource } from "../../database/database";
 import { deleteTextContent } from "./deleteTextContent";
 import { getTextContent } from "./getTextContent";
 import { saveTextContent } from "./saveTextContent";
+import {
+  pageElementDefaults,
+  pdfTextsDefaults,
+} from "@lebenswurzel/solawi-bedarf-shared/src/config";
 
 test("prevent unauthorized access", async () => {
   const ctx = createBasicTestCtx();
@@ -96,6 +100,8 @@ testAsAdmin("cannot delete imprint", async ({ userData }: TestUserData) => {
     "# Datenschutzerklärung",
     "",
     "# Impressum",
+    pageElementDefaults.shipmentMessage,
+    pdfTextsDefaults.packagingListDetailText,
   ]);
 
   expect(await getTexts(TextContentCategory.IMPRINT)).toMatchObject([
@@ -120,6 +126,8 @@ testAsAdmin(
       "# Datenschutzerklärung",
       "",
       "# Impressum",
+      pageElementDefaults.shipmentMessage,
+      pdfTextsDefaults.packagingListDetailText,
     ]);
 
     expect(await getTexts(TextContentCategory.PRIVACY_NOTICE)).toMatchObject([
@@ -145,6 +153,8 @@ testAsAdmin(
       "# Datenschutzerklärung",
       "",
       "# Impressum",
+      pageElementDefaults.shipmentMessage,
+      pdfTextsDefaults.packagingListDetailText,
     ]);
 
     expect(
@@ -181,6 +191,8 @@ testAsAdmin("delete FAQ", async ({ userData }: TestUserData) => {
     "",
     "# Impressum",
     "Inhalt FAQ 1",
+    pageElementDefaults.shipmentMessage,
+    pdfTextsDefaults.packagingListDetailText,
   ]);
 
   // delete FAQ 1
@@ -198,6 +210,8 @@ testAsAdmin("delete FAQ", async ({ userData }: TestUserData) => {
     "# Datenschutzerklärung",
     "",
     "# Impressum",
+    pageElementDefaults.shipmentMessage,
+    pdfTextsDefaults.packagingListDetailText,
   ]);
 });
 
