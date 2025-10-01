@@ -264,6 +264,8 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #287 Verteilungsübersicht: Informationen in der Fußzeile
 #287 Verteilungsübersicht: Optionaler Gewichts-Multiplikator +5%
 
-# NEW
+# v0.11.2 - 2025-10-01 - Hinweise zur Verteilung
 
 #297 Nachrichten zur Verteilung auf der Home-Seite und im Lieferschein können jetzt editiert werden
+
+# NEW
