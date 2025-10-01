@@ -490,6 +490,7 @@ export type EmailTextsKeys = FlattenKeys<EmailTexts>;
 
 export interface PageElements {
   homeMessage: string;
+  shipmentMessage: string;
 }
 
 export type PageElementKeys = FlattenKeys<PageElements>;

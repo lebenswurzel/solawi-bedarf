@@ -265,3 +265,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #287 Verteilungsübersicht: Optionaler Gewichts-Multiplikator +5%
 
 # NEW
+
+#297 Nachrichten zur Verteilung auf der Home-Seite und im Lieferschein können jetzt editiert werden

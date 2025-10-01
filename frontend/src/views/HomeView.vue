@@ -25,12 +25,8 @@ import { useUserStore } from "../store/userStore.ts";
 import SeasonText from "../components/styled/SeasonText.vue";
 import { getSeasonPhase } from "@lebenswurzel/solawi-bedarf-shared/src/util/configHelper.ts";
 import SeasonStatusElement from "../components/season/SeasonStatusElement.vue";
-import {
-  SeasonPhase,
-  TextContentCategory,
-} from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
+import { SeasonPhase } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import { useTextContentStore } from "../store/textContentStore.ts";
-import { marked } from "marked";
 
 const configStore = useConfigStore();
 const biStore = useBIStore();
@@ -54,13 +50,8 @@ const phase = computed(() => {
   );
 });
 
-const homeMessage = computed((): undefined | string | Promise<string> => {
-  const content = textContentStore.textContent.find(
-    (c) =>
-      c.category == TextContentCategory.PAGE_ELEMENTS &&
-      c.title == "homeMessage",
-  )?.content;
-  return content ? marked.parse(content) : undefined;
+const homeMessage = computed(() => {
+  return textContentStore.getPageElement("homeMessage");
 });
 
 const isDarkTheme = computed(() => theme.global.current.value.dark);
