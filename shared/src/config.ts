@@ -88,11 +88,14 @@ export const appConfig = {
 export const pdfTextsKeys: PdfTextsKeys[] = [
   "packagingListFooter",
   "packagingListHeader",
+  "packagingListDetailText",
 ];
 
 export const pdfTextsDefaults: PdfTexts = {
   packagingListFooter: "",
   packagingListHeader: "",
+  packagingListDetailText:
+    "Die hier angegebenen Mengen werden auf alle Ernteteiler des Depots aufgeteilt. Bitte nimm nur die Mengen mit, die mit deiner Bedarfsanmeldung übereinstimmen. Deine genauen Mitnahmemengen kannst du auch der Bedarfsanmeldungs-App entnehmen. Dort sind die Mengen bereits korrekt berechnet.",
 };
 
 export const emailTextsKeys: EmailTextsKeys[] = [

@@ -77,6 +77,7 @@ export interface PdfSpec {
   headerTextLeft?: string;
   tables: PdfTable[];
   additionalContent?: Content[];
+  additionalTopMessage?: Content;
 }
 
 export function createDefaultPdf(
@@ -111,6 +112,9 @@ export function createDefaultPdf(
     layout: "noBorders",
     margin: [0, logo ? 10 : 60, 0, 20],
   });
+  if (pdf.additionalTopMessage) {
+    content.push(pdf.additionalTopMessage);
+  }
   content.push({
     text: pdf.description,
   });
