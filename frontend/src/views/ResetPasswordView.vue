@@ -107,22 +107,22 @@ const submit = async () => {
       </v-form>
     </v-card>
 
-    <div style="display: flex; justify-content: center" v-else>
+    <div class="justify-center" v-else>
       <div style="max-width: 400px">
         <v-card class="ma-2" v-if="success">
-          <v-card-title class="text-center" style="white-space: normal">
+          <v-card-title class="text-center">
             Passwort erfolgreich geändert
           </v-card-title>
           <v-card-item class="justify-center">
             <v-icon color="success" icon="mdi-check-bold" size="x-large" />
           </v-card-item>
           <v-card-text class="text-center">
-            Du kannst Dich jetzt mit Deinem neuen Passwort
+            Du kannst Dich jetzt mit deinem neuen Passwort
             <router-link to="/login">anmelden</router-link>.
           </v-card-text>
         </v-card>
         <v-card class="ma-2" v-else>
-          <v-card-title class="text-center" style="white-space: normal">
+          <v-card-title class="text-center">
             Ups, da ist etwas schief gegangen!
           </v-card-title>
           <v-card-item class="justify-center">
@@ -134,8 +134,8 @@ const submit = async () => {
           </v-card-item>
           <v-card-text class="text-center">
             Bitte versuche es später erneut. Wenn dieser Fehler wiederholt
-            auftritt, wende Dich bitte an
-            {{ organizationInfo.address.email }}. Danke für Dein Verständnis.
+            auftritt, wende dich bitte an
+            {{ organizationInfo.address.email }}. Danke für dein Verständnis.
           </v-card-text>
         </v-card>
       </div>
