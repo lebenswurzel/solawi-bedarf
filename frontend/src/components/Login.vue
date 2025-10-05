@@ -77,6 +77,10 @@ onMounted(() => {
       Noch kein Login?
       <router-link to="/register">Hier Registrieren</router-link>
     </v-card-subtitle>
+    <v-card-subtitle>
+      Passwort vergessen?
+      <router-link to="/requestpassword">Passwort zurücksetzen</router-link>
+    </v-card-subtitle>
     <v-card-text>
       <v-text-field
         v-model="username"
