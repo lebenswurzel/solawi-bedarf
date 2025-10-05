@@ -46,15 +46,20 @@ const submit = async () => {
 
 <template>
   <div class="mx-auto" style="max-width: 600px">
-    <v-card class="ma-2" v-if="success === undefined">
-      <v-card-title>Passwort zurücksetzen</v-card-title>
-      <v-card-subtitle>
-        <router-link to="/login">Zurück zur Anmeldung</router-link>
-      </v-card-subtitle>
-      <v-form v-model="valid" @submit.prevent @submit="submit">
+    <v-form
+      v-if="success === undefined"
+      v-model="valid"
+      @submit.prevent
+      @submit="submit"
+    >
+      <v-card class="ma-2">
+        <v-card-title>Passwort zurücksetzen</v-card-title>
+        <v-card-subtitle>
+          <router-link to="/login">Zurück zur Anmeldung</router-link>
+        </v-card-subtitle>
         <v-card-text>
-          <p>
-            Bitte gib Deinen Benutzernamen ein. Wir senden Dir anschließend eine
+          <p class="mb-3">
+            Bitte gib deinen Benutzernamen ein. Wir senden dir anschließend eine
             E-Mail mit weiteren Anweisungen zum Zurücksetzen des Passworts.
           </p>
           <v-text-field
@@ -73,15 +78,13 @@ const submit = async () => {
             Link anfordern
           </v-btn>
         </v-card-actions>
-      </v-form>
-    </v-card>
+      </v-card>
+    </v-form>
 
     <div style="display: flex; justify-content: center" v-else>
       <div style="max-width: 400px">
         <v-card class="ma-2" v-if="success">
-          <v-card-title class="text-center" style="white-space: normal">
-            E-Mail gesendet
-          </v-card-title>
+          <v-card-title class="text-center"> E-Mail gesendet </v-card-title>
           <v-card-item class="justify-center">
             <v-icon color="success" icon="mdi-check-bold" size="x-large" />
           </v-card-item>
@@ -92,7 +95,7 @@ const submit = async () => {
           </v-card-text>
         </v-card>
         <v-card class="ma-2" v-else>
-          <v-card-title class="text-center" style="white-space: normal">
+          <v-card-title class="text-center">
             Ups, da ist etwas schief gegangen!
           </v-card-title>
           <v-card-item class="justify-center">
