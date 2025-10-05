@@ -24,6 +24,9 @@ import { UserRepo } from "../services/user/repo";
 import { TypeormTextContentRepo, TypeormUserRepo } from "../adapter/typeorm";
 import { AppDataSource } from "../database/database";
 import { TextContentRepo } from "../services/text/repo";
+import { mergeMethods } from "../util/mergeMethods";
+
+export type AppDependencies = EmailService & UserRepo & TextContentRepo;
 
 export interface DependenciesContext {
   deps: AppDependencies;
@@ -32,19 +35,12 @@ export interface DependenciesContext {
 export function useDependencies<S, T extends DependenciesContext>(
   app: Koa<S, T>,
 ) {
-  app.context.deps = new AppDependencies();
+  app.context.deps = createDependencies();
 }
 
-const emailService = new NodemailerEmailService();
-const userRepo = new TypeormUserRepo(AppDataSource);
-const textContentRepo = new TypeormTextContentRepo(AppDataSource);
-
-export class AppDependencies
-  implements EmailService, UserRepo, TextContentRepo
-{
-  sendEmail = emailService.sendEmail;
-  saveUser = userRepo.saveUser;
-  findUserByName = userRepo.findUserByName;
-  findUserByPasswordResetToken = userRepo.findUserByPasswordResetToken;
-  getOrganizationInfo = textContentRepo.getOrganizationInfo;
+export function createDependencies(): AppDependencies {
+  const emailService = new NodemailerEmailService();
+  const userRepo = new TypeormUserRepo(AppDataSource);
+  const textContentRepo = new TypeormTextContentRepo(AppDataSource);
+  return mergeMethods(emailService, userRepo, textContentRepo);
 }
