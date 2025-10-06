@@ -268,6 +268,8 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 
 #297 Nachrichten zur Verteilung auf der Home-Seite und im Lieferschein können jetzt editiert werden
 
-# NEW
+# v0.11.3 - 2025-10-06 - Liefersumme
 
 #299 Verteilungsdialog: Anzeige der geliefert-Summe eines Produkts
+
+# NEW
