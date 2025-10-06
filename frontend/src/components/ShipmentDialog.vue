@@ -39,6 +39,7 @@ import {
   prettyDateWithDayName,
   isDateEqual,
 } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper.ts";
+import { getLangUnit } from "@lebenswurzel/solawi-bedarf-shared/src/util/unitHelper.ts";
 import { dateToString, stringToDate } from "../lib/convert.ts";
 import { prepareShipment } from "../lib/shipment/prepareShipment.ts";
 import { createShipmentOverviewPdf } from "../lib/shipment/shipmentOverviewPdf.ts";
@@ -55,6 +56,7 @@ import ShipmentItem from "./ShipmentItem.vue";
 import {
   ProductCategoryType,
   ShipmentType,
+  Unit,
 } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import { isShipmentDifferent } from "@lebenswurzel/solawi-bedarf-shared/src/shipment/shipmentUtil.ts";
 import { useUserStore } from "../store/userStore.ts";
@@ -267,6 +269,19 @@ const usedAdditionalShipmentDepotIdsByProduct = computed(() => {
     }
   });
   return tmp;
+});
+
+const totalShippedQuantityByProductId = computed(() => {
+  const totals: { [key: number]: { quantity: number; unit: string } } = {};
+  editShipment.value.shipmentItems.forEach((item) => {
+    if (item.productId && item.unit) {
+      if (!totals[item.productId]) {
+        totals[item.productId] = { quantity: 0, unit: item.unit };
+      }
+      totals[item.productId].quantity += Number(item.totalShipedQuantity) || 0;
+    }
+  });
+  return totals;
 });
 
 const shouldAddMargin = (idx: number) => {
@@ -566,13 +581,33 @@ watchEffect(async () => {
                       : true))
                 "
               >
-                <div v-if="shouldAddMargin(idx)" class="text-h6 mb-4">
+                <div
+                  v-if="shouldAddMargin(idx)"
+                  class="text-h6 mb-4 d-flex align-center"
+                >
                   {{ item.isNew ? "NEU: " : "" }}
                   {{
                     item.productId
                       ? productsById[item.productId].name
                       : "Neues Produkt"
                   }}
+                  <span
+                    v-if="
+                      item.productId &&
+                      totalShippedQuantityByProductId[item.productId]
+                    "
+                    class="ml-2 text-caption opacity-60"
+                    >(Summe geliefert:
+                    {{
+                      totalShippedQuantityByProductId[item.productId].quantity
+                    }}
+                    {{
+                      getLangUnit(
+                        totalShippedQuantityByProductId[item.productId]
+                          .unit as Unit,
+                      )
+                    }})</span
+                  >
                 </div>
                 <ShipmentItem
                   :shipment-item="item"
