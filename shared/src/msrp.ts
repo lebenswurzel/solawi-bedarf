@@ -46,7 +46,7 @@ const getYearlyBaseMsrp = (orderItem: OrderItem, product: Product) => {
   return 0;
 };
 
-const adjustMsrp = (
+export const adjustMsrp = (
   baseMsrp: number,
   contribution: UserCategory,
   months: number
