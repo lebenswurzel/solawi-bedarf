@@ -273,3 +273,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #299 Verteilungsdialog: Anzeige der geliefert-Summe eines Produkts
 
 # NEW
+
+#300 Details zum Produkt im Produktdialog

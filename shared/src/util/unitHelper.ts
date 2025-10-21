@@ -32,7 +32,7 @@ export const getLangUnit = (unit?: Unit, useBigUnit?: boolean) => {
 
 export const convertToBigUnit = (
   value: number,
-  unit: Unit,
+  unit: Unit
 ): { label: string; value?: number } => {
   switch (unit) {
     case Unit.WEIGHT:
