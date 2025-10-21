@@ -28,6 +28,7 @@ import {
 } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { Unit } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import { getLangUnit } from "@lebenswurzel/solawi-bedarf-shared/src/util/unitHelper.ts";
+import ProductSummaryCard from "./ProductSummaryCard.vue";
 const t = language.pages.product.dialog;
 
 defineProps<{ open: boolean }>();
@@ -204,6 +205,10 @@ const onSave = () => {
           >
         </v-row>
       </v-card-text>
+
+      <!-- Product Summary Card -->
+      <ProductSummaryCard :product="dialogProduct" />
+
       <v-card-actions>
         <v-btn @click="onClose">
           {{ language.app.actions.close }}
