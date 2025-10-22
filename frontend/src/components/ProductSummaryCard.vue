@@ -24,6 +24,7 @@ import {
 } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { adjustMsrp } from "@lebenswurzel/solawi-bedarf-shared/src/msrp";
 import { getLangUnit } from "@lebenswurzel/solawi-bedarf-shared/src/util/unitHelper";
+import { appConfig } from "@lebenswurzel/solawi-bedarf-shared/src/config";
 
 const props = defineProps<{
   product: NewProduct | Product;
@@ -37,15 +38,32 @@ const baseUnit = computed(() => {
 const orientationValues = computed(() => {
   const msrp = props.product.msrp || 0;
 
-  const values: { [key in UserCategory]: number } = {
-    [UserCategory.CAT100]: 0,
-    [UserCategory.CAT115]: 0,
-    [UserCategory.CAT130]: 0,
+  const values: {
+    [key in UserCategory]: {
+      amount: number;
+      factor: number;
+    };
+  } = {
+    [UserCategory.CAT100]: {
+      amount: 0,
+      factor: 0,
+    },
+    [UserCategory.CAT115]: {
+      amount: 0,
+      factor: 0,
+    },
+    [UserCategory.CAT130]: {
+      amount: 0,
+      factor: 0,
+    },
   };
 
   // Calculate monthly orientation value for each category
   Object.values(UserCategory).forEach((category) => {
-    values[category] = Math.round(adjustMsrp(msrp, category, 1));
+    values[category].amount = Math.round(adjustMsrp(msrp, category, 1));
+    values[category].factor = Math.round(
+      appConfig.msrp[category].relative * 100,
+    );
   });
 
   return values;
@@ -98,8 +116,11 @@ const getContributionLabel = (category: UserCategory) => {
                   {{ getContributionLabel(category) }}
                 </div>
                 <div class="text-h6">
-                  {{ orientationValues[category] }}
+                  {{ orientationValues[category].amount }}
                   {{ language.app.units.ct }}
+                  <span class="opacity-50">
+                    ({{ orientationValues[category].factor }}%)
+                  </span>
                 </div>
               </v-card>
             </v-col>

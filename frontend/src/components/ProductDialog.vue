@@ -142,6 +142,7 @@ const onSave = () => {
                   unit: baseUnit,
                 })
               "
+              :hint="t.msrpHint"
             ></v-text-field>
           </v-col>
           <v-col cols="12" sm="4">

@@ -376,6 +376,7 @@ export const language = {
         deliveries: "Lieferungen an Depots",
         description: "Beschreibung",
         msrp: "Orientierungswert [ct/{unit}]",
+        msrpHint: "Der Wert gilt für engagierte Mitglieder",
         frequency: "Verteilhäufigkeit",
         quantity: "Gesamtmenge [{unit}]",
         quantityMin: "Menge (min) [{unit}]",
