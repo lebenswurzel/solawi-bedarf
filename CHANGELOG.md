@@ -272,6 +272,8 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 
 #299 Verteilungsdialog: Anzeige der geliefert-Summe eines Produkts
 
-# NEW
+# v0.11.4 - 2025-10-22 - Produktpreisanzeige
 
 #300 Details zum Produkt im Produktdialog
+
+# NEW
