@@ -101,12 +101,6 @@ export const createAdditionalOrder = async (
     order: { validFrom: "DESC" },
   });
 
-  if (allOrders.length > 1) {
-    throw new Error(
-      "Currently only one additional order is allowed. This will be fixed in the future.",
-    );
-  }
-
   // Find the currently valid order (no validTo or validTo in the future)
   const currentOrder = allOrders.find(
     (o) => o.validFrom <= now && o.validTo > now,
@@ -120,6 +114,12 @@ export const createAdditionalOrder = async (
   const futureOrder = allOrders.find((o) => o.validFrom && o.validFrom > now);
   if (futureOrder) {
     throw new Error("an order with a validFrom in the future exists");
+  }
+
+  if (requisitionConfig.endBiddingRound <= now) {
+    throw new Error(
+      "Bieterrunde ist bereits beendet. Der Beginn der angepassten Bedarfsanmeldung kann daher nicht ermittelt werden.",
+    );
   }
 
   // Calculate dates for the new order
@@ -214,10 +214,14 @@ export const deleteUnconfirmedOrders = async (
 
   await AppDataSource.transaction(async (manager) => {
     // set previous order validTo to the current order validTo
-    await manager.save(Order, {
-      ...allOrders[1],
-      validTo: allOrders[0].validTo,
-    });
+    await manager.update(
+      Order,
+      { id: allOrders[1].id },
+      {
+        validTo: allOrders[0].validTo,
+        updatedAt: allOrders[1].updatedAt, // prevent modification of updatedAt as we use it to indicate whether a user changed his order
+      },
+    );
     // delete unconfirmed order and all order items
     await manager.delete(OrderItem, {
       orderId: allOrders[0].id,
