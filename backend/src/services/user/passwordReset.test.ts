@@ -22,12 +22,18 @@ import { InfrastructureError, SolawiError } from "../../error";
 import { TextContentRepo } from "../text/repo";
 import { UserRepo } from "./repo";
 import { User } from "../../database/User";
-import { OrganizationInfo } from "@lebenswurzel/solawi-bedarf-shared/src/types";
+import {
+  Address,
+  OrganizationInfo,
+} from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import { Applicant } from "../../database/Applicant";
 import { UserAddress } from "../../database/UserAddress";
-import { comparePassword } from "../../security";
+import { comparePassword, hashPassword } from "../../security";
 import { Token } from "../../database/Token";
+import { TypeormTextContentRepo, TypeormUserRepo } from "../../adapter/typeorm";
+import { AppDataSource } from "../../database/database";
+import { mergeMethods } from "../../util/mergeMethods";
 
 const ORG_INFO: OrganizationInfo = {
   address: {
@@ -55,8 +61,10 @@ class FakedDependencies implements EmailService, TextContentRepo, UserRepo {
     this.user.applicant = new Applicant();
     this.user.applicant.address = new UserAddress();
     this.user.applicant.address.active = true;
-    this.user.applicant.address.address = JSON.stringify({ email: EMAIL });
-    this.user.passwordReset = Promise.resolve([]);
+    this.user.applicant.address.address = JSON.stringify({
+      email: EMAIL,
+    } as Address);
+    this.user.passwordResets = [];
   }
 
   removeUserEmailAddress() {
@@ -83,10 +91,15 @@ class FakedDependencies implements EmailService, TextContentRepo, UserRepo {
   }
 
   async findUserByPasswordResetToken(token: string): Promise<User | null> {
-    return (await this.user.passwordReset).some((pr) => pr.token === token)
+    return (await this.user.passwordResets).some((pr) => pr.token === token)
       ? this.user
       : null;
   }
+}
+
+function extractTokenFromHtml(email: SendEmailRequest): string | null {
+  let m = email.paragraphs.join("\n\n").match(/token=([a-zA-Z0-9]+)/);
+  return m ? m[1] : null;
 }
 
 function mockSendEmail(
@@ -94,10 +107,7 @@ function mockSendEmail(
 ): [MockInstance, { value: string }] {
   let tokenStore = { value: undefined };
   let mock = vi.spyOn(dependencies, "sendEmail").mockImplementation((email) => {
-    let m = email.paragraphs.join("\n\n").match(/token=([a-zA-Z0-9]+)/);
-    if (m) {
-      tokenStore.value = m[1];
-    }
+    tokenStore.value = extractTokenFromHtml(email);
     return undefined;
   });
   return [mock, tokenStore];
@@ -118,7 +128,7 @@ describe("password reset request", () => {
     expect(startResult).toEqual(ok());
     expect(sendEmailMock).toHaveBeenCalled();
     expect(
-      await dependencies.user.isPasswordResetTokenValid(tokenStore.value),
+      dependencies.user.isPasswordResetTokenValid(tokenStore.value),
     ).toEqual(true);
   });
 
@@ -169,7 +179,7 @@ describe("checking token", () => {
     // ARRANGE
     let dependencies = new FakedDependencies();
 
-    let reset = await dependencies.user.createPasswordReset();
+    let reset = dependencies.user.createPasswordReset();
 
     let service = new PasswordResetService(dependencies);
 
@@ -205,7 +215,7 @@ describe("password reset", () => {
     // ARRANGE
     let dependencies = new FakedDependencies();
 
-    let reset = await dependencies.user.createPasswordReset();
+    let reset = dependencies.user.createPasswordReset();
 
     let service = new PasswordResetService(dependencies);
 
@@ -221,7 +231,7 @@ describe("password reset", () => {
     // ARRANGE
     let dependencies = new FakedDependencies();
 
-    await dependencies.user.createPasswordReset();
+    dependencies.user.createPasswordReset();
 
     let service = new PasswordResetService(dependencies);
 
@@ -238,7 +248,7 @@ describe("password reset", () => {
   test("should send e-mail", async () => {
     // ARRANGE
     let dependencies = new FakedDependencies();
-    let reset = await dependencies.user.createPasswordReset();
+    let reset = dependencies.user.createPasswordReset();
     let [sendEmailMock, _] = mockSendEmail(dependencies);
 
     let service = new PasswordResetService(dependencies);
@@ -255,7 +265,7 @@ describe("password reset", () => {
     // ARRANGE
     let dependencies = new FakedDependencies();
 
-    let reset = await dependencies.user.createPasswordReset();
+    let reset = dependencies.user.createPasswordReset();
     let token = new Token();
     token.exp = new Date(Date.now() + 24 * 60 * 60 * 1000);
     token.active = true;
@@ -275,7 +285,7 @@ describe("password reset", () => {
     // ARRANGE
     let dependencies = new FakedDependencies();
 
-    let reset = await dependencies.user.createPasswordReset();
+    let reset = dependencies.user.createPasswordReset();
 
     let service = new PasswordResetService(dependencies);
 
@@ -288,5 +298,68 @@ describe("password reset", () => {
     expect(endResult2).toEqual(
       err(SolawiError.invalidInput("request is invalid")),
     );
+  });
+});
+
+describe("password reset workflow", () => {
+  class FakeEmailService implements EmailService {
+    requests: SendEmailRequest[] = [];
+
+    sendEmail(req: SendEmailRequest): ResultAsync<void, InfrastructureError> {
+      this.requests.push(req);
+      return okAsync();
+    }
+  }
+
+  function setUpDeps(
+    emailService: EmailService,
+  ): EmailService & TextContentRepo & UserRepo {
+    const userRepo = new TypeormUserRepo(AppDataSource);
+    const textContentRepo = new TypeormTextContentRepo(AppDataSource);
+    return mergeMethods(emailService, userRepo, textContentRepo);
+  }
+
+  test("should reset password", async () => {
+    // ARRANGE
+    const emailService = new FakeEmailService();
+    let dependencies = setUpDeps(emailService);
+
+    let service = new PasswordResetService(dependencies);
+
+    let user = new User(
+      USERNAME,
+      await hashPassword(PASSWORD),
+      UserRole.USER,
+      true,
+    );
+    await dependencies.saveUser(user);
+
+    const address = new UserAddress();
+    address.active = true;
+    address.address = JSON.stringify({
+      email: "applicant@example.org",
+    } as Address);
+    await AppDataSource.getRepository(UserAddress).save(address);
+
+    const applicant = new Applicant();
+    applicant.user = user;
+    applicant.hash = "";
+    applicant.confirmGDPR = true;
+    applicant.comment = "";
+    applicant.active = true;
+    applicant.address = address;
+    await AppDataSource.getRepository(Applicant).save(applicant);
+
+    // WORKFLOW
+    expect(await service.requestPasswordReset(USERNAME)).toEqual(ok());
+
+    const email = emailService.requests.pop();
+    const token = extractTokenFromHtml(email);
+
+    expect(await service.resetPassword(token, "NEWPASSWORD")).toEqual(ok());
+
+    // ASSERT
+    const hash = (await dependencies.findUserByName(USERNAME)).hash;
+    expect(await comparePassword("NEWPASSWORD", hash)).true;
   });
 });
