@@ -16,6 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import Koa from "koa";
 import Router from "koa-router";
+import rateLimit from "koa-ratelimit";
 import bodyParser from "koa-bodyparser";
 
 import { config } from "./config";
@@ -118,6 +119,19 @@ if (config.debug.logDuration) {
     }
   };
 
+  const passwordResetLimiter = rateLimit({
+    driver: "memory",
+    db: new Map(),
+    duration: 10 * 60 * 1000, // 10 minutes
+    errorMessage: "Too many password reset attempts. Please try again later.",
+    headers: {
+      remaining: "Rate-Limit-Remaining",
+      reset: "Rate-Limit-Reset",
+      total: "Rate-Limit-Total",
+    },
+    max: 10,
+  });
+
   connectToDatabase().then(() => {});
 
   router.get("/config", getConfig);
@@ -130,7 +144,11 @@ if (config.debug.logDuration) {
 
   router.get("/user", getUser);
   router.get("/user/token", login);
-  router.post("/user/requestPasswordReset", passwordResetRequest);
+  router.post(
+    "/user/requestPasswordReset",
+    passwordResetLimiter,
+    passwordResetRequest,
+  );
   router.post("/user/passwordReset", passwordReset);
   router.post("/user/password", login);
   router.delete("/user/token", logout);
