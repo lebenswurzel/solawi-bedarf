@@ -24,7 +24,9 @@ import { comparePassword } from "../security";
 const INITIAL_PASSWORD_HASH = "OLD HASH";
 
 function newTester(): User {
-  return new User("Tester", INITIAL_PASSWORD_HASH, UserRole.USER, true);
+  let user = new User("Tester", INITIAL_PASSWORD_HASH, UserRole.USER, true);
+  user.passwordResets = [];
+  return user;
 }
 
 describe("password reset", () => {
@@ -38,14 +40,14 @@ describe("password reset", () => {
   it("start generates token", async () => {
     const tester = newTester();
 
-    expect((await tester.createPasswordReset()).token).toHaveLength(128);
+    expect(tester.createPasswordReset().token).toHaveLength(128);
   });
 
   it("accepts valid token", async () => {
     const tester = newTester();
     const start = new Date();
     vi.setSystemTime(start);
-    let reset = await tester.createPasswordReset();
+    let reset = tester.createPasswordReset();
 
     vi.setSystemTime(addHours(start, 23));
     expect(await tester.resetPassword(reset.token, "PWD")).true;
@@ -53,7 +55,7 @@ describe("password reset", () => {
 
   it("changes hash", async () => {
     const tester = newTester();
-    let reset = await tester.createPasswordReset();
+    let reset = tester.createPasswordReset();
 
     await tester.resetPassword(reset.token, "PWD");
 
@@ -62,7 +64,7 @@ describe("password reset", () => {
 
   it("not accepts invalid token", async () => {
     const tester = newTester();
-    const token = await tester.createPasswordReset();
+    const token = tester.createPasswordReset();
 
     expect(await tester.resetPassword(token + "+", "PWD")).false;
     expect(tester.hash).eq(INITIAL_PASSWORD_HASH);
@@ -80,7 +82,7 @@ describe("password reset", () => {
 
     const start = new Date();
     vi.setSystemTime(start);
-    let reset = await tester.createPasswordReset();
+    let reset = tester.createPasswordReset();
 
     vi.setSystemTime(addHours(start, 25));
     expect(await tester.resetPassword(reset.token, "PWD")).false;
@@ -89,7 +91,7 @@ describe("password reset", () => {
 
   it("not reaccepts token", async () => {
     const tester = newTester();
-    let reset = await tester.createPasswordReset();
+    let reset = tester.createPasswordReset();
 
     await tester.resetPassword(reset.token, "PWD1");
     const last = await tester.resetPassword(reset.token, "PWD2");

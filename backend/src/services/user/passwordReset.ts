@@ -57,7 +57,10 @@ export class PasswordResetService {
       return err(SolawiError.invalidInput("user name should not be empty"));
     }
 
-    const user = await this.deps.findUserByName(userName);
+    const user = await this.deps.findUserByName(userName, {
+      applicant: { address: true },
+      passwordResets: true,
+    });
     if (!user) {
       console.log(
         "Password request rejected because of non-existing user",
@@ -75,7 +78,7 @@ export class PasswordResetService {
       return ok(); // SEC: Protect against username enumeration
     }
 
-    const reset = await user.createPasswordReset();
+    const reset = user.createPasswordReset();
     await this.deps.saveUser(user);
 
     const text = language.email.passwordResetRequest;
@@ -123,7 +126,7 @@ export class PasswordResetService {
       return err(SolawiError.rejected("user does not exist"));
     }
 
-    if (!(await user.isPasswordResetTokenValid(token))) {
+    if (!user.isPasswordResetTokenValid(token)) {
       return err(SolawiError.rejected("token invalid"));
     }
 
@@ -145,12 +148,15 @@ export class PasswordResetService {
       return err(SolawiError.invalidInput("invalid request"));
     }
 
-    let user = await this.deps.findUserByPasswordResetToken(token);
+    let user = await this.deps.findUserByPasswordResetToken(token, {
+      passwordResets: true,
+      applicant: { address: true },
+    });
     if (!user) {
       return err(SolawiError.invalidInput("request is invalid"));
     }
 
-    if (!(await user.resetPassword(token, newPassword))) {
+    if (!user.resetPassword(token, newPassword)) {
       return err(SolawiError.rejected("request is expired"));
     }
 
