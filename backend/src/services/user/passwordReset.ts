@@ -43,6 +43,10 @@ export class PasswordResetService {
     const addressData = JSON.parse(
       applicant?.address.address || "{}",
     ) as Address;
+    if (!addressData.email) {
+      return err(SolawiError.rejected("user does not have an email address"));
+    }
+
     return ok(addressData.email);
   }
 
@@ -55,13 +59,20 @@ export class PasswordResetService {
 
     const user = await this.deps.findUserByName(userName);
     if (!user) {
-      console.log("Password request rejected because of non-existing user");
+      console.log(
+        "Password request rejected because of non-existing user",
+        userName,
+      );
       return ok(); // SEC: Protect against username enumeration
     }
 
     let userEmail = this.getEmail(user);
     if (userEmail.isErr()) {
-      return err(userEmail.error);
+      console.log(
+        "Password request rejected because of missing email of",
+        userName,
+      );
+      return ok(); // SEC: Protect against username enumeration
     }
 
     const reset = await user.createPasswordReset();

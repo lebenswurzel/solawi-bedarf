@@ -59,6 +59,10 @@ class FakedDependencies implements EmailService, TextContentRepo, UserRepo {
     this.user.passwordReset = Promise.resolve([]);
   }
 
+  removeUserEmailAddress() {
+    this.user.applicant.address.address = null;
+  }
+
   sendEmail(_: SendEmailRequest): ResultAsync<void, InfrastructureError> {
     return okAsync();
   }
@@ -126,6 +130,20 @@ describe("password reset request", () => {
 
     // ACT
     let result = await service.requestPasswordReset("OTHER USER");
+
+    // ASSERT
+    expect(result).toEqual(ok());
+  });
+
+  test("should not return error on missing email to protect against user enumeration", async () => {
+    // ARRANGE
+    let dependencies = new FakedDependencies();
+    dependencies.removeUserEmailAddress();
+
+    let service = new PasswordResetService(dependencies);
+
+    // ACT
+    let result = await service.requestPasswordReset(USERNAME);
 
     // ASSERT
     expect(result).toEqual(ok());
