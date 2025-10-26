@@ -65,6 +65,7 @@ import {
   passwordReset,
   passwordResetRequest,
 } from "./controllers/user/passwordReset";
+import rateLimit from "express-rate-limit";
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -104,6 +105,12 @@ export async function startServer(): Promise<Server> {
     }
   };
 
+  const passwordResetLimiter = rateLimit({
+    windowMs: 10 * 60 * 1000, // 10 minutes
+    limit: 10,
+    message: "Too many password reset attempts. Please try again later.",
+  });
+
   connectToDatabase().then(() => {});
 
   router.get("/config", getConfig);
@@ -116,7 +123,11 @@ export async function startServer(): Promise<Server> {
 
   router.get("/user", getUser);
   router.get("/user/token", login);
-  router.post("/user/requestPasswordReset", passwordResetRequest);
+  router.post(
+    "/user/requestPasswordReset",
+    passwordResetLimiter,
+    passwordResetRequest,
+  );
   router.post("/user/passwordReset", passwordReset);
   router.post("/user/password", login);
   router.delete("/user/token", logout);
