@@ -14,6 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+
 import { DataSource, Repository } from "typeorm";
 import { UserRepo } from "../services/user/repo";
 import { User } from "../database/User";
@@ -23,6 +24,7 @@ import { TextContent } from "../database/TextContent";
 import { TextContentCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import { makeOrganizationInfo } from "@lebenswurzel/solawi-bedarf-shared/src/text/textContent";
 import { PasswordReset } from "../database/PasswordReset";
+import { FindOptionsRelations } from "typeorm/find-options/FindOptionsRelations";
 
 export class TypeormUserRepo implements UserRepo {
   private repo: Repository<User>;
@@ -33,18 +35,28 @@ export class TypeormUserRepo implements UserRepo {
     this.repo = db.getRepository(User);
   }
 
-  async findUserByName(name: string): Promise<User | null> {
-    return await this.repo.findOneBy({ name });
+  async findUserByName(
+    name: string,
+    relations?: FindOptionsRelations<User>,
+  ): Promise<User | null> {
+    return await this.repo.findOne({
+      where: { name },
+      relations: relations,
+    });
   }
 
   async saveUser(user: User): Promise<void> {
     await this.repo.save(user);
   }
 
-  async findUserByPasswordResetToken(token: string): Promise<User | null> {
-    const reset = await this.db
-      .getRepository(PasswordReset)
-      .findOneBy({ token });
+  async findUserByPasswordResetToken(
+    token: string,
+    relations?: FindOptionsRelations<User>,
+  ): Promise<User | null> {
+    const reset = await this.db.getRepository(PasswordReset).findOne({
+      where: { token },
+      relations: { user: relations || true },
+    });
     return reset ? reset.user : null;
   }
 }

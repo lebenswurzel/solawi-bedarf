@@ -15,9 +15,16 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { User } from "../../database/User";
+import { FindOptionsRelations } from "typeorm/find-options/FindOptionsRelations";
 
 export interface UserRepo {
   saveUser(user: User): Promise<void>;
-  findUserByName(name: string): Promise<User | null>;
-  findUserByPasswordResetToken(token: string): Promise<User | null>;
+  findUserByName(
+    name: string,
+    relations?: FindOptionsRelations<User>,
+  ): Promise<User | null>;
+  findUserByPasswordResetToken(
+    token: string,
+    relations?: FindOptionsRelations<User>,
+  ): Promise<User | null>;
 }

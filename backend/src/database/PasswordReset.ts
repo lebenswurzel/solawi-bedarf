@@ -21,27 +21,20 @@ import { User } from "./User";
 
 @Entity()
 export class PasswordReset {
-  constructor() {
-    this._token = generateRandomString(128);
-    this._expireAt = addHours(new Date(), 24);
+  constructor(user: User) {
+    this.user = user;
+    this.token = generateRandomString(128);
+    this.expireAt = addHours(new Date(), 24);
   }
 
-  @ManyToOne(() => User, (user) => user.passwordReset, { nullable: false })
-  user: User;
+  @ManyToOne(() => User, (user) => user.passwordResets, { nullable: false })
+  readonly user: User;
 
   @PrimaryColumn({ type: "varchar", length: 128, collation: "C" })
-  private _token: string | null;
+  readonly token: string | null;
 
   @Column({ type: "timestamp" })
-  private _expireAt: Date | null;
-
-  get token(): string | null {
-    return this._token;
-  }
-
-  get expireAt(): Date | null {
-    return this._expireAt;
-  }
+  readonly expireAt: Date | null;
 
   /**
    * Check if password reset token is valid.

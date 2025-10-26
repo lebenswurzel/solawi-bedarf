@@ -38,6 +38,7 @@ import { UserAddress } from "./src/database/UserAddress";
 import { AdditionalShipmentItem } from "./src/database/AdditionalShipmentItem";
 import { Shipment } from "./src/database/Shipment";
 import { ShipmentItem } from "./src/database/ShipmentItem";
+import { PasswordReset } from "./src/database/PasswordReset";
 
 const clearAllTables = async () => {
   const entities = AppDataSource.entityMetadatas;
@@ -54,6 +55,7 @@ const clearAllTables = async () => {
   await AppDataSource.getRepository(Token).delete({});
   await AppDataSource.getRepository(Applicant).delete({});
   await AppDataSource.getRepository(UserAddress).delete({});
+  await AppDataSource.getRepository(PasswordReset).delete({});
   await AppDataSource.getRepository(User).delete({});
 
   // delete everything that remains

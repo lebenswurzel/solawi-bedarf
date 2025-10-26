@@ -44,10 +44,9 @@ export class User extends BaseEntity {
   hash: string;
 
   @OneToMany(() => PasswordReset, (reset) => reset.user, {
-    nullable: true,
     cascade: true,
   })
-  passwordReset: Promise<PasswordReset[]>;
+  passwordResets: PasswordReset[];
 
   @Column({
     type: "enum",
@@ -91,17 +90,13 @@ export class User extends BaseEntity {
    *
    * @returns Password reset with token, needed for real password reset
    */
-  public async createPasswordReset(): Promise<PasswordReset> {
-    let passwordResets = await this.passwordReset;
-
-    const reset = new PasswordReset();
-
-    if (!this.passwordReset) {
-      this.passwordReset = Promise.resolve([reset]);
-    } else {
-      passwordResets.push(reset);
+  public createPasswordReset(): PasswordReset {
+    if (this.passwordResets === undefined) {
+      throw new Error("'passwordReset' field not loaded");
     }
 
+    const reset = new PasswordReset(this);
+    this.passwordResets.push(reset);
     return reset;
   }
 
@@ -116,13 +111,17 @@ export class User extends BaseEntity {
     token: string,
     newPassword: string,
   ): Promise<boolean> {
-    let passwordResets = await this.passwordReset;
+    if (this.passwordResets === undefined) {
+      throw new Error("'passwordReset' field not loaded");
+    }
+
+    let passwordResets = this.passwordResets;
     if (
       passwordResets &&
       passwordResets.some((reset) => reset.isTokenValid(token))
     ) {
       this.hash = await hashPassword(newPassword);
-      this.passwordReset = Promise.resolve([]);
+      this.passwordResets = [];
       this.invalidateSessions();
       return true;
     } else {
@@ -136,8 +135,12 @@ export class User extends BaseEntity {
    * @param token Password reset token
    * @returns {@code true} iff token is valid
    */
-  public async isPasswordResetTokenValid(token: string): Promise<boolean> {
-    let passwordResets = await this.passwordReset;
+  public isPasswordResetTokenValid(token: string): boolean {
+    if (this.passwordResets === undefined) {
+      throw new Error("'passwordReset' field not loaded");
+    }
+
+    let passwordResets = this.passwordResets;
     return (
       passwordResets &&
       passwordResets.some((reset) => reset.isTokenValid(token))
