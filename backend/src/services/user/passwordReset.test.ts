@@ -59,6 +59,7 @@ class FakedDependencies implements EmailService, TextContentRepo, UserRepo {
   constructor() {
     this.user = new User(USERNAME, OLD_HASH, UserRole.USER, true);
     this.user.id = 424242;
+    this.user.token = [];
     this.user.applicant = new Applicant();
     this.user.applicant.address = new UserAddress();
     this.user.applicant.address.active = true;
@@ -95,6 +96,13 @@ class FakedDependencies implements EmailService, TextContentRepo, UserRepo {
     return (await this.user.passwordResets).some((pr) => pr.token === token)
       ? this.user
       : null;
+  }
+
+  invalidateTokenForUser(userId: number): Promise<void> {
+    if (userId === this.user.id) {
+      this.user.token.forEach((token) => (token.active = false));
+    }
+    return Promise.resolve();
   }
 }
 
