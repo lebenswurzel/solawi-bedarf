@@ -164,7 +164,7 @@ export class PasswordResetService {
       return err(SolawiError.invalidInput("request is invalid"));
     }
 
-    if (!user.resetPassword(token, newPassword)) {
+    if (!(await user.resetPassword(token, newPassword))) {
       return err(SolawiError.rejected("request is expired"));
     }
 
