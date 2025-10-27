@@ -126,7 +126,7 @@ export const calculateExpirationTimeStamp = (
   return issuedAtTime.getTime() + expirationTimeInMs;
 };
 
-const generateToken = async (user: User, untilMidnight?: boolean) => {
+export const generateToken = async (user: User, untilMidnight?: boolean) => {
   await AppDataSource.getRepository(Token).delete({
     user: { id: user.id },
   });
