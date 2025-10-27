@@ -168,8 +168,9 @@ export class PasswordResetService {
       return err(SolawiError.rejected("request is expired"));
     }
 
-    const text = language.email.passwordReset;
+    await this.deps.invalidateTokenForUser(user.id);
 
+    const text = language.email.passwordReset;
     const email = this.getEmail(user);
     if (email.isErr()) {
       return err(email.error);

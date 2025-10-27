@@ -25,6 +25,8 @@ import { TextContentCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum
 import { makeOrganizationInfo } from "@lebenswurzel/solawi-bedarf-shared/src/text/textContent";
 import { PasswordReset } from "../database/PasswordReset";
 import { FindOptionsRelations } from "typeorm/find-options/FindOptionsRelations";
+import { Token } from "../database/Token";
+import { AppDataSource } from "../database/database";
 
 export class TypeormUserRepo implements UserRepo {
   private repo: Repository<User>;
@@ -58,6 +60,15 @@ export class TypeormUserRepo implements UserRepo {
       relations: { user: relations || true },
     });
     return reset ? reset.user : null;
+  }
+
+  async invalidateTokenForUser(userId: number): Promise<void> {
+    await this.db
+      .createQueryBuilder()
+      .update(Token)
+      .set({ active: false })
+      .where({ userId: userId })
+      .execute();
   }
 }
 
