@@ -34,6 +34,7 @@ import { Token } from "../../database/Token";
 import { TypeormTextContentRepo, TypeormUserRepo } from "../../adapter/typeorm";
 import { AppDataSource } from "../../database/database";
 import { mergeMethods } from "../../util/mergeMethods";
+import { generateToken } from "./login";
 
 const ORG_INFO: OrganizationInfo = {
   address: {
@@ -230,7 +231,7 @@ describe("password reset", () => {
 
     // ASSERT
     expect(endResult).toEqual(ok());
-    expect(await comparePassword(PASSWORD, dependencies.user.hash)).true;
+    expect(await comparePassword(PASSWORD, dependencies.user.hash)).is.true;
   });
 
   test("should reject invalid token", async () => {
@@ -340,6 +341,8 @@ describe("password reset workflow", () => {
     );
     await dependencies.saveUser(user);
 
+    await generateToken(user, false);
+
     const address = new UserAddress();
     address.active = true;
     address.address = JSON.stringify({
@@ -356,16 +359,33 @@ describe("password reset workflow", () => {
     applicant.address = address;
     await AppDataSource.getRepository(Applicant).save(applicant);
 
-    // WORKFLOW
+    // ACT
+
+    // Request token
     expect(await service.requestPasswordReset(USERNAME)).toEqual(ok());
 
+    // Use token from e-mail for reset
     const email = emailService.requests.pop();
-    const token = extractTokenFromHtml(email);
+    const passwordResetToken = extractTokenFromHtml(email);
+    expect(
+      await service.resetPassword(passwordResetToken, "NEWPASSWORD"),
+    ).toEqual(ok());
 
-    expect(await service.resetPassword(token, "NEWPASSWORD")).toEqual(ok());
+    // The second attempt should fail
+    expect(
+      await service.resetPassword(passwordResetToken, "NEWPASSWORD"),
+    ).toEqual(err(SolawiError.invalidInput("request is invalid")));
 
     // ASSERT
+
+    // Password should be changed
     const hash = (await dependencies.findUserByName(USERNAME)).hash;
     expect(await comparePassword("NEWPASSWORD", hash)).true;
+
+    // All tokens should be invalid
+    const tokens = await AppDataSource.getRepository(Token).findBy({
+      user: user,
+    });
+    expect(tokens.some((t) => t.active)).is.false;
   });
 });
