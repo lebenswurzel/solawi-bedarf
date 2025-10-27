@@ -66,10 +66,7 @@ import {
   passwordReset,
   passwordResetRequest,
 } from "./controllers/user/passwordReset";
-
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+import { sleep } from "@lebenswurzel/solawi-bedarf-shared/src/util/awaitHelper";
 
 export async function startServer(): Promise<Server> {
   const port = config.server.serverPort;

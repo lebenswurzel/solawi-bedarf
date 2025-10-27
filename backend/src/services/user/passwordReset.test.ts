@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { describe, expect, MockInstance, test, vi } from "vitest";
-import { PasswordResetService } from "./passwordReset";
+import { Dependencies, PasswordResetService } from "./passwordReset";
 import { EmailService, SendEmailRequest } from "../../ports/email";
 import { err, ok, okAsync, ResultAsync } from "neverthrow";
 import { InfrastructureError, SolawiError } from "../../error";
@@ -113,13 +113,19 @@ function mockSendEmail(
   return [mock, tokenStore];
 }
 
+function newPasswordResetService(dependencies: Dependencies) {
+  let service = new PasswordResetService(dependencies);
+  service.randomSleepTime = [0, 0];
+  return service;
+}
+
 describe("password reset request", () => {
   test("should send e-mail", async () => {
     // ARRANGE
     let dependencies = new FakedDependencies();
     let [sendEmailMock, tokenStore] = mockSendEmail(dependencies);
 
-    let service = new PasswordResetService(dependencies);
+    let service = newPasswordResetService(dependencies);
 
     // ACT
     const startResult = await service.requestPasswordReset(USERNAME);
@@ -136,7 +142,7 @@ describe("password reset request", () => {
     // ARRANGE
     let dependencies = new FakedDependencies();
 
-    let service = new PasswordResetService(dependencies);
+    let service = newPasswordResetService(dependencies);
 
     // ACT
     let result = await service.requestPasswordReset("OTHER USER");
@@ -150,7 +156,7 @@ describe("password reset request", () => {
     let dependencies = new FakedDependencies();
     dependencies.removeUserEmailAddress();
 
-    let service = new PasswordResetService(dependencies);
+    let service = newPasswordResetService(dependencies);
 
     // ACT
     let result = await service.requestPasswordReset(USERNAME);
@@ -164,7 +170,7 @@ describe("password reset request", () => {
     let dependencies = new FakedDependencies();
     let [sendEmailMock, _] = mockSendEmail(dependencies);
 
-    let service = new PasswordResetService(dependencies);
+    let service = newPasswordResetService(dependencies);
 
     // ACT
     await service.requestPasswordReset("OTHER USER");
@@ -181,7 +187,7 @@ describe("checking token", () => {
 
     let reset = dependencies.user.createPasswordReset();
 
-    let service = new PasswordResetService(dependencies);
+    let service = newPasswordResetService(dependencies);
 
     // ACT
     const checkResult = await service.checkPasswordResetToken(
@@ -197,7 +203,7 @@ describe("checking token", () => {
     // ARRANGE
     let dependencies = new FakedDependencies();
 
-    let service = new PasswordResetService(dependencies);
+    let service = newPasswordResetService(dependencies);
 
     // ACT
     const checkResult = await service.checkPasswordResetToken(
@@ -217,7 +223,7 @@ describe("password reset", () => {
 
     let reset = dependencies.user.createPasswordReset();
 
-    let service = new PasswordResetService(dependencies);
+    let service = newPasswordResetService(dependencies);
 
     // ACT
     const endResult = await service.resetPassword(reset.token, PASSWORD);
@@ -233,7 +239,7 @@ describe("password reset", () => {
 
     dependencies.user.createPasswordReset();
 
-    let service = new PasswordResetService(dependencies);
+    let service = newPasswordResetService(dependencies);
 
     // ACT
     const endResult = await service.resetPassword("WRONG", PASSWORD);
@@ -251,7 +257,7 @@ describe("password reset", () => {
     let reset = dependencies.user.createPasswordReset();
     let [sendEmailMock, _] = mockSendEmail(dependencies);
 
-    let service = new PasswordResetService(dependencies);
+    let service = newPasswordResetService(dependencies);
 
     // ACT
     const endResult = await service.resetPassword(reset.token, PASSWORD);
@@ -271,7 +277,7 @@ describe("password reset", () => {
     token.active = true;
     dependencies.user.token = [token];
 
-    let service = new PasswordResetService(dependencies);
+    let service = newPasswordResetService(dependencies);
 
     // ACT
     const endResult = await service.resetPassword(reset.token, PASSWORD);
@@ -287,7 +293,7 @@ describe("password reset", () => {
 
     let reset = dependencies.user.createPasswordReset();
 
-    let service = new PasswordResetService(dependencies);
+    let service = newPasswordResetService(dependencies);
 
     // ACT
     const endResult1 = await service.resetPassword(reset.token, PASSWORD);
@@ -324,7 +330,7 @@ describe("password reset workflow", () => {
     const emailService = new FakeEmailService();
     let dependencies = setUpDeps(emailService);
 
-    let service = new PasswordResetService(dependencies);
+    let service = newPasswordResetService(dependencies);
 
     let user = new User(
       USERNAME,

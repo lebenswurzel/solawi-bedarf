@@ -24,11 +24,13 @@ import { interpolate } from "@lebenswurzel/solawi-bedarf-shared/src/lang/templat
 import { err, ok, Result } from "neverthrow";
 import { TextContentRepo } from "../text/repo";
 import { UserRepo } from "./repo";
+import { sleep } from "@lebenswurzel/solawi-bedarf-shared/src/util/awaitHelper";
 
-type Dependencies = EmailService & TextContentRepo & UserRepo;
+export type Dependencies = EmailService & TextContentRepo & UserRepo;
 
 export class PasswordResetService {
   private deps: Dependencies;
+  public randomSleepTime: [number, number] = [25, 100];
 
   constructor(deps: Dependencies) {
     this.deps = deps;
@@ -56,6 +58,12 @@ export class PasswordResetService {
     if (!userName) {
       return err(SolawiError.invalidInput("user name should not be empty"));
     }
+
+    // SEC: Defense against timing attacks: sleep between 25–100 ms
+    let delay =
+      Math.random() * (this.randomSleepTime[1] - this.randomSleepTime[0]) +
+      this.randomSleepTime[0];
+    await sleep(delay);
 
     const user = await this.deps.findUserByName(userName, {
       applicant: { address: true },
