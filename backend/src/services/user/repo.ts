@@ -27,4 +27,5 @@ export interface UserRepo {
     token: string,
     relations?: FindOptionsRelations<User>,
   ): Promise<User | null>;
+  invalidateTokenForUser(userId: number): Promise<void>;
 }
