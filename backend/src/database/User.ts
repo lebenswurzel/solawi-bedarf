@@ -125,7 +125,6 @@ export class User extends BaseEntity {
     ) {
       this.hash = await hashPassword(newPassword);
       this.passwordResets = [];
-      this.invalidateSessions();
       return true;
     } else {
       return false;
@@ -148,14 +147,5 @@ export class User extends BaseEntity {
       passwordResets &&
       passwordResets.some((reset) => reset.isTokenValid(token))
     );
-  }
-
-  /**
-   * Invalidate all sessions.
-   */
-  public invalidateSessions() {
-    if (this.token) {
-      this.token.forEach((token) => (token.active = false));
-    }
   }
 }
