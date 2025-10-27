@@ -26,6 +26,8 @@ import AdminApplicantView from "./views/AdminApplicantView.vue";
 import AdminDepotView from "./views/AdminDepotView.vue";
 import FAQView from "./views/FAQView.vue";
 import AdminTextView from "./views/AdminTextView.vue";
+import ResetPasswordView from "./views/ResetPasswordView.vue";
+import RequestPasswordResetView from "./views/RequestPasswordResetView.vue";
 
 const routes = [
   { path: "/register", component: RegisterView },
@@ -53,6 +55,8 @@ const routes = [
     path: "/adminstatus",
     component: () => import("./views/AdminStatusView.vue"),
   },
+  { path: "/requestpassword", component: RequestPasswordResetView },
+  { path: "/resetpassword", component: ResetPasswordView },
   { path: "/login", component: LoginView },
   { path: "/", component: HomeView },
 ];

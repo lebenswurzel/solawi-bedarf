@@ -14,16 +14,17 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-export const http = {
-  ok: 200,
-  created: 201,
-  no_content: 204,
-  bad_request: 400,
-  unauthorized: 401,
-  forbidden: 403,
-  not_found: 404,
-  method_not_allowed: 405,
-  conflict: 409,
-  unprocessable_entity: 422,
-  internal_server_error: 500,
-};
+import { expect, test } from "vitest";
+import { generateRandomString } from "./security";
+
+test("random string has expected length", () => {
+  expect(generateRandomString(23)).toHaveLength(23);
+});
+
+test("random string is random", () => {
+  expect(generateRandomString(16)).not.eq(generateRandomString(16));
+});
+
+test("random string can be empty", () => {
+  expect(generateRandomString(0)).toHaveLength(0);
+});

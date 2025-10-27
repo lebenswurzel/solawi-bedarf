@@ -77,11 +77,12 @@ export const saveUser = async (
         ctx.status = http.no_content;
       }
     } else {
-      const user = new User();
-      user.name = requestUser.name;
-      user.hash = await hashPassword(requestUser.password!);
-      user.role = requestUser.role;
-      user.active = requestUser.active;
+      const user = new User(
+      requestUser.name,
+      await hashPassword(requestUser.password!),
+      requestUser.role,
+      requestUser.active,
+    );
       await AppDataSource.getRepository(User).save(user);
       if (requestUser.orderValidFrom) {
         await updateOrderValidFrom(

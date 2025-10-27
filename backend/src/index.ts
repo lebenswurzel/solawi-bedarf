@@ -58,93 +58,121 @@ import { getErrorLog } from "./services/getErrorLog";
 import { getUserShipments } from "./services/shipment/getUserShipments";
 import { calcMsrp } from "./services/bi/calcMsrp";
 import { deleteShipment } from "./services/shipment/deleteShipment";
+import { Server } from "http";
+import { IAppContext } from "./controllers/ctx";
+import { useDependencies } from "./middleware/dependencies";
+import {
+  passwordReset,
+  passwordResetRequest,
+} from "./controllers/user/passwordReset";
+import rateLimit from "express-rate-limit";
+import { sleep } from "@lebenswurzel/solawi-bedarf-shared/src/util/awaitHelper";
 
-const port = config.server.serverPort;
-const app = new Koa();
-const router = new Router();
+export async function startServer(): Promise<Server> {
+  const port = config.server.serverPort;
+  const app = new Koa<Koa.DefaultState, IAppContext>();
+  const router = new Router<Koa.DefaultState, IAppContext>();
 
-// Add error logger middleware
-app.use(errorLogger);
+  useDependencies(app);
 
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+  // Add error logger middleware
+  app.use(errorLogger);
 
-const connectToDatabase = async (tries: number = 10) => {
-  while (true) {
-    let connected = false;
-    try {
-      await AppDataSource.initialize();
-      console.log("db is up.");
-      await initDb();
-      connected = true;
-    } catch (error) {
-      tries--;
-      console.log(error);
-      console.log(`Retrying after 2 s (${tries} more to go) ...`);
-      await sleep(2000); // Sleep for 2000 milliseconds (2 seconds)
+  const connectToDatabase = async (tries: number = 10) => {
+    while (true) {
+      let connected = false;
+      try {
+        await AppDataSource.initialize();
+        console.log("db is up.");
+        await initDb();
+        connected = true;
+      } catch (error) {
+        tries--;
+        console.log(error);
+        console.log(`Retrying after 2 s (${tries} more to go) ...`);
+        await sleep(2000); // Sleep for 2000 milliseconds (2 seconds)
+      }
+      if (tries <= 0) {
+        console.error(`Unable to connect to the database!`);
+        break;
+      }
+      if (connected) {
+        break;
+      }
     }
-    if (tries <= 0) {
-      console.error(`Unable to connect to the database!`);
-      break;
-    }
-    if (connected) {
-      break;
-    }
-  }
-};
+  };
 
-connectToDatabase().then(() => {});
+  const passwordResetLimiter = rateLimit({
+    windowMs: 10 * 60 * 1000, // 10 minutes
+    limit: 10,
+    message: "Too many password reset attempts. Please try again later.",
+  });
 
-router.get("/config", getConfig);
-router.post("/config", createConfig);
-router.put("/config", saveConfig);
-router.delete("/config", deleteConfig);
-router.get("/depot", getDepot);
-router.post("/depot", saveDepot);
-router.post("/depot/update", updateDepot);
+  connectToDatabase().then(() => {});
 
-router.get("/user", getUser);
-router.get("/user/token", login);
-router.delete("/user/token", logout);
-router.get("/user/data", getOrder);
-router.post("/user", saveUser);
-router.put("/user", updateUser);
+  router.get("/config", getConfig);
+  router.post("/config", createConfig);
+  router.put("/config", saveConfig);
+  router.delete("/config", deleteConfig);
+  router.get("/depot", getDepot);
+  router.post("/depot", saveDepot);
+  router.post("/depot/update", updateDepot);
 
-router.post("/applicant", saveApplicant);
-router.get("/applicant", getApplicant);
-router.post("/applicant/update", updateApplicant);
-router.put("/applicant/import", importApplicant);
+  router.get("/user", getUser);
+  router.get("/user/token", login);
+  router.post(
+    "/user/requestPasswordReset",
+    passwordResetLimiter,
+    passwordResetRequest,
+  );
+  router.post("/user/passwordReset", passwordReset);
+  router.post("/user/password", login);
+  router.delete("/user/token", logout);
+  router.get("/user/data", getOrder);
+  router.post("/user", saveUser);
+  router.put("/user", updateUser);
 
-router.get("/shop/order", getOrder);
-router.get("/shop/orders", getAllOrders);
-router.post("/shop/order", saveOrder);
-router.post("/shop/order/modify", modifyOrder);
-router.get("/shop/calcMsrp", calcMsrp);
+  router.post("/applicant", saveApplicant);
+  router.get("/applicant", getApplicant);
+  router.post("/applicant/update", updateApplicant);
+  router.put("/applicant/import", importApplicant);
 
-router.get("/shipment", getUserShipments);
-router.get("/shipments", getShipments);
-router.post("/shipment", saveShipment);
-router.delete("/shipment", deleteShipment);
+  router.get("/shop/order", getOrder);
+  router.get("/shop/orders", getAllOrders);
+  router.post("/shop/order", saveOrder);
+  router.post("/shop/order/modify", modifyOrder);
+  router.get("/shop/calcMsrp", calcMsrp);
 
-router.get("/productCategory", getProductCategory);
-router.post("/productCategory", saveProductCategory);
-router.delete("/productCategory", deleteProductCategory);
-router.post("/productCategory/product", saveProduct);
-router.delete("/productCategory/product", deleteProduct);
+  router.get("/shipment", getUserShipments);
+  router.get("/shipments", getShipments);
+  router.post("/shipment", saveShipment);
+  router.delete("/shipment", deleteShipment);
 
-router.get("/content/text", getTextContent);
-router.post("/content/text", saveTextContent);
-router.delete("/content/text", deleteTextContent);
+  router.get("/productCategory", getProductCategory);
+  router.post("/productCategory", saveProductCategory);
+  router.delete("/productCategory", deleteProductCategory);
+  router.post("/productCategory/product", saveProduct);
+  router.delete("/productCategory/product", deleteProduct);
 
-router.get("/bi", biHandler);
-router.get("/overview", getOverview);
+  router.get("/content/text", getTextContent);
+  router.post("/content/text", saveTextContent);
+  router.delete("/content/text", deleteTextContent);
 
-router.get("/version", getVersion);
+  router.get("/bi", biHandler);
+  router.get("/overview", getOverview);
 
-router.get("/error-log", getErrorLog);
+  router.get("/version", getVersion);
 
-app.use(bodyParser());
-app.use(router.routes()).use(router.allowedMethods());
+  router.get("/error-log", getErrorLog);
 
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
+  app.use(bodyParser());
+  app.use(router.routes()).use(router.allowedMethods());
+
+  return app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+  });
+}
+
+export const server = (async (): Promise<Server> => {
+  return await startServer();
+})();

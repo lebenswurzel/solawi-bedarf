@@ -14,16 +14,24 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-export const http = {
-  ok: 200,
-  created: 201,
-  no_content: 204,
-  bad_request: 400,
-  unauthorized: 401,
-  forbidden: 403,
-  not_found: 404,
-  method_not_allowed: 405,
-  conflict: 409,
-  unprocessable_entity: 422,
-  internal_server_error: 500,
-};
+import { ResultAsync } from "neverthrow";
+import { InfrastructureError } from "../error.js";
+
+export interface AttachedFile {
+  filename: string;
+  data: Blob;
+}
+
+export interface SendEmailRequest {
+  sender: string;
+  receiver?: string;
+  subject: string;
+  paragraphs?: string[];
+  html?: string;
+  attachments?: AttachedFile[];
+  bcc?: string;
+}
+
+export interface EmailService {
+  sendEmail(req: SendEmailRequest): ResultAsync<void, InfrastructureError>;
+}
