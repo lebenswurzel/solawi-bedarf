@@ -28,7 +28,7 @@
     "dompurify": "^3.0.8",
     "jszip": "^3.10.1",
     "leaflet": "^1.9.4",
-    "marked": "^15.0.7",
+    "marked": "^16.4.1",
     "papaparse": "^5.5.2",
     "pdf-lib": "^1.17.1",
     "pdfmake": "^0.2.10",
