@@ -27,7 +27,12 @@ export class PasswordReset {
     this.expireAt = addHours(new Date(), 24);
   }
 
-  @ManyToOne(() => User, (user) => user.passwordResets, { nullable: false })
+  @ManyToOne(() => User, (user) => user.passwordResets, {
+    nullable: false,
+    onDelete: "CASCADE",
+    onUpdate: "RESTRICT",
+    orphanedRowAction: "delete",
+  })
   readonly user: User;
 
   @PrimaryColumn({ type: "varchar", length: 128, collation: "C" })
