@@ -24,7 +24,7 @@ export class PasswortReset1757256737447 implements MigrationInterface {
       `CREATE TABLE "password_reset" ("token" character varying(128) COLLATE "C" NOT NULL, "expireAt" TIMESTAMP NOT NULL, "userId" integer NOT NULL, CONSTRAINT "PK_070666d4167bb7b5c5611f6c95b" PRIMARY KEY ("token"))`,
     );
     await queryRunner.query(
-      `ALTER TABLE "password_reset" ADD CONSTRAINT "FK_05baebe80e9f8fab8207eda250c" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+      `ALTER TABLE "password_reset" ADD CONSTRAINT "FK_05baebe80e9f8fab8207eda250c" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE RESTRICT`,
     );
   }
 
