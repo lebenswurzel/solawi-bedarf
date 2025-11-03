@@ -84,7 +84,10 @@ export const checkOrderItemValid = (
     productsById,
     soldByProductId
   );
-  if (maxAvailable < actualOrderItem.value) {
+  if (
+    maxAvailable < actualOrderItem.value &&
+    (!savedValue || savedValue < actualOrderItem.value)
+  ) {
     return `Maximal verfügbare Menge ${maxAvailable} ${getLangUnit(product.unit)} von ${product.name} überschritten`;
   }
 

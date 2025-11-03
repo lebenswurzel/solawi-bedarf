@@ -41,6 +41,11 @@ import {
 } from "../../util/requestUtil";
 import { LessThan, MoreThan } from "typeorm";
 import { mergeShipmentWithForecast } from "../../util/shipmentUtil";
+import { RequisitionConfig } from "../../database/RequisitionConfig";
+import {
+  getSameOrNextThursday,
+  getSameOrPreviousThursday,
+} from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper";
 
 const isOrderValidOnDate = (order: Order, targetDate: Date): boolean => {
   return order.validFrom <= targetDate && order.validTo > targetDate;
@@ -138,13 +143,34 @@ export const biHandler = async (
   );
 };
 
+/**
+ * Calculates the target date for the BI in case no explicit date of interest is provided.
+ */
+const determineTargetDate = async (configId: number): Promise<Date> => {
+  const config = await AppDataSource.getRepository(RequisitionConfig).findOne({
+    where: { id: configId },
+  });
+  if (!config) {
+    throw new Error(`Config ${configId} not found`);
+  }
+  const now = new Date();
+  if (now < config.validFrom) {
+    // if the current date is before the season start, use the season start
+    return getSameOrNextThursday(config.validFrom);
+  } else if (now > config.validTo) {
+    // if the current date is after the season end, use the season end
+    return getSameOrPreviousThursday(config.validTo);
+  }
+  return now;
+};
+
 export const bi = async (
   configId: number,
   orderValidFrom?: Date,
   includeForecast: boolean = false,
   dateOfInterest?: Date,
 ): Promise<BIData> => {
-  const targetDate = dateOfInterest || new Date();
+  const targetDate = dateOfInterest || (await determineTargetDate(configId));
   const depots = await AppDataSource.getRepository(Depot).find();
 
   const orders = await AppDataSource.getRepository(Order).find({

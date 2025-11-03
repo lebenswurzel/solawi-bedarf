@@ -133,7 +133,11 @@ export const saveOrder = async (
   if (!isValidBiddingOrder(role, requisitionConfig, currentTime, null, body)) {
     ctx.throw(http.bad_request, "not valid in bidding round");
   }
-  const dateOfInterest = getSameOrNextThursday(selectedOrder.validFrom);
+  let dateOfInterest = getSameOrNextThursday(selectedOrder.validFrom);
+  if (dateOfInterest.getTime() < requisitionConfig.validFrom.getTime()) {
+    // make sure the date of interest is at least the season start
+    dateOfInterest = getSameOrNextThursday(requisitionConfig.validFrom);
+  }
   const {
     soldByProductId,
     capacityByDepotId,
@@ -143,7 +147,7 @@ export const saveOrder = async (
     requisitionConfig.id,
     selectedOrder.validFrom,
     true,
-    new Date(), // TODO: use dateOfInterest?
+    dateOfInterest,
   );
   const remainingDepotCapacity = getRemainingDepotCapacity(
     depot,
