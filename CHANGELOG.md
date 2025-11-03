@@ -276,4 +276,6 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 
 #300 Details zum Produkt im Produktdialog
 
+# v0.11.5 - 2025-11-03 - Fix Verteilungsstatistik
+
 # NEW
