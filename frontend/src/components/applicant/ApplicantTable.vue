@@ -20,7 +20,13 @@ import {
   Applicant,
   ApplicantExport,
 } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
-import { activateApplicant, getApplicants } from "../../requests/applicant";
+import {
+  convertApplicantToUser,
+  activateApplicant,
+  deactivateApplicant,
+  deleteApplicant,
+  getApplicants,
+} from "../../requests/applicant";
 import { ApplicantState } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import BusyIndicator from "../BusyIndicator.vue";
 import { useUiFeedback } from "../../store/uiFeedbackStore";
@@ -31,6 +37,7 @@ import { prettyDate } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelp
 import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
 import { escapeHtmlEntities } from "@lebenswurzel/solawi-bedarf-shared/src/util/stringHelper.ts";
 import { useRoute } from "vue-router";
+import { interpolate } from "@lebenswurzel/solawi-bedarf-shared/src/lang/template";
 
 const props = defineProps<{
   state: ApplicantState;
@@ -46,10 +53,57 @@ const applicants = ref<Applicant[]>([]);
 
 const showMap = ref(false);
 
-const activate = async (id: number, name?: string) => {
+const handleDelete = async (item: {
+  id?: number;
+  realName: string;
+  name?: string;
+}) => {
   busy.value = true;
   try {
-    await activateApplicant(id, name);
+    if (props.state === ApplicantState.NEW) {
+      // For active applicants, deactivate them
+      await deactivateApplicant(item.id!);
+    } else {
+      // For inactive applicants, delete them
+      console.log(item);
+      if (props.state == ApplicantState.CONFIRMED) {
+        const confirmed = await confirm(
+          interpolate(language.pages.applicants.deleteConfirmation, {
+            realName: item.realName,
+            name: item.name || "<keine LW-Nummer>",
+          }),
+        );
+        if (!confirmed) {
+          return;
+        }
+      }
+      await deleteApplicant(item.id!);
+    }
+  } catch (e) {
+    uiFeedbackStore.setError("Fehler bei der Aktualisierung", e as Error);
+  } finally {
+    busy.value = false;
+  }
+  emit("refreshAll");
+};
+
+const handleActivate = async (id: number, name?: string) => {
+  busy.value = true;
+  try {
+    if (props.state === ApplicantState.NEW) {
+      // For active applicants, convert to user (requires name)
+      if (!name) {
+        uiFeedbackStore.setError(
+          "Name ist erforderlich",
+          new Error("Name is required to convert applicant to user"),
+        );
+        return;
+      }
+      await convertApplicantToUser(id, name);
+    } else {
+      // For inactive applicants, activate them
+      await activateApplicant(id);
+    }
   } catch (e) {
     uiFeedbackStore.setError("Fehler bei der Aktualisierung", e as Error);
   } finally {
@@ -107,33 +161,28 @@ const onExportData = () => {
   window.URL.revokeObjectURL(url);
 };
 
-const tableColumns = computed(() =>
-  [
-    { title: "Benutzer", key: "name" },
-    {
-      title: "Name",
-      key: "realName",
-    },
-    {
-      title: "Kontakt",
-      key: "contact",
-    },
-    {
-      title: "Adresse",
-      key: "address",
-    },
-    {
-      title: "Kommentar",
-      key: "comment",
-    },
-    { title: "Angelegt", key: "createdAt" },
-    { title: "ID", key: "id" },
-    { title: "Aktion", key: "action" },
-  ].filter(
-    (col) =>
-      !(props.state === ApplicantState.CONFIRMED && col.key === "action"),
-  ),
-);
+const tableColumns = computed(() => [
+  { title: "Benutzer", key: "name" },
+  {
+    title: "Name",
+    key: "realName",
+  },
+  {
+    title: "Kontakt",
+    key: "contact",
+  },
+  {
+    title: "Adresse",
+    key: "address",
+  },
+  {
+    title: "Kommentar",
+    key: "comment",
+  },
+  { title: "Angelegt", key: "createdAt" },
+  { title: "ID", key: "id" },
+  { title: "Aktion", key: "action" },
+]);
 
 const tableItems = computed(() =>
   applicants.value.map((a) => ({
@@ -217,34 +266,36 @@ const tableItems = computed(() =>
           {{ item.createdAt && prettyDate(item.createdAt) }}
         </template>
         <template v-slot:item.action="{ item }">
-          <template v-if="props.state != ApplicantState.CONFIRMED">
-            <v-btn-group dense>
-              <v-tooltip :text="language.app.actions.delete" open-on-click>
-                <template v-slot:activator="{ props }">
-                  <v-btn
-                    v-bind="props"
-                    @click="() => activate(item.id!, undefined)"
-                    icon="mdi-close-thick"
-                    size="small"
-                    color="warning"
-                  >
-                  </v-btn>
-                </template>
-              </v-tooltip>
-              <v-tooltip :text="language.app.actions.activate" open-on-click>
-                <template v-slot:activator="{ props }">
-                  <v-btn
-                    v-bind="props"
-                    @click="() => activate(item.id!, item.name!)"
-                    icon="mdi-check-bold"
-                    size="small"
-                    color="primary"
-                  >
-                  </v-btn>
-                </template>
-              </v-tooltip>
-            </v-btn-group>
-          </template>
+          <v-btn-group dense>
+            <v-tooltip :text="language.app.actions.delete" open-on-click>
+              <template v-slot:activator="{ props }">
+                <v-btn
+                  v-bind="props"
+                  @click="() => handleDelete(item)"
+                  icon="mdi-close-thick"
+                  size="small"
+                  color="warning"
+                >
+                </v-btn>
+              </template>
+            </v-tooltip>
+            <v-tooltip
+              :text="language.app.actions.activate"
+              open-on-click
+              v-if="props.state != ApplicantState.CONFIRMED"
+            >
+              <template v-slot:activator="{ props }">
+                <v-btn
+                  v-bind="props"
+                  @click="() => handleActivate(item.id!, item.name!)"
+                  icon="mdi-check-bold"
+                  size="small"
+                  color="primary"
+                >
+                </v-btn>
+              </template>
+            </v-tooltip>
+          </v-btn-group>
         </template>
       </v-data-table>
     </template>

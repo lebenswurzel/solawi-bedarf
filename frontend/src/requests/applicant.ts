@@ -34,10 +34,43 @@ export const saveApplicant = async (applicant: Applicant) => {
   await verifyResponse(response);
 };
 
-export const activateApplicant = async (id: number, name?: string) => {
-  const response = await fetch(getUrl("/applicant/update"), {
+export const convertApplicantToUser = async (id: number, name: string) => {
+  const response = await fetch(getUrl(`/applicant/${id}/convert-to-user`), {
     method: "POST",
-    body: JSON.stringify({ id, name }),
+    body: JSON.stringify({ name }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  await verifyResponse(response);
+};
+
+export const activateApplicant = async (id: number) => {
+  const response = await fetch(getUrl(`/applicant/${id}/activate`), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  await verifyResponse(response);
+};
+
+export const deactivateApplicant = async (id: number) => {
+  const response = await fetch(getUrl(`/applicant/${id}/deactivate`), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  await verifyResponse(response);
+};
+
+export const deleteApplicant = async (id: number) => {
+  const response = await fetch(getUrl(`/applicant?id=${id}`), {
+    method: "DELETE",
     headers: {
       "Content-Type": "application/json",
     },

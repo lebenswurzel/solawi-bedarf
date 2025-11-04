@@ -497,7 +497,12 @@ const filterConfirmGTCs = (tableItem: { confirmGTCs: boolean[] }): boolean => {
                   :to="{ path: `/adminregister/confirmed/${item.name}` }"
                   density="compact"
                 ></v-btn
-                >{{ item.name }}
+                ><template v-if="!item.deleted">{{ item.name }}</template>
+                <template v-else>
+                  <span class="text-decoration-line-through">{{
+                    item.name
+                  }}</span>
+                </template>
               </template>
               <template v-slot:item.active="{ item }">
                 <v-tooltip text="aktiviert" open-on-click>
