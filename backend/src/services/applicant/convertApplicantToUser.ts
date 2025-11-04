@@ -21,10 +21,9 @@ import Router from "koa-router";
 import { Applicant } from "../../database/Applicant";
 import { getUserFromContext } from "../getUserFromContext";
 import { User } from "../../database/User";
-import { UserAddress } from "../../database/UserAddress";
 import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 
-export const updateApplicant = async (
+export const convertApplicantToUser = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
 ) => {
   const { role } = await getUserFromContext(ctx);
@@ -32,49 +31,46 @@ export const updateApplicant = async (
     ctx.throw(http.forbidden);
   }
 
+  const applicantId = parseInt(ctx.params.id);
+  if (!applicantId || isNaN(applicantId)) {
+    ctx.throw(http.bad_request, "Invalid applicant ID");
+  }
+
   const request = ctx.request.body as {
-    name?: string;
-    id: number;
+    name: string;
   };
 
-  const applicant = await AppDataSource.getRepository(Applicant).findOneBy({
-    id: request.id,
-  });
-  if (!applicant || applicant.userId) {
-    ctx.throw(http.bad_request);
+  if (!request.name) {
+    ctx.throw(http.bad_request, "Name is required");
   }
 
-  if (request.name) {
-    if (applicant.active) {
-      const user = new User();
-      user.name = request.name;
-      user.active = false;
-      user.hash = applicant.hash;
-      user.role = UserRole.USER;
-      await AppDataSource.getRepository(User).save(user);
-      applicant.active = false;
-      applicant.user = user;
-      await AppDataSource.getRepository(Applicant).save(applicant);
-      ctx.status = http.created;
-    } else {
-      applicant.active = true;
-      await AppDataSource.getRepository(Applicant).save(applicant);
-      ctx.status = http.no_content;
-    }
-  } else {
-    if (applicant.active) {
-      applicant.active = false;
-      await AppDataSource.getRepository(Applicant).save(applicant);
-      ctx.status = http.no_content;
-    } else {
-      const address = await AppDataSource.getRepository(UserAddress).findOneBy({
-        id: applicant.addressId,
-      });
-      await AppDataSource.getRepository(Applicant).remove(applicant, {});
-      if (address) {
-        await AppDataSource.getRepository(UserAddress).remove(address);
-      }
-      ctx.status = http.no_content;
-    }
+  const applicant = await AppDataSource.getRepository(Applicant).findOneBy({
+    id: applicantId,
+  });
+
+  if (!applicant || applicant.userId) {
+    ctx.throw(http.bad_request, "Applicant not found or already converted");
   }
+
+  if (!applicant.active) {
+    ctx.throw(
+      http.bad_request,
+      "Only active applicants can be converted to users",
+    );
+  }
+
+  await AppDataSource.transaction(async (entityManager) => {
+    const user = new User();
+    user.name = request.name;
+    user.active = false;
+    user.hash = applicant.hash;
+    user.role = UserRole.USER;
+    await entityManager.save(user);
+
+    applicant.active = false;
+    applicant.user = user;
+    await entityManager.save(applicant);
+  });
+
+  ctx.status = http.created;
 };

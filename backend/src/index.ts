@@ -35,7 +35,10 @@ import { modifyOrder } from "./services/order/modifyOrder";
 import { saveConfig } from "./services/config/saveConfig";
 import { saveApplicant } from "./services/applicant/saveApplicant";
 import { getApplicant } from "./services/applicant/getApplicant";
-import { updateApplicant } from "./services/applicant/updateApplicant";
+import { convertApplicantToUser } from "./services/applicant/convertApplicantToUser";
+import { activateApplicant } from "./services/applicant/activateApplicant";
+import { deactivateApplicant } from "./services/applicant/deactivateApplicant";
+import { deleteApplicant } from "./services/applicant/deleteApplicant";
 import { getDepot } from "./services/config/getDepot";
 import { saveDepot } from "./services/config/saveDepot";
 import { getOverview } from "./services/getOverview";
@@ -111,7 +114,10 @@ router.put("/user", updateUser);
 
 router.post("/applicant", saveApplicant);
 router.get("/applicant", getApplicant);
-router.post("/applicant/update", updateApplicant);
+router.post("/applicant/:id/convert-to-user", convertApplicantToUser);
+router.post("/applicant/:id/activate", activateApplicant);
+router.post("/applicant/:id/deactivate", deactivateApplicant);
+router.delete("/applicant", deleteApplicant);
 router.put("/applicant/import", importApplicant);
 
 router.get("/shop/order", getOrder);

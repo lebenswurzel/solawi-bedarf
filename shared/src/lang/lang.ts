@@ -396,6 +396,8 @@ export const language = {
         confirmed: "Bestätigt",
       },
       hint: "GELÖSCHT",
+      deleteConfirmation:
+        "Bitte bestätigen, dass die persönlichen Daten des Nutzers {realName} gelöscht werden sollen. Dabei bleibt die LW-Nummer {name} und potentiell vorhandenen Bestellungen in der Datenbank erhalten.",
     },
     depots: {
       title: "Depots",
