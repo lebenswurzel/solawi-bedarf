@@ -17,6 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { format } from "date-fns";
 import { fromZonedTime, toZonedTime } from "date-fns-tz";
 import { de } from "date-fns/locale";
+import { DeliveryPauseRange } from "../types";
 
 export const addYears = (date: Date, yearsDiff: number): Date => {
   const result = new Date(date);
@@ -98,10 +99,57 @@ export const prettyDateWithMonthAndYear = (
   return date ? format(date, "MMMM yyyy", { locale: de }) : "";
 };
 
-export const countThursdaysBetweenDates = (
+/**
+ * Converts a delivery pause range to actual date ranges for a given year.
+ * Returns the pause range as [beginDate, endDate) for that year.
+ */
+const getDeliveryPauseDatesForYear = (
+  year: number,
+  deliveryPauseRange: DeliveryPauseRange
+): { begin: Date; end: Date } => {
+  const beginMonth = deliveryPauseRange.begin.month - 1; // Convert to 0-indexed
+  const beginDay = deliveryPauseRange.begin.day;
+  const endMonth = deliveryPauseRange.end.month - 1; // Convert to 0-indexed
+  const endDay = deliveryPauseRange.end.day;
+
+  const begin = new Date(year, beginMonth, beginDay);
+  let endYear = year;
+  if (deliveryPauseRange.begin.month > deliveryPauseRange.end.month) {
+    // Range spans year boundary, end is in next year
+    endYear = year + 1;
+  }
+  const end = new Date(endYear, endMonth, endDay);
+
+  return { begin, end };
+};
+
+/**
+ * Finds the overlap between two date ranges [start1, end1) and [start2, end2).
+ * Returns the overlap as [overlapStart, overlapEnd) or null if no overlap.
+ */
+const findDateRangeOverlap = (
+  start1: Date,
+  end1: Date,
+  start2: Date,
+  end2: Date
+): { overlapStart: Date; overlapEnd: Date } | null => {
+  const overlapStart = start1 > start2 ? start1 : start2;
+  const overlapEnd = end1 < end2 ? end1 : end2;
+
+  if (overlapStart >= overlapEnd) {
+    return null; // No overlap
+  }
+
+  return { overlapStart, overlapEnd };
+};
+
+/**
+ * Counts Thursdays between two dates (original implementation without pause consideration).
+ */
+const countThursdaysBetweenDatesInternal = (
   earlierDate: Date, // included if Thursday
   laterDate: Date // excluded if Thursday
-) => {
+): number => {
   // Normalize dates to start of day to avoid time-of-day issues
   const start = new Date(
     earlierDate.getFullYear(),
@@ -125,7 +173,7 @@ export const countThursdaysBetweenDates = (
   firstThursday.setDate(start.getDate() + daysToThursday);
 
   // If first Thursday is after end date, return 0
-  if (firstThursday > end) {
+  if (firstThursday >= end) {
     return 0;
   }
 
@@ -137,6 +185,74 @@ export const countThursdaysBetweenDates = (
   const thursdays = Math.floor(days / 7) + excludeLastThursday; // don't include if end date is a Thursday
 
   return thursdays;
+};
+
+export const countThursdaysBetweenDates = (
+  earlierDate: Date, // included if Thursday
+  laterDate: Date, // excluded if Thursday
+  deliveryPauseRange?: DeliveryPauseRange
+) => {
+  // Normalize dates to start of day to avoid time-of-day issues
+  const start = new Date(
+    earlierDate.getFullYear(),
+    earlierDate.getMonth(),
+    earlierDate.getDate()
+  );
+  const end = new Date(
+    laterDate.getFullYear(),
+    laterDate.getMonth(),
+    laterDate.getDate()
+  );
+
+  // Count all Thursdays between dates
+  const totalThursdays = countThursdaysBetweenDatesInternal(start, end);
+
+  // If no delivery pause range, return total
+  if (!deliveryPauseRange) {
+    return totalThursdays;
+  }
+
+  // Find all delivery pause ranges that might overlap with [start, end)
+  // The pause range spans year boundaries (e.g., Dec 23 - Jan 3), so we need to check
+  // the pause range for each year in the date range and potentially the previous year.
+  const startYear = start.getFullYear();
+  const endYear = end.getFullYear();
+  const yearsToCheck = new Set<number>();
+
+  // Check pause ranges for all years that might overlap
+  // If pause spans year boundary, we also need to check previous year's pause
+  // (since it extends into the current year)
+  const pauseSpansYearBoundary =
+    deliveryPauseRange.begin.month > deliveryPauseRange.end.month;
+
+  // Add all years from startYear to endYear
+  for (let year = startYear; year <= endYear; year++) {
+    yearsToCheck.add(year);
+    // If pause spans boundary, also check previous year's pause (it extends into this year)
+    if (pauseSpansYearBoundary && year > 0) {
+      yearsToCheck.add(year - 1);
+    }
+  }
+
+  // Count Thursdays in overlapping pause ranges
+  let pauseThursdays = 0;
+  for (const year of yearsToCheck) {
+    const pauseDates = getDeliveryPauseDatesForYear(year, deliveryPauseRange);
+    const overlap = findDateRangeOverlap(
+      start,
+      end,
+      pauseDates.begin,
+      pauseDates.end
+    );
+    if (overlap) {
+      pauseThursdays += countThursdaysBetweenDatesInternal(
+        overlap.overlapStart,
+        overlap.overlapEnd
+      );
+    }
+  }
+
+  return totalThursdays - pauseThursdays;
 };
 
 export const getSameOrNextThursday = (date: Date, timezone?: string): Date => {

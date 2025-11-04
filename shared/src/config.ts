@@ -16,6 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { Unit, UserCategory } from "./enum";
 import {
+  DeliveryPauseRange,
   EmailTextsKeys,
   OrganizationInfo,
   OrganizationInfoKeys,
@@ -83,6 +84,17 @@ export const appConfig = {
   },
   meta: {
     sourceCodeUrl: "https://github.com/lebenswurzel/solawi-bedarf",
+  },
+};
+
+export const deliveryPauseRange: DeliveryPauseRange = {
+  begin: {
+    month: 12,
+    day: 23,
+  },
+  end: {
+    month: 1,
+    day: 4,
   },
 };
 

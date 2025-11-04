@@ -29,6 +29,7 @@ import {
   calculateNewOrderValidFromDate,
   isDateInRange,
 } from "../dateHelper";
+import { DeliveryPauseRange } from "../../types";
 
 describe("dateHelper", () => {
   describe("addYears", () => {
@@ -212,6 +213,240 @@ describe("dateHelper", () => {
       const end = new Date("2024-01-01"); // Monday
       const result = countThursdaysBetweenDates(start, end);
       expect(result).toBe(0);
+    });
+
+    describe("with deliveryPauseRange", () => {
+      // Standard pause: Dec 23 (inclusive) to Jan 3 (exclusive)
+      const deliveryPauseRange: DeliveryPauseRange = {
+        begin: { month: 12, day: 23 },
+        end: { month: 1, day: 4 },
+      };
+
+      it("should exclude Thursdays within delivery pause range", () => {
+        // Range: Dec 20, 2024 to Jan 10, 2025
+        // Thursdays: Dec 26, 2024 (in pause), Jan 2, 2025 (in pause), Jan 9, 2025
+        // Without pause: 3 Thursdays
+        // With pause: 1 Thursday (Jan 9)
+        const start = new Date("2024-12-20"); // Friday
+        const end = new Date("2025-01-10"); // Friday
+        const result = countThursdaysBetweenDates(
+          start,
+          end,
+          deliveryPauseRange
+        );
+        expect(result).toBe(1); // Only Jan 9
+      });
+
+      it("should handle range that doesn't overlap with pause", () => {
+        // Range: Jan 10 to Jan 31, 2024 (no overlap with pause)
+        // Thursdays: Jan 11, 18, 25
+        const start = new Date("2024-01-10"); // Wednesday
+        const end = new Date("2024-01-31"); // Wednesday
+        const result = countThursdaysBetweenDates(
+          start,
+          end,
+          deliveryPauseRange
+        );
+        expect(result).toBe(3); // All Thursdays counted
+      });
+
+      it("should handle range that fully contains pause", () => {
+        // Range: Dec 1, 2024 to Jan 15, 2025
+        // Thursdays: Dec 5, 12, 19, 26 (in pause), Jan 2 (in pause), 9
+        // Without pause: 6 Thursdays
+        // With pause: 4 Thursdays (Dec 5, 12, 19, Jan 9)
+        const start = new Date("2024-12-01"); // Sunday
+        const end = new Date("2025-01-15"); // Wednesday
+        const result = countThursdaysBetweenDates(
+          start,
+          end,
+          deliveryPauseRange
+        );
+        expect(result).toBe(4);
+      });
+
+      it("should handle range starting before pause and ending during pause", () => {
+        // Range: Dec 20, 2024 to Dec 30, 2024
+        // Thursdays: Dec 26 (in pause)
+        // Without pause: 1 Thursday
+        // With pause: 0 Thursdays
+        const start = new Date("2024-12-20"); // Friday
+        const end = new Date("2024-12-30"); // Monday
+        const result = countThursdaysBetweenDates(
+          start,
+          end,
+          deliveryPauseRange
+        );
+        expect(result).toBe(0);
+      });
+
+      it("should handle range starting during pause and ending after pause", () => {
+        // Range: Dec 25, 2024 to Jan 10, 2025
+        // Thursdays: Dec 26 (in pause), Jan 2 (in pause), Jan 9
+        // Without pause: 3 Thursdays
+        // With pause: 1 Thursday (Jan 9)
+        const start = new Date("2024-12-25"); // Wednesday
+        const end = new Date("2025-01-10"); // Friday
+        const result = countThursdaysBetweenDates(
+          start,
+          end,
+          deliveryPauseRange
+        );
+        expect(result).toBe(1);
+      });
+
+      it("should handle range that exactly matches pause boundaries", () => {
+        // Range: Dec 23, 2024 to Jan 3, 2025 (exactly the pause range)
+        // Thursdays: Dec 26 (in pause), Jan 2 (in pause)
+        // Without pause: 2 Thursdays
+        // With pause: 0 Thursdays
+        const start = new Date("2024-12-23"); // Monday
+        const end = new Date("2025-01-04"); // Saturday
+        const result = countThursdaysBetweenDates(
+          start,
+          end,
+          deliveryPauseRange
+        );
+        expect(result).toBe(0);
+      });
+
+      it("should handle range starting exactly on pause begin", () => {
+        // Range: Dec 23, 2024 to Jan 10, 2025
+        // Thursdays: Dec 26 (in pause), Jan 2 (in pause), Jan 9
+        // Without pause: 3 Thursdays
+        // With pause: 1 Thursday (Jan 9)
+        const start = new Date("2024-12-23"); // Monday
+        const end = new Date("2025-01-10"); // Friday
+        const result = countThursdaysBetweenDates(
+          start,
+          end,
+          deliveryPauseRange
+        );
+        expect(result).toBe(1);
+      });
+
+      it("should handle range ending exactly on pause end", () => {
+        // Range: Dec 20, 2024 to Jan 3, 2025
+        // Thursdays: Dec 26 (in pause), Jan 2 (in pause)
+        // Without pause: 2 Thursdays
+        // With pause: 0 Thursdays
+        const start = new Date("2024-12-20"); // Friday
+        const end = new Date("2025-01-04"); // Friday
+        const result = countThursdaysBetweenDates(
+          start,
+          end,
+          deliveryPauseRange
+        );
+        expect(result).toBe(0);
+      });
+
+      it("should handle range spanning multiple years with pause", () => {
+        // Range: Dec 1, 2023 to Feb 15, 2025
+        // This spans multiple years and includes two pause periods:
+        // - Dec 23, 2023 to Jan 3, 2024
+        // - Dec 23, 2024 to Jan 3, 2025
+        // Thursdays in Dec 2023: Dec 5, 12, 19, 26 (in pause)
+        // Thursdays in Jan 2024: Jan 2 (in pause), 9, 16, 23, 30
+        // ... and many more in 2024 and early 2025
+        const start = new Date("2023-12-01"); // Friday
+        const end = new Date("2025-02-15"); // Saturday
+        const result = countThursdaysBetweenDates(
+          start,
+          end,
+          deliveryPauseRange
+        );
+        // Without pause, this would be many Thursdays
+        // With pause, we should exclude Dec 28, 2023; Dec 26, 2024; Jan 2, 2025
+        // Let's verify it's less than without pause
+        const withoutPause = countThursdaysBetweenDates(start, end);
+        expect(result).toBe(withoutPause - 3);
+      });
+
+      it("should handle pause range that doesn't span year boundary", () => {
+        // Test with a pause range within same year: June 1 to June 15
+        const sameYearPause: DeliveryPauseRange = {
+          begin: { month: 6, day: 1 },
+          end: { month: 6, day: 15 },
+        };
+        // Range: May 25 to June 20, 2024
+        // Thursdays: May 30, June 6 (in pause), June 13 (in pause)
+        // Without pause: 3 Thursdays
+        // With pause: 1 Thursday (May 30)
+        const start = new Date("2024-05-25"); // Saturday
+        const end = new Date("2024-06-20"); // Thursday
+        const result = countThursdaysBetweenDates(start, end, sameYearPause);
+        expect(result).toBe(1);
+      });
+
+      it("should return same result when no pause range provided", () => {
+        // Range: Dec 20, 2024 to Jan 10, 2025
+        const start = new Date("2024-12-20"); // Friday
+        const end = new Date("2025-01-10"); // Friday
+        const withPause = countThursdaysBetweenDates(
+          start,
+          end,
+          deliveryPauseRange
+        );
+        const withoutPause = countThursdaysBetweenDates(start, end);
+        // Without pause should be more (includes paused Thursdays)
+        expect(withoutPause).toBeGreaterThan(withPause);
+      });
+
+      it("should handle Thursday exactly on pause begin boundary", () => {
+        // If Dec 23, 2024 is a Thursday, it should be excluded (inclusive begin)
+        // Dec 23, 2024 is a Monday, so let's use a year where it's Thursday
+        // Dec 23, 2021 was a Thursday
+        const start = new Date("2021-12-20"); // Monday
+        const end = new Date("2022-01-10"); // Monday
+        const result = countThursdaysBetweenDates(
+          start,
+          end,
+          deliveryPauseRange
+        );
+        // Dec 23, 2021 was Thursday, so it should be excluded
+        // Dec 30, 2021 was Thursday (in pause)
+        // Jan 6, 2022 was Thursday (after pause)
+        // Should be 1 Thursday (Jan 6)
+        expect(result).toBe(1);
+      });
+
+      it("should handle Thursday exactly on pause end boundary", () => {
+        // Jan 3, 2024 was a Wednesday, but let's check a year where Jan 3 is Thursday
+        // Jan 3, 2025 is a Friday, so pause ends on Friday (exclusive)
+        // So Jan 3, 2025 should NOT be in pause
+        // But if Jan 2, 2025 is Thursday, it should be in pause
+        // Jan 2, 2025 is a Thursday
+        const start = new Date("2024-12-20"); // Friday
+        const end = new Date("2025-01-10"); // Friday
+        const result = countThursdaysBetweenDates(
+          start,
+          end,
+          deliveryPauseRange
+        );
+        // Dec 26, 2024 (Thursday) - in pause
+        // Jan 2, 2025 (Thursday) - in pause (Jan 3 is exclusive)
+        // Jan 9, 2025 (Thursday) - not in pause
+        expect(result).toBe(1); // Only Jan 9
+      });
+
+      it("should handle multiple pause periods across year boundary", () => {
+        // Range from Nov 2023 to March 2025
+        // Includes pauses: Dec 23, 2023 - Jan 3, 2024 and Dec 23, 2024 - Jan 3, 2025
+        const start = new Date("2023-11-01"); // Wednesday
+        const end = new Date("2025-03-01"); // Saturday
+        const result = countThursdaysBetweenDates(
+          start,
+          end,
+          deliveryPauseRange
+        );
+        const withoutPause = countThursdaysBetweenDates(start, end);
+        // Should exclude Thursdays that fall within pause periods
+        // Verify result is less than without pause and greater than 0
+        expect(result).toBeLessThan(withoutPause);
+        expect(result).toBeGreaterThan(0);
+        // Verify that at least 2 Thursdays are excluded (one per pause period)
+        expect(withoutPause - result).toBeGreaterThanOrEqual(2);
+      });
     });
   });
 

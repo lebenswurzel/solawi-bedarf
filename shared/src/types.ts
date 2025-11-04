@@ -529,3 +529,8 @@ export interface ValidRange {
   validFrom: Date;
   validTo: Date;
 }
+
+export interface DeliveryPauseRange {
+  begin: { month: number; day: number }; // inclusive
+  end: { month: number; day: number }; // exclusive
+}

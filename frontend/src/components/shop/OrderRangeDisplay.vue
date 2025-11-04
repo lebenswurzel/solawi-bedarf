@@ -27,6 +27,7 @@ import {
 } from "../../../../shared/src/util/dateHelper";
 import { SavedOrder } from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import DebugOnly from "../debug/DebugOnly.vue";
+import { deliveryPauseRange } from "@lebenswurzel/solawi-bedarf-shared/src/config";
 
 const configStore = useConfigStore();
 const { config } = storeToRefs(configStore);
@@ -76,6 +77,7 @@ const deliveries = computed(() => {
     return countThursdaysBetweenDates(
       firstThursdayOfDelivery.value,
       endDate.value,
+      deliveryPauseRange,
     );
   }
   return 0;
