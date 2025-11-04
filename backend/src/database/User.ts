@@ -38,6 +38,9 @@ export class User extends BaseEntity {
   @Column()
   active: boolean;
 
+  @Column({ default: false })
+  deleted: boolean;
+
   @Column()
   hash: string;
 

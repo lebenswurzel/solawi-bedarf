@@ -38,6 +38,7 @@ export const getUser = async (
             id: true,
             role: true,
             active: true,
+            deleted: true,
             orders: {
               updatedAt: true,
               requisitionConfigId: true,
@@ -76,6 +77,7 @@ export const getUser = async (
           id: u.id,
           role: u.role,
           active: u.active,
+          deleted: u.deleted,
           orders: (u.orders ?? []).map((o) => ({
             updatedAt: o.updatedAt,
             configId: o.requisitionConfigId,

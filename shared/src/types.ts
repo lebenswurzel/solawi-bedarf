@@ -42,7 +42,7 @@ export interface NewUser {
   active: boolean;
 }
 
-export type User = Required<NewUser> & Id;
+export type User = Required<NewUser> & Id & { deleted: boolean };
 
 export type SaveUserRequest = Required<NewUser> & {
   id?: UserId;
