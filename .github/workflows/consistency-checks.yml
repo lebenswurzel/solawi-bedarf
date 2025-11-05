@@ -1,5 +1,5 @@
 name: Check file consistency
-on: [pull_request, push]
+on: [push]
 
 jobs:
   file-checks:
