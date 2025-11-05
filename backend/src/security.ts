@@ -18,6 +18,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { config } from "./config";
 import { Token } from "./database/Token";
+import { randomBytes } from "crypto";
 
 export function hashPassword(plaintextPassword: string) {
   return bcrypt.hash(plaintextPassword, 10);
@@ -37,4 +38,14 @@ export function createJwt(token: Token) {
     },
     config.jwt.secret,
   );
+}
+
+const ALPHANUM =
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+export function generateRandomString(length: number): string {
+  return Array.from(
+    randomBytes(length),
+    (n) => ALPHANUM[n % ALPHANUM.length],
+  ).join("");
 }

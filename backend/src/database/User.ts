@@ -15,17 +15,19 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import {
-  Entity,
   Column,
-  PrimaryGeneratedColumn,
+  Entity,
   OneToMany,
   OneToOne,
+  PrimaryGeneratedColumn,
 } from "typeorm";
 import { Token } from "./Token";
 import { Order } from "./Order";
 import { BaseEntity } from "./BaseEntity";
 import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import { Applicant } from "./Applicant";
+import { hashPassword } from "../security";
+import { PasswordReset } from "./PasswordReset";
 
 @Entity()
 export class User extends BaseEntity {
@@ -40,6 +42,11 @@ export class User extends BaseEntity {
 
   @Column()
   hash: string;
+
+  @OneToMany(() => PasswordReset, (reset) => reset.user, {
+    cascade: true,
+  })
+  passwordResets: PasswordReset[];
 
   @Column({
     type: "enum",
@@ -56,4 +63,86 @@ export class User extends BaseEntity {
 
   @OneToOne(() => Applicant, (applicant) => applicant.user, { nullable: true })
   applicant: Applicant;
+
+  /**
+   * Create a new user.
+   *
+   * @param name User name
+   * @param hash Password hash
+   * @param role User role
+   * @param active Is user active?
+   */
+  constructor(name: string, hash: string, role: UserRole, active: boolean) {
+    super();
+    this.name = name;
+    this.hash = hash;
+    this.role = role;
+    this.active = active;
+  }
+
+  /**
+   * Create password reset.
+   *
+   * Flow:
+   * * User requests password reset (call this function)
+   * * Token is sent to user by a known channel (for example e-mail)
+   * * User sends token and new password ({@link resetPassword})
+   *
+   * @returns Password reset with token, needed for real password reset
+   */
+  public createPasswordReset(): PasswordReset {
+    if (this.passwordResets === undefined) {
+      throw new Error("'passwordReset' field not loaded");
+    }
+
+    const reset = new PasswordReset(this);
+    this.passwordResets.push(reset);
+    return reset;
+  }
+
+  /**
+   * Reset password
+   *
+   * @param token Token from {@link createPasswordReset}
+   * @param newPassword New password hash
+   * @returns {@code true} iff password reset succeeded
+   */
+  public async resetPassword(
+    token: string,
+    newPassword: string,
+  ): Promise<boolean> {
+    if (this.passwordResets === undefined) {
+      throw new Error("'passwordReset' field not loaded");
+    }
+
+    let passwordResets = this.passwordResets;
+    if (
+      passwordResets &&
+      passwordResets.some((reset) => reset.isTokenValid(token))
+    ) {
+      this.hash = await hashPassword(newPassword);
+      this.passwordResets = [];
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  /**
+   * Check if password reset token is valid.
+   *
+   * @param token Password reset token
+   * @returns {@code true} iff token is valid
+   */
+  public isPasswordResetTokenValid(token: string): boolean {
+    if (this.passwordResets === undefined) {
+      throw new Error("'passwordReset' field not loaded");
+    }
+
+    let passwordResets = this.passwordResets;
+    return (
+      passwordResets &&
+      passwordResets.some((reset) => reset.isTokenValid(token))
+    );
+  }
 }

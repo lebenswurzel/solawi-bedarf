@@ -14,16 +14,25 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-export const http = {
-  ok: 200,
-  created: 201,
-  no_content: 204,
-  bad_request: 400,
-  unauthorized: 401,
-  forbidden: 403,
-  not_found: 404,
-  method_not_allowed: 405,
-  conflict: 409,
-  unprocessable_entity: 422,
-  internal_server_error: 500,
-};
+import { Result } from "neverthrow";
+import { KoaAppContext } from "./ctx";
+import { SolawiError } from "../error";
+
+export function handleResult<T>(
+  ctx: KoaAppContext,
+  result: Result<T, SolawiError>,
+) {
+  if (result.isErr()) {
+    handleError(ctx, result.error);
+  } else {
+    ctx.status = 200;
+  }
+}
+
+export function handleError(ctx: KoaAppContext, err: SolawiError) {
+  ctx.status = err.code;
+  ctx.body = {
+    code: err.code,
+    message: err.message,
+  };
+}

@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import "reflect-metadata";
-import { DataSource, DataSourceOptions } from "typeorm";
+import { DataSource } from "typeorm";
 import { User } from "./User";
 import { config } from "../config";
 import { Token } from "./Token";
@@ -28,7 +28,9 @@ import { Applicant } from "./Applicant";
 import { UserAddress } from "./UserAddress";
 import { TextContent } from "./TextContent";
 import { InitialSetup1708028123640 } from "../migrations/1708028123640-initial-setup";
-import { AddTextContentDepotCapacityOrderAlternateDepot1708028123641 } from "../migrations/1708028123641-add-textContent-depot-capacity-order-alternateDepot";
+import {
+  AddTextContentDepotCapacityOrderAlternateDepot1708028123641
+} from "../migrations/1708028123641-add-textContent-depot-capacity-order-alternateDepot";
 import { RequisitionConfig } from "./RequisitionConfig";
 import { Shipment } from "./Shipment";
 import { ShipmentItem } from "./ShipmentItem";
@@ -38,7 +40,9 @@ import { OrderValidFrom1711780969019 } from "../migrations/1711780969019-order-v
 import { PostgresConnectionOptions } from "typeorm/driver/postgres/PostgresConnectionOptions";
 import { DepotRank1726862542988 } from "../migrations/1726862542988-depot-rank";
 import { MultiSeason1727640942892 } from "../migrations/1727640942892-multi-season";
-import { MultiSeasonForShipmentAndOrder1727966567905 } from "../migrations/1727966567905-multi-season-for-shipment-and-order";
+import {
+  MultiSeasonForShipmentAndOrder1727966567905
+} from "../migrations/1727966567905-multi-season-for-shipment-and-order";
 import { NonUniqueProductNames1728134733135 } from "../migrations/1728134733135-non-unique-product-names";
 import { ConfigPublicFlag1728677345133 } from "../migrations/1728677345133-config-public-flag";
 import { AddMaintenanceMsgText1730887882789 } from "../migrations/1730887882789-add-maintenance-msg-text";
@@ -55,11 +59,14 @@ import { OrderConfirm1756065235682 } from "../migrations/1756065235682-order-con
 import { EmailTexts1757146546682 } from "../migrations/1757146546682-email-texts";
 import { PageElementTexts1758569141622 } from "../migrations/1758569141622-page-element-texts";
 import { OrderNonNullValidRange1758647660837 } from "../migrations/1758647660837-order-non-null-valid-range";
+import { PasswordReset } from "./PasswordReset";
+import { PasswortReset1757256737447 } from "../migrations/1757256737447-passwort-reset";
 
 const entities = [
   User,
   Order,
   Token,
+  PasswordReset,
   Product,
   ProductCategory,
   Depot,
@@ -101,6 +108,7 @@ const migrations = [
   EmailTexts1757146546682,
   PageElementTexts1758569141622,
   OrderNonNullValidRange1758647660837,
+  PasswortReset1757256737447,
 ];
 
 const configuredPort = config.testing.isTesting

@@ -79,6 +79,15 @@ export type UpdateUserRequest = Id & {
   configId: number;
 };
 
+export interface RequestPasswordResetRequest {
+  username: string;
+}
+
+export interface PasswordResetRequest {
+  token: string;
+  password: string;
+}
+
 export interface NewProduct {
   description?: string | null;
   name?: string;
