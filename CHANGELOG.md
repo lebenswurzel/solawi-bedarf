@@ -280,7 +280,9 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 
 #306: Korrektur bei der Berechnung der Verteilungsstatistik für Zeitpunkte vor Saisonbeginn
 
-# NEW
+# v0.12.0 - 2025-11-10 - Nutzerdaten löschen
 
 #307: Korrektur Anzahl der Verteilungen (Abzug von Verteilungen um den Jahreswechsel herum)
 #309: Nutzerdaten können jetzt gelöscht werden
+
+# NEW
