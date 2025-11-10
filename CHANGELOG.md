@@ -283,3 +283,4 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 # NEW
 
 #307: Korrektur Anzahl der Verteilungen (Abzug von Verteilungen um den Jahreswechsel herum)
+#309: Nutzerdaten können jetzt gelöscht werden
