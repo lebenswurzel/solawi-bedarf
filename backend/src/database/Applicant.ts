@@ -35,7 +35,7 @@ export class Applicant extends BaseEntity {
   hash: string;
 
   @Column()
-  active: boolean;
+  active: boolean; // true if the applicant awaits activation; false if a user was created from this applicant
 
   @Column()
   confirmGDPR: boolean;
