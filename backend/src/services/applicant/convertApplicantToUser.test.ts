@@ -17,9 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { expect, test } from "vitest";
 import { http } from "../../consts/http";
 import { AppDataSource } from "../../database/database";
-import { Applicant } from "../../database/Applicant";
 import { User } from "../../database/User";
-import { UserAddress } from "../../database/UserAddress";
 import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import { convertApplicantToUser } from "./convertApplicantToUser";
 import {
@@ -28,7 +26,10 @@ import {
   testAsUser1,
   TestUserData,
 } from "../../../testSetup";
-import { hashPassword } from "../../security";
+import {
+  createTestApplicant,
+  createTestApplicantWithUser,
+} from "../../../test/testHelpers";
 
 test("prevent unauthorized access", async () => {
   const ctx = createBasicTestCtx({ name: "testuser" });
@@ -53,29 +54,7 @@ testAsAdmin(
   "create user and set applicant active=false",
   async ({ userData }: TestUserData) => {
     // Create an active applicant
-    const addressRepo = AppDataSource.getRepository(UserAddress);
-    const applicantRepo = AppDataSource.getRepository(Applicant);
-
-    const address = new UserAddress();
-    address.active = false;
-    address.address = JSON.stringify({
-      firstname: "John",
-      lastname: "Doe",
-      email: "john.doe@example.com",
-      phone: "+49123456789",
-      street: "Test Street 123",
-      postalcode: "12345",
-      city: "Test City",
-    });
-    const savedAddress = await addressRepo.save(address);
-
-    const applicant = new Applicant();
-    applicant.confirmGDPR = true;
-    applicant.comment = "Test comment";
-    applicant.hash = await hashPassword("testpassword123");
-    applicant.active = true;
-    applicant.address = savedAddress;
-    const savedApplicant = await applicantRepo.save(applicant);
+    const savedApplicant = await createTestApplicant({ active: true });
 
     // Convert applicant to user
     const ctx = createBasicTestCtx(
@@ -90,6 +69,7 @@ testAsAdmin(
     expect(ctx.status).toBe(http.created);
 
     // Verify applicant is now inactive
+    const applicantRepo = AppDataSource.getRepository("Applicant");
     const updatedApplicant = await applicantRepo.findOneBy({
       id: savedApplicant.id,
     });
@@ -105,7 +85,7 @@ testAsAdmin(
     expect(createdUser!.name).toBe("newuser");
     expect(createdUser!.active).toBe(false);
     expect(createdUser!.role).toBe(UserRole.USER);
-    expect(createdUser!.hash).toBe(applicant.hash);
+    expect(createdUser!.hash).toBe(savedApplicant.hash);
     expect(createdUser!.deleted).toBe(false);
   },
 );
@@ -114,29 +94,7 @@ testAsAdmin(
   "prevent converting applicant with missing name",
   async ({ userData }: TestUserData) => {
     // Create an active applicant
-    const addressRepo = AppDataSource.getRepository(UserAddress);
-    const applicantRepo = AppDataSource.getRepository(Applicant);
-
-    const address = new UserAddress();
-    address.active = false;
-    address.address = JSON.stringify({
-      firstname: "John",
-      lastname: "Doe",
-      email: "john.doe@example.com",
-      phone: "+49123456789",
-      street: "Test Street 123",
-      postalcode: "12345",
-      city: "Test City",
-    });
-    const savedAddress = await addressRepo.save(address);
-
-    const applicant = new Applicant();
-    applicant.confirmGDPR = true;
-    applicant.comment = "Test comment";
-    applicant.hash = await hashPassword("testpassword123");
-    applicant.active = true;
-    applicant.address = savedAddress;
-    const savedApplicant = await applicantRepo.save(applicant);
+    const savedApplicant = await createTestApplicant({ active: true });
 
     // Try to convert without name
     const ctx = createBasicTestCtx({}, userData.token);
@@ -161,40 +119,11 @@ testAsAdmin(
 testAsAdmin(
   "prevent converting already converted applicant",
   async ({ userData }: TestUserData) => {
-    // Create a user first
-    const user = new User();
-    user.name = "existinguser";
-    user.active = false;
-    user.hash = await hashPassword("testpassword123");
-    user.role = UserRole.USER;
-    const savedUser = await AppDataSource.getRepository(User).save(user);
-
     // Create an applicant that's already converted
-    const addressRepo = AppDataSource.getRepository(UserAddress);
-    const applicantRepo = AppDataSource.getRepository(Applicant);
-
-    const address = new UserAddress();
-    address.active = false;
-    address.address = JSON.stringify({
-      firstname: "John",
-      lastname: "Doe",
-      email: "john.doe@example.com",
-      phone: "+49123456789",
-      street: "Test Street 123",
-      postalcode: "12345",
-      city: "Test City",
+    const { applicant: savedApplicant } = await createTestApplicantWithUser({
+      active: false,
+      userName: "existinguser",
     });
-    const savedAddress = await addressRepo.save(address);
-
-    const applicant = new Applicant();
-    applicant.confirmGDPR = true;
-    applicant.comment = "Test comment";
-    applicant.hash = await hashPassword("testpassword123");
-    applicant.active = false;
-    applicant.userId = savedUser.id;
-    applicant.user = savedUser;
-    applicant.address = savedAddress;
-    const savedApplicant = await applicantRepo.save(applicant);
 
     // Try to convert again
     const ctx = createBasicTestCtx({ name: "newuser" }, userData.token);
@@ -209,29 +138,7 @@ testAsAdmin(
   "prevent converting inactive applicant",
   async ({ userData }: TestUserData) => {
     // Create an inactive applicant
-    const addressRepo = AppDataSource.getRepository(UserAddress);
-    const applicantRepo = AppDataSource.getRepository(Applicant);
-
-    const address = new UserAddress();
-    address.active = false;
-    address.address = JSON.stringify({
-      firstname: "John",
-      lastname: "Doe",
-      email: "john.doe@example.com",
-      phone: "+49123456789",
-      street: "Test Street 123",
-      postalcode: "12345",
-      city: "Test City",
-    });
-    const savedAddress = await addressRepo.save(address);
-
-    const applicant = new Applicant();
-    applicant.confirmGDPR = true;
-    applicant.comment = "Test comment";
-    applicant.hash = await hashPassword("testpassword123");
-    applicant.active = false; // inactive
-    applicant.address = savedAddress;
-    const savedApplicant = await applicantRepo.save(applicant);
+    const savedApplicant = await createTestApplicant({ active: false });
 
     // Try to convert
     const ctx = createBasicTestCtx({ name: "newuser" }, userData.token);

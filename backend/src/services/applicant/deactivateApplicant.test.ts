@@ -18,9 +18,6 @@ import { expect, test } from "vitest";
 import { http } from "../../consts/http";
 import { AppDataSource } from "../../database/database";
 import { Applicant } from "../../database/Applicant";
-import { User } from "../../database/User";
-import { UserAddress } from "../../database/UserAddress";
-import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import { deactivateApplicant } from "./deactivateApplicant";
 import {
   createBasicTestCtx,
@@ -28,7 +25,10 @@ import {
   testAsUser1,
   TestUserData,
 } from "../../../testSetup";
-import { hashPassword } from "../../security";
+import {
+  createTestApplicant,
+  createTestApplicantWithUser,
+} from "../../../test/testHelpers";
 
 test("prevent unauthorized access", async () => {
   const ctx = createBasicTestCtx();
@@ -53,29 +53,7 @@ testAsAdmin(
   "deactivate applicant and set active=false",
   async ({ userData }: TestUserData) => {
     // Create an active applicant
-    const addressRepo = AppDataSource.getRepository(UserAddress);
-    const applicantRepo = AppDataSource.getRepository(Applicant);
-
-    const address = new UserAddress();
-    address.active = false;
-    address.address = JSON.stringify({
-      firstname: "John",
-      lastname: "Doe",
-      email: "john.doe@example.com",
-      phone: "+49123456789",
-      street: "Test Street 123",
-      postalcode: "12345",
-      city: "Test City",
-    });
-    const savedAddress = await addressRepo.save(address);
-
-    const applicant = new Applicant();
-    applicant.confirmGDPR = true;
-    applicant.comment = "Test comment";
-    applicant.hash = await hashPassword("testpassword123");
-    applicant.active = true; // active
-    applicant.address = savedAddress;
-    const savedApplicant = await applicantRepo.save(applicant);
+    const savedApplicant = await createTestApplicant({ active: true });
 
     // Verify applicant is active
     expect(savedApplicant.active).toBe(true);
@@ -88,6 +66,7 @@ testAsAdmin(
     expect(ctx.status).toBe(http.no_content);
 
     // Verify applicant is now inactive
+    const applicantRepo = AppDataSource.getRepository(Applicant);
     const updatedApplicant = await applicantRepo.findOneBy({
       id: savedApplicant.id,
     });
@@ -121,40 +100,11 @@ testAsAdmin(
 testAsAdmin(
   "prevent deactivating already converted applicant",
   async ({ userData }: TestUserData) => {
-    // Create a user first
-    const user = new User();
-    user.name = "existinguser";
-    user.active = false;
-    user.hash = await hashPassword("testpassword123");
-    user.role = UserRole.USER;
-    const savedUser = await AppDataSource.getRepository(User).save(user);
-
     // Create an applicant that's already converted
-    const addressRepo = AppDataSource.getRepository(UserAddress);
-    const applicantRepo = AppDataSource.getRepository(Applicant);
-
-    const address = new UserAddress();
-    address.active = false;
-    address.address = JSON.stringify({
-      firstname: "John",
-      lastname: "Doe",
-      email: "john.doe@example.com",
-      phone: "+49123456789",
-      street: "Test Street 123",
-      postalcode: "12345",
-      city: "Test City",
+    const { applicant: savedApplicant } = await createTestApplicantWithUser({
+      active: true,
+      userName: "existinguser",
     });
-    const savedAddress = await addressRepo.save(address);
-
-    const applicant = new Applicant();
-    applicant.confirmGDPR = true;
-    applicant.comment = "Test comment";
-    applicant.hash = await hashPassword("testpassword123");
-    applicant.active = true;
-    applicant.userId = savedUser.id;
-    applicant.user = savedUser;
-    applicant.address = savedAddress;
-    const savedApplicant = await applicantRepo.save(applicant);
 
     // Try to deactivate converted applicant
     const ctx = createBasicTestCtx(undefined, userData.token);
@@ -164,6 +114,7 @@ testAsAdmin(
     );
 
     // Verify applicant is still active
+    const applicantRepo = AppDataSource.getRepository(Applicant);
     const existingApplicant = await applicantRepo.findOneBy({
       id: savedApplicant.id,
     });
@@ -176,29 +127,7 @@ testAsAdmin(
   "prevent deactivating already inactive applicant",
   async ({ userData }: TestUserData) => {
     // Create an inactive applicant
-    const addressRepo = AppDataSource.getRepository(UserAddress);
-    const applicantRepo = AppDataSource.getRepository(Applicant);
-
-    const address = new UserAddress();
-    address.active = false;
-    address.address = JSON.stringify({
-      firstname: "John",
-      lastname: "Doe",
-      email: "john.doe@example.com",
-      phone: "+49123456789",
-      street: "Test Street 123",
-      postalcode: "12345",
-      city: "Test City",
-    });
-    const savedAddress = await addressRepo.save(address);
-
-    const applicant = new Applicant();
-    applicant.confirmGDPR = true;
-    applicant.comment = "Test comment";
-    applicant.hash = await hashPassword("testpassword123");
-    applicant.active = false; // already inactive
-    applicant.address = savedAddress;
-    const savedApplicant = await applicantRepo.save(applicant);
+    const savedApplicant = await createTestApplicant({ active: false });
 
     // Try to deactivate already inactive applicant
     const ctx = createBasicTestCtx(undefined, userData.token);
@@ -208,6 +137,7 @@ testAsAdmin(
     );
 
     // Verify applicant is still inactive
+    const applicantRepo = AppDataSource.getRepository(Applicant);
     const existingApplicant = await applicantRepo.findOneBy({
       id: savedApplicant.id,
     });

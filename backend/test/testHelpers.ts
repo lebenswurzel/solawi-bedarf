@@ -17,7 +17,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import {
   ProductCategoryType,
   Unit,
+  UserRole,
 } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import { Address } from "@lebenswurzel/solawi-bedarf-shared/src/types";
+import { Applicant } from "../src/database/Applicant";
 import { Depot } from "../src/database/Depot";
 import { Order } from "../src/database/Order";
 import { OrderItem } from "../src/database/OrderItem";
@@ -27,7 +30,10 @@ import {
   RequisitionConfig,
   RequisitionConfigName,
 } from "../src/database/RequisitionConfig";
+import { User } from "../src/database/User";
+import { UserAddress } from "../src/database/UserAddress";
 import { AppDataSource } from "../src/database/database";
+import { hashPassword } from "../src/security";
 
 export const fillDatabaseWithTestData = async () => {
   const products = ["p1", "p2", "p3", "p4"];
@@ -164,4 +170,87 @@ export const findOrdersByUser = async (userId: number) => {
 
 export const getProductByName = async (name: string): Promise<Product> => {
   return await AppDataSource.getRepository(Product).findOneByOrFail({ name });
+};
+
+/**
+ * Creates a test UserAddress with optional address data
+ */
+export const createTestAddress = async (
+  addressData?: Partial<Address>,
+): Promise<UserAddress> => {
+  const defaultAddress: Address = {
+    firstname: "John",
+    lastname: "Doe",
+    email: "john.doe@example.com",
+    phone: "+49123456789",
+    street: "Test Street 123",
+    postalcode: "12345",
+    city: "Test City",
+  };
+
+  const address = new UserAddress();
+  address.active = false;
+  address.address = JSON.stringify({ ...defaultAddress, ...addressData });
+  return await AppDataSource.getRepository(UserAddress).save(address);
+};
+
+/**
+ * Creates a test Applicant with optional properties
+ */
+export const createTestApplicant = async (options?: {
+  active?: boolean;
+  comment?: string;
+  confirmGDPR?: boolean;
+  password?: string;
+  address?: UserAddress;
+  addressData?: Partial<Address>;
+}): Promise<Applicant> => {
+  const address =
+    options?.address || (await createTestAddress(options?.addressData));
+
+  const applicant = new Applicant();
+  applicant.confirmGDPR = options?.confirmGDPR ?? true;
+  applicant.comment = options?.comment ?? "Test comment";
+  applicant.hash = await hashPassword(options?.password ?? "testpassword123");
+  applicant.active = options?.active ?? true;
+  applicant.address = address;
+  return await AppDataSource.getRepository(Applicant).save(applicant);
+};
+
+/**
+ * Creates a test Applicant that's already converted (has a user)
+ */
+export const createTestApplicantWithUser = async (options?: {
+  active?: boolean;
+  comment?: string;
+  password?: string;
+  userName?: string;
+  address?: UserAddress;
+  addressData?: Partial<Address>;
+}): Promise<{ applicant: Applicant; user: User }> => {
+  // Create user first
+  const user = new User();
+  user.name = options?.userName ?? "testuser";
+  user.active = false;
+  user.hash = await hashPassword(options?.password ?? "testpassword123");
+  user.role = UserRole.USER;
+  const savedUser = await AppDataSource.getRepository(User).save(user);
+
+  // Create address
+  const address =
+    options?.address || (await createTestAddress(options?.addressData));
+
+  // Create applicant linked to user
+  const applicant = new Applicant();
+  applicant.confirmGDPR = true;
+  applicant.comment = options?.comment ?? "Test comment";
+  applicant.hash = await hashPassword(options?.password ?? "testpassword123");
+  applicant.active = options?.active ?? false;
+  applicant.userId = savedUser.id;
+  applicant.user = savedUser;
+  applicant.address = address;
+  const savedApplicant =
+    await AppDataSource.getRepository(Applicant).save(applicant);
+
+  return { applicant: savedApplicant, user: savedUser };
 };

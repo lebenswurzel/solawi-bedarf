@@ -20,7 +20,6 @@ import { AppDataSource } from "../../database/database";
 import { Applicant } from "../../database/Applicant";
 import { User } from "../../database/User";
 import { UserAddress } from "../../database/UserAddress";
-import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import { deleteApplicant } from "./deleteApplicant";
 import {
   createBasicTestCtx,
@@ -28,7 +27,10 @@ import {
   testAsUser1,
   TestUserData,
 } from "../../../testSetup";
-import { hashPassword } from "../../security";
+import {
+  createTestApplicant,
+  createTestApplicantWithUser,
+} from "../../../test/testHelpers";
 
 test("prevent unauthorized access", async () => {
   const ctx = createBasicTestCtx(undefined, undefined, undefined, { id: "1" });
@@ -48,41 +50,15 @@ testAsUser1(
 testAsAdmin(
   "remove applicant data and set user deleted=true",
   async ({ userData }: TestUserData) => {
-    // Create a user
-    const user = new User();
-    user.name = "testuser";
-    user.active = true;
-    user.hash = await hashPassword("testpassword123");
-    user.role = UserRole.USER;
-    user.deleted = false;
-    const savedUser = await AppDataSource.getRepository(User).save(user);
-
-    // Create an address
-    const addressRepo = AppDataSource.getRepository(UserAddress);
-    const address = new UserAddress();
-    address.active = false;
-    address.address = JSON.stringify({
-      firstname: "John",
-      lastname: "Doe",
-      email: "john.doe@example.com",
-      phone: "+49123456789",
-      street: "Test Street 123",
-      postalcode: "12345",
-      city: "Test City",
-    });
-    const savedAddress = await addressRepo.save(address);
-
-    // Create an inactive applicant (linked to user)
-    const applicantRepo = AppDataSource.getRepository(Applicant);
-    const applicant = new Applicant();
-    applicant.confirmGDPR = true;
-    applicant.comment = "Test comment";
-    applicant.hash = await hashPassword("testpassword123");
-    applicant.active = false; // must be inactive to delete
-    applicant.userId = savedUser.id;
-    applicant.user = savedUser;
-    applicant.address = savedAddress;
-    const savedApplicant = await applicantRepo.save(applicant);
+    // Create an inactive applicant (linked to user) - must be inactive to delete
+    const { applicant: savedApplicant, user: savedUser } =
+      await createTestApplicantWithUser({
+        active: false,
+        userName: "testuser",
+      });
+    // Set user active for this test
+    savedUser.active = true;
+    await AppDataSource.getRepository("User").save(savedUser);
 
     // Delete the applicant
     const ctx = createBasicTestCtx(undefined, userData.token, undefined, {
@@ -93,14 +69,16 @@ testAsAdmin(
     expect(ctx.status).toBe(http.no_content);
 
     // Verify applicant was removed
+    const applicantRepo = AppDataSource.getRepository(Applicant);
     const deletedApplicant = await applicantRepo.findOneBy({
       id: savedApplicant.id,
     });
     expect(deletedApplicant).toBeNull();
 
     // Verify address was removed
+    const addressRepo = AppDataSource.getRepository(UserAddress);
     const deletedAddress = await addressRepo.findOneBy({
-      id: savedAddress.id,
+      id: savedApplicant.addressId,
     });
     expect(deletedAddress).toBeNull();
 
@@ -117,30 +95,8 @@ testAsAdmin(
 testAsAdmin(
   "prevent deleting active applicant",
   async ({ userData }: TestUserData) => {
-    // Create an address
-    const addressRepo = AppDataSource.getRepository(UserAddress);
-    const address = new UserAddress();
-    address.active = false;
-    address.address = JSON.stringify({
-      firstname: "John",
-      lastname: "Doe",
-      email: "john.doe@example.com",
-      phone: "+49123456789",
-      street: "Test Street 123",
-      postalcode: "12345",
-      city: "Test City",
-    });
-    const savedAddress = await addressRepo.save(address);
-
-    // Create an active applicant
-    const applicantRepo = AppDataSource.getRepository(Applicant);
-    const applicant = new Applicant();
-    applicant.confirmGDPR = true;
-    applicant.comment = "Test comment";
-    applicant.hash = await hashPassword("testpassword123");
-    applicant.active = true; // active - cannot delete
-    applicant.address = savedAddress;
-    const savedApplicant = await applicantRepo.save(applicant);
+    // Create an active applicant - cannot delete
+    const savedApplicant = await createTestApplicant({ active: true });
 
     // Try to delete active applicant
     const ctx = createBasicTestCtx(undefined, userData.token, undefined, {
@@ -149,6 +105,7 @@ testAsAdmin(
     await expect(() => deleteApplicant(ctx)).rejects.toThrowError("Error 400");
 
     // Verify applicant still exists
+    const applicantRepo = AppDataSource.getRepository(Applicant);
     const existingApplicant = await applicantRepo.findOneBy({
       id: savedApplicant.id,
     });
@@ -178,31 +135,8 @@ testAsAdmin(
 testAsAdmin(
   "delete applicant without user (user already deleted)",
   async ({ userData }: TestUserData) => {
-    // Create an address
-    const addressRepo = AppDataSource.getRepository(UserAddress);
-    const address = new UserAddress();
-    address.active = false;
-    address.address = JSON.stringify({
-      firstname: "John",
-      lastname: "Doe",
-      email: "john.doe@example.com",
-      phone: "+49123456789",
-      street: "Test Street 123",
-      postalcode: "12345",
-      city: "Test City",
-    });
-    const savedAddress = await addressRepo.save(address);
-
     // Create an inactive applicant without user
-    const applicantRepo = AppDataSource.getRepository(Applicant);
-    const applicant = new Applicant();
-    applicant.confirmGDPR = true;
-    applicant.comment = "Test comment";
-    applicant.hash = await hashPassword("testpassword123");
-    applicant.active = false;
-    applicant.address = savedAddress;
-    // No userId set
-    const savedApplicant = await applicantRepo.save(applicant);
+    const savedApplicant = await createTestApplicant({ active: false });
 
     // Delete the applicant
     const ctx = createBasicTestCtx(undefined, userData.token, undefined, {
@@ -213,14 +147,16 @@ testAsAdmin(
     expect(ctx.status).toBe(http.no_content);
 
     // Verify applicant was removed
+    const applicantRepo = AppDataSource.getRepository(Applicant);
     const deletedApplicant = await applicantRepo.findOneBy({
       id: savedApplicant.id,
     });
     expect(deletedApplicant).toBeNull();
 
     // Verify address was removed
+    const addressRepo = AppDataSource.getRepository(UserAddress);
     const deletedAddress = await addressRepo.findOneBy({
-      id: savedAddress.id,
+      id: savedApplicant.addressId,
     });
     expect(deletedAddress).toBeNull();
   },
