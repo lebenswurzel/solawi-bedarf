@@ -18,9 +18,9 @@ import { expect, test } from "vitest";
 import { http } from "../../consts/http";
 import { AppDataSource } from "../../database/database";
 import { Applicant } from "../../database/Applicant";
-import { UserAddress } from "../../database/UserAddress";
 import { saveApplicant } from "./saveApplicant";
 import { createBasicTestCtx } from "../../../testSetup";
+import { createTestApplicant } from "../../../test/testHelpers";
 
 test("create applicant with active=true", async () => {
   const requestBody = {
@@ -165,32 +165,19 @@ test("prevent creating applicant when active limit is reached", async () => {
   });
 
   // Create enough applicants to reach 201 active (limit is > 200, so 201 should be rejected)
-  const addressRepo = AppDataSource.getRepository(UserAddress);
-  const applicantRepo = AppDataSource.getRepository(Applicant);
   const targetCount = 201;
   const toCreate = targetCount - initialCount;
 
   for (let i = 0; i < toCreate; i++) {
-    const address = new UserAddress();
-    address.active = false;
-    address.address = JSON.stringify({
-      firstname: `Test${i}`,
-      lastname: "User",
-      email: `testlimit${i}@example.com`,
-      phone: "+49123456789",
-      street: "Test Street",
-      postalcode: "12345",
-      city: "Test City",
+    await createTestApplicant({
+      active: true,
+      comment: `Test comment limit ${i}`,
+      addressData: {
+        firstname: `Test${i}`,
+        lastname: "User",
+        email: `testlimit${i}@example.com`,
+      },
     });
-    const savedAddress = await addressRepo.save(address);
-
-    const applicant = new Applicant();
-    applicant.confirmGDPR = true;
-    applicant.comment = `Test comment limit ${i}`;
-    applicant.hash = "hashedpassword";
-    applicant.active = true;
-    applicant.address = savedAddress;
-    await applicantRepo.save(applicant);
   }
 
   // Verify we have 201 active applicants
