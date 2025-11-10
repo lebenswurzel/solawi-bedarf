@@ -65,7 +65,6 @@ const handleDelete = async (item: {
       await deactivateApplicant(item.id!);
     } else {
       // For inactive applicants, delete them
-      console.log(item);
       if (props.state == ApplicantState.CONFIRMED) {
         const confirmed = await confirm(
           interpolate(language.pages.applicants.deleteConfirmation, {

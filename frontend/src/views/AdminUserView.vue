@@ -89,16 +89,19 @@ const openDatePicker = ref(false);
 const selectedDate = ref(new Date());
 
 const confirmGTCItems = ["bestätigt", "nicht bestätigt", "beliebig"];
+const deletedItems = ["alle", "gelöscht", "nicht gelöscht"];
 const displayFilters = ref<{
   validFrom: Array<number>;
   role: Array<number>;
   depot: Array<number>;
   confirmGTC: number;
+  deleted: number;
 }>({
   validFrom: [],
   role: [],
   depot: [],
   confirmGTC: confirmGTCItems.indexOf("beliebig"),
+  deleted: deletedItems.indexOf("alle"),
 });
 
 provide("dialogUser", dialogUser);
@@ -331,7 +334,8 @@ const filteredTableItems = computed((): UserTableItem[] => {
     .filter(filterValidFromDates)
     .filter(filterUserRoles)
     .filter(filterDepotNames)
-    .filter(filterConfirmGTCs);
+    .filter(filterConfirmGTCs)
+    .filter(filterDeleted);
 });
 
 /// filter form validFrom
@@ -418,6 +422,21 @@ const filterConfirmGTCs = (tableItem: { confirmGTCs: boolean[] }): boolean => {
   }
   // if not bestätigt, return true if any confirm GTC is false
   return tableItem.confirmGTCs.some((confirmGTC) => !confirmGTC);
+};
+
+// filter for deleted state
+const filterDeleted = (tableItem: { deleted?: boolean }): boolean => {
+  if (
+    displayFilters.value.deleted === undefined ||
+    displayFilters.value.deleted == deletedItems.indexOf("alle")
+  ) {
+    return true;
+  }
+  if (displayFilters.value.deleted == deletedItems.indexOf("gelöscht")) {
+    return tableItem.deleted === true;
+  }
+  // if not gelöscht, return true if not deleted
+  return tableItem.deleted !== true;
 };
 </script>
 
@@ -637,6 +656,31 @@ const filterConfirmGTCs = (tableItem: { confirmGTCs: boolean[] }): boolean => {
                 v-for="confirmGTC in confirmGTCItems"
                 :key="confirmGTC"
                 :text="confirmGTC"
+                filter
+              ></v-chip>
+            </v-chip-group>
+          </v-col>
+          <v-col cols="12" md="3">
+            <v-tooltip
+              text="Nutzer, deren Nutzerdaten gelöscht wurden"
+              location="top"
+              open-on-click
+            >
+              <template v-slot:activator="{ props }">
+                <div v-bind="props" class="text-caption">
+                  Gelöschte Nutzer<v-icon>mdi-information-outline</v-icon>
+                </div>
+              </template>
+            </v-tooltip>
+            <v-chip-group
+              selected-class="text-primary"
+              column
+              v-model="displayFilters.deleted"
+            >
+              <v-chip
+                v-for="deleted in deletedItems"
+                :key="deleted"
+                :text="deleted"
                 filter
               ></v-chip>
             </v-chip-group>
