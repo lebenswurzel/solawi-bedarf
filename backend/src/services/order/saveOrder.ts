@@ -19,7 +19,6 @@ import Router from "koa-router";
 import { LessThan } from "typeorm";
 import { appConfig } from "@lebenswurzel/solawi-bedarf-shared/src/config";
 import {
-  calculateEffectiveMsrp,
   calculateEffectiveMsrpChain,
   calculateMsrpWeights,
   calculateOrderValidMonths,
