@@ -96,6 +96,10 @@ export const useOrderStore = defineStore("orderStore", () => {
         o.id === modificationOrderId.value && isModifyingOrder.value
           ? modificationOrderItems.value
           : o.orderItems,
+      category:
+        o.id === modificationOrderId.value && isModifyingOrder.value
+          ? category.value
+          : o.category,
     }));
   });
 
