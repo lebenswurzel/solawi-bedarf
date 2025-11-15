@@ -21,50 +21,49 @@ import {
   ProductsById,
   ProductWithProductCategoryTyp,
   Msrp,
+  OrderItem,
 } from "./types";
 import { Unit, ProductCategoryType, UserCategory } from "./enum";
 
 describe("calculateEffectiveMsrpChain", () => {
-  // Product similar to Python example: base_msrp=100, frequency=12
-  // In TypeScript: msrp=10000 (cents per piece), frequency=12
-  const productId = 1;
-  const product: ProductWithProductCategoryTyp = {
-    id: productId,
-    name: "Test Product",
-    unit: Unit.PIECE,
-    active: true,
-    quantityMin: 0,
-    quantityMax: 100,
-    quantityStep: 0.1,
-    frequency: 12,
-    description: "Test Description",
-    msrp: 10000, // 100 euros in cents
-    quantity: 100,
-    productCategoryId: 1,
-    productCategoryType: ProductCategoryType.COOPERATION,
-  };
-
-  const productsById: ProductsById = {
-    [productId]: product,
-  };
-
   const depotId = 1;
+  const baseDate = new Date("2024-01-01");
 
-  // Create orders matching Python example:
-  // Order 1: amount=1, months=12, weight=1
-  // Order 2: amount=0.5, months=7, weight=0.7
-  // Order 3: amount=4.5, months=5, weight=0.2
-  // Order 4: amount=0, months=4, weight=0.1
+  // Helper function to create a product
+  const createProduct = (
+    id: number,
+    name: string,
+    msrp: number,
+    frequency: number,
+    categoryType: ProductCategoryType
+  ): ProductWithProductCategoryTyp => {
+    return {
+      id,
+      name,
+      unit: Unit.PIECE,
+      active: true,
+      quantityMin: 0,
+      quantityMax: 100,
+      quantityStep: 0.1,
+      frequency,
+      description: `Test Description for ${name}`,
+      msrp, // in cents
+      quantity: 100,
+      productCategoryId: id,
+      productCategoryType: categoryType,
+    };
+  };
+
+  // Helper function to create an order
   const createOrder = (
     id: number,
-    amount: number,
+    orderItems: OrderItem[],
     months: number,
     contribution: UserCategory = UserCategory.CAT100
   ): SavedOrder => {
-    const baseDate = new Date("2024-01-01");
     return {
       id,
-      orderItems: amount > 0 ? [{ productId, value: amount }] : [],
+      orderItems,
       depotId,
       alternateDepotId: null,
       offer: 0,
@@ -84,48 +83,96 @@ describe("calculateEffectiveMsrpChain", () => {
     };
   };
 
-  const orders: SavedOrder[] = [
-    createOrder(1, 1, 12),
-    createOrder(2, 0.5, 7),
-    createOrder(3, 4.5, 5),
-    createOrder(4, 0, 4),
-  ];
+  // Helper function to prepare MSRP data for orders
+  const prepareMsrpData = (
+    orders: SavedOrder[],
+    productsById: ProductsById,
+    orderMonths: { [key: number]: number },
+    productWeightsByOrderId: {
+      [key: number]: { [key: number]: number };
+    }
+  ): {
+    rawMsrpByOrderId: { [key: number]: Msrp };
+    productMsrpWeightsByOrderId: {
+      [key: number]: { [key: number]: number };
+    };
+  } => {
+    const rawMsrpByOrderId: { [key: number]: Msrp } = {};
+    const productMsrpWeightsByOrderId: {
+      [key: number]: { [key: number]: number };
+    } = {};
 
-  // Create raw MSRP for each order
-  const rawMsrpByOrderId: { [key: number]: Msrp } = {};
-  const productMsrpWeightsByOrderId: {
-    [key: number]: { [key: number]: number };
-  } = {};
+    orders.forEach((order) => {
+      const months = orderMonths[order.id];
+      const weights = productWeightsByOrderId[order.id] || {};
 
-  // Define months for each order
-  const orderMonths: { [key: number]: number } = {
-    1: 12,
-    2: 7,
-    3: 5,
-    4: 4,
+      productMsrpWeightsByOrderId[order.id] = weights;
+
+      rawMsrpByOrderId[order.id] = getMsrp(
+        order.category,
+        order.orderItems,
+        productsById,
+        months,
+        weights
+      );
+    });
+
+    return { rawMsrpByOrderId, productMsrpWeightsByOrderId };
   };
 
-  orders.forEach((order) => {
-    const weight =
-      order.id === 1 ? 1 : order.id === 2 ? 0.7 : order.id === 3 ? 0.2 : 0.1;
-    const months = orderMonths[order.id];
+  it("should calculate effective MSRP chain for single product", () => {
+    // Product similar to Python example: base_msrp=100, frequency=12
+    // In TypeScript: msrp=10000 (cents per piece), frequency=12
+    const productId = 1;
+    const product = createProduct(
+      productId,
+      "Test Product",
+      10000, // 100 euros in cents
+      12,
+      ProductCategoryType.COOPERATION
+    );
 
-    productMsrpWeightsByOrderId[order.id] = {
-      [productId]: weight,
+    const productsById: ProductsById = {
+      [productId]: product,
     };
 
-    // Calculate raw MSRP for this order
-    const orderItems = order.orderItems;
-    rawMsrpByOrderId[order.id] = getMsrp(
-      order.category,
-      orderItems,
-      productsById,
-      months,
-      productMsrpWeightsByOrderId[order.id]
-    );
-  });
+    // Create orders matching Python example:
+    // Order 1: amount=1, months=12, weight=1
+    // Order 2: amount=0.5, months=7, weight=0.7
+    // Order 3: amount=4.5, months=5, weight=0.2
+    // Order 4: amount=0, months=4, weight=0.1
+    const orders: SavedOrder[] = [
+      createOrder(1, [{ productId, value: 1 }], 12),
+      createOrder(2, [{ productId, value: 0.5 }], 7),
+      createOrder(3, [{ productId, value: 4.5 }], 5),
+      createOrder(4, [], 4, UserCategory.CAT130), // category should not matter for empty orders
+    ];
 
-  it("should calculate effective MSRP chain for single product", () => {
+    // Define months for each order
+    const orderMonths: { [key: number]: number } = {
+      1: 12,
+      2: 7,
+      3: 5,
+      4: 4,
+    };
+
+    // Define weights for each order
+    const productWeightsByOrderId: {
+      [key: number]: { [key: number]: number };
+    } = {
+      1: { [productId]: 1 },
+      2: { [productId]: 0.7 },
+      3: { [productId]: 0.2 },
+      4: { [productId]: 0.1 },
+    };
+
+    const { rawMsrpByOrderId, productMsrpWeightsByOrderId } = prepareMsrpData(
+      orders,
+      productsById,
+      orderMonths,
+      productWeightsByOrderId
+    );
+
     const results = calculateEffectiveMsrpChain(
       orders,
       rawMsrpByOrderId,
@@ -150,8 +197,6 @@ describe("calculateEffectiveMsrpChain", () => {
     expect(firstResult.monthly.total).toBeGreaterThan(0);
     expect(firstResult.yearly.total).toBeGreaterThan(0);
 
-    console.log("results", results);
-
     // All results should have valid MSRP values
     results.forEach((result) => {
       expect(result.monthly.total).toBeGreaterThanOrEqual(0);
@@ -168,7 +213,179 @@ describe("calculateEffectiveMsrpChain", () => {
     expect(results[3].monthly.total).toBe(97);
   });
 
+  it("should calculate effective MSRP chain for multiple products", () => {
+    // Create 3 products: 1 COOPERATION, 2 SELFGROWN
+    const productCoopId = 1;
+    const productSelfgrown1Id = 2;
+    const productSelfgrown2Id = 3;
+
+    const productCoop = createProduct(
+      productCoopId,
+      "Cooperation Product",
+      10000, // 100 euros in cents
+      12,
+      ProductCategoryType.COOPERATION
+    );
+
+    const productSelfgrown1 = createProduct(
+      productSelfgrown1Id,
+      "Selfgrown Product 1",
+      15000, // 150 euros in cents
+      12,
+      ProductCategoryType.SELFGROWN
+    );
+
+    const productSelfgrown2 = createProduct(
+      productSelfgrown2Id,
+      "Selfgrown Product 2",
+      8000, // 80 euros in cents
+      12,
+      ProductCategoryType.SELFGROWN
+    );
+
+    const productsById: ProductsById = {
+      [productCoopId]: productCoop,
+      [productSelfgrown1Id]: productSelfgrown1,
+      [productSelfgrown2Id]: productSelfgrown2,
+    };
+
+    // Create 3 orders:
+    // Order 1: all 3 products
+    // Order 2: COOPERATION + SELFGROWN1 (SELFGROWN2 missing)
+    // Order 3: all 3 products again
+    const orders: SavedOrder[] = [
+      createOrder(
+        1,
+        [
+          { productId: productCoopId, value: 1 },
+          { productId: productSelfgrown1Id, value: 2 },
+          { productId: productSelfgrown2Id, value: 1.5 },
+        ],
+        12
+      ),
+      createOrder(
+        2,
+        [
+          { productId: productCoopId, value: 0.8 },
+          { productId: productSelfgrown1Id, value: 1.5 },
+        ],
+        8
+      ),
+      createOrder(
+        3,
+        [
+          { productId: productCoopId, value: 1.2 },
+          { productId: productSelfgrown1Id, value: 2.5 },
+          { productId: productSelfgrown2Id, value: 2 },
+        ],
+        6
+      ),
+    ];
+
+    // Define months for each order
+    const orderMonths: { [key: number]: number } = {
+      1: 12,
+      2: 8,
+      3: 6,
+    };
+
+    // Define weights for each product in each order
+    // Note: Even if a product doesn't appear in an order, we should provide its weight
+    // (typically the same as the previous order's weight if the product is missing)
+    const productWeightsByOrderId: {
+      [key: number]: { [key: number]: number };
+    } = {
+      1: {
+        [productCoopId]: 1.0,
+        [productSelfgrown1Id]: 1.0,
+        [productSelfgrown2Id]: 1.0,
+      },
+      2: {
+        [productCoopId]: 0.7,
+        [productSelfgrown1Id]: 0.6,
+        [productSelfgrown2Id]: 1.0, // Product not in order 2, but weight stays at previous value
+      },
+      3: {
+        [productCoopId]: 0.4,
+        [productSelfgrown1Id]: 0.3,
+        [productSelfgrown2Id]: 0.5,
+      },
+    };
+
+    const { rawMsrpByOrderId, productMsrpWeightsByOrderId } = prepareMsrpData(
+      orders,
+      productsById,
+      orderMonths,
+      productWeightsByOrderId
+    );
+
+    const results = calculateEffectiveMsrpChain(
+      orders,
+      rawMsrpByOrderId,
+      productMsrpWeightsByOrderId,
+      productsById
+    );
+
+    expect(results).toHaveLength(3);
+
+    // Verify that results correspond 1:1 to orders
+    results.forEach((result, index) => {
+      expect(result.contribution).toBe(orders[index].category);
+      expect(result.months).toBe(orderMonths[orders[index].id]);
+    });
+
+    // Verify all results have valid MSRP values
+    results.forEach((result) => {
+      expect(result.monthly.total).toBeGreaterThanOrEqual(0);
+      expect(result.monthly.selfgrown).toBeGreaterThanOrEqual(0);
+      expect(result.monthly.cooperation).toBeGreaterThanOrEqual(0);
+      expect(result.yearly.total).toBeGreaterThanOrEqual(0);
+      expect(result.yearly.selfgrown).toBeGreaterThanOrEqual(0);
+      expect(result.yearly.cooperation).toBeGreaterThanOrEqual(0);
+    });
+
+    console.log("results", results);
+    // Verify that selfgrown and cooperation values are correctly separated
+    results.forEach((result) => {
+      expect(result.monthly.total).toBe(
+        result.monthly.selfgrown +
+          result.monthly.cooperation +
+          (result.monthly.selfgrownCompensation ?? 0)
+      );
+      expect(result.yearly.total).toBe(
+        result.yearly.selfgrown +
+          result.yearly.cooperation +
+          (result.yearly.selfgrownCompensation ?? 0)
+      );
+    });
+
+    // First order should have all products
+    expect(results[0].monthly.selfgrown).toBeGreaterThan(0);
+    expect(results[0].monthly.cooperation).toBeGreaterThan(0);
+
+    // Second order should have cooperation and one selfgrown (but not the other)
+    expect(results[1].monthly.cooperation).toBeGreaterThan(0);
+    expect(results[1].monthly.selfgrown).toBeGreaterThan(0);
+
+    // Third order should have all products again
+    expect(results[2].monthly.selfgrown).toBeGreaterThan(0);
+    expect(results[2].monthly.cooperation).toBeGreaterThan(0);
+  });
+
   it("should handle empty orders array", () => {
+    const productId = 1;
+    const product = createProduct(
+      productId,
+      "Test Product",
+      10000,
+      12,
+      ProductCategoryType.COOPERATION
+    );
+
+    const productsById: ProductsById = {
+      [productId]: product,
+    };
+
     const results = calculateEffectiveMsrpChain([], {}, {}, productsById);
 
     expect(results).toHaveLength(0);
