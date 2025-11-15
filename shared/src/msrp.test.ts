@@ -48,7 +48,6 @@ describe("calculateEffectiveMsrpChain", () => {
     [productId]: product,
   };
 
-  const contribution = UserCategory.CAT100;
   const depotId = 1;
 
   // Create orders matching Python example:
@@ -59,7 +58,8 @@ describe("calculateEffectiveMsrpChain", () => {
   const createOrder = (
     id: number,
     amount: number,
-    months: number
+    months: number,
+    contribution: UserCategory = UserCategory.CAT100
   ): SavedOrder => {
     const baseDate = new Date("2024-01-01");
     return {
@@ -117,7 +117,7 @@ describe("calculateEffectiveMsrpChain", () => {
     // Calculate raw MSRP for this order
     const orderItems = order.orderItems;
     rawMsrpByOrderId[order.id] = getMsrp(
-      contribution,
+      order.category,
       orderItems,
       productsById,
       months,
@@ -137,7 +137,7 @@ describe("calculateEffectiveMsrpChain", () => {
 
     // Verify that results correspond 1:1 to orders
     results.forEach((result, index) => {
-      expect(result.contribution).toBe(contribution);
+      expect(result.contribution).toBe(orders[index].category);
       expect(result.months).toBe(orderMonths[orders[index].id]);
     });
 
@@ -161,6 +161,11 @@ describe("calculateEffectiveMsrpChain", () => {
       expect(result.yearly.selfgrown).toBeGreaterThanOrEqual(0);
       expect(result.yearly.cooperation).toBeGreaterThanOrEqual(0);
     });
+
+    expect(results[0].monthly.total).toBe(100);
+    expect(results[1].monthly.total).toBe(40);
+    expect(results[2].monthly.total).toBe(232);
+    expect(results[3].monthly.total).toBe(97);
   });
 
   it("should handle empty orders array", () => {
