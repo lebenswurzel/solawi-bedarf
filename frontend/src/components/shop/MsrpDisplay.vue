@@ -184,6 +184,7 @@ const msrpValidation = computed(() => {
       <div class="py-1" v-if="!props.hideOffer">
         {{ t.cards.products.offer }}
         <strong class="mr-1">{{ relevantOffer.toString() }} € pro Monat</strong>
+        (Vorher: {{ previousMsrp?.offer.toString() }} € pro Monat)
         <template v-if="msrpValidation">
           <v-icon
             v-if="
