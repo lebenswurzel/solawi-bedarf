@@ -303,29 +303,17 @@ export const calculateEffectiveMsrpChain = (
   const cumulativeYearlyMsrpByProduct: { [key: ProductKey]: number } = {};
   const cumulativePaidByProduct: { [key: ProductKey]: number } = {};
 
-  // Prepare order MSRP values for all orders
-  const orderMsrpValuesList: OrderMsrpValues[] = orders.map((order) =>
-    orderMsrpValues(
-      order,
-      rawMsrpByOrderId[order.id],
-      productMsrpWeightsByOrderId[order.id],
-      productsById
-    )
-  );
-
-  console.log("orderMsrpValuesList", orderMsrpValuesList);
-
   const results: Msrp[] = [];
   const relevantProducts: Set<ProductId> = new Set();
 
   // Process each order in the chain
   for (let i = 0; i < orders.length; i++) {
-    const currentOrder = orderMsrpValuesList[i];
-    const nextOrder = i + 1 < orders.length ? orderMsrpValuesList[i + 1] : null;
+    const currentOrder = orders[i];
+    const nextOrder = i + 1 < orders.length ? orders[i + 1] : null;
 
     // Calculate effective months and weight for current order
-    const currentMonths = currentOrder.msrp.months;
-    const nextMonths = nextOrder?.msrp.months ?? 0;
+    const currentMonths = rawMsrpByOrderId[currentOrder.id].months;
+    const nextMonths = nextOrder ? rawMsrpByOrderId[nextOrder.id].months : 0;
     const effectiveMonths = currentMonths - nextMonths;
 
     // Track effective MSRP per product for this order
@@ -337,13 +325,13 @@ export const calculateEffectiveMsrpChain = (
     } = {};
 
     // update relevant products with current order items
-    for (const orderItem of currentOrder.order.orderItems) {
+    for (const orderItem of currentOrder.orderItems) {
       relevantProducts.add(orderItem.productId);
     }
 
     // Process each product in the current order
     for (const productId of relevantProducts) {
-      const orderItem = currentOrder.order.orderItems.find(
+      const orderItem = currentOrder.orderItems.find(
         (oi) => oi.productId === productId
       );
       const pk = productKey(productId, productsById);
@@ -351,15 +339,18 @@ export const calculateEffectiveMsrpChain = (
       const product = productsById[productId];
 
       // Get current product values
-      const currentWeight = currentOrder.productMsrpWeights[productId] ?? 0;
-      const nextWeight = nextOrder?.productMsrpWeights[productId] ?? 0;
+      const currentWeight =
+        productMsrpWeightsByOrderId[currentOrder.id][productId] ?? 0;
+      const nextWeight = nextOrder
+        ? productMsrpWeightsByOrderId[nextOrder.id][productId]
+        : 0;
       const effectiveWeight = currentWeight - nextWeight;
 
       // Calculate total MSRP for this product (yearly value)
       const totalMsrp = orderItem
         ? applyContribution(
             getYearlyBaseMsrp(orderItem, product),
-            currentOrder.msrp.contribution
+            currentOrder.category
           )
         : 0;
       const totalValueInRange = totalMsrp * effectiveWeight;
@@ -413,7 +404,7 @@ export const calculateEffectiveMsrpChain = (
 
     // Build result MSRP
     const result: Msrp = {
-      ...currentOrder.msrp,
+      ...rawMsrpByOrderId[currentOrder.id],
       monthly: {
         total: effectiveMonthlyTotal,
         selfgrown: effectiveMonthlySelfgrown,
