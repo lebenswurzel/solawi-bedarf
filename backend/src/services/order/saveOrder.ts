@@ -20,6 +20,7 @@ import { LessThan } from "typeorm";
 import { appConfig } from "@lebenswurzel/solawi-bedarf-shared/src/config";
 import {
   calculateEffectiveMsrp,
+  calculateEffectiveMsrpChain,
   calculateMsrpWeights,
   calculateOrderValidMonths,
   getMsrp,
@@ -28,6 +29,8 @@ import {
   ConfirmedOrder,
   DeliveredByProductIdDepotId,
   Msrp,
+  OrderId,
+  ProductId,
   ProductsById,
   OrderItem as SharedOrderItem,
 } from "@lebenswurzel/solawi-bedarf-shared/src/types";
@@ -108,7 +111,7 @@ export const saveOrder = async (
   const allOrders = await AppDataSource.getRepository(Order).find({
     where: { userId: requestUserId, requisitionConfigId: configId },
     relations: { orderItems: true },
-    order: { validFrom: "DESC" },
+    order: { validFrom: "ASC" },
   });
 
   // Find the currently valid order
@@ -129,6 +132,11 @@ export const saveOrder = async (
   if (!selectedOrder || !selectedOrderId) {
     ctx.throw(http.bad_request, `no order selected (${selectedOrderId})`);
   }
+
+  // the relevant orders only include orders up until the selected order
+  const relevantOrders = allOrders.filter(
+    (o) => o.validFrom <= selectedOrder.validFrom,
+  );
 
   if (!isValidBiddingOrder(role, requisitionConfig, currentTime, null, body)) {
     ctx.throw(http.bad_request, "not valid in bidding round");
@@ -176,7 +184,7 @@ export const saveOrder = async (
   }
 
   const predecessorOrder = determinePredecessorOrder(
-    allOrders,
+    relevantOrders,
     selectedOrderId,
   );
 
@@ -193,11 +201,9 @@ export const saveOrder = async (
     body.category,
     body.orderItems,
     productsById,
-    deliveredByProductIdDepotId,
     depots,
     requisitionConfig,
-    selectedOrder,
-    predecessorOrder,
+    relevantOrders,
   );
   if (!isOfferValid(body.offer, effectiveMsrp.monthly.total)) {
     ctx.throw(http.bad_request, "bid too low");
@@ -264,77 +270,73 @@ export const saveOrder = async (
 };
 
 const determineEffectiveMsrp = async (
-  category: UserCategory,
-  orderItems: SharedOrderItem[],
+  actualCategory: UserCategory,
+  actualOrderItems: SharedOrderItem[],
   productsById: ProductsById,
-  deliveredByProductIdDepotId: DeliveredByProductIdDepotId,
   depots: Depot[],
   requisitionConfig: RequisitionConfig,
-  modificationOrder: Order,
-  predecessorOrder?: Order,
+  orders: Order[],
 ): Promise<{
   effectiveMsrp: Msrp;
-  previousMsrp: Msrp | null;
 }> => {
-  const productMsrpWeights = calculateMsrpWeights(
-    productsById,
-    deliveredByProductIdDepotId,
-    depots,
+  // replace the order items and the category in the newest order as this is the one
+  // that is to be checked and saved
+  const actualOrders = orders.map((order, index) => ({
+    ...order,
+    orderItems:
+      index === orders.length - 1 ? actualOrderItems : order.orderItems,
+    category: index === orders.length - 1 ? actualCategory : order.category,
+  }));
+
+  const productMsrpWeightsByOrderId: {
+    [key: OrderId]: { [key: ProductId]: number };
+  } = {};
+  await Promise.all(
+    actualOrders.map(async (order) => {
+      const { deliveredByProductIdDepotId } = await bi(
+        requisitionConfig.id,
+        order.validFrom,
+        true,
+      );
+      productMsrpWeightsByOrderId[order.id] = calculateMsrpWeights(
+        productsById,
+        deliveredByProductIdDepotId,
+        depots,
+      );
+    }),
   );
-  const msrp = getMsrp(
-    category,
-    orderItems,
-    productsById,
-    calculateOrderValidMonths(
-      modificationOrder.validFrom,
-      requisitionConfig.validTo,
-      config.timezone,
-    ),
-    productMsrpWeights,
+
+  const rawMsrpsByOrderId: { [key: OrderId]: Msrp } = {};
+  actualOrders.forEach(
+    (order) =>
+      (rawMsrpsByOrderId[order.id] = getMsrp(
+        order.category,
+        order.orderItems,
+        productsById,
+        calculateOrderValidMonths(
+          order.validFrom,
+          requisitionConfig.validTo,
+          config.timezone,
+        ),
+        productMsrpWeightsByOrderId[order.id],
+      )),
   );
-  if (!predecessorOrder) {
+
+  if (Object.keys(rawMsrpsByOrderId).length === 1) {
+    // no predecessor order --> return the only raw MSRP as it is the effective MSRP
     return {
-      effectiveMsrp: msrp,
-      previousMsrp: null,
+      effectiveMsrp: Object.values(rawMsrpsByOrderId)[0],
     };
   }
 
-  const {
-    deliveredByProductIdDepotId: currentOrderDeliveredByProductIdDepotId,
-  } = await bi(requisitionConfig.id, predecessorOrder.validFrom);
-
-  const currentProductMsrpWeights = calculateMsrpWeights(
-    productsById,
-    currentOrderDeliveredByProductIdDepotId,
-    depots,
-  );
-
-  const previousMsrp = getMsrp(
-    predecessorOrder.category,
-    predecessorOrder.orderItems,
-    productsById,
-    calculateOrderValidMonths(
-      predecessorOrder.validFrom,
-      requisitionConfig.validTo,
-      config.timezone,
-    ),
-    currentProductMsrpWeights,
-  );
-
-  const effectiveMsrp = calculateEffectiveMsrp(
-    {
-      earlierOrder: predecessorOrder,
-      laterOrder: modificationOrder,
-    },
-    { [modificationOrder.id]: msrp, [predecessorOrder.id]: previousMsrp },
-    {
-      [modificationOrder.id]: productMsrpWeights,
-      [predecessorOrder.id]: currentProductMsrpWeights,
-    },
+  const result = calculateEffectiveMsrpChain(
+    actualOrders,
+    rawMsrpsByOrderId,
+    productMsrpWeightsByOrderId,
     productsById,
   );
+
   return {
-    effectiveMsrp,
-    previousMsrp,
+    effectiveMsrp: result[result.length - 1],
   };
 };

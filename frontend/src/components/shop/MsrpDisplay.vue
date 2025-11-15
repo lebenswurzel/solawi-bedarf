@@ -79,7 +79,7 @@ const msrp = computed((): Msrp => {
 });
 
 const previousMsrp = computed((): { msrp: Msrp; offer: number } | null => {
-  if (!props.compareToPrevious || !props.order.predecessorId) {
+  if (!props.order.predecessorId) {
     return null;
   }
   return {
@@ -184,7 +184,11 @@ const msrpValidation = computed(() => {
       <div class="py-1" v-if="!props.hideOffer">
         {{ t.cards.products.offer }}
         <strong class="mr-1">{{ relevantOffer.toString() }} € pro Monat</strong>
-        (Vorher: {{ previousMsrp?.offer.toString() }} € pro Monat)
+        <template v-if="previousMsrp">
+          <span class="text-caption"
+            >(vorher: {{ previousMsrp?.offer.toString() }} € pro Monat)</span
+          >
+        </template>
         <template v-if="msrpValidation">
           <v-icon
             v-if="
