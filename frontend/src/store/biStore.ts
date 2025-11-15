@@ -30,7 +30,7 @@ import {
 import { getBI } from "../requests/bi.ts";
 import { useUserStore } from "./userStore.ts";
 import {
-  calculateEffectiveMsrp,
+  calculateEffectiveMsrpChain,
   calculateMsrpWeights,
   calculateOrderValidMonths,
   getMsrp,
@@ -175,56 +175,24 @@ export const useBIStore = defineStore("bi", () => {
     return msrpsMap;
   });
 
-  const getEffectiveMsrp = (orderId: OrderId): Msrp | null => {
-    const order = allOrders.value.find((o) => o.id === orderId);
-    if (!order) {
-      return null;
+  const effectiveMsrpByOrderId = computed((): { [key: OrderId]: Msrp } => {
+    console.log("--> rawMsrpByOrderId", rawMsrpByOrderId.value);
+    if (Object.keys(rawMsrpByOrderId.value).length === 0) {
+      return {};
     }
-    if (
-      activeConfigId.value == -1 ||
-      !config.value ||
-      Object.keys(rawMsrpByOrderId.value).length === 0
-    ) {
-      return null;
-    }
-
-    const effectiveOrder = ordersWithActualOrderItems.value.find(
-      (o) => o.id === orderId,
-    );
-    if (!effectiveOrder) {
-      return null;
-    }
-
-    const effectivePredecessorOrder = ordersWithActualOrderItems.value.find(
-      (o) => o.id === order.predecessorId,
-    );
-
-    if (!effectivePredecessorOrder) {
-      return null;
-    }
-
-    const effectiveMsrp = calculateEffectiveMsrp(
-      {
-        earlierOrder: effectivePredecessorOrder,
-        laterOrder: effectiveOrder,
-      },
+    const result = calculateEffectiveMsrpChain(
+      ordersWithActualOrderItems.value,
       rawMsrpByOrderId.value,
       productMsrpWeightsByOrderId.value,
       productsById.value,
     );
-    return effectiveMsrp;
-  };
-
-  const effectiveMsrpByOrderId = computed((): { [key: OrderId]: Msrp } => {
-    const result = allOrders.value.reduce(
-      (acc, o) => {
-        acc[o.id] = getEffectiveMsrp(o.id) || rawMsrpByOrderId.value[o.id];
-        return acc;
-      },
-      {} as { [key: OrderId]: Msrp },
-    );
-    console.log("effectiveMsrpByOrderId", result);
-    return result;
+    const result2 = Object.fromEntries(
+      result.map((r, index) => [allOrders.value[index].id, r]),
+    ) as {
+      [key: OrderId]: Msrp;
+    };
+    console.log("effectiveMsrpByOrderId", result2);
+    return result2;
   });
 
   const depot = computed(() => {

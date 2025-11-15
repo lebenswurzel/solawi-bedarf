@@ -289,6 +289,15 @@ const orderMsrpValues = (
   };
 };
 
+/**
+ * Calculate the effective MSRP chain for a given list of orders.
+ *
+ * @param orders list of orders to calculate the effective MSRP chain for
+ * @param rawMsrpByOrderId map of raw MSRP by order ID
+ * @param productMsrpWeightsByOrderId map of product MSRP weights by order ID
+ * @param productsById map of products by ID
+ * @returns list of effective MSRP for each order in the given list of orders
+ */
 export const calculateEffectiveMsrpChain = (
   orders: SavedOrder[],
   rawMsrpByOrderId: { [key: OrderId]: Msrp },
@@ -432,6 +441,15 @@ export const calculateEffectiveMsrpChain = (
   return results;
 };
 
+/**
+ * @deprecated use calculateEffectiveMsrpChain instead
+ *
+ * @param orders
+ * @param rawMsrpByOrderId
+ * @param productMsrpWeightsByOrderId
+ * @param productsById
+ * @returns
+ */
 export const calculateEffectiveMsrp = (
   orders: { laterOrder: SavedOrder; earlierOrder: SavedOrder },
   rawMsrpByOrderId: { [key: OrderId]: Msrp },
