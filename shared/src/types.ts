@@ -435,6 +435,7 @@ export interface Msrp {
   };
   months: number;
   contribution: UserCategory;
+  effectiveMonths?: number;
 }
 
 export interface OrganizationInfo {
