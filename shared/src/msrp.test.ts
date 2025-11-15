@@ -344,7 +344,6 @@ describe("calculateEffectiveMsrpChain", () => {
       expect(result.yearly.cooperation).toBeGreaterThanOrEqual(0);
     });
 
-    console.log("results", results);
     // Verify that selfgrown and cooperation values are correctly separated
     results.forEach((result) => {
       expect(result.monthly.total).toBe(

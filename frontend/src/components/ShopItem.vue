@@ -224,7 +224,7 @@ onMounted(() => {
   <v-container class="pa-0" fluid>
     <v-row dense align="center" justify="center">
       <v-col cols="12" :md="visiblePredecessorOrder ? 6 : 8">
-        {{ product.name }} <DebugOnly>{{ product.id }}</DebugOnly>
+        {{ product.name }}
         <v-tooltip
           :text="product.description"
           v-if="product.description"
@@ -234,6 +234,11 @@ onMounted(() => {
             <v-icon v-bind="props">mdi-information-outline</v-icon>
           </template>
         </v-tooltip>
+        <DebugOnly>
+          <span class="opacity-60 text-caption">
+            ID{{ product.id }} {{ productsById[props.productId].msrp }}ct
+          </span>
+        </DebugOnly>
       </v-col>
       <v-col cols="2" md="1">
         <div>
