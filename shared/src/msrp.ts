@@ -235,7 +235,7 @@ const adaptSelfgrownCompensation = (
           (modifiedMsrp.monthly.total + compensation) * modifiedMsrp.months,
         selfgrown: modifiedMsrp.monthly.selfgrown * modifiedMsrp.months,
         cooperation: modifiedMsrp.monthly.cooperation * modifiedMsrp.months,
-        selfgrownCompensation: compensation * currentMsrp.months,
+        selfgrownCompensation: compensation * modifiedMsrp.months,
       },
       months: modifiedMsrp.months,
       contribution: modifiedMsrp.contribution,
@@ -422,10 +422,7 @@ export const calculateEffectiveMsrpChain = (
 
     // Apply selfgrown compensation if this is not the first order
     if (i > 0) {
-      const adaptedMsrp = adaptSelfgrownCompensation(
-        rawMsrpByOrderId[orders[i - 1].id],
-        result
-      );
+      const adaptedMsrp = adaptSelfgrownCompensation(results[i - 1], result);
       results.push(adaptedMsrp);
     } else {
       results.push(result);
