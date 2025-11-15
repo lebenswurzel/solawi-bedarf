@@ -235,9 +235,191 @@ const adaptSelfgrownCompensation = (
       },
       months: modifiedMsrp.months,
       contribution: modifiedMsrp.contribution,
+      effectiveMonths: modifiedMsrp.effectiveMonths,
     };
   }
   return modifiedMsrp;
+};
+
+type ProductKey = string;
+interface OrderMsrpValues {
+  order: Order;
+  validFrom: Date;
+  msrp: Msrp;
+  productMsrpWeights: { [key: ProductId]: number };
+  productMsrps: {
+    [key: string]: number;
+  };
+}
+
+const productKey = (oi: OrderItem, productsById: ProductsById): ProductKey =>
+  `${productsById[oi.productId].name}_${oi.productId}`;
+
+const orderMsrpValues = (
+  o: SavedOrder,
+  msrp: Msrp,
+  productMsrpWeights: { [key: ProductId]: number },
+  productsById: ProductsById
+): OrderMsrpValues => {
+  return {
+    order: o,
+    validFrom: o.validFrom,
+    msrp: msrp,
+    productMsrps: o.orderItems.reduce(
+      (acc, oi) => {
+        acc[productKey(oi, productsById)] = getOrderItemAdjustedMonthlyMsrp(
+          msrp.contribution,
+          oi,
+          productsById,
+          msrp.months,
+          productMsrpWeights
+        );
+        return acc;
+      },
+      {} as { [key: string]: number }
+    ),
+    productMsrpWeights: productMsrpWeights,
+  };
+};
+
+export const calculateEffectiveMsrpChain = (
+  orders: SavedOrder[],
+  rawMsrpByOrderId: { [key: OrderId]: Msrp },
+  productMsrpWeightsByOrderId: { [key: OrderId]: { [key: ProductId]: number } },
+  productsById: ProductsById
+): Msrp[] => {
+  if (orders.length === 0) {
+    return [];
+  }
+
+  // Track cumulative values per product
+  const cumulativeYearlyMsrpByProduct: { [key: ProductKey]: number } = {};
+  const cumulativePaidByProduct: { [key: ProductKey]: number } = {};
+
+  // Prepare order MSRP values for all orders
+  const orderMsrpValuesList: OrderMsrpValues[] = orders.map((order) =>
+    orderMsrpValues(
+      order,
+      rawMsrpByOrderId[order.id],
+      productMsrpWeightsByOrderId[order.id],
+      productsById
+    )
+  );
+
+  const results: Msrp[] = [];
+
+  // Process each order in the chain
+  for (let i = 0; i < orders.length; i++) {
+    const currentOrder = orderMsrpValuesList[i];
+    const nextOrder = i + 1 < orders.length ? orderMsrpValuesList[i + 1] : null;
+
+    // Calculate effective months and weight for current order
+    const currentMonths = currentOrder.msrp.months;
+    const nextMonths = nextOrder?.msrp.months ?? 0;
+    const effectiveMonths = currentMonths - nextMonths;
+
+    // Track effective MSRP per product for this order
+    const effectiveMsrpByProduct: {
+      [key: ProductKey]: {
+        value: number;
+        category: ProductCategoryType;
+      };
+    } = {};
+
+    // Process each product in the current order
+    for (const orderItem of currentOrder.order.orderItems) {
+      const pk = productKey(orderItem, productsById);
+      const product = productsById[orderItem.productId];
+
+      // Get current product values
+      const currentWeight =
+        currentOrder.productMsrpWeights[orderItem.productId] ?? 0;
+      const nextWeight =
+        nextOrder?.productMsrpWeights[orderItem.productId] ?? 0;
+      const effectiveWeight = currentWeight - nextWeight;
+
+      // Calculate total MSRP for this product (yearly value)
+      const totalMsrp = getYearlyBaseMsrp(orderItem, product);
+      const totalValueInRange = totalMsrp * effectiveWeight;
+      const remainingValue = totalMsrp * currentWeight;
+
+      // Initialize cumulative values if not present
+      if (cumulativeYearlyMsrpByProduct[pk] === undefined) {
+        cumulativeYearlyMsrpByProduct[pk] = 0;
+      }
+      if (cumulativePaidByProduct[pk] === undefined) {
+        cumulativePaidByProduct[pk] = 0;
+      }
+
+      // Calculate relevant yearly MSRP (cumulative + remaining value)
+      const relevantYearlyMsrp =
+        cumulativeYearlyMsrpByProduct[pk] + remainingValue;
+
+      // Calculate monthly due effective
+      const monthlyDueEffective =
+        currentMonths > 0
+          ? (relevantYearlyMsrp - cumulativePaidByProduct[pk]) / currentMonths
+          : 0;
+
+      // Update cumulative paid
+      cumulativePaidByProduct[pk] += monthlyDueEffective * effectiveMonths;
+
+      // Update cumulative yearly MSRP
+      cumulativeYearlyMsrpByProduct[pk] += totalValueInRange;
+
+      // Store effective monthly MSRP for this product
+      effectiveMsrpByProduct[pk] = {
+        value: monthlyDueEffective,
+        category: product.productCategoryType,
+      };
+    }
+
+    // Aggregate effective MSRP across all products
+    const effectiveMonthlyTotal = Math.ceil(
+      Object.values(effectiveMsrpByProduct).reduce(
+        (acc, value) => acc + value.value,
+        0
+      )
+    );
+    const effectiveMonthlySelfgrown = Math.ceil(
+      Object.values(effectiveMsrpByProduct)
+        .filter((v) => v.category == ProductCategoryType.SELFGROWN)
+        .reduce((acc, value) => acc + value.value, 0)
+    );
+    const effectiveMonthlyCooperation =
+      effectiveMonthlyTotal - effectiveMonthlySelfgrown;
+
+    // Build result MSRP
+    const result: Msrp = {
+      ...currentOrder.msrp,
+      monthly: {
+        total: effectiveMonthlyTotal,
+        selfgrown: effectiveMonthlySelfgrown,
+        cooperation: effectiveMonthlyCooperation,
+        selfgrownCompensation: undefined,
+      },
+      yearly: {
+        total: effectiveMonthlyTotal * currentMonths,
+        selfgrown: effectiveMonthlySelfgrown * currentMonths,
+        cooperation: effectiveMonthlyCooperation * currentMonths,
+        selfgrownCompensation: undefined,
+      },
+      effectiveMonths,
+    };
+
+    // Apply selfgrown compensation if this is not the first order
+    if (i > 0) {
+      const adaptedMsrp = adaptSelfgrownCompensation(
+        rawMsrpByOrderId[orders[i - 1].id],
+        result
+      );
+      results.push(adaptedMsrp);
+    } else {
+      results.push(result);
+    }
+  }
+
+  return results;
 };
 
 export const calculateEffectiveMsrp = (
@@ -246,47 +428,11 @@ export const calculateEffectiveMsrp = (
   productMsrpWeightsByOrderId: { [key: OrderId]: { [key: ProductId]: number } },
   productsById: ProductsById
 ): Msrp => {
-  type ProductKey = string;
-  interface OrderMsrpValues {
-    order: Order;
-    validFrom: Date;
-    msrp: Msrp;
-    productMsrpWeights: { [key: ProductId]: number };
-    productMsrps: {
-      [key: string]: number;
-    };
-  }
-
   interface ProductMsrp {
     msrp: number; // monthly msrp
     weight: number; // remaining amount of the product in the season when the msrp was calculated (0..1)
     months: number; // number of months of start of order until end of season
   }
-
-  const productKey = (oi: OrderItem, productsById: ProductsById): ProductKey =>
-    `${productsById[oi.productId].name}_${oi.productId}`;
-
-  const orderMsrpValues = (o: SavedOrder) => {
-    return {
-      order: o,
-      validFrom: o.validFrom,
-      msrp: rawMsrpByOrderId[o.id],
-      productMsrps: o.orderItems.reduce(
-        (acc, oi) => {
-          acc[productKey(oi, productsById)] = getOrderItemAdjustedMonthlyMsrp(
-            rawMsrpByOrderId[o.id].contribution,
-            oi,
-            productsById,
-            rawMsrpByOrderId[o.id].months,
-            productMsrpWeightsByOrderId[o.id]
-          );
-          return acc;
-        },
-        {} as { [key: string]: number }
-      ),
-      productMsrpWeights: productMsrpWeightsByOrderId[o.id],
-    };
-  };
 
   const calculateTotalOffset = (
     oldProductMsrp: ProductMsrp,
@@ -361,8 +507,18 @@ export const calculateEffectiveMsrp = (
     return result;
   };
 
-  const laterOrderMsrpValues = orderMsrpValues(orders.laterOrder);
-  const earlierOrderMsrpValues = orderMsrpValues(orders.earlierOrder);
+  const laterOrderMsrpValues = orderMsrpValues(
+    orders.laterOrder,
+    rawMsrpByOrderId[orders.laterOrder.id],
+    productMsrpWeightsByOrderId[orders.laterOrder.id],
+    productsById
+  );
+  const earlierOrderMsrpValues = orderMsrpValues(
+    orders.earlierOrder,
+    rawMsrpByOrderId[orders.earlierOrder.id],
+    productMsrpWeightsByOrderId[orders.earlierOrder.id],
+    productsById
+  );
 
   const effectiveMsrp = aggregateEffectiveMsrp(
     laterOrderMsrpValues,
