@@ -215,7 +215,7 @@ const disableSaveButton = computed(() => {
       <v-row dense>
         <v-col
           cols="12"
-          md="6"
+          md="4"
           v-for="(order, index) in allOrders"
           :key="order.id"
         >
