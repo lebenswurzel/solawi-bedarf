@@ -12,20 +12,20 @@
   "author": "",
   "license": "AGPL-3.0-only",
   "dependencies": {
-    "@types/pdfmake": "^0.2.9",
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
-    "eslint": "^9.20.1",
-    "eslint-config-prettier": "^10.0.1",
     "jszip": "^3.10.1",
     "pdf-lib": "^1.17.1",
     "marked": "^15.0.7",
-    "pdfmake": "^0.2.16",
-    "prettier": "^3.0.3",
-    "typescript": "^5.2.2"
+    "pdfmake": "^0.2.16"
   },
   "devDependencies": {
+    "eslint": "^9.20.1",
+    "eslint-config-prettier": "^10.0.1",
+    "prettier": "^3.0.3",
+    "typescript": "^5.2.2",
     "@vitest/coverage-v8": "^3.0.5",
+    "@types/pdfmake": "^0.2.9",
     "vitest": "^3.0.5"
   }
 }
