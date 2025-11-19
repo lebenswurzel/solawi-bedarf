@@ -1,7 +1,7 @@
 version: 2
 updates:
   - package-ecosystem: "npm"
-    directory: "/frontend"
+    directory: "/"
     versioning-strategy: increase
     schedule:
       interval: "monthly"
@@ -9,6 +9,7 @@ updates:
       vue-and-vite-deps:
         patterns:
           - "vue*"
+          - "@vue-leaflet/*"
           - "vite*"
           - "pinia"
       coding-and-language:
@@ -16,63 +17,26 @@ updates:
           - "typescript"
           - "prettier"
           - "eslint*"
+          - "ts-node"
+          - "reflect-metadata"
       tools:
-        dependency-type: production
         patterns:
           - "*pdfmake*"
           - "date-fns"
           - "jszip"
           - "marked"
-      everything-else:
-        dependency-type: production
-        patterns:
-          - "*" # captures everything that wasn't included in any of the above groups
-
-  - package-ecosystem: "npm"
-    directory: "/shared"
-    versioning-strategy: increase
-    schedule:
-      interval: "monthly"
-    groups:
-      coding-and-language:
-        patterns:
-          - "typescript"
-          - "prettier"
-          - "eslint*"
-      everything-else:
-        patterns:
-          - "*" # captures everything that wasn't included in any of the above groups
-
-  - package-ecosystem: "npm"
-    directory: "/backend"
-    versioning-strategy: increase
-    schedule:
-      interval: "monthly"
-    groups:
-      coding-and-language:
-        patterns:
-          - "typescript"
-          - "prettier"
-          - "eslint*"
-          - "ts-node"
-          - "reflect-metadata"
-      database:
-        dependency-type: production
-        patterns:
-          - "typeorm"
-          - "pg"
-      koa:
-        dependency-type: production
-        patterns:
-          - "*koa*"
-      tools:
-        dependency-type: production
-        patterns:
           - "basic-auth"
           - "jsonwebtoken"
           - "*ldapjs"
           - "*nodemailer"
           - "*node*"
+      database:
+        patterns:
+          - "typeorm"
+          - "pg"
+      koa:
+        patterns:
+          - "*koa*"
       everything-else:
         patterns:
           - "*" # captures everything that wasn't included in any of the above groups
