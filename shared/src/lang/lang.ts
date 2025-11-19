@@ -622,9 +622,9 @@ export const language = {
       body: [
         "Liebe(r) {userName},",
 
-        "du möchest dein Passwort zurücksetzen? Dann klicke bitte auf den folgenden Link:",
+        "du möchest dein Passwort zurücksetzen?",
 
-        "{passwordResetLink}",
+        "<a href='{passwordResetLink}'>Dann klicke bitte auf diesen Link.</a>",
 
         "Viele Grüße",
 
