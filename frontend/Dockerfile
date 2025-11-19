@@ -10,7 +10,7 @@ COPY shared/tsconfig.json ./shared/
 COPY frontend/package.json ./frontend/
 COPY frontend/tsconfig.json ./frontend/
 COPY frontend/tsconfig.node.json ./frontend/
-COPY frontend/vite.config.ts ./frontend/
+COPY frontend/vite.config.mts ./frontend/
 
 RUN npm --workspace=frontend ci
 
