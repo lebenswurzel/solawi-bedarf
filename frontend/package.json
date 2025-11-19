@@ -32,12 +32,12 @@
     "papaparse": "^5.5.2",
     "pdf-lib": "^1.17.1",
     "pdfmake": "^0.2.10",
-    "pinia": "^3.0.3",
-    "vue": "^3.4.21",
+    "pinia": "^3.0.4",
+    "vue": "^3.5.24",
     "vue-leaflet": "^0.1.0",
-    "vue-router": "^4.2.4",
-    "vue-tsc": "^3.1.2",
-    "vuetify": "^3.5.11"
+    "vue-router": "^4.6.3",
+    "vue-tsc": "^3.1.4",
+    "vuetify": "^3.10.11"
   },
   "devDependencies": {
     "@types/papaparse": "^5.3.15",
@@ -47,8 +47,8 @@
     "eslint-plugin-vue": "^9.33.0",
     "prettier": "^3.0.3",
     "typescript": "^5.2.2",
-    "vite": "^6.1.0",
-    "vite-plugin-vuetify": "^2.0.3",
-    "vitest": "^3.0.5"
+    "vite": "^7.2.2",
+    "vite-plugin-vuetify": "^2.1.2",
+    "vitest": "^4.0.10"
   }
 }
