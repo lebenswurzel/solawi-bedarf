@@ -2,17 +2,16 @@ version: 2
 updates:
   - package-ecosystem: "npm"
     directory: "/frontend"
+    versioning-strategy: increase
     schedule:
       interval: "monthly"
     groups:
       vue-and-vite-deps:
-        dependency-type: production
         patterns:
           - "vue*"
           - "vite*"
           - "pinia"
       coding-and-language:
-        dependency-type: production
         patterns:
           - "typescript"
           - "prettier"
@@ -30,12 +29,26 @@ updates:
           - "*" # captures everything that wasn't included in any of the above groups
 
   - package-ecosystem: "npm"
+    directory: "/shared"
+    versioning-strategy: increase
+    schedule:
+      interval: "monthly"
+    coding-and-language:
+      patterns:
+        - "typescript"
+        - "prettier"
+        - "eslint*"
+    everything-else:
+      patterns:
+        - "*" # captures everything that wasn't included in any of the above groups
+
+  - package-ecosystem: "npm"
     directory: "/backend"
+    versioning-strategy: increase
     schedule:
       interval: "monthly"
     groups:
       coding-and-language:
-        dependency-type: production
         patterns:
           - "typescript"
           - "prettier"
