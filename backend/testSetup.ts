@@ -43,22 +43,22 @@ const clearAllTables = async () => {
   const entities = AppDataSource.entityMetadatas;
 
   // must delete in specific order to prevent foreign key violations
-  await AppDataSource.getRepository(OrderItem).delete({});
-  await AppDataSource.getRepository(ShipmentItem).delete({});
-  await AppDataSource.getRepository(Product).delete({});
-  await AppDataSource.getRepository(ProductCategory).delete({});
-  await AppDataSource.getRepository(Order).delete({});
-  await AppDataSource.getRepository(AdditionalShipmentItem).delete({});
-  await AppDataSource.getRepository(Shipment).delete({});
-  await AppDataSource.getRepository(Depot).delete({});
-  await AppDataSource.getRepository(Token).delete({});
-  await AppDataSource.getRepository(Applicant).delete({});
-  await AppDataSource.getRepository(UserAddress).delete({});
-  await AppDataSource.getRepository(User).delete({});
+  await AppDataSource.getRepository(OrderItem).deleteAll();
+  await AppDataSource.getRepository(ShipmentItem).deleteAll();
+  await AppDataSource.getRepository(Product).deleteAll();
+  await AppDataSource.getRepository(ProductCategory).deleteAll();
+  await AppDataSource.getRepository(Order).deleteAll();
+  await AppDataSource.getRepository(AdditionalShipmentItem).deleteAll();
+  await AppDataSource.getRepository(Shipment).deleteAll();
+  await AppDataSource.getRepository(Depot).deleteAll();
+  await AppDataSource.getRepository(Token).deleteAll();
+  await AppDataSource.getRepository(Applicant).deleteAll();
+  await AppDataSource.getRepository(UserAddress).deleteAll();
+  await AppDataSource.getRepository(User).deleteAll();
 
   // delete everything that remains
   for (const entity of entities) {
-    await AppDataSource.getRepository(entity.name).delete({});
+    await AppDataSource.getRepository(entity.name).deleteAll();
   }
 };
 
