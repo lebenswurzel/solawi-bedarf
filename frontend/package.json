@@ -32,11 +32,11 @@
     "papaparse": "^5.5.2",
     "pdf-lib": "^1.17.1",
     "pdfmake": "^0.2.10",
-    "pinia": "^2.1.6",
+    "pinia": "^3.0.3",
     "vue": "^3.4.21",
     "vue-leaflet": "^0.1.0",
     "vue-router": "^4.2.4",
-    "vue-tsc": "^2.0.6",
+    "vue-tsc": "^3.1.2",
     "vuetify": "^3.5.11"
   },
   "devDependencies": {
