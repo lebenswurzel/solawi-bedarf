@@ -3,7 +3,6 @@ on: [push]
 
 jobs:
   build-and-deploy:
-    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
 
     steps:
