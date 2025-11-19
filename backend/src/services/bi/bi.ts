@@ -98,7 +98,7 @@ const getCurrentValidOrdersByUser = (
   });
 
   // Find current valid order for each user
-  Object.entries(ordersByUser).forEach(([userIdStr, userOrders]) => {
+  Object.entries(ordersByUser).forEach(([userIdStr, _userOrders]) => {
     const userId = parseInt(userIdStr);
     const validOrder = getCurrentValidOrderForUser(orders, userId, targetDate);
     if (validOrder) {
