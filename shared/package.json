@@ -16,8 +16,8 @@
     "date-fns-tz": "^3.2.0",
     "jszip": "^3.10.1",
     "pdf-lib": "^1.17.1",
-    "marked": "^15.0.7",
-    "pdfmake": "^0.2.16"
+    "marked": "^17.0.0",
+    "pdfmake": "^0.2.20"
   },
   "devDependencies": {
     "eslint": "^9.20.1",
