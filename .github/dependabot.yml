@@ -33,14 +33,15 @@ updates:
     versioning-strategy: increase
     schedule:
       interval: "monthly"
-    coding-and-language:
-      patterns:
-        - "typescript"
-        - "prettier"
-        - "eslint*"
-    everything-else:
-      patterns:
-        - "*" # captures everything that wasn't included in any of the above groups
+    groups:
+      coding-and-language:
+        patterns:
+          - "typescript"
+          - "prettier"
+          - "eslint*"
+      everything-else:
+        patterns:
+          - "*" # captures everything that wasn't included in any of the above groups
 
   - package-ecosystem: "npm"
     directory: "/backend"
