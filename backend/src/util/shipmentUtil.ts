@@ -32,8 +32,6 @@ export const mergeShipmentWithForecast = (
   shipments: Shipment[],
   forecastShipments: Shipment[],
 ): ShipmentItemWithValidity[] => {
-  const result: ShipmentItem[] = [];
-
   const shippedItems: ShipmentItemWithValidity[] = shipments.flatMap(
     (shipment) =>
       shipment.shipmentItems.map((si) => ({
