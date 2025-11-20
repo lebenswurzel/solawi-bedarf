@@ -82,6 +82,15 @@ export const useBIStore = defineStore("bi", () => {
           deliveredByProductIdDepotId: requestDeliveredByProductIdDepotId,
           productsById: requestProductsById,
         } = await getBI(activeConfigId.value, o.id, true);
+
+        // const { itemsByProductIdShipmentId, availability } =
+        //   await getAvailabilityWeights(activeConfigId.value, now.value);
+        // console.log(
+        //   `itemsByProductIdShipmentId for order ${o.id}`,
+        //   itemsByProductIdShipmentId,
+        //   "availability",
+        //   availability,
+        // );
         return {
           [o.id]: {
             deliveredByProductIdDepotId: requestDeliveredByProductIdDepotId,
