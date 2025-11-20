@@ -535,3 +535,23 @@ export interface DeliveryPauseRange {
   begin: { month: number; day: number }; // inclusive
   end: { month: number; day: number }; // exclusive
 }
+
+export interface AvailabilityWeights {
+  itemsByProductIdShipmentId: {
+    [productId: number]: {
+      [shipmentId: number]: {
+        delivered: number;
+        weightedDelivered: number;
+        depotIds: number[];
+        availability: number;
+      };
+    };
+  };
+  availability: {
+    [productId: number]: {
+      weightedDelivered: number;
+      frequency: number;
+      remaining: number;
+    };
+  };
+}

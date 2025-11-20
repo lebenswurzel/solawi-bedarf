@@ -61,6 +61,7 @@ import { getErrorLog } from "./services/getErrorLog";
 import { getUserShipments } from "./services/shipment/getUserShipments";
 import { calcMsrp } from "./services/bi/calcMsrp";
 import { deleteShipment } from "./services/shipment/deleteShipment";
+import { availabilityWeightsHandler } from "./services/bi/availabilityWeights";
 
 const port = config.server.serverPort;
 const app = new Koa();
@@ -142,6 +143,7 @@ router.post("/content/text", saveTextContent);
 router.delete("/content/text", deleteTextContent);
 
 router.get("/bi", biHandler);
+router.get("/bi/availabilityWeights", availabilityWeightsHandler);
 router.get("/overview", getOverview);
 
 router.get("/version", getVersion);
