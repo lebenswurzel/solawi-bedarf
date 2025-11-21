@@ -19,12 +19,14 @@ defineProps<{ busy: boolean }>();
 </script>
 
 <template>
-  <v-progress-linear
-    indeterminate
-    color="primary"
-    v-show="busy"
-    class="progress-bar"
-  ></v-progress-linear>
+  <transition name="fade">
+    <v-progress-linear
+      v-if="busy"
+      indeterminate
+      color="primary"
+      class="progress-bar"
+    ></v-progress-linear>
+  </transition>
 </template>
 
 <style>
@@ -33,5 +35,15 @@ defineProps<{ busy: boolean }>();
   top: 0;
   left: 0;
   right: 0;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>
