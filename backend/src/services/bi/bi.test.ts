@@ -34,7 +34,13 @@ import {
   getRequisitionConfigId,
   updateRequisition,
 } from "../../../test/testHelpers";
-import { getUserId, testAsUser1, TestUserData } from "../../../testSetup";
+import {
+  getUserId,
+  testAsAdminAndUser,
+  testAsUser1,
+  TestAdminAndUserData,
+  TestUserData,
+} from "../../../testSetup";
 import { bi } from "./bi";
 import { RequisitionConfig } from "../../database/RequisitionConfig";
 
@@ -346,5 +352,289 @@ testAsUser1(
     expect(result.productsById[product.id]).toBeDefined();
     expect(result.productsById[product.id].id).toBe(product.id);
     expect(result.productsById[product.id].name).toBe("Test Product");
+  },
+);
+
+testAsAdminAndUser(
+  "bi with 2 users, 2 depots, 2 products, 3 shipments",
+  async ({ userData }: TestAdminAndUserData) => {
+    const now = new Date();
+    const configId = await updateRequisition(
+      true,
+      undefined,
+      undefined,
+      subDays(now, 100),
+      addDays(now, 265),
+    );
+
+    // Create product category and 2 products
+    const category = await createTestProductCategory({
+      requisitionConfigId: configId,
+    });
+    const product1 = await createTestProduct({
+      name: "Product 1",
+      quantity: 100,
+      frequency: 20,
+      unit: Unit.PIECE,
+      productCategoryId: category.id,
+    });
+    const product2 = await createTestProduct({
+      name: "Product 2",
+      quantity: 200,
+      frequency: 30,
+      unit: Unit.PIECE,
+      productCategoryId: category.id,
+    });
+
+    // Create 2 depots
+    const depot1 = await createTestDepot({
+      name: "Depot 1",
+      capacity: 10,
+    });
+    const depot2 = await createTestDepot({
+      name: "Depot 2",
+      capacity: 15,
+    });
+
+    // Create order for user1 at depot1 with 2 products
+    const order1 = await createTestOrder({
+      userId: userData.userId,
+      depotId: depot1.id,
+      requisitionConfigId: configId,
+      confirmGTC: true,
+      offer: 20,
+      orderItems: [
+        {
+          productId: product1.id,
+          value: 3, // User1 orders 3 of product1
+          availability: 1,
+        },
+        {
+          productId: product2.id,
+          value: 4, // User1 orders 4 of product2
+          availability: 1,
+        },
+      ],
+    });
+
+    // Create order for admin at depot2 with 2 products
+    const order2 = await createTestOrder({
+      userId: userData.adminId,
+      depotId: depot2.id,
+      requisitionConfigId: configId,
+      confirmGTC: true,
+      offer: 30,
+      orderItems: [
+        {
+          productId: product1.id,
+          value: 5, // Admin orders 5 of product1
+          availability: 1,
+        },
+        {
+          productId: product2.id,
+          value: 6, // Admin orders 6 of product2
+          availability: 1,
+        },
+      ],
+    });
+
+    // Create 3 shipments, one week apart
+    const shipment1Date = subDays(now, 14); // 2 weeks ago
+    const shipment2Date = subDays(now, 7); // 1 week ago
+    const shipment3Date = subDays(now, 1); // Yesterday
+
+    const shipment1 = await createTestShipment({
+      requisitionConfigId: configId,
+      validFrom: shipment1Date,
+      active: true,
+      type: ShipmentType.NORMAL,
+    });
+
+    const shipment2 = await createTestShipment({
+      requisitionConfigId: configId,
+      validFrom: shipment2Date,
+      active: true,
+      type: ShipmentType.NORMAL,
+    });
+
+    const shipment3 = await createTestShipment({
+      requisitionConfigId: configId,
+      validFrom: shipment3Date,
+      active: true,
+      type: ShipmentType.NORMAL,
+    });
+
+    // Product1 shipped in shipments 1 and 2
+    await createTestShipmentItem({
+      shipmentId: shipment1.id,
+      productId: product1.id,
+      depotId: depot1.id,
+      multiplicator: 100,
+      totalShipedQuantity: 3,
+      unit: Unit.PIECE,
+    });
+    await createTestShipmentItem({
+      shipmentId: shipment1.id,
+      productId: product1.id,
+      depotId: depot2.id,
+      multiplicator: 100,
+      totalShipedQuantity: 5,
+      unit: Unit.PIECE,
+    });
+
+    await createTestShipmentItem({
+      shipmentId: shipment2.id,
+      productId: product1.id,
+      depotId: depot1.id,
+      multiplicator: 100,
+      totalShipedQuantity: 3,
+      unit: Unit.PIECE,
+    });
+    await createTestShipmentItem({
+      shipmentId: shipment2.id,
+      productId: product1.id,
+      depotId: depot2.id,
+      multiplicator: 100,
+      totalShipedQuantity: 5,
+      unit: Unit.PIECE,
+    });
+
+    // Product2 shipped in shipments 2 and 3
+    await createTestShipmentItem({
+      shipmentId: shipment2.id,
+      productId: product2.id,
+      depotId: depot1.id,
+      multiplicator: 100,
+      totalShipedQuantity: 4,
+      unit: Unit.PIECE,
+    });
+    await createTestShipmentItem({
+      shipmentId: shipment2.id,
+      productId: product2.id,
+      depotId: depot2.id,
+      multiplicator: 150, // 150% delivered
+      totalShipedQuantity: 9,
+      unit: Unit.PIECE,
+    });
+
+    await createTestShipmentItem({
+      shipmentId: shipment3.id,
+      productId: product2.id,
+      depotId: depot1.id,
+      multiplicator: 100,
+      totalShipedQuantity: 4,
+      unit: Unit.PIECE,
+    });
+    await createTestShipmentItem({
+      shipmentId: shipment3.id,
+      productId: product2.id,
+      depotId: depot2.id,
+      multiplicator: 100,
+      totalShipedQuantity: 6,
+      unit: Unit.PIECE,
+    });
+
+    // Call bi function
+    const result = await bi(configId, undefined, false, now);
+
+    // Verify soldByProductId
+    // Product1: User1 ordered 3, Admin ordered 5 = 8 total
+    // sold = 8 * 20 frequency = 160
+    expect(result.soldByProductId[product1.id]).toBeDefined();
+    expect(result.soldByProductId[product1.id].sold).toBe(160); // (3 + 5) * 20
+    expect(result.soldByProductId[product1.id].frequency).toBe(20);
+
+    // Product2: User1 ordered 4, Admin ordered 6 = 10 total
+    // sold = 10 * 30 frequency = 300
+    expect(result.soldByProductId[product2.id]).toBeDefined();
+    expect(result.soldByProductId[product2.id].sold).toBe(300); // (4 + 6) * 30
+    expect(result.soldByProductId[product2.id].frequency).toBe(30);
+
+    // Verify deliveredByProductIdDepotId for Product1
+    // Depot1: User1 ordered 3, value = 3
+    expect(
+      result.deliveredByProductIdDepotId[product1.id][depot1.id],
+    ).toBeDefined();
+    expect(
+      result.deliveredByProductIdDepotId[product1.id][depot1.id].value,
+    ).toBe(3);
+    // Product1 delivered in shipments 1 and 2 to depot1: 2 deliveries
+    expect(
+      result.deliveredByProductIdDepotId[product1.id][depot1.id].deliveryCount,
+    ).toBe(2);
+    expect(
+      result.deliveredByProductIdDepotId[product1.id][depot1.id]
+        .actuallyDelivered,
+    ).toBe(200); // 100 + 100 (multiplicator from 2 shipments)
+
+    // Depot2: Admin ordered 5, value = 5
+    expect(
+      result.deliveredByProductIdDepotId[product1.id][depot2.id],
+    ).toBeDefined();
+    expect(
+      result.deliveredByProductIdDepotId[product1.id][depot2.id].value,
+    ).toBe(5);
+    // Product1 delivered in shipments 1 and 2 to depot2: 2 deliveries
+    expect(
+      result.deliveredByProductIdDepotId[product1.id][depot2.id].deliveryCount,
+    ).toBe(2);
+    expect(
+      result.deliveredByProductIdDepotId[product1.id][depot2.id]
+        .actuallyDelivered,
+    ).toBe(200); // 100 + 100 (multiplicator from 2 shipments)
+
+    // Verify deliveredByProductIdDepotId for Product2
+    // Depot1: User1 ordered 4, value = 4
+    expect(
+      result.deliveredByProductIdDepotId[product2.id][depot1.id],
+    ).toBeDefined();
+    expect(
+      result.deliveredByProductIdDepotId[product2.id][depot1.id].value,
+    ).toBe(4);
+    // Product2 delivered in shipments 2 and 3 to depot1: 2 deliveries
+    expect(
+      result.deliveredByProductIdDepotId[product2.id][depot1.id].deliveryCount,
+    ).toBe(2);
+    expect(
+      result.deliveredByProductIdDepotId[product2.id][depot1.id]
+        .actuallyDelivered,
+    ).toBe(200); // 100 + 100 (multiplicator from 2 shipments)
+
+    // Depot2: Admin ordered 6, value = 6
+    expect(
+      result.deliveredByProductIdDepotId[product2.id][depot2.id],
+    ).toBeDefined();
+    expect(
+      result.deliveredByProductIdDepotId[product2.id][depot2.id].value,
+    ).toBe(6);
+    // Product2 delivered in shipments 2 and 3 to depot2: 2 deliveries
+    expect(
+      result.deliveredByProductIdDepotId[product2.id][depot2.id].deliveryCount,
+    ).toBe(2);
+    expect(
+      result.deliveredByProductIdDepotId[product2.id][depot2.id]
+        .actuallyDelivered,
+    ).toBe(250); // 100 + 150 (multiplicator from 2 shipments)
+
+    // Verify capacityByDepotId
+    expect(result.capacityByDepotId[depot1.id]).toBeDefined();
+    expect(result.capacityByDepotId[depot1.id].capacity).toBe(10);
+    expect(result.capacityByDepotId[depot1.id].reserved).toBe(1); // 1 user (user1)
+
+    expect(result.capacityByDepotId[depot2.id]).toBeDefined();
+    expect(result.capacityByDepotId[depot2.id].capacity).toBe(15);
+    expect(result.capacityByDepotId[depot2.id].reserved).toBe(1); // 1 user (admin)
+
+    // Verify offers
+    expect(result.offers).toBe(50); // 20 + 30
+
+    // Verify productsById
+    expect(result.productsById[product1.id]).toBeDefined();
+    expect(result.productsById[product1.id].id).toBe(product1.id);
+    expect(result.productsById[product1.id].name).toBe("Product 1");
+
+    expect(result.productsById[product2.id]).toBeDefined();
+    expect(result.productsById[product2.id].id).toBe(product2.id);
+    expect(result.productsById[product2.id].name).toBe("Product 2");
   },
 );
