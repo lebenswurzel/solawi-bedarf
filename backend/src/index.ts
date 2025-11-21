@@ -60,7 +60,6 @@ import { errorLogger } from "./middleware/errorLogger";
 import { durationLogger } from "./middleware/durationLogger";
 import { getErrorLog } from "./services/getErrorLog";
 import { getUserShipments } from "./services/shipment/getUserShipments";
-import { calcMsrp } from "./services/bi/calcMsrp";
 import { deleteShipment } from "./services/shipment/deleteShipment";
 import { availabilityWeightsHandler } from "./services/bi/availabilityWeights";
 
@@ -131,7 +130,6 @@ router.get("/shop/order", getOrder);
 router.get("/shop/orders", getAllOrders);
 router.post("/shop/order", saveOrder);
 router.post("/shop/order/modify", modifyOrder);
-router.get("/shop/calcMsrp", calcMsrp);
 
 router.get("/shipment", getUserShipments);
 router.get("/shipments", getShipments);

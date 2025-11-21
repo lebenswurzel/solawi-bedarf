@@ -547,11 +547,17 @@ export interface AvailabilityWeights {
       };
     };
   };
-  availability: {
+  availabilityByProductId: {
     [productId: number]: {
-      weightedDelivered: number;
+      weightedDelivered: number; // 100 means full target delivery per shipment
+      deliveries: number;
       frequency: number;
-      remaining: number;
+      deliveryPercentage: number;
+      roundedDeliveries: number;
+      msrpWeight: number; // 0..1, 1 means fully available, 0 means fully delivered
     };
+  };
+  msrpWeightsByProductId: {
+    [productId: number]: number; // 0..1, 1 means fully available, 0 means fully delivered
   };
 }

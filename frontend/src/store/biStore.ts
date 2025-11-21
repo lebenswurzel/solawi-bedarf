@@ -19,6 +19,7 @@ import { computed, ref, watchEffect } from "vue";
 import { useConfigStore } from "./configStore.ts";
 import { useOrderStore } from "./orderStore";
 import {
+  AvailabilityWeights,
   CapacityByDepotId,
   DeliveredByProductIdDepotId,
   Msrp,
@@ -27,11 +28,10 @@ import {
   ProductsById,
   SoldByProductId,
 } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
-import { getBI } from "../requests/bi.ts";
+import { getAvailabilityWeights, getBI } from "../requests/bi.ts";
 import { useUserStore } from "./userStore.ts";
 import {
   calculateEffectiveMsrpChain,
-  calculateMsrpWeights,
   calculateOrderValidMonths,
   getMsrp,
 } from "@lebenswurzel/solawi-bedarf-shared/src/msrp.ts";
@@ -68,6 +68,13 @@ export const useBIStore = defineStore("bi", () => {
   const productMsrpWeightsByOrderId = ref<{
     [key: OrderId]: { [key: ProductId]: number };
   }>({});
+  const productAvailabilityByOrderId = ref<{
+    [key: OrderId]: {
+      [
+        key: ProductId
+      ]: AvailabilityWeights["availabilityByProductId"][ProductId];
+    };
+  }>({});
 
   // update productMsrpWeightsByOrderId when orderStore.allOrders changes
   watchEffect(async () => {
@@ -79,22 +86,25 @@ export const useBIStore = defineStore("bi", () => {
     const results = await Promise.all(
       allOrders.value.map(async (o) => {
         const {
-          deliveredByProductIdDepotId: requestDeliveredByProductIdDepotId,
-          productsById: requestProductsById,
-        } = await getBI(activeConfigId.value, o.id, true);
-
-        // const { itemsByProductIdShipmentId, availability } =
-        //   await getAvailabilityWeights(activeConfigId.value, now.value);
-        // console.log(
-        //   `itemsByProductIdShipmentId for order ${o.id}`,
-        //   itemsByProductIdShipmentId,
-        //   "availability",
-        //   availability,
-        // );
+          itemsByProductIdShipmentId,
+          availabilityByProductId,
+          msrpWeightsByProductId,
+        } = await getAvailabilityWeights(activeConfigId.value, o.validFrom);
+        if (isDebugEnabled()) {
+          const productId = 296;
+          console.log(
+            `itemsByProductIdShipmentId for order ${o.id} ${o.validFrom}`,
+            itemsByProductIdShipmentId[productId],
+            "availability",
+            availabilityByProductId[productId],
+            "msrpWeights",
+            msrpWeightsByProductId[productId],
+          );
+        }
         return {
           [o.id]: {
-            deliveredByProductIdDepotId: requestDeliveredByProductIdDepotId,
-            productsById: requestProductsById,
+            msrpWeightsByProductId,
+            availabilityByProductId,
           },
         };
       }),
@@ -104,11 +114,17 @@ export const useBIStore = defineStore("bi", () => {
       {},
       ...results.map((result) => {
         return {
-          [Object.keys(result)[0]]: calculateMsrpWeights(
-            Object.values(result)[0].productsById,
-            Object.values(result)[0].deliveredByProductIdDepotId,
-            depots.value,
-          ),
+          [Object.keys(result)[0]]:
+            Object.values(result)[0].msrpWeightsByProductId,
+        };
+      }),
+    );
+    productAvailabilityByOrderId.value = Object.assign(
+      {},
+      ...results.map((result) => {
+        return {
+          [Object.keys(result)[0]]:
+            Object.values(result)[0].availabilityByProductId,
         };
       }),
     );
@@ -268,5 +284,6 @@ export const useBIStore = defineStore("bi", () => {
     now,
     getEffectiveMsrpByOrderId,
     productMsrpWeightsByOrderId,
+    productAvailabilityByOrderId,
   };
 });

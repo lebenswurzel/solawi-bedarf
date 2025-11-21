@@ -243,7 +243,10 @@ export const availabilityWeights = async (
 
   const itemsByProductIdShipmentId: AvailabilityWeights["itemsByProductIdShipmentId"] =
     {};
-  const availability: AvailabilityWeights["availability"] = {};
+  const availabilityByProductId: AvailabilityWeights["availabilityByProductId"] =
+    {};
+  const msrpWeightsByProductId: AvailabilityWeights["msrpWeightsByProductId"] =
+    {};
 
   shipments.forEach((shipment) => {
     const currentValidOrdersByUser = getCurrentValidOrdersByUser(
@@ -294,26 +297,47 @@ export const availabilityWeights = async (
     );
 
     Object.entries(itemsByProductIdShipmentId).forEach(([productId, items]) => {
-      const product = soldByProductId[parseInt(productId)];
-      availability[parseInt(productId)] = {
+      const pid = parseInt(productId);
+      const product = soldByProductId[pid];
+      availabilityByProductId[pid] = {
         weightedDelivered: 0,
         frequency: product.frequency,
-        remaining: 1,
+        deliveries: 0,
+        deliveryPercentage: 0,
+        roundedDeliveries: 0,
+        msrpWeight: 0,
       };
       Object.values(items).forEach((item) => {
-        availability[parseInt(productId)].weightedDelivered +=
+        availabilityByProductId[pid].weightedDelivered +=
           item.weightedDelivered;
 
-        availability[parseInt(productId)].remaining =
-          1 -
-          availability[parseInt(productId)].weightedDelivered /
-            (product.frequency * 100);
+        availabilityByProductId[pid].deliveries =
+          availabilityByProductId[pid].weightedDelivered / 100;
+        availabilityByProductId[pid].roundedDeliveries = Math.round(
+          availabilityByProductId[pid].deliveries,
+        );
+        availabilityByProductId[pid].deliveryPercentage =
+          availabilityByProductId[pid].weightedDelivered / product.frequency;
+
+        const msrpWeight = Math.min(
+          Math.max(
+            1 -
+              availabilityByProductId[parseInt(productId)].weightedDelivered /
+                (product.frequency * 100),
+            0,
+          ),
+          1,
+        );
+
+        availabilityByProductId[parseInt(productId)].msrpWeight = msrpWeight;
+        msrpWeightsByProductId[parseInt(productId)] = msrpWeight;
       });
     });
   });
 
   return {
     itemsByProductIdShipmentId,
-    availability,
+    availabilityByProductId,
+    msrpWeightsByProductId,
   };
 };
