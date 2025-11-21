@@ -19,6 +19,7 @@ import { computed, onUnmounted, ref } from "vue";
 import type { UserWithOrders } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { getUser } from "../requests/user.ts";
 import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
+import { useUiFeedback } from "./uiFeedbackStore.ts";
 
 export enum LoginState {
   ANONYMOUS,
@@ -39,15 +40,17 @@ export const useUserStore = defineStore("userStore", () => {
   };
 
   const update = async () => {
-    const {
-      userId: requestUserId,
-      users: requestUsers,
-      tokenValidUntil: requestTokenValidUntil,
-    } = await getUser();
-    userId.value = requestUserId;
-    users.value = requestUsers;
-    tokenValidUntil.value = requestTokenValidUntil;
-    updateLoginState(LoginState.LOGGED_IN);
+    await useUiFeedback().withBusy(async () => {
+      const {
+        userId: requestUserId,
+        users: requestUsers,
+        tokenValidUntil: requestTokenValidUntil,
+      } = await getUser();
+      userId.value = requestUserId;
+      users.value = requestUsers;
+      tokenValidUntil.value = requestTokenValidUntil;
+      updateLoginState(LoginState.LOGGED_IN);
+    });
   };
 
   const init = async () => {

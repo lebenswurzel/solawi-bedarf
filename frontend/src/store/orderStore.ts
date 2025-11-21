@@ -28,6 +28,7 @@ import { isDateInRange } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateH
 import { determineModificationOrderId } from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition.ts";
 import { useUserStore } from "./userStore.ts";
 import { isDebugEnabled } from "../lib/debug";
+import { useUiFeedback } from "./uiFeedbackStore.ts";
 
 export const useOrderStore = defineStore("orderStore", () => {
   const userStore = useUserStore();
@@ -48,6 +49,7 @@ export const useOrderStore = defineStore("orderStore", () => {
   const category = ref<UserCategory>(appConfig.defaultCategory);
   const categoryReason = ref<string | null>(null);
   const visibleOrderId = ref<number | undefined>(undefined);
+  const uiFeedbackStore = useUiFeedback();
 
   // id of the order that is valid previous to the modification order
   const predecessorOrderId = ref<number | undefined>(undefined);
@@ -84,7 +86,6 @@ export const useOrderStore = defineStore("orderStore", () => {
   });
 
   const updateOrderItem = (productId: number, value: number) => {
-    console.log("updateOrderItem", productId, value);
     actualOrderItemsByProductId.value[productId] = value;
   };
 
@@ -145,30 +146,32 @@ export const useOrderStore = defineStore("orderStore", () => {
   };
 
   const update = async (requestUserId: number, configId: number) => {
-    const orders = await getAllOrders(requestUserId, configId);
-    allOrders.value = orders.map((order) => {
-      return {
-        ...order,
-        predecessorId:
-          orders.find(
-            (o) => order.validFrom?.getTime() === o.validTo?.getTime(),
-          )?.id || null,
-      };
+    await uiFeedbackStore.withBusy(async () => {
+      const orders = await getAllOrders(requestUserId, configId);
+      allOrders.value = orders.map((order) => {
+        return {
+          ...order,
+          predecessorId:
+            orders.find(
+              (o) => order.validFrom?.getTime() === o.validTo?.getTime(),
+            )?.id || null,
+        };
+      });
+      if (isDebugEnabled()) {
+        console.log("orderStore.update -> allOrders", { ...allOrders.value });
+      }
+
+      const now = new Date();
+
+      const modOrderId = determineModificationOrderId(orders, now);
+      const predecessorOrder = getPredecessorOrder(modOrderId);
+
+      visibleOrderId.value =
+        modOrderId ||
+        predecessorOrder?.id ||
+        (orders.length > 0 ? orders[orders.length - 1].id : undefined);
+      console.log("orderStore.update visibleOrderId", visibleOrderId.value);
     });
-    if (isDebugEnabled()) {
-      console.log("orderStore.update -> allOrders", { ...allOrders.value });
-    }
-
-    const now = new Date();
-
-    const modOrderId = determineModificationOrderId(orders, now);
-    const predecessorOrder = getPredecessorOrder(modOrderId);
-
-    visibleOrderId.value =
-      modOrderId ||
-      predecessorOrder?.id ||
-      (orders.length > 0 ? orders[orders.length - 1].id : undefined);
-    console.log("orderStore.update visibleOrderId", visibleOrderId.value);
   };
 
   const setModificationOrderId = (orderId: number | undefined) => {

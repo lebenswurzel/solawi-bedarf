@@ -41,6 +41,7 @@ import {
 } from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition.ts";
 import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import { isDebugEnabled } from "../lib/debug.ts";
+import { useUiFeedback } from "./uiFeedbackStore.ts";
 
 export const useBIStore = defineStore("bi", () => {
   const now = ref<Date>(new Date());
@@ -58,6 +59,7 @@ export const useBIStore = defineStore("bi", () => {
     isModifyingOrder,
   } = storeToRefs(orderStore);
   const { currentUser } = storeToRefs(userStore);
+  const uiFeedbackStore = useUiFeedback();
 
   const soldByProductId = ref<SoldByProductId>({});
   const capacityByDepotId = ref<CapacityByDepotId>({});
@@ -86,51 +88,53 @@ export const useBIStore = defineStore("bi", () => {
       return;
     }
 
-    const results = await Promise.all(
-      allOrders.value.map(async (o) => {
-        const { availabilityByProductId, msrpWeightsByProductId } =
-          await getAvailabilityWeights(activeConfigId.value, o.validFrom);
-        if (isDebugEnabled()) {
-          const productId = 255;
-          console.log(
-            `availability for order ${o.id} ${o.validFrom}`,
-            availabilityByProductId[productId],
-            "msrpWeights",
-            msrpWeightsByProductId[productId],
-          );
-        }
-        return {
-          [o.id]: {
-            msrpWeightsByProductId,
-            availabilityByProductId,
-          },
-        };
-      }),
-    );
+    await uiFeedbackStore.withBusy(async () => {
+      const results = await Promise.all(
+        allOrders.value.map(async (o) => {
+          const { availabilityByProductId, msrpWeightsByProductId } =
+            await getAvailabilityWeights(activeConfigId.value, o.validFrom);
+          if (isDebugEnabled()) {
+            const productId = 255;
+            console.log(
+              `availability for order ${o.id} ${o.validFrom}`,
+              availabilityByProductId[productId],
+              "msrpWeights",
+              msrpWeightsByProductId[productId],
+            );
+          }
+          return {
+            [o.id]: {
+              msrpWeightsByProductId,
+              availabilityByProductId,
+            },
+          };
+        }),
+      );
 
-    productMsrpWeightsByOrderId.value = Object.assign(
-      {},
-      ...results.map((result) => {
-        return {
-          [Object.keys(result)[0]]:
-            Object.values(result)[0].msrpWeightsByProductId,
-        };
-      }),
-    );
-    productAvailabilityByOrderId.value = Object.assign(
-      {},
-      ...results.map((result) => {
-        return {
-          [Object.keys(result)[0]]:
-            Object.values(result)[0].availabilityByProductId,
-        };
-      }),
-    );
-    if (isDebugEnabled()) {
-      console.log("productMsrpWeightsByOrderId", {
-        ...productMsrpWeightsByOrderId.value,
-      });
-    }
+      productMsrpWeightsByOrderId.value = Object.assign(
+        {},
+        ...results.map((result) => {
+          return {
+            [Object.keys(result)[0]]:
+              Object.values(result)[0].msrpWeightsByProductId,
+          };
+        }),
+      );
+      productAvailabilityByOrderId.value = Object.assign(
+        {},
+        ...results.map((result) => {
+          return {
+            [Object.keys(result)[0]]:
+              Object.values(result)[0].availabilityByProductId,
+          };
+        }),
+      );
+      if (isDebugEnabled()) {
+        console.log("productMsrpWeightsByOrderId", {
+          ...productMsrpWeightsByOrderId.value,
+        });
+      }
+    });
   });
 
   const submit = computed(() => {
@@ -253,31 +257,33 @@ export const useBIStore = defineStore("bi", () => {
     includeForecast?: boolean,
     dateOfInterest?: Date,
   ) => {
-    const {
-      soldByProductId: requestSoldByProductId,
-      deliveredByProductIdDepotId: requestDeliveredByProductIdDepotId,
-      capacityByDepotId: requestCapacityByDepotId,
-      productsById: requestedProductsById,
-      offers: requestOffers,
-    } = await getBI(configId, orderId, includeForecast, dateOfInterest);
-    soldByProductId.value = requestSoldByProductId;
-    capacityByDepotId.value = requestCapacityByDepotId;
-    productsById.value = requestedProductsById;
-    deliveredByProductIdDepotId.value = requestDeliveredByProductIdDepotId;
-    now.value = new Date();
-    offers.value = requestOffers;
+    await uiFeedbackStore.withBusy(async () => {
+      const {
+        soldByProductId: requestSoldByProductId,
+        deliveredByProductIdDepotId: requestDeliveredByProductIdDepotId,
+        capacityByDepotId: requestCapacityByDepotId,
+        productsById: requestedProductsById,
+        offers: requestOffers,
+      } = await getBI(configId, orderId, includeForecast, dateOfInterest);
+      soldByProductId.value = requestSoldByProductId;
+      capacityByDepotId.value = requestCapacityByDepotId;
+      productsById.value = requestedProductsById;
+      deliveredByProductIdDepotId.value = requestDeliveredByProductIdDepotId;
+      now.value = new Date();
+      offers.value = requestOffers;
 
-    const { availabilityByProductId } = await getAvailabilityWeights(
-      configId,
-      dateOfInterest,
-      includeForecast,
-    );
-    productAvailability.value = availabilityByProductId;
+      const { availabilityByProductId } = await getAvailabilityWeights(
+        configId,
+        dateOfInterest,
+        includeForecast,
+      );
+      productAvailability.value = availabilityByProductId;
 
-    if (isDebugEnabled()) {
-      const productId = 255;
-      console.log(`availability`, availabilityByProductId[productId]);
-    }
+      if (isDebugEnabled()) {
+        const productId = 255;
+        console.log(`availability`, availabilityByProductId[productId]);
+      }
+    });
   };
 
   return {
