@@ -57,6 +57,7 @@ import { getVersion } from "./services/getVersion";
 import { updateUser } from "./services/user/updateUser";
 import { importApplicant } from "./services/applicant/importApplicant";
 import { errorLogger } from "./middleware/errorLogger";
+import { durationLogger } from "./middleware/durationLogger";
 import { getErrorLog } from "./services/getErrorLog";
 import { getUserShipments } from "./services/shipment/getUserShipments";
 import { calcMsrp } from "./services/bi/calcMsrp";
@@ -66,6 +67,11 @@ import { availabilityWeightsHandler } from "./services/bi/availabilityWeights";
 const port = config.server.serverPort;
 const app = new Koa();
 const router = new Router();
+
+// Add duration logger middleware (before error logger to measure full request duration)
+if (config.debug.logDuration) {
+  app.use(durationLogger);
+}
 
 // Add error logger middleware
 app.use(errorLogger);
