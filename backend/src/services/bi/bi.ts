@@ -52,61 +52,13 @@ const isOrderValidOnDate = (order: Order, targetDate: Date): boolean => {
 };
 
 /**
- * Finds the valid order for a specific user at a specific date.
- * Returns the order that was valid at the given date based on validFrom and validTo.
+ * Returns all currently valid orders for a given date.
  */
-const findValidOrderForUserAtDate = (
-  orders: Order[],
-  userId: number,
-  targetDate: Date,
-): Order | null => {
-  const userOrders = orders.filter((o) => o.userId === userId);
-
-  // Find the order that was valid at the target date
-  return (
-    userOrders.find((order) => isOrderValidOnDate(order, targetDate)) || null
-  );
-};
-
-/**
- * Gets the currently valid order for a user (validTo is null or in the future).
- */
-const getCurrentValidOrderForUser = (
-  orders: Order[],
-  userId: number,
-  targetDate: Date,
-): Order | null => {
-  return findValidOrderForUserAtDate(orders, userId, targetDate);
-};
-
-/**
- * Groups orders by user and returns the currently valid order for each user.
- */
-const getCurrentValidOrdersByUser = (
+export const getCurrentValidOrders = (
   orders: Order[],
   targetDate: Date,
-): { [userId: number]: Order } => {
-  const result: { [userId: number]: Order } = {};
-
-  // Group orders by user
-  const ordersByUser: { [userId: number]: Order[] } = {};
-  orders.forEach((order) => {
-    if (!ordersByUser[order.userId]) {
-      ordersByUser[order.userId] = [];
-    }
-    ordersByUser[order.userId].push(order);
-  });
-
-  // Find current valid order for each user
-  Object.entries(ordersByUser).forEach(([userIdStr, _userOrders]) => {
-    const userId = parseInt(userIdStr);
-    const validOrder = getCurrentValidOrderForUser(orders, userId, targetDate);
-    if (validOrder) {
-      result[userId] = validOrder;
-    }
-  });
-
-  return result;
+): Order[] => {
+  return orders.filter((order) => isOrderValidOnDate(order, targetDate));
 };
 
 export const biHandler = async (
@@ -146,7 +98,7 @@ export const biHandler = async (
 /**
  * Calculates the target date for the BI in case no explicit date of interest is provided.
  */
-const determineTargetDate = async (configId: number): Promise<Date> => {
+export const determineTargetDate = async (configId: number): Promise<Date> => {
   const config = await AppDataSource.getRepository(RequisitionConfig).findOne({
     where: { id: configId },
   });
@@ -260,11 +212,8 @@ export const bi = async (
   );
 
   // Use only currently valid orders for sold calculations
-  const currentValidOrdersByUser = getCurrentValidOrdersByUser(
-    orders,
-    targetDate,
-  );
-  Object.values(currentValidOrdersByUser).forEach((order) =>
+  const currentValidOrders = getCurrentValidOrders(orders, targetDate);
+  currentValidOrders.forEach((order) =>
     order.orderItems.forEach((orderItem) => {
       const product = soldByProductId[orderItem.productId];
       soldByProductId[orderItem.productId].sold +=
@@ -277,7 +226,7 @@ export const bi = async (
   );
 
   // Use only currently valid orders for delivery calculations
-  Object.values(currentValidOrdersByUser).forEach((order) =>
+  currentValidOrders.forEach((order) =>
     order.orderItems.forEach((orderItem) => {
       const product = soldByProductId[orderItem.productId];
       if (!deliveredByProductIdDepotId[orderItem.productId]) {
@@ -303,7 +252,7 @@ export const bi = async (
   );
 
   // Use only currently valid orders for depot capacity calculations
-  Object.values(currentValidOrdersByUser).forEach((order) => {
+  currentValidOrders.forEach((order) => {
     if (order.depotId) {
       if (
         !capacityByDepotId[order.depotId].userIds.includes(order.userId) &&
@@ -375,9 +324,6 @@ export const bi = async (
     deliveredByProductIdDepotId,
     capacityByDepotId,
     productsById,
-    offers: Object.values(currentValidOrdersByUser).reduce(
-      (acc, cur) => acc + cur.offer,
-      0,
-    ),
+    offers: currentValidOrders.reduce((acc, cur) => acc + cur.offer, 0),
   };
 };
