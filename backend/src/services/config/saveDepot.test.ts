@@ -78,7 +78,7 @@ testAsAdmin("create new depots", async ({ userData }: TestUserData) => {
   });
 
   // create a depot with the same name again -> error
-  expect(() => saveDepot(ctx)).rejects.toThrowError();
+  await expect(() => saveDepot(ctx)).rejects.toThrowError();
 
   expect(await getDepots()).toHaveLength(currentDepotNumber + 1);
 

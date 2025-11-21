@@ -19,6 +19,7 @@ import { computed, ref, watchEffect } from "vue";
 import { useConfigStore } from "./configStore.ts";
 import { useOrderStore } from "./orderStore";
 import {
+  AvailabilityWeights,
   CapacityByDepotId,
   DeliveredByProductIdDepotId,
   Msrp,
@@ -27,11 +28,10 @@ import {
   ProductsById,
   SoldByProductId,
 } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
-import { getBI } from "../requests/bi.ts";
+import { getAvailabilityWeights, getBI } from "../requests/bi.ts";
 import { useUserStore } from "./userStore.ts";
 import {
-  calculateEffectiveMsrp,
-  calculateMsrpWeights,
+  calculateEffectiveMsrpChain,
   calculateOrderValidMonths,
   getMsrp,
 } from "@lebenswurzel/solawi-bedarf-shared/src/msrp.ts";
@@ -41,6 +41,7 @@ import {
 } from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition.ts";
 import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import { isDebugEnabled } from "../lib/debug.ts";
+import { useUiFeedback } from "./uiFeedbackStore.ts";
 
 export const useBIStore = defineStore("bi", () => {
   const now = ref<Date>(new Date());
@@ -58,15 +59,26 @@ export const useBIStore = defineStore("bi", () => {
     isModifyingOrder,
   } = storeToRefs(orderStore);
   const { currentUser } = storeToRefs(userStore);
+  const uiFeedbackStore = useUiFeedback();
 
   const soldByProductId = ref<SoldByProductId>({});
   const capacityByDepotId = ref<CapacityByDepotId>({});
   const productsById = ref<ProductsById>({});
   const deliveredByProductIdDepotId = ref<DeliveredByProductIdDepotId>({});
   const offers = ref<number>(0);
+  const productAvailability = ref<{
+    [key: ProductId]: AvailabilityWeights["availabilityByProductId"][ProductId];
+  }>({});
 
   const productMsrpWeightsByOrderId = ref<{
     [key: OrderId]: { [key: ProductId]: number };
+  }>({});
+  const productAvailabilityByOrderId = ref<{
+    [key: OrderId]: {
+      [
+        key: ProductId
+      ]: AvailabilityWeights["availabilityByProductId"][ProductId];
+    };
   }>({});
 
   // update productMsrpWeightsByOrderId when orderStore.allOrders changes
@@ -76,38 +88,53 @@ export const useBIStore = defineStore("bi", () => {
       return;
     }
 
-    const results = await Promise.all(
-      allOrders.value.map(async (o) => {
-        const {
-          deliveredByProductIdDepotId: requestDeliveredByProductIdDepotId,
-          productsById: requestProductsById,
-        } = await getBI(activeConfigId.value, o.id, true);
-        return {
-          [o.id]: {
-            deliveredByProductIdDepotId: requestDeliveredByProductIdDepotId,
-            productsById: requestProductsById,
-          },
-        };
-      }),
-    );
+    await uiFeedbackStore.withBusy(async () => {
+      const results = await Promise.all(
+        allOrders.value.map(async (o) => {
+          const { availabilityByProductId, msrpWeightsByProductId } =
+            await getAvailabilityWeights(activeConfigId.value, o.validFrom);
+          if (isDebugEnabled()) {
+            const productId = 255;
+            console.log(
+              `availability for order ${o.id} ${o.validFrom}`,
+              availabilityByProductId[productId],
+              "msrpWeights",
+              msrpWeightsByProductId[productId],
+            );
+          }
+          return {
+            [o.id]: {
+              msrpWeightsByProductId,
+              availabilityByProductId,
+            },
+          };
+        }),
+      );
 
-    productMsrpWeightsByOrderId.value = Object.assign(
-      {},
-      ...results.map((result) => {
-        return {
-          [Object.keys(result)[0]]: calculateMsrpWeights(
-            Object.values(result)[0].productsById,
-            Object.values(result)[0].deliveredByProductIdDepotId,
-            depots.value,
-          ),
-        };
-      }),
-    );
-    if (isDebugEnabled()) {
-      console.log("productMsrpWeightsByOrderId", {
-        ...productMsrpWeightsByOrderId.value,
-      });
-    }
+      productMsrpWeightsByOrderId.value = Object.assign(
+        {},
+        ...results.map((result) => {
+          return {
+            [Object.keys(result)[0]]:
+              Object.values(result)[0].msrpWeightsByProductId,
+          };
+        }),
+      );
+      productAvailabilityByOrderId.value = Object.assign(
+        {},
+        ...results.map((result) => {
+          return {
+            [Object.keys(result)[0]]:
+              Object.values(result)[0].availabilityByProductId,
+          };
+        }),
+      );
+      if (isDebugEnabled()) {
+        console.log("productMsrpWeightsByOrderId", {
+          ...productMsrpWeightsByOrderId.value,
+        });
+      }
+    });
   });
 
   const submit = computed(() => {
@@ -175,56 +202,24 @@ export const useBIStore = defineStore("bi", () => {
     return msrpsMap;
   });
 
-  const getEffectiveMsrp = (orderId: OrderId): Msrp | null => {
-    const order = allOrders.value.find((o) => o.id === orderId);
-    if (!order) {
-      return null;
+  const effectiveMsrpByOrderId = computed((): { [key: OrderId]: Msrp } => {
+    console.log("--> rawMsrpByOrderId", rawMsrpByOrderId.value);
+    if (Object.keys(rawMsrpByOrderId.value).length === 0) {
+      return {};
     }
-    if (
-      activeConfigId.value == -1 ||
-      !config.value ||
-      Object.keys(rawMsrpByOrderId.value).length === 0
-    ) {
-      return null;
-    }
-
-    const effectiveOrder = ordersWithActualOrderItems.value.find(
-      (o) => o.id === orderId,
-    );
-    if (!effectiveOrder) {
-      return null;
-    }
-
-    const effectivePredecessorOrder = ordersWithActualOrderItems.value.find(
-      (o) => o.id === order.predecessorId,
-    );
-
-    if (!effectivePredecessorOrder) {
-      return null;
-    }
-
-    const effectiveMsrp = calculateEffectiveMsrp(
-      {
-        earlierOrder: effectivePredecessorOrder,
-        laterOrder: effectiveOrder,
-      },
+    const result = calculateEffectiveMsrpChain(
+      ordersWithActualOrderItems.value,
       rawMsrpByOrderId.value,
       productMsrpWeightsByOrderId.value,
       productsById.value,
     );
-    return effectiveMsrp;
-  };
-
-  const effectiveMsrpByOrderId = computed((): { [key: OrderId]: Msrp } => {
-    const result = allOrders.value.reduce(
-      (acc, o) => {
-        acc[o.id] = getEffectiveMsrp(o.id) || rawMsrpByOrderId.value[o.id];
-        return acc;
-      },
-      {} as { [key: OrderId]: Msrp },
-    );
-    console.log("effectiveMsrpByOrderId", result);
-    return result;
+    const result2 = Object.fromEntries(
+      result.map((r, index) => [allOrders.value[index].id, r]),
+    ) as {
+      [key: OrderId]: Msrp;
+    };
+    console.log("effectiveMsrpByOrderId", result2);
+    return result2;
   });
 
   const depot = computed(() => {
@@ -262,19 +257,33 @@ export const useBIStore = defineStore("bi", () => {
     includeForecast?: boolean,
     dateOfInterest?: Date,
   ) => {
-    const {
-      soldByProductId: requestSoldByProductId,
-      deliveredByProductIdDepotId: requestDeliveredByProductIdDepotId,
-      capacityByDepotId: requestCapacityByDepotId,
-      productsById: requestedProductsById,
-      offers: requestOffers,
-    } = await getBI(configId, orderId, includeForecast, dateOfInterest);
-    soldByProductId.value = requestSoldByProductId;
-    capacityByDepotId.value = requestCapacityByDepotId;
-    productsById.value = requestedProductsById;
-    deliveredByProductIdDepotId.value = requestDeliveredByProductIdDepotId;
-    now.value = new Date();
-    offers.value = requestOffers;
+    await uiFeedbackStore.withBusy(async () => {
+      const {
+        soldByProductId: requestSoldByProductId,
+        deliveredByProductIdDepotId: requestDeliveredByProductIdDepotId,
+        capacityByDepotId: requestCapacityByDepotId,
+        productsById: requestedProductsById,
+        offers: requestOffers,
+      } = await getBI(configId, orderId, includeForecast, dateOfInterest);
+      soldByProductId.value = requestSoldByProductId;
+      capacityByDepotId.value = requestCapacityByDepotId;
+      productsById.value = requestedProductsById;
+      deliveredByProductIdDepotId.value = requestDeliveredByProductIdDepotId;
+      now.value = new Date();
+      offers.value = requestOffers;
+
+      const { availabilityByProductId } = await getAvailabilityWeights(
+        configId,
+        dateOfInterest,
+        includeForecast,
+      );
+      productAvailability.value = availabilityByProductId;
+
+      if (isDebugEnabled()) {
+        const productId = 255;
+        console.log(`availability`, availabilityByProductId[productId]);
+      }
+    });
   };
 
   return {
@@ -291,5 +300,7 @@ export const useBIStore = defineStore("bi", () => {
     now,
     getEffectiveMsrpByOrderId,
     productMsrpWeightsByOrderId,
+    productAvailabilityByOrderId,
+    productAvailability,
   };
 });

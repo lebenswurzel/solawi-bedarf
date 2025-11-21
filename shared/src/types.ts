@@ -435,6 +435,7 @@ export interface Msrp {
   };
   months: number;
   contribution: UserCategory;
+  effectiveMonths?: number;
 }
 
 export interface OrganizationInfo {
@@ -533,4 +534,19 @@ export interface ValidRange {
 export interface DeliveryPauseRange {
   begin: { month: number; day: number }; // inclusive
   end: { month: number; day: number }; // exclusive
+}
+export interface AvailabilityWeights {
+  availabilityByProductId: {
+    [productId: number]: {
+      weightedDelivered: number; // 100 means full target delivery per shipment
+      deliveries: number;
+      frequency: number;
+      deliveryPercentage: number;
+      roundedDeliveries: number;
+      msrpWeight: number; // 0..1, 1 means fully available, 0 means fully delivered
+    };
+  };
+  msrpWeightsByProductId: {
+    [productId: number]: number; // 0..1, 1 means fully available, 0 means fully delivered
+  };
 }

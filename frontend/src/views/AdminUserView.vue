@@ -394,9 +394,13 @@ const filterDepotNames = (tableItem: {
   if (displayFilters.value.depot.length < 1) {
     return true;
   }
-  return displayFilters.value.depot
-    .map((index) => depotNameItems.value[index])
-    .includes(tableItem.depotNames[0] || "- keins -");
+  const selectedDepotNames = displayFilters.value.depot.map(
+    (index) => depotNameItems.value[index],
+  );
+  // check if any of the depotNames in the table item are in the display filters
+  return tableItem.depotNames.some((depotName) =>
+    selectedDepotNames.includes(depotName || "- keins -"),
+  );
 };
 const depotNameItems = computed(() => {
   return Array.from(

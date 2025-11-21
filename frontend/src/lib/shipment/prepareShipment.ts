@@ -38,7 +38,7 @@ export const prepareShipment = (
     const neededValue = s.depotIds.map((depotId) => ({
       depotId,
       value: valueToDelivered({
-        value: deliveredByDepotId[depotId].valueForShipment,
+        value: deliveredByDepotId[depotId]?.valueForShipment || 0,
         multiplicator: s.multiplicator,
         conversionFrom: s.conversionFrom,
         conversionTo: s.conversionTo,

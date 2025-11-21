@@ -18,12 +18,16 @@ import { defineStore } from "pinia";
 import { computed, ref } from "vue";
 import type { ProductCategoryWithProducts } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { getProductCategory } from "../requests/productCategory.ts";
+import { useUiFeedback } from "./uiFeedbackStore.ts";
 
 export const useProductStore = defineStore("productStore", () => {
   const productCategories = ref<ProductCategoryWithProducts[]>([]);
+  const uiFeedbackStore = useUiFeedback();
 
   const update = async (configId: number) => {
-    productCategories.value = await getProductCategory(configId);
+    await uiFeedbackStore.withBusy(async () => {
+      productCategories.value = await getProductCategory(configId);
+    });
   };
 
   const clear = () => {
