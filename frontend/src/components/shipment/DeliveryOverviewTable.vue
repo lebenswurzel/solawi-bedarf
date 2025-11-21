@@ -20,7 +20,6 @@ import { ProductCategoryWithProducts } from "@lebenswurzel/solawi-bedarf-shared/
 import { useConfigStore } from "../../store/configStore";
 import { useBIStore } from "../../store/biStore";
 import { storeToRefs } from "pinia";
-import { calculateDeliveries } from "@lebenswurzel/solawi-bedarf-shared/src/order/orderUtil";
 
 const props = defineProps<{
   productCategoryWithProducts?: ProductCategoryWithProducts;
@@ -29,7 +28,8 @@ const props = defineProps<{
 const configStore = useConfigStore();
 const biStore = useBIStore();
 const { depots } = storeToRefs(configStore);
-const { deliveredByProductIdDepotId } = storeToRefs(biStore);
+const { deliveredByProductIdDepotId, productAvailability } =
+  storeToRefs(biStore);
 const search = ref<string>("");
 
 const sortedDepots = computed(() => {
@@ -141,8 +141,8 @@ const deliveryInfoCache = computed(() => {
         <td class="text-caption">{{ item.name }}</td>
         <td>
           {{
-            calculateDeliveries(item, deliveredByProductIdDepotId, depots)
-              .roundedPercentage
+            Math.round(productAvailability?.[item.id]?.deliveryPercentage) ||
+            "-"
           }}
           %
         </td>

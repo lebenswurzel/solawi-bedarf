@@ -34,7 +34,6 @@ import {
   convertToBigUnit,
   getLangUnit,
 } from "@lebenswurzel/solawi-bedarf-shared/src/util/unitHelper.ts";
-import { calculateDeliveries } from "@lebenswurzel/solawi-bedarf-shared/src/order/orderUtil";
 const t = language.pages.product.dialog;
 
 const props = defineProps<{
@@ -51,9 +50,9 @@ const productStore = useProductStore();
 const biStore = useBIStore();
 const uiFeedback = useUiFeedback();
 const openProduct = ref(false);
-const { activeConfigId, depots } = storeToRefs(configStore);
+const { activeConfigId } = storeToRefs(configStore);
 const dialogProduct = ref<NewProduct | Product>({ ...defaultProduct });
-const { soldByProductId, deliveredByProductIdDepotId } = storeToRefs(biStore);
+const { soldByProductId, productAvailability } = storeToRefs(biStore);
 const search = ref<string>("");
 const deletionProduct = ref<Product | undefined>();
 
@@ -66,19 +65,13 @@ const headers = [
   // { title: t.description, key: "description" },
   { title: t.active, key: "active" },
   { title: interpolate(t.msrp, { unit }), key: "msrp" },
-  { title: t.frequency, key: "frequency" },
   {
     title: t.deliveries,
     key: "deliveries",
     sortRaw(a: Product, b: Product) {
       return Math.sign(
-        calculateDeliveries(a, deliveredByProductIdDepotId.value, depots.value)
-          .percentage -
-          calculateDeliveries(
-            b,
-            deliveredByProductIdDepotId.value,
-            depots.value,
-          ).percentage,
+        (productAvailability.value[a.id]?.deliveryPercentage || 0) -
+          (productAvailability.value[b.id]?.deliveryPercentage || 0),
       );
     },
   },
@@ -167,10 +160,14 @@ const onCloseProduct = async () => {
       </template>
 
       <template v-slot:item.deliveries="{ item }">
-        {{
-          calculateDeliveries(item, deliveredByProductIdDepotId, depots).display
+        {{ productAvailability[item.id]?.roundedDeliveries || 0 }}/{{
+          productAvailability[item.id]?.frequency || 0
         }}
-        <!-- {{ deliveredByProductIdDepotId[item.id] }} -->
+        <span class="text-caption opacity-50"
+          >{{
+            Math.round(productAvailability[item.id]?.deliveryPercentage || 0)
+          }}%</span
+        >
       </template>
 
       <template v-slot:item.sold="{ item }">

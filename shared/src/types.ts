@@ -535,18 +535,7 @@ export interface DeliveryPauseRange {
   begin: { month: number; day: number }; // inclusive
   end: { month: number; day: number }; // exclusive
 }
-
 export interface AvailabilityWeights {
-  itemsByProductIdShipmentId: {
-    [productId: number]: {
-      [shipmentId: number]: {
-        delivered: number;
-        weightedDelivered: number;
-        depotIds: number[];
-        availability: number;
-      };
-    };
-  };
   availabilityByProductId: {
     [productId: number]: {
       weightedDelivered: number; // 100 means full target delivery per shipment
