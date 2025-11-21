@@ -282,43 +282,42 @@ export const availabilityWeights = async (
         };
       }),
     );
+  });
 
-    Object.entries(itemsByProductIdShipmentId).forEach(([productId, items]) => {
-      const pid = parseInt(productId);
-      const frequency = productFrequencyByProductId[pid];
-      availabilityByProductId[pid] = {
-        weightedDelivered: 0,
-        frequency: frequency,
-        deliveries: 0,
-        deliveryPercentage: 0,
-        roundedDeliveries: 0,
-        msrpWeight: 0,
-      };
-      (Object.values(items) as ItemType[]).forEach((item) => {
-        availabilityByProductId[pid].weightedDelivered +=
-          item.weightedDelivered;
+  Object.entries(itemsByProductIdShipmentId).forEach(([productId, items]) => {
+    const pid = parseInt(productId);
+    const frequency = productFrequencyByProductId[pid];
+    availabilityByProductId[pid] = {
+      weightedDelivered: 0,
+      frequency: frequency,
+      deliveries: 0,
+      deliveryPercentage: 0,
+      roundedDeliveries: 0,
+      msrpWeight: 0,
+    };
+    (Object.values(items) as ItemType[]).forEach((item) => {
+      availabilityByProductId[pid].weightedDelivered += item.weightedDelivered;
 
-        availabilityByProductId[pid].deliveries =
-          availabilityByProductId[pid].weightedDelivered / 100;
-        availabilityByProductId[pid].roundedDeliveries = Math.round(
-          availabilityByProductId[pid].deliveries,
-        );
-        availabilityByProductId[pid].deliveryPercentage =
-          availabilityByProductId[pid].weightedDelivered / frequency;
+      availabilityByProductId[pid].deliveries =
+        availabilityByProductId[pid].weightedDelivered / 100;
+      availabilityByProductId[pid].roundedDeliveries = Math.round(
+        availabilityByProductId[pid].deliveries,
+      );
+      availabilityByProductId[pid].deliveryPercentage =
+        availabilityByProductId[pid].weightedDelivered / frequency;
 
-        const msrpWeight = Math.min(
-          Math.max(
-            1 -
-              availabilityByProductId[parseInt(productId)].weightedDelivered /
-                (frequency * 100),
-            0,
-          ),
-          1,
-        );
+      const msrpWeight = Math.min(
+        Math.max(
+          1 -
+            availabilityByProductId[parseInt(productId)].weightedDelivered /
+              (frequency * 100),
+          0,
+        ),
+        1,
+      );
 
-        availabilityByProductId[parseInt(productId)].msrpWeight = msrpWeight;
-        msrpWeightsByProductId[parseInt(productId)] = msrpWeight;
-      });
+      availabilityByProductId[parseInt(productId)].msrpWeight = msrpWeight;
+      msrpWeightsByProductId[parseInt(productId)] = msrpWeight;
     });
   });
 
