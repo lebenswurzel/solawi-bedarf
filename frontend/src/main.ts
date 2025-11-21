@@ -30,6 +30,20 @@ import "leaflet/dist/leaflet.css";
 
 const vuetify = createVuetify({
   blueprint: md3,
+  defaults: {
+    VTextField: {
+      variant: "filled",
+    },
+    VSelect: {
+      variant: "filled",
+    },
+    VAutocomplete: {
+      variant: "filled",
+    },
+    VTextarea: {
+      variant: "filled",
+    },
+  },
   theme: {
     defaultTheme: localStorage.getItem("theme-color") || "light",
   },

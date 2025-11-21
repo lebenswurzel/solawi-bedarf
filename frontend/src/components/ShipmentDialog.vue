@@ -455,7 +455,7 @@ watchEffect(async () => {
         >zuletzt gespeichert:
         {{ prettyDate(savedShipment?.updatedAt, true) }}</template
       >
-      <v-card-text style="overflow-y: auto">
+      <v-card-text>
         <v-container fluid class="pa-0">
           <v-row align="start" dense>
             <v-col cols="6" md="3">
