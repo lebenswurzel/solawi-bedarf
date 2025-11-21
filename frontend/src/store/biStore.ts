@@ -64,6 +64,9 @@ export const useBIStore = defineStore("bi", () => {
   const productsById = ref<ProductsById>({});
   const deliveredByProductIdDepotId = ref<DeliveredByProductIdDepotId>({});
   const offers = ref<number>(0);
+  const productAvailability = ref<{
+    [key: ProductId]: AvailabilityWeights["availabilityByProductId"][ProductId];
+  }>({});
 
   const productMsrpWeightsByOrderId = ref<{
     [key: OrderId]: { [key: ProductId]: number };
@@ -85,17 +88,12 @@ export const useBIStore = defineStore("bi", () => {
 
     const results = await Promise.all(
       allOrders.value.map(async (o) => {
-        const {
-          itemsByProductIdShipmentId,
-          availabilityByProductId,
-          msrpWeightsByProductId,
-        } = await getAvailabilityWeights(activeConfigId.value, o.validFrom);
+        const { availabilityByProductId, msrpWeightsByProductId } =
+          await getAvailabilityWeights(activeConfigId.value, o.validFrom);
         if (isDebugEnabled()) {
-          const productId = 296;
+          const productId = 255;
           console.log(
-            `itemsByProductIdShipmentId for order ${o.id} ${o.validFrom}`,
-            itemsByProductIdShipmentId[productId],
-            "availability",
+            `availability for order ${o.id} ${o.validFrom}`,
             availabilityByProductId[productId],
             "msrpWeights",
             msrpWeightsByProductId[productId],
@@ -268,6 +266,18 @@ export const useBIStore = defineStore("bi", () => {
     deliveredByProductIdDepotId.value = requestDeliveredByProductIdDepotId;
     now.value = new Date();
     offers.value = requestOffers;
+
+    const { availabilityByProductId } = await getAvailabilityWeights(
+      configId,
+      dateOfInterest,
+      includeForecast,
+    );
+    productAvailability.value = availabilityByProductId;
+
+    if (isDebugEnabled()) {
+      const productId = 255;
+      console.log(`availability`, availabilityByProductId[productId]);
+    }
   };
 
   return {
@@ -285,5 +295,6 @@ export const useBIStore = defineStore("bi", () => {
     getEffectiveMsrpByOrderId,
     productMsrpWeightsByOrderId,
     productAvailabilityByOrderId,
+    productAvailability,
   };
 });

@@ -45,13 +45,19 @@ export const getBI = async (
 
 export const getAvailabilityWeights = async (
   configId: number,
-  dateOfInterest: Date,
+  dateOfInterest?: Date,
+  includeForecast?: boolean,
 ): Promise<AvailabilityWeights> => {
+  let parameters = "";
+  if (includeForecast) {
+    parameters += "&includeForecast=true";
+  }
+  if (dateOfInterest !== undefined) {
+    parameters += `&dateOfInterest=${dateOfInterest.toISOString()}`;
+  }
   const response = await fetch(
-    getUrl(
-      `/bi/availabilityWeights?configId=${configId}&dateOfInterest=${dateOfInterest.toISOString()}`,
-    ),
+    getUrl(`/bi/availabilityWeights?configId=${configId}${parameters}`),
   );
-  await verifyResponse(response);
+  await verifyResponse(response, false);
   return await response.json();
 };

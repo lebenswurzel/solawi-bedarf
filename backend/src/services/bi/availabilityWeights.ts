@@ -17,13 +17,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import Koa from "koa";
 import Router from "koa-router";
 import { ShipmentType } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
-import { AvailabilityWeights } from "@lebenswurzel/solawi-bedarf-shared/src/types";
+import {
+  AvailabilityWeights,
+  ProductId,
+} from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import { Order } from "../../database/Order";
 import { ProductCategory } from "../../database/ProductCategory";
 import { Shipment } from "../../database/Shipment";
 import { AppDataSource } from "../../database/database";
 import { getUserFromContext } from "../getUserFromContext";
 import {
+  getBooleanQueryParameter,
   getConfigIdFromQuery,
   getDateQueryParameter,
 } from "../../util/requestUtil";
@@ -34,6 +38,18 @@ import {
   getSameOrNextThursday,
   getSameOrPreviousThursday,
 } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper";
+
+interface ItemType {
+  delivered: number;
+  weightedDelivered: number;
+  depotIds: number[];
+  availability: number;
+}
+interface ItemsByProductIdShipmentId {
+  [productId: ProductId]: {
+    [shipmentId: number]: ItemType;
+  };
+}
 
 const isOrderValidOnDate = (order: Order, targetDate: Date): boolean => {
   return order.validFrom <= targetDate && order.validTo > targetDate;
@@ -105,9 +121,19 @@ export const availabilityWeightsHandler = async (
   const dateOfInterest = getDateQueryParameter(
     ctx.request.query,
     "dateOfInterest",
+    undefined,
+  );
+  const includeForecast = getBooleanQueryParameter(
+    ctx.request.query,
+    "includeForecast",
+    false,
   );
 
-  ctx.body = await availabilityWeights(configId, dateOfInterest);
+  ctx.body = await availabilityWeights(
+    configId,
+    dateOfInterest,
+    includeForecast,
+  );
 };
 
 /**
@@ -136,6 +162,7 @@ const determineTargetDate = async (configId: number): Promise<Date> => {
 export const availabilityWeights = async (
   configId: number,
   dateOfInterest?: Date,
+  includeForecast: boolean = false,
 ): Promise<AvailabilityWeights> => {
   const targetDate = dateOfInterest || (await determineTargetDate(configId));
 
@@ -165,16 +192,19 @@ export const availabilityWeights = async (
     where: { requisitionConfigId: configId },
   });
 
-  const forecastShipments = await AppDataSource.getRepository(Shipment).find({
-    relations: { shipmentItems: true },
-    where: {
-      requisitionConfigId: configId,
-      validFrom: LessThan(targetDate),
-      validTo: MoreThan(new Date()),
-      type: ShipmentType.FORECAST,
-      active: true,
-    },
-  });
+  let forecastShipments: Shipment[] = [];
+  if (includeForecast) {
+    forecastShipments = await AppDataSource.getRepository(Shipment).find({
+      relations: { shipmentItems: true },
+      where: {
+        requisitionConfigId: configId,
+        validFrom: LessThan(targetDate),
+        validTo: MoreThan(new Date()),
+        type: ShipmentType.FORECAST,
+        active: true,
+      },
+    });
+  }
 
   const shipments = await AppDataSource.getRepository(Shipment).find({
     relations: { shipmentItems: true },
@@ -195,8 +225,7 @@ export const availabilityWeights = async (
     }),
   );
 
-  const itemsByProductIdShipmentId: AvailabilityWeights["itemsByProductIdShipmentId"] =
-    {};
+  const itemsByProductIdShipmentId: ItemsByProductIdShipmentId = {};
   const availabilityByProductId: AvailabilityWeights["availabilityByProductId"] =
     {};
   const msrpWeightsByProductId: AvailabilityWeights["msrpWeightsByProductId"] =
@@ -265,7 +294,7 @@ export const availabilityWeights = async (
         roundedDeliveries: 0,
         msrpWeight: 0,
       };
-      Object.values(items).forEach((item) => {
+      (Object.values(items) as ItemType[]).forEach((item) => {
         availabilityByProductId[pid].weightedDelivered +=
           item.weightedDelivered;
 
@@ -294,7 +323,6 @@ export const availabilityWeights = async (
   });
 
   return {
-    itemsByProductIdShipmentId,
     availabilityByProductId,
     msrpWeightsByProductId,
   };

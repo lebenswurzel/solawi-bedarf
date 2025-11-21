@@ -373,7 +373,7 @@ export const language = {
         productCategoryType: "Art der enthaltenen Produkte",
         sold: "Verkauft [{unit}]",
         delivered: "Geliefert",
-        deliveries: "Lieferungen an Depots",
+        deliveries: "Verteilungen",
         description: "Beschreibung",
         msrp: "Orientierungswert [ct/{unit}]",
         msrpHint: "Der Wert gilt für engagierte Mitglieder",
