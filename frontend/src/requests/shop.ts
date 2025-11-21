@@ -108,11 +108,3 @@ export const modifyOrder = async (userId: number, configId: number) => {
       : null,
   };
 };
-
-export const calcMsrp = async (userId: number, configId: number) => {
-  const response = await fetch(
-    getUrl(`/shop/calcMsrp?id=${userId}&configId=${configId}`),
-  );
-
-  await verifyResponse(response);
-};

@@ -20,7 +20,6 @@ import { LessThan } from "typeorm";
 import { appConfig } from "@lebenswurzel/solawi-bedarf-shared/src/config";
 import {
   calculateEffectiveMsrpChain,
-  calculateMsrpWeights,
   calculateOrderValidMonths,
   getMsrp,
 } from "@lebenswurzel/solawi-bedarf-shared/src/msrp";
@@ -63,6 +62,7 @@ import { getSameOrNextThursday } from "@lebenswurzel/solawi-bedarf-shared/src/ut
 import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import { sendOrderConfirmationMail } from "../email/orderConfirmationMail";
 import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang";
+import { availabilityWeights } from "../bi/availabilityWeights";
 
 export const saveOrder = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -200,7 +200,6 @@ export const saveOrder = async (
     body.category,
     body.orderItems,
     productsById,
-    depots,
     requisitionConfig,
     relevantOrders,
   );
@@ -272,7 +271,6 @@ const determineEffectiveMsrp = async (
   actualCategory: UserCategory,
   actualOrderItems: SharedOrderItem[],
   productsById: ProductsById,
-  depots: Depot[],
   requisitionConfig: RequisitionConfig,
   orders: Order[],
 ): Promise<{
@@ -292,16 +290,11 @@ const determineEffectiveMsrp = async (
   } = {};
   await Promise.all(
     actualOrders.map(async (order) => {
-      const { deliveredByProductIdDepotId } = await bi(
+      const { msrpWeightsByProductId } = await availabilityWeights(
         requisitionConfig.id,
         order.validFrom,
-        true,
       );
-      productMsrpWeightsByOrderId[order.id] = calculateMsrpWeights(
-        productsById,
-        deliveredByProductIdDepotId,
-        depots,
-      );
+      productMsrpWeightsByOrderId[order.id] = msrpWeightsByProductId;
     }),
   );
 

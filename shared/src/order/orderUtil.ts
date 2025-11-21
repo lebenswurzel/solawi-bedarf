@@ -14,7 +14,12 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { DeliveredByProductIdDepotId, Depot, Product } from "../types";
+import {
+  DeliveredByProductIdDepotId,
+  Depot,
+  Product,
+  ProductId,
+} from "../types";
 
 export const calculateDeliveries = (
   product: Product,
@@ -40,9 +45,44 @@ export const calculateDeliveries = (
       .map((d) => deliveredByDepotId[d.id].actuallyDelivered)
       .reduce((sum, value) => sum + value, 0) / 100;
 
+  if (product.id == 296) {
+    console.log("deliveredByDepotId", deliveredByDepotId);
+    console.log("depots", depots);
+    console.log("depotIds", depotIds);
+    console.log("targetDeliveries", targetDeliveries);
+    console.log("actualDeliveries", actualDeliveries);
+  }
+
   const percentage = !targetDeliveries
     ? 0
     : (actualDeliveries / targetDeliveries) * 100;
+  return {
+    display: `${actualDeliveries}/${targetDeliveries}`,
+    percentage,
+    roundedPercentage: Math.round(percentage),
+    targetDeliveries,
+    actualDeliveries,
+  };
+};
+
+export const calculateDeliveriesNew = (
+  product: Product,
+  msrpWeightsByProductId: { [key: ProductId]: number }
+): {
+  display: string;
+  percentage: number;
+  roundedPercentage: number;
+  targetDeliveries: number;
+  actualDeliveries: number;
+} => {
+  const delivered = Math.min(
+    Math.max(1 - msrpWeightsByProductId[product.id] || 1, 0),
+    1
+  );
+  const targetDeliveries = product.frequency;
+  const actualDeliveries = targetDeliveries * delivered;
+  const percentage = delivered * 100;
+
   return {
     display: `${actualDeliveries}/${targetDeliveries}`,
     percentage,

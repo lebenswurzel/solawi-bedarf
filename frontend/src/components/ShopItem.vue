@@ -31,7 +31,6 @@ import { useUserStore } from "../store/userStore.ts";
 import { useConfigStore } from "../store/configStore.ts";
 import { isIncreaseOnly } from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition.ts";
 import { getLangUnit } from "@lebenswurzel/solawi-bedarf-shared/src/util/unitHelper.ts";
-import { calculateDeliveries } from "@lebenswurzel/solawi-bedarf-shared/src/order/orderUtil.ts";
 import DebugOnly from "./debug/DebugOnly.vue";
 
 const t = language.pages.shop.cards.products.item;
@@ -53,11 +52,10 @@ const {
   submit,
   productsById,
   now,
-  deliveredByProductIdDepotId,
-  productMsrpWeightsByOrderId,
+  productAvailabilityByOrderId,
 } = storeToRefs(biStore);
 const { currentUser } = storeToRefs(userStore);
-const { config, depots } = storeToRefs(configStore);
+const { config } = storeToRefs(configStore);
 
 const product = computed(() => productsById.value[props.productId]);
 const sold = computed(() => {
@@ -69,18 +67,26 @@ const percentageSold = computed(() => {
   return Math.round((100 * sold.value.sold) / sold.value.quantity);
 });
 
-const deliveryPercentage = computed(() => {
-  const result = calculateDeliveries(
-    product.value,
-    deliveredByProductIdDepotId.value,
-    depots.value,
-  );
+const deliveryStats = computed(() => {
+  if (
+    !productAvailabilityByOrderId.value[visibleOrderId.value ?? 0][
+      props.productId
+    ]
+  ) {
+    return {
+      percentage: 0,
+      roundedDeliveries: 0,
+      roundedPercentage: 0,
+    };
+  }
+  const result =
+    productAvailabilityByOrderId.value[visibleOrderId.value ?? 0][
+      props.productId
+    ];
 
   return {
     ...result,
-    roundedDeliveries: Math.round(
-      (result.percentage * product.value.frequency) / 100,
-    ),
+    roundedPercentage: Math.round(result.deliveryPercentage),
   };
 });
 
@@ -139,18 +145,19 @@ const getProductMsrpWeight = (): number => {
   if (!visibleOrderId.value) {
     return 1;
   }
-  if (productMsrpWeightsByOrderId.value[visibleOrderId.value] === undefined) {
+  if (productAvailabilityByOrderId.value[visibleOrderId.value] === undefined) {
     return 1;
   }
   if (
-    productMsrpWeightsByOrderId.value[visibleOrderId.value][props.productId] ===
-    undefined
+    productAvailabilityByOrderId.value[visibleOrderId.value][
+      props.productId
+    ] === undefined
   ) {
     return 1;
   }
-  return productMsrpWeightsByOrderId.value[visibleOrderId.value][
+  return productAvailabilityByOrderId.value[visibleOrderId.value][
     props.productId
-  ];
+  ].msrpWeight;
 };
 
 const validateValue = (value: number) => {
@@ -256,11 +263,11 @@ onMounted(() => {
           </v-tooltip>
           {{ product.frequency }}
         </div>
-        <div class="opacity-50" v-if="deliveryPercentage.roundedDeliveries > 0">
+        <div class="opacity-50" v-if="deliveryStats.roundedDeliveries > 0">
           <v-tooltip
             :text="
               interpolate(t.deliveryPercentage, {
-                percent: deliveryPercentage.roundedPercentage.toString(),
+                percent: deliveryStats.roundedPercentage.toString(),
               })
             "
             open-on-click
@@ -269,7 +276,7 @@ onMounted(() => {
               <v-icon v-bind="props">mdi-truck-delivery-outline</v-icon>
             </template>
           </v-tooltip>
-          {{ deliveryPercentage.roundedDeliveries }}
+          {{ deliveryStats.roundedDeliveries }}
         </div>
       </v-col>
       <v-col cols="2" md="1">

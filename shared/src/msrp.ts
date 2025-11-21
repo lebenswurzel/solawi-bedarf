@@ -16,10 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { appConfig } from "./config";
 import { ProductCategoryType, Unit, UserCategory } from "./enum";
-import { calculateDeliveries } from "./order/orderUtil";
 import {
-  DeliveredByProductIdDepotId,
-  Depot,
   Msrp,
   OrderId,
   OrderItem,
@@ -67,9 +64,11 @@ export const getOrderItemAdjustedMonthlyMsrp = (
   months: number,
   productMsrpWeights?: { [key: ProductId]: number }
 ): number => {
+  const weight = productMsrpWeights
+    ? (productMsrpWeights[orderItem.productId] ?? 1)
+    : 1;
   const baseMsrp =
-    getYearlyBaseMsrp(orderItem, productById[orderItem.productId]) *
-    (productMsrpWeights ? productMsrpWeights[orderItem.productId] : 1);
+    getYearlyBaseMsrp(orderItem, productById[orderItem.productId]) * weight;
   return adjustMsrp(baseMsrp, contribution, months);
 };
 
@@ -131,24 +130,6 @@ export const getMsrp = (
     months,
     contribution,
   };
-};
-
-export const calculateMsrpWeights = (
-  productsById: ProductsById,
-  deliveredByProductIdDepotId: DeliveredByProductIdDepotId,
-  depots: Depot[]
-): { [key: ProductId]: number } => {
-  return Object.fromEntries(
-    Object.values(productsById)
-      .map((product) => [
-        product.id,
-        1 -
-          calculateDeliveries(product, deliveredByProductIdDepotId, depots)
-            .percentage /
-            100,
-      ])
-      .map(([key, value]) => [key, value > 0 ? value : 0])
-  );
 };
 
 /**
@@ -261,7 +242,7 @@ const productKey = (
  *
  * @param orders list of orders to calculate the effective MSRP chain for
  * @param rawMsrpByOrderId map of raw MSRP by order ID
- * @param productMsrpWeightsByOrderId map of product MSRP weights by order ID
+ * @param productMsrpWeightsByOrderId map of product MSRP weights by order ID; may contain only a subset of products
  * @param productsById map of products by ID
  * @returns list of effective MSRP for each order in the given list of orders
  */
@@ -316,7 +297,7 @@ export const calculateEffectiveMsrpChain = (
 
       // Get current product values
       const currentWeight =
-        productMsrpWeightsByOrderId[currentOrder.id][productId] ?? 0;
+        productMsrpWeightsByOrderId[currentOrder.id][productId] ?? 1;
       const nextWeight = nextOrder
         ? productMsrpWeightsByOrderId[nextOrder.id][productId]
         : 0;
