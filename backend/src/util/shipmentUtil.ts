@@ -31,6 +31,7 @@ interface ShipmentItemWithValidity extends ShipmentItem {
 export const mergeShipmentWithForecast = (
   shipments: Shipment[],
   forecastShipments: Shipment[],
+  returnOnlyAdjustedForecastItems: boolean = false,
 ): ShipmentItemWithValidity[] => {
   const shippedItems: ShipmentItemWithValidity[] = shipments.flatMap(
     (shipment) =>
@@ -116,5 +117,32 @@ export const mergeShipmentWithForecast = (
     }
   }
 
+  if (returnOnlyAdjustedForecastItems) {
+    return adjustedForecastItems;
+  }
   return shippedItems.concat(adjustedForecastItems);
+};
+
+/**
+ * Adjusts the forecast shipments by deducting the shipped items from the forecast items.
+ *
+ * @param shipments Shipped shipments
+ * @param forecastShipments Forecast shipments
+ * @returns Adjusted forecast shipments
+ */
+export const getAdjustedForecastShipments = (
+  shipments: Shipment[],
+  forecastShipments: Shipment[],
+): Shipment[] => {
+  const adjustedForecastShipments = forecastShipments.map(
+    (forecastShipment) => ({
+      ...forecastShipment,
+      shipmentItems: mergeShipmentWithForecast(
+        shipments,
+        [forecastShipment],
+        true,
+      ),
+    }),
+  );
+  return adjustedForecastShipments;
 };

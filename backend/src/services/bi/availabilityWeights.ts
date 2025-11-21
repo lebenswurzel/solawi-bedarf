@@ -16,32 +16,19 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import Koa from "koa";
 import Router from "koa-router";
-import {
-  ShipmentType,
-  Unit,
-} from "@lebenswurzel/solawi-bedarf-shared/src/enum";
-import {
-  AvailabilityWeights,
-  BIData,
-  CapacityByDepotId,
-  DeliveredByProductIdDepotId,
-  ProductsById,
-  SoldByProductId,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types";
-import { Depot } from "../../database/Depot";
+import { ShipmentType } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import { AvailabilityWeights } from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import { Order } from "../../database/Order";
 import { ProductCategory } from "../../database/ProductCategory";
 import { Shipment } from "../../database/Shipment";
 import { AppDataSource } from "../../database/database";
 import { getUserFromContext } from "../getUserFromContext";
 import {
-  getBooleanQueryParameter,
   getConfigIdFromQuery,
   getDateQueryParameter,
-  getNumericQueryParameter,
 } from "../../util/requestUtil";
 import { LessThan, MoreThan } from "typeorm";
-import { mergeShipmentWithForecast } from "../../util/shipmentUtil";
+import { getAdjustedForecastShipments } from "../../util/shipmentUtil";
 import { RequisitionConfig } from "../../database/RequisitionConfig";
 import {
   getSameOrNextThursday,
@@ -151,7 +138,6 @@ export const availabilityWeights = async (
   dateOfInterest?: Date,
 ): Promise<AvailabilityWeights> => {
   const targetDate = dateOfInterest || (await determineTargetDate(configId));
-  const depots = await AppDataSource.getRepository(Depot).find();
 
   const orders = await AppDataSource.getRepository(Order).find({
     relations: { orderItems: true },
@@ -179,65 +165,33 @@ export const availabilityWeights = async (
     where: { requisitionConfigId: configId },
   });
 
-  const extendedShipmentsWhere = {
-    validFrom: LessThan(targetDate),
-  };
-
   const forecastShipments = await AppDataSource.getRepository(Shipment).find({
     relations: { shipmentItems: true },
     where: {
       requisitionConfigId: configId,
-      ...extendedShipmentsWhere,
-      validTo: MoreThan(new Date()), // use current date for finding forecast shipments
+      validFrom: LessThan(targetDate),
+      validTo: MoreThan(new Date()),
       type: ShipmentType.FORECAST,
       active: true,
     },
   });
 
-  // console.log("forecastShipments", forecastShipments);
-
   const shipments = await AppDataSource.getRepository(Shipment).find({
     relations: { shipmentItems: true },
     where: {
       requisitionConfigId: configId,
-      ...extendedShipmentsWhere,
+      validFrom: LessThan(targetDate),
       type: ShipmentType.NORMAL,
       active: true,
     },
     order: { validFrom: "ASC" },
   });
 
-  const shipmentDates = shipments.map((shipment) => shipment.validFrom);
-  shipmentDates.sort((a, b) => a.getTime() - b.getTime());
-
-  const shipmentDatesMap = new Map<Date, Shipment[]>();
-  shipmentDates.forEach((date) => {
-    shipmentDatesMap.set(
-      date,
-      shipments.filter((shipment) => shipment.validFrom === date),
-    );
-  });
-
-  const soldByProductId: SoldByProductId = {};
-  const deliveredByProductIdDepotId: DeliveredByProductIdDepotId = {};
-  const capacityByDepotId: CapacityByDepotId = {};
-
-  depots.forEach((depot) => {
-    capacityByDepotId[depot.id] = {
-      capacity: depot.capacity,
-      reserved: 0,
-      userIds: [],
-    };
-  });
+  const productFrequencyByProductId: { [productId: number]: number } = {};
 
   productCategories.forEach((productCategory) =>
     productCategory.products.forEach((product) => {
-      soldByProductId[product.id] = {
-        quantity: product.quantity * (product.unit == Unit.PIECE ? 1 : 1000),
-        sold: 0,
-        soldForShipment: 0,
-        frequency: product.frequency,
-      };
+      productFrequencyByProductId[product.id] = product.frequency;
     }),
   );
 
@@ -248,7 +202,11 @@ export const availabilityWeights = async (
   const msrpWeightsByProductId: AvailabilityWeights["msrpWeightsByProductId"] =
     {};
 
-  shipments.forEach((shipment) => {
+  const allShipments = shipments.concat(
+    getAdjustedForecastShipments(shipments, forecastShipments),
+  );
+
+  allShipments.forEach((shipment) => {
     const currentValidOrdersByUser = getCurrentValidOrdersByUser(
       orders,
       shipment.validFrom,
@@ -298,10 +256,10 @@ export const availabilityWeights = async (
 
     Object.entries(itemsByProductIdShipmentId).forEach(([productId, items]) => {
       const pid = parseInt(productId);
-      const product = soldByProductId[pid];
+      const frequency = productFrequencyByProductId[pid];
       availabilityByProductId[pid] = {
         weightedDelivered: 0,
-        frequency: product.frequency,
+        frequency: frequency,
         deliveries: 0,
         deliveryPercentage: 0,
         roundedDeliveries: 0,
@@ -317,13 +275,13 @@ export const availabilityWeights = async (
           availabilityByProductId[pid].deliveries,
         );
         availabilityByProductId[pid].deliveryPercentage =
-          availabilityByProductId[pid].weightedDelivered / product.frequency;
+          availabilityByProductId[pid].weightedDelivered / frequency;
 
         const msrpWeight = Math.min(
           Math.max(
             1 -
               availabilityByProductId[parseInt(productId)].weightedDelivered /
-                (product.frequency * 100),
+                (frequency * 100),
             0,
           ),
           1,
