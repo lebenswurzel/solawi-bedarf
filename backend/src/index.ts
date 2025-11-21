@@ -69,7 +69,12 @@ const router = new Router();
 
 // Add duration logger middleware (before error logger to measure full request duration)
 if (config.debug.logDuration) {
+  console.log("Duration logging enabled");
   app.use(durationLogger);
+} else {
+  console.log(
+    `Duration logging disabled (DEBUG_LOG_DURATION=${process.env.DEBUG_LOG_DURATION})`,
+  );
 }
 
 // Add error logger middleware
