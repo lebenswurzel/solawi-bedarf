@@ -69,7 +69,7 @@ const percentageSold = computed(() => {
 
 const deliveryStats = computed(() => {
   if (
-    !productAvailabilityByOrderId.value[visibleOrderId.value ?? 0][
+    !productAvailabilityByOrderId.value?.[visibleOrderId.value ?? 0]?.[
       props.productId
     ]
   ) {
