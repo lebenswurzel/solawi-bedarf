@@ -72,4 +72,7 @@ export const config = {
     dbPort: process.env.POSTGRES_TESTING_PORT || 5533,
   },
   timezone: process.env.TIMEZONE || "Europe/Berlin",
+  debug: {
+    logDuration: process.env.DEBUG_LOG_DURATION === "true",
+  },
 };
