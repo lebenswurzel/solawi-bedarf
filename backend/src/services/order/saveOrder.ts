@@ -25,7 +25,6 @@ import {
 } from "@lebenswurzel/solawi-bedarf-shared/src/msrp";
 import {
   ConfirmedOrder,
-  DeliveredByProductIdDepotId,
   Msrp,
   OrderId,
   ProductId,
@@ -145,12 +144,7 @@ export const saveOrder = async (
     // make sure the date of interest is at least the season start
     dateOfInterest = getSameOrNextThursday(requisitionConfig.validFrom);
   }
-  const {
-    soldByProductId,
-    capacityByDepotId,
-    productsById,
-    deliveredByProductIdDepotId,
-  } = await bi(
+  const { soldByProductId, capacityByDepotId, productsById } = await bi(
     requisitionConfig.id,
     selectedOrder.validFrom,
     true,

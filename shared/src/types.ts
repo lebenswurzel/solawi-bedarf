@@ -275,12 +275,21 @@ export type CapacityByDepotId = {
   };
 };
 
-export type DeliveredByProductIdDepotId = {
+export type RequiredByProductIdDepotId = {
   [key: ProductId]: {
     [key: DepotId]: {
       value: number; // amount required per shipment based on all the orders (even those with validFrom in the future) (in pcs, g, ml)
       valueForShipment: number; // amount required per shipment based on the orders with validFrom in the past (in pcs, g, ml)
-      actuallyDelivered: number; // amount contained in active shipments (in pcs, g, ml)
+      frequency: number; // same as product.frequency
+    };
+  };
+};
+
+export type DeliveredByProductIdDepotId = {
+  [key: ProductId]: {
+    [key: DepotId]: {
+      actuallyDelivered: number | undefined; // amount contained in active shipments (in pcs, g, ml)
+      assumedDelivered: number; // for depots that don't receive a certain product, we assume they would receive the average amount of all other depots that receive the product
       frequency: number; // same as product.frequency
       deliveryCount: number; // number of deliveries to this depot
     };
@@ -520,7 +529,7 @@ export type GetErrorLogResponse = ErrorLogEntry[];
 
 export interface BIData {
   soldByProductId: SoldByProductId;
-  deliveredByProductIdDepotId: DeliveredByProductIdDepotId;
+  requiredByProductIdDepotId: RequiredByProductIdDepotId;
   capacityByDepotId: CapacityByDepotId;
   productsById: ProductsById;
   offers: number;
@@ -549,4 +558,5 @@ export interface AvailabilityWeights {
   msrpWeightsByProductId: {
     [productId: number]: number; // 0..1, 1 means fully available, 0 means fully delivered
   };
+  deliveredByProductIdDepotId: DeliveredByProductIdDepotId;
 }

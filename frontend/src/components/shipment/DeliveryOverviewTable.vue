@@ -21,6 +21,10 @@ import { useConfigStore } from "../../store/configStore";
 import { useBIStore } from "../../store/biStore";
 import { storeToRefs } from "pinia";
 
+const roundToOneDecimal = (value: number) => {
+  return Math.round(value * 10) / 10;
+};
+
 const props = defineProps<{
   productCategoryWithProducts?: ProductCategoryWithProducts;
 }>();
@@ -60,7 +64,7 @@ const headers = computed(() => {
 
 const getDeliveryInfo = (productId: number, depotId: number) => {
   const deliveryInfo = deliveredByProductIdDepotId.value[productId]?.[depotId];
-  if (!deliveryInfo) {
+  if (!deliveryInfo || deliveryInfo.actuallyDelivered === undefined) {
     return { label: "", isMaximum: true, isMinimum: false };
   }
 
@@ -73,10 +77,11 @@ const getDeliveryInfo = (productId: number, depotId: number) => {
 
   const allValues = [
     ...Object.values(deliveredByProductIdDepotId.value[productId]).map(
-      (p) => p.actuallyDelivered,
+      (p) => (p.actuallyDelivered || 0) + p.assumedDelivered,
     ),
   ];
-
+  const aggregatedValue =
+    (deliveryInfo.actuallyDelivered || 0) + deliveryInfo.assumedDelivered;
   const deliveredMaximum = Math.max(...allValues);
   const deliveredMinimum = Math.min(...allValues);
 
@@ -85,14 +90,23 @@ const getDeliveryInfo = (productId: number, depotId: number) => {
   const differentValuesCount = differentValues.size;
 
   const isMinimum =
-    deliveredMinimum == deliveryInfo.actuallyDelivered &&
-    differentValuesCount > 2;
+    deliveredMinimum == aggregatedValue && differentValuesCount > 2;
 
-  return {
-    label: `${deliveryInfo.actuallyDelivered / 100}/${product.frequency}`,
-    isMaximum: deliveredMaximum == deliveryInfo.actuallyDelivered,
-    isMinimum,
-  };
+  if (deliveryInfo.assumedDelivered > 0) {
+    return {
+      label: `${roundToOneDecimal(aggregatedValue / 100)}/${product.frequency}`,
+      tooltip: `davon ${roundToOneDecimal(deliveryInfo.actuallyDelivered / 100)} tatsächlich geliefert und ${roundToOneDecimal(deliveryInfo.assumedDelivered / 100)} Lieferungen angenommen`,
+      isMaximum: deliveredMaximum == aggregatedValue,
+      isMinimum,
+    };
+  } else {
+    return {
+      label: `${deliveryInfo.actuallyDelivered / 100}/${product.frequency}`,
+      tooltip: undefined,
+      isMaximum: deliveredMaximum == aggregatedValue,
+      isMinimum,
+    };
+  }
 };
 
 const tableData = computed(() => {
@@ -155,7 +169,19 @@ const deliveryInfoCache = computed(() => {
                   : 'font-weight-bold'
               "
             >
-              {{ deliveryInfoCache[item.id][depot.id].label }}
+              <v-tooltip
+                :text="deliveryInfoCache[item.id][depot.id].tooltip"
+                v-if="deliveryInfoCache[item.id][depot.id].tooltip"
+              >
+                <template v-slot:activator="{ props }">
+                  <span v-bind="props" class="text-decoration-underline">{{
+                    deliveryInfoCache[item.id][depot.id].label
+                  }}</span>
+                </template>
+              </v-tooltip>
+              <span v-else>{{
+                deliveryInfoCache[item.id][depot.id].label
+              }}</span>
               <v-icon
                 v-if="deliveryInfoCache[item.id][depot.id].isMinimum"
                 size="14"

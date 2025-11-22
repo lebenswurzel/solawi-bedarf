@@ -23,8 +23,8 @@ import {
 import {
   BIData,
   CapacityByDepotId,
-  DeliveredByProductIdDepotId,
   ProductsById,
+  RequiredByProductIdDepotId,
   SoldByProductId,
 } from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import { Depot } from "../../database/Depot";
@@ -40,7 +40,6 @@ import {
   getNumericQueryParameter,
 } from "../../util/requestUtil";
 import { LessThan, MoreThan } from "typeorm";
-import { mergeShipmentWithForecast } from "../../util/shipmentUtil";
 import { RequisitionConfig } from "../../database/RequisitionConfig";
 import {
   getSameOrNextThursday,
@@ -189,7 +188,7 @@ export const bi = async (
   });
 
   const soldByProductId: SoldByProductId = {};
-  const deliveredByProductIdDepotId: DeliveredByProductIdDepotId = {};
+  const requiredByProductIdDepotId: RequiredByProductIdDepotId = {};
   const capacityByDepotId: CapacityByDepotId = {};
 
   depots.forEach((depot) => {
@@ -229,22 +228,20 @@ export const bi = async (
   currentValidOrders.forEach((order) =>
     order.orderItems.forEach((orderItem) => {
       const product = soldByProductId[orderItem.productId];
-      if (!deliveredByProductIdDepotId[orderItem.productId]) {
-        deliveredByProductIdDepotId[orderItem.productId] = {};
+      if (!requiredByProductIdDepotId[orderItem.productId]) {
+        requiredByProductIdDepotId[orderItem.productId] = {};
       }
-      if (!deliveredByProductIdDepotId[orderItem.productId][order.depotId]) {
-        deliveredByProductIdDepotId[orderItem.productId][order.depotId] = {
+      if (!requiredByProductIdDepotId[orderItem.productId][order.depotId]) {
+        requiredByProductIdDepotId[orderItem.productId][order.depotId] = {
           value: 0,
           valueForShipment: 0,
-          actuallyDelivered: 0,
           frequency: product.frequency,
-          deliveryCount: 0,
         };
       }
-      deliveredByProductIdDepotId[orderItem.productId][order.depotId].value +=
+      requiredByProductIdDepotId[orderItem.productId][order.depotId].value +=
         orderItem.value;
       if (isOrderValidOnDate(order, targetDate)) {
-        deliveredByProductIdDepotId[orderItem.productId][
+        requiredByProductIdDepotId[orderItem.productId][
           order.depotId
         ].valueForShipment += orderItem.value;
       }
@@ -263,36 +260,6 @@ export const bi = async (
       }
     }
   });
-
-  mergeShipmentWithForecast(shipments, forecastShipments).forEach(
-    (shipmentItem) => {
-      const product = soldByProductId[shipmentItem.productId];
-      if (!deliveredByProductIdDepotId[shipmentItem.productId]) {
-        deliveredByProductIdDepotId[shipmentItem.productId] = {};
-      }
-      if (
-        !deliveredByProductIdDepotId[shipmentItem.productId][
-          shipmentItem.depotId
-        ]
-      ) {
-        deliveredByProductIdDepotId[shipmentItem.productId][
-          shipmentItem.depotId
-        ] = {
-          value: 0,
-          valueForShipment: 0,
-          actuallyDelivered: 0,
-          frequency: product.frequency,
-          deliveryCount: 0,
-        };
-      }
-
-      deliveredByProductIdDepotId[shipmentItem.productId][
-        shipmentItem.depotId
-      ].actuallyDelivered += shipmentItem.multiplicator;
-      deliveredByProductIdDepotId[shipmentItem.productId][shipmentItem.depotId]
-        .deliveryCount++;
-    },
-  );
 
   // clean the data
   Object.keys(capacityByDepotId).forEach((key) => {
@@ -321,7 +288,7 @@ export const bi = async (
 
   return {
     soldByProductId,
-    deliveredByProductIdDepotId,
+    requiredByProductIdDepotId,
     capacityByDepotId,
     productsById,
     offers: currentValidOrders.reduce((acc, cur) => acc + cur.offer, 0),

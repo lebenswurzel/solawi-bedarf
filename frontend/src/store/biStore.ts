@@ -22,6 +22,7 @@ import {
   AvailabilityWeights,
   CapacityByDepotId,
   DeliveredByProductIdDepotId,
+  RequiredByProductIdDepotId,
   Msrp,
   OrderId,
   ProductId,
@@ -65,6 +66,7 @@ export const useBIStore = defineStore("bi", () => {
   const capacityByDepotId = ref<CapacityByDepotId>({});
   const productsById = ref<ProductsById>({});
   const deliveredByProductIdDepotId = ref<DeliveredByProductIdDepotId>({});
+  const requiredByProductIdDepotId = ref<RequiredByProductIdDepotId>({});
   const offers = ref<number>(0);
   const productAvailability = ref<{
     [key: ProductId]: AvailabilityWeights["availabilityByProductId"][ProductId];
@@ -260,7 +262,7 @@ export const useBIStore = defineStore("bi", () => {
     await uiFeedbackStore.withBusy(async () => {
       const {
         soldByProductId: requestSoldByProductId,
-        deliveredByProductIdDepotId: requestDeliveredByProductIdDepotId,
+        requiredByProductIdDepotId: requestRequiredByProductIdDepotId,
         capacityByDepotId: requestCapacityByDepotId,
         productsById: requestedProductsById,
         offers: requestOffers,
@@ -268,16 +270,26 @@ export const useBIStore = defineStore("bi", () => {
       soldByProductId.value = requestSoldByProductId;
       capacityByDepotId.value = requestCapacityByDepotId;
       productsById.value = requestedProductsById;
-      deliveredByProductIdDepotId.value = requestDeliveredByProductIdDepotId;
+      requiredByProductIdDepotId.value = requestRequiredByProductIdDepotId;
       now.value = new Date();
       offers.value = requestOffers;
 
-      const { availabilityByProductId } = await getAvailabilityWeights(
+      const {
+        availabilityByProductId,
+        deliveredByProductIdDepotId: requestDeliveredByProductIdDepotId2,
+      } = await getAvailabilityWeights(
         configId,
         dateOfInterest,
         includeForecast,
       );
       productAvailability.value = availabilityByProductId;
+      deliveredByProductIdDepotId.value = requestDeliveredByProductIdDepotId2;
+      console.log(
+        "--> deliveredByProductIdDepotId",
+        requestDeliveredByProductIdDepotId2[296],
+        "original",
+        deliveredByProductIdDepotId.value[296],
+      );
 
       if (isDebugEnabled()) {
         const productId = 255;
@@ -289,6 +301,7 @@ export const useBIStore = defineStore("bi", () => {
   return {
     soldByProductId,
     capacityByDepotId,
+    requiredByProductIdDepotId,
     deliveredByProductIdDepotId,
     productsById,
     depot,
