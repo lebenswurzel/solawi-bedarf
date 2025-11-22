@@ -92,7 +92,7 @@ const biStore = useBIStore();
 const configStore = useConfigStore();
 const productStore = useProductStore();
 const textContentStore = useTextContentStore();
-const { productsById, deliveredByProductIdDepotId, capacityByDepotId } =
+const { productsById, requiredByProductIdDepotId, capacityByDepotId } =
   storeToRefs(biStore);
 const { depots, activeConfigId } = storeToRefs(configStore);
 const { productCategories } = storeToRefs(productStore);
@@ -333,7 +333,7 @@ const onSaveConfirmed = (revisionMessage?: string) => {
   saveShipment({
     ...prepareShipment(
       editShipment.value,
-      deliveredByProductIdDepotId.value,
+      requiredByProductIdDepotId.value,
       capacityByDepotId.value,
     ),
     revisionMessage,

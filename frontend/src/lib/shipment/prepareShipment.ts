@@ -18,7 +18,7 @@ import { appConfig } from "@lebenswurzel/solawi-bedarf-shared/src/config.ts";
 import {
   AdditionalShipmentItem,
   CapacityByDepotId,
-  DeliveredByProductIdDepotId,
+  RequiredByProductIdDepotId,
   EditShipment,
   OptionalId,
   Shipment,
@@ -28,13 +28,13 @@ import { splitTotal, valueToDelivered } from "../convert";
 
 export const prepareShipment = (
   editShipment: EditShipment & OptionalId,
-  deliveredByProductIdDepotId: DeliveredByProductIdDepotId,
+  requiredByProductIdDepotId: RequiredByProductIdDepotId,
   capacityByDepotId: CapacityByDepotId,
 ): Shipment & OptionalId => {
   // split total quantity
   const shipmentItems: ShipmentItem[] = [];
   editShipment.shipmentItems.forEach((s) => {
-    const deliveredByDepotId = deliveredByProductIdDepotId[s.productId!];
+    const deliveredByDepotId = requiredByProductIdDepotId[s.productId!];
     const neededValue = s.depotIds.map((depotId) => ({
       depotId,
       value: valueToDelivered({
