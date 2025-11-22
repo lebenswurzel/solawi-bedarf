@@ -150,43 +150,6 @@ export const bi = async (
     where: { requisitionConfigId: configId },
   });
 
-  let extendedShipmentsWhere = {
-    validFrom: LessThan(targetDate),
-  };
-  let forecastShipments: Shipment[] = [];
-
-  if (orderValidFrom) {
-    // console.log("shipments before validFrom", userOrder.validFrom);
-    extendedShipmentsWhere = {
-      validFrom: LessThan(orderValidFrom),
-    };
-
-    if (includeForecast) {
-      forecastShipments = await AppDataSource.getRepository(Shipment).find({
-        relations: { shipmentItems: true },
-        where: {
-          requisitionConfigId: configId,
-          ...extendedShipmentsWhere,
-          validTo: MoreThan(new Date()), // use current date for finding forecast shipments
-          type: ShipmentType.FORECAST,
-          active: true,
-        },
-      });
-    }
-  }
-
-  // console.log("forecastShipments", forecastShipments);
-
-  const shipments = await AppDataSource.getRepository(Shipment).find({
-    relations: { shipmentItems: true },
-    where: {
-      requisitionConfigId: configId,
-      ...extendedShipmentsWhere,
-      type: ShipmentType.NORMAL,
-      active: true,
-    },
-  });
-
   const soldByProductId: SoldByProductId = {};
   const requiredByProductIdDepotId: RequiredByProductIdDepotId = {};
   const capacityByDepotId: CapacityByDepotId = {};

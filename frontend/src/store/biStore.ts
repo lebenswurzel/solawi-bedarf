@@ -94,7 +94,11 @@ export const useBIStore = defineStore("bi", () => {
       const results = await Promise.all(
         allOrders.value.map(async (o) => {
           const { availabilityByProductId, msrpWeightsByProductId } =
-            await getAvailabilityWeights(activeConfigId.value, o.validFrom);
+            await getAvailabilityWeights(
+              activeConfigId.value,
+              o.validFrom,
+              true,
+            );
           if (isDebugEnabled()) {
             const productId = 255;
             console.log(
@@ -281,18 +285,19 @@ export const useBIStore = defineStore("bi", () => {
         configId,
         dateOfInterest,
         includeForecast,
+        true,
       );
       productAvailability.value = availabilityByProductId;
       deliveredByProductIdDepotId.value = requestDeliveredByProductIdDepotId2;
-      console.log(
-        "--> deliveredByProductIdDepotId",
-        requestDeliveredByProductIdDepotId2[296],
-        "original",
-        deliveredByProductIdDepotId.value[296],
-      );
 
       if (isDebugEnabled()) {
         const productId = 255;
+        console.log(
+          "--> deliveredByProductIdDepotId",
+          requestDeliveredByProductIdDepotId2[productId],
+          "original",
+          deliveredByProductIdDepotId.value[productId],
+        );
         console.log(`availability`, availabilityByProductId[productId]);
       }
     });

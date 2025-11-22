@@ -47,6 +47,7 @@ export const getAvailabilityWeights = async (
   configId: number,
   dateOfInterest?: Date,
   includeForecast?: boolean,
+  includeDeliveryStats?: boolean,
 ): Promise<AvailabilityWeights> => {
   let parameters = "";
   if (includeForecast) {
@@ -54,6 +55,9 @@ export const getAvailabilityWeights = async (
   }
   if (dateOfInterest !== undefined) {
     parameters += `&dateOfInterest=${dateOfInterest.toISOString()}`;
+  }
+  if (includeDeliveryStats) {
+    parameters += "&includeDeliveryStats=true";
   }
   const response = await fetch(
     getUrl(`/bi/availabilityWeights?configId=${configId}${parameters}`),
