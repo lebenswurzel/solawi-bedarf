@@ -333,9 +333,9 @@ testAsUser1(
 
     const { deliveredByProductIdDepotId } = await availabilityWeights(
       configId,
-      undefined,
-      false,
       now,
+      false,
+      true,
     );
 
     expect(
@@ -547,9 +547,9 @@ testAsAdminAndUser(
 
     const { deliveredByProductIdDepotId } = await availabilityWeights(
       configId,
-      undefined,
-      false,
       now,
+      false,
+      true,
     );
 
     // Verify soldByProductId

@@ -69,11 +69,17 @@ export const availabilityWeightsHandler = async (
     "includeForecast",
     false,
   );
+  const includeDeliveryStats = getBooleanQueryParameter(
+    ctx.request.query,
+    "includeDeliveryStats",
+    false,
+  );
 
   ctx.body = await availabilityWeights(
     configId,
     dateOfInterest,
     includeForecast,
+    includeDeliveryStats,
   );
 };
 
@@ -81,6 +87,7 @@ export const availabilityWeights = async (
   configId: number,
   dateOfInterest?: Date,
   includeForecast: boolean = false,
+  includeDeliveryStats: boolean = false,
 ): Promise<AvailabilityWeights> => {
   const targetDate = dateOfInterest || (await determineTargetDate(configId));
 
@@ -209,47 +216,49 @@ export const availabilityWeights = async (
       }),
     );
     // determine product delivered amount for each depot
-    depotIds.forEach((depotId) => {
-      const consideredAssumedShipmentProductIds = new Set<ProductId>();
-      shipment.shipmentItems.forEach((shipmentItem) => {
-        if (!deliveredByProductIdDepotId[shipmentItem.productId]) {
-          deliveredByProductIdDepotId[shipmentItem.productId] = {};
-        }
-        if (!deliveredByProductIdDepotId[shipmentItem.productId][depotId]) {
-          deliveredByProductIdDepotId[shipmentItem.productId][depotId] = {
-            actuallyDelivered: undefined,
-            assumedDelivered: 0,
-            frequency: productFrequencyByProductId[shipmentItem.productId],
-            deliveryCount: 0,
-          };
-        }
+    if (includeDeliveryStats) {
+      depotIds.forEach((depotId) => {
+        const consideredAssumedShipmentProductIds = new Set<ProductId>();
+        shipment.shipmentItems.forEach((shipmentItem) => {
+          if (!deliveredByProductIdDepotId[shipmentItem.productId]) {
+            deliveredByProductIdDepotId[shipmentItem.productId] = {};
+          }
+          if (!deliveredByProductIdDepotId[shipmentItem.productId][depotId]) {
+            deliveredByProductIdDepotId[shipmentItem.productId][depotId] = {
+              actuallyDelivered: undefined,
+              assumedDelivered: 0,
+              frequency: productFrequencyByProductId[shipmentItem.productId],
+              deliveryCount: 0,
+            };
+          }
 
-        const item =
-          itemsByShipmentIdProductId[shipment.id][shipmentItem.productId];
-        if (
-          !item.depotIds.includes(depotId) &&
-          !consideredAssumedShipmentProductIds.has(shipmentItem.productId)
-        ) {
-          deliveredByProductIdDepotId[shipmentItem.productId][
-            depotId
-          ].assumedDelivered += coerceToNearestMultipleOf50(
-            item.weightedDelivered,
-          );
-          consideredAssumedShipmentProductIds.add(shipmentItem.productId);
-        } else if (
-          shipmentItem.depotId == depotId &&
-          item.depotIds.includes(depotId)
-        ) {
-          deliveredByProductIdDepotId[shipmentItem.productId][
-            depotId
-          ].actuallyDelivered =
-            (deliveredByProductIdDepotId[shipmentItem.productId][depotId]
-              ?.actuallyDelivered || 0) + shipmentItem.multiplicator;
-          deliveredByProductIdDepotId[shipmentItem.productId][depotId]
-            .deliveryCount++;
-        }
+          const item =
+            itemsByShipmentIdProductId[shipment.id][shipmentItem.productId];
+          if (
+            !item.depotIds.includes(depotId) &&
+            !consideredAssumedShipmentProductIds.has(shipmentItem.productId)
+          ) {
+            deliveredByProductIdDepotId[shipmentItem.productId][
+              depotId
+            ].assumedDelivered += coerceToNearestMultipleOf50(
+              item.weightedDelivered,
+            );
+            consideredAssumedShipmentProductIds.add(shipmentItem.productId);
+          } else if (
+            shipmentItem.depotId == depotId &&
+            item.depotIds.includes(depotId)
+          ) {
+            deliveredByProductIdDepotId[shipmentItem.productId][
+              depotId
+            ].actuallyDelivered =
+              (deliveredByProductIdDepotId[shipmentItem.productId][depotId]
+                ?.actuallyDelivered || 0) + shipmentItem.multiplicator;
+            deliveredByProductIdDepotId[shipmentItem.productId][depotId]
+              .deliveryCount++;
+          }
+        });
       });
-    });
+    }
   });
 
   // aggregate product availability for each product
