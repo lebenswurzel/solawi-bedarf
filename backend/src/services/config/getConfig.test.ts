@@ -180,7 +180,6 @@ const _createOrder = async (
     validFrom: config.validFrom,
     validTo: config.validTo,
     requisitionConfigId: config.id,
-    productConfiguration: "{}",
     userId,
   };
 

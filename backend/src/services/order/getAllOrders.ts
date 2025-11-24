@@ -20,7 +20,6 @@ import Router from "koa-router";
 import { AppDataSource } from "../../database/database";
 import { Order } from "../../database/Order";
 import { getConfigIdFromQuery } from "../../util/requestUtil";
-import { determineColumnsToSelect } from "./getOrder";
 
 export const getAllOrders = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -32,9 +31,7 @@ export const getAllOrders = async (
 };
 
 export const getUserOrders = async (userId: number, configId: number) => {
-  const columnsToSelect = determineColumnsToSelect(true);
   const allOrders: Order[] = await AppDataSource.getRepository(Order).find({
-    select: columnsToSelect as (keyof Order)[],
     where: { userId: userId, requisitionConfigId: configId },
     order: { validFrom: "ASC" }, // Most recent last
     relations: { orderItems: true },

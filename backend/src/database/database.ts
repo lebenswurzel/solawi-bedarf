@@ -56,6 +56,7 @@ import { EmailTexts1757146546682 } from "../migrations/1757146546682-email-texts
 import { PageElementTexts1758569141622 } from "../migrations/1758569141622-page-element-texts";
 import { OrderNonNullValidRange1758647660837 } from "../migrations/1758647660837-order-non-null-valid-range";
 import { UserDeletedFlag1762292718642 } from "../migrations/1762292718642-user-deleted-flag";
+import { DropOrderProductConfiguration1764020937539 } from "../migrations/1764020937539-drop-order-product-configuration";
 
 const entities = [
   User,
@@ -103,6 +104,7 @@ const migrations = [
   PageElementTexts1758569141622,
   OrderNonNullValidRange1758647660837,
   UserDeletedFlag1762292718642,
+  DropOrderProductConfiguration1764020937539,
 ];
 
 const configuredPort = config.testing.isTesting

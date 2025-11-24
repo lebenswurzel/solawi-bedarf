@@ -167,7 +167,6 @@ export const createTestOrder = async (options?: {
   order.offerReason = null;
   order.category = UserCategory.CAT100;
   order.categoryReason = null;
-  order.productConfiguration = "{}";
   order.alternateDepotId = null;
 
   const savedOrder = await AppDataSource.getRepository(Order).save(order);
