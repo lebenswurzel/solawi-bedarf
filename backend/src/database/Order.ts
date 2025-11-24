@@ -63,9 +63,6 @@ export class Order extends BaseEntity {
   @Column({ type: "varchar", nullable: true })
   categoryReason: string | null;
 
-  @Column({ type: "json", nullable: false })
-  productConfiguration: string;
-
   @Column({ nullable: false })
   userId: number;
 

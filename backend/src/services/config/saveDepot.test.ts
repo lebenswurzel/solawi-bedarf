@@ -173,7 +173,6 @@ testAsAdmin("update depot info", async ({ userData }: TestUserData) => {
   order.depotId = depot1.id;
   order.offer = 3;
   order.category = UserCategory.CAT100;
-  order.productConfiguration = "{}";
   order.userId = userData.userId;
   order.requisitionConfigId = configId;
   order.validFrom = new Date();
