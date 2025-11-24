@@ -30,6 +30,13 @@ export class OrderItem extends BaseEntity {
   })
   value: number;
 
+  @Column({
+    type: "real",
+    nullable: false,
+    default: 1,
+  })
+  availability: number; // how much of the product was available for distribution at time of order (0..1)
+
   @Column()
   productId: number;
 

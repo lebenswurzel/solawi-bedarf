@@ -556,7 +556,7 @@ export interface AvailabilityWeights {
     };
   };
   msrpWeightsByProductId: {
-    [productId: number]: number; // 0..1, 1 means fully available, 0 means fully delivered
+    [productId: ProductId]: number; // 0..1, 1 means fully available, 0 means fully delivered
   };
   deliveredByProductIdDepotId: DeliveredByProductIdDepotId;
 }

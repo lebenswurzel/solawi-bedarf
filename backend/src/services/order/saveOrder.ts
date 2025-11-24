@@ -167,7 +167,8 @@ export const saveOrder = async (
         actualOrderItem,
         soldByProductId,
         productsById,
-        1, // TODO: use actual productMsrpWeight to detect if the product is already sold out
+        1, // Use actual productMsrpWeight instead to detect if the product is already sold out?
+        // Currently it's already checked in the frontend by the ShopItem component
       ),
     )
     .filter((error): error is string => error !== null);
@@ -190,13 +191,14 @@ export const saveOrder = async (
     }
   }
 
-  const { effectiveMsrp } = await determineEffectiveMsrp(
-    body.category,
-    body.orderItems,
-    productsById,
-    requisitionConfig,
-    relevantOrders,
-  );
+  const { effectiveMsrp, productMsrpWeightsByOrderId } =
+    await determineEffectiveMsrp(
+      body.category,
+      body.orderItems,
+      productsById,
+      requisitionConfig,
+      relevantOrders,
+    );
   if (!isOfferValid(body.offer, effectiveMsrp.monthly.total)) {
     ctx.throw(http.bad_request, "bid too low");
   }
@@ -231,14 +233,22 @@ export const saveOrder = async (
         selectedOrder.orderItems.find(
           (orderItem) => orderItem.productId == requestOrderItem.productId,
         );
+
+      const availability =
+        productMsrpWeightsByOrderId[selectedOrder.id]?.[
+          requestOrderItem.productId
+        ] ?? 1;
+
       if (item) {
         item.value = requestOrderItem.value;
+        item.availability = availability;
         await entityManager.save(item);
       } else {
         item = new OrderItem();
         item.productId = requestOrderItem.productId;
         item.orderId = selectedOrder.id;
         item.value = requestOrderItem.value;
+        item.availability = availability;
         await entityManager.save(item);
       }
     }
@@ -269,6 +279,9 @@ const determineEffectiveMsrp = async (
   orders: Order[],
 ): Promise<{
   effectiveMsrp: Msrp;
+  productMsrpWeightsByOrderId: {
+    [key: OrderId]: { [key: ProductId]: number };
+  };
 }> => {
   // replace the order items and the category in the newest order as this is the one
   // that is to be checked and saved
@@ -312,6 +325,7 @@ const determineEffectiveMsrp = async (
     // no predecessor order --> return the only raw MSRP as it is the effective MSRP
     return {
       effectiveMsrp: Object.values(rawMsrpsByOrderId)[0],
+      productMsrpWeightsByOrderId,
     };
   }
 
@@ -324,5 +338,6 @@ const determineEffectiveMsrp = async (
 
   return {
     effectiveMsrp: result[result.length - 1],
+    productMsrpWeightsByOrderId,
   };
 };
