@@ -211,11 +211,6 @@ export const initPerformanceData = async () => {
     o.category = UserCategory.CAT100;
     o.user = u;
     o.depot = d;
-    o.productConfiguration = JSON.stringify(
-      await AppDataSource.getRepository(ProductCategory).find({
-        relations: { products: true },
-      }),
-    );
     await AppDataSource.getRepository(Order).save(o);
     for (let oid = 0; oid < 100; oid++) {
       const randomIndex = Math.floor(Math.random() * products.length);

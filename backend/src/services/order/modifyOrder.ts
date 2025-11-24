@@ -151,7 +151,6 @@ export const createAdditionalOrder = async (
     newOrder.offer = currentOrder.offer;
     newOrder.depotId = currentOrder.depotId;
     newOrder.alternateDepotId = currentOrder.alternateDepotId;
-    newOrder.productConfiguration = "";
     newOrder.offerReason = currentOrder.offerReason;
     newOrder.category = currentOrder.category;
     newOrder.categoryReason = currentOrder.categoryReason;

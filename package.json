@@ -2,6 +2,11 @@
   "name": "@lebenswurzel/solawi-bedarf",
   "private": true,
   "workspaces": [
-    "backend", "frontend", "shared"
-  ]
+    "backend",
+    "frontend",
+    "shared"
+  ],
+  "devDependencies": {
+    "ts-node": "^10.9.2"
+  }
 }

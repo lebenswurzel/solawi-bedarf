@@ -215,7 +215,6 @@ export const saveOrder = async (
   selectedOrder.offer = body.offer;
   selectedOrder.depotId = body.depotId;
   selectedOrder.alternateDepotId = body.alternateDepotId;
-  selectedOrder.productConfiguration = ""; // storing this produces a lot of data in the database, so we don't do it anymore; JSON.stringify(productCategories);
   selectedOrder.offerReason = body.offerReason || "";
   selectedOrder.category = body.category;
   selectedOrder.categoryReason = body.categoryReason || "";
