@@ -83,6 +83,8 @@ export const useBIStore = defineStore("bi", () => {
     };
   }>({});
 
+  const effectiveMsrpByOrderId = ref<{ [key: OrderId]: Msrp }>({});
+
   // update productMsrpWeightsByOrderId when orderStore.allOrders changes
   watchEffect(async () => {
     if (allOrders.value.length === 0) {
@@ -208,24 +210,27 @@ export const useBIStore = defineStore("bi", () => {
     return msrpsMap;
   });
 
-  const effectiveMsrpByOrderId = computed((): { [key: OrderId]: Msrp } => {
+  watchEffect(async () => {
     console.log("--> rawMsrpByOrderId", rawMsrpByOrderId.value);
     if (Object.keys(rawMsrpByOrderId.value).length === 0) {
-      return {};
+      effectiveMsrpByOrderId.value = {};
+      return;
     }
-    const result = calculateEffectiveMsrpChain(
-      ordersWithActualOrderItems.value,
-      rawMsrpByOrderId.value,
-      productMsrpWeightsByOrderId.value,
-      productsById.value,
-    );
-    const result2 = Object.fromEntries(
-      result.map((r, index) => [allOrders.value[index].id, r]),
-    ) as {
-      [key: OrderId]: Msrp;
-    };
-    console.log("effectiveMsrpByOrderId", result2);
-    return result2;
+    await uiFeedbackStore.withBusy(async () => {
+      const result = calculateEffectiveMsrpChain(
+        ordersWithActualOrderItems.value,
+        rawMsrpByOrderId.value,
+        productMsrpWeightsByOrderId.value,
+        productsById.value,
+      );
+      const result2 = Object.fromEntries(
+        result.map((r, index) => [allOrders.value[index].id, r]),
+      ) as {
+        [key: OrderId]: Msrp;
+      };
+      console.log("effectiveMsrpByOrderId", result2);
+      effectiveMsrpByOrderId.value = result2;
+    });
   });
 
   const depot = computed(() => {
