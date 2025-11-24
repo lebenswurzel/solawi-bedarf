@@ -22,7 +22,7 @@ import {
 } from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import Koa from "koa";
 import Router from "koa-router";
-import { LessThan, MoreThan } from "typeorm";
+import { EntityManager, LessThan, MoreThan } from "typeorm";
 import { Order } from "../../database/Order";
 import { ProductCategory } from "../../database/ProductCategory";
 import { Shipment } from "../../database/Shipment";
@@ -88,17 +88,20 @@ export const availabilityWeights = async (
   dateOfInterest?: Date,
   includeForecast: boolean = false,
   includeDeliveryStats: boolean = false,
+  entityManager?: EntityManager,
 ): Promise<AvailabilityWeights> => {
-  const targetDate = dateOfInterest || (await determineTargetDate(configId));
+  const dataSource = entityManager ? entityManager : AppDataSource;
+  const targetDate =
+    dateOfInterest || (await determineTargetDate(configId, entityManager));
 
-  const depots = await AppDataSource.getRepository(Depot).find({
+  const depots = await dataSource.getRepository(Depot).find({
     where: {
       active: true,
     },
   });
   const depotIds = depots.map((depot) => depot.id);
 
-  const orders = await AppDataSource.getRepository(Order).find({
+  const orders = await dataSource.getRepository(Order).find({
     relations: { orderItems: true },
     select: {
       offer: true,
@@ -117,16 +120,16 @@ export const availabilityWeights = async (
     },
     order: { userId: "ASC", validFrom: "ASC" }, // Order by user and then by validity
   });
-  const productCategories = await AppDataSource.getRepository(
-    ProductCategory,
-  ).find({
-    relations: { products: true },
-    where: { requisitionConfigId: configId },
-  });
+  const productCategories = await dataSource
+    .getRepository(ProductCategory)
+    .find({
+      relations: { products: true },
+      where: { requisitionConfigId: configId },
+    });
 
   let forecastShipments: Shipment[] = [];
   if (includeForecast) {
-    forecastShipments = await AppDataSource.getRepository(Shipment).find({
+    forecastShipments = await dataSource.getRepository(Shipment).find({
       relations: { shipmentItems: true },
       where: {
         requisitionConfigId: configId,
@@ -138,7 +141,7 @@ export const availabilityWeights = async (
     });
   }
 
-  const shipments = await AppDataSource.getRepository(Shipment).find({
+  const shipments = await dataSource.getRepository(Shipment).find({
     relations: { shipmentItems: true },
     where: {
       requisitionConfigId: configId,

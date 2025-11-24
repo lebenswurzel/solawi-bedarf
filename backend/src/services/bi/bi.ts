@@ -39,7 +39,7 @@ import {
   getDateQueryParameter,
   getNumericQueryParameter,
 } from "../../util/requestUtil";
-import { LessThan, MoreThan } from "typeorm";
+import { EntityManager } from "typeorm";
 import { RequisitionConfig } from "../../database/RequisitionConfig";
 import {
   getSameOrNextThursday,
@@ -97,8 +97,14 @@ export const biHandler = async (
 /**
  * Calculates the target date for the BI in case no explicit date of interest is provided.
  */
-export const determineTargetDate = async (configId: number): Promise<Date> => {
-  const config = await AppDataSource.getRepository(RequisitionConfig).findOne({
+export const determineTargetDate = async (
+  configId: number,
+  entityManager?: EntityManager,
+): Promise<Date> => {
+  const repository = entityManager
+    ? entityManager.getRepository(RequisitionConfig)
+    : AppDataSource.getRepository(RequisitionConfig);
+  const config = await repository.findOne({
     where: { id: configId },
   });
   if (!config) {
