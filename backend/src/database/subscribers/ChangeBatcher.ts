@@ -76,7 +76,6 @@ export class ChangeBatcher<TId = number> {
     if (this.pendingChanges.size === 0) {
       return;
     }
-    console.log(`Flushing ${this.name} change batcher`);
     if (this.pendingTimeout) {
       clearTimeout(this.pendingTimeout);
       this.pendingTimeout = null;
@@ -132,14 +131,7 @@ export class ChangeBatcher<TId = number> {
     try {
       if (this.calculationCallback) {
         await this.calculationCallback(affectedIds);
-      } else {
-        // Default behavior: just log
-        console.log(
-          `${this.name}: Changes detected for ${affectedIds.length} entity/entities. Set a calculation callback to trigger your calculation.`,
-        );
-        console.log(`${this.name}: Affected IDs: ${affectedIds.join(", ")}`);
       }
-
       // After calculation completes, check if new changes arrived during calculation
       // and trigger another calculation if needed
       if (this.pendingChanges.size > 0) {
