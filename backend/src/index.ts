@@ -58,6 +58,7 @@ import { updateUser } from "./services/user/updateUser";
 import { importApplicant } from "./services/applicant/importApplicant";
 import { errorLogger } from "./middleware/errorLogger";
 import { durationLogger } from "./middleware/durationLogger";
+import { flushAllChangeBatchers } from "./middleware/flushAllChangeBatchers";
 import { getErrorLog } from "./services/getErrorLog";
 import { getUserShipments } from "./services/shipment/getUserShipments";
 import { deleteShipment } from "./services/shipment/deleteShipment";
@@ -79,6 +80,11 @@ if (config.debug.logDuration) {
 
 // Add error logger middleware
 app.use(errorLogger);
+
+// Add change batcher flush middleware
+// This automatically flushes all registered change batchers after each request
+// This ensures calculations run before the response is sent
+app.use(flushAllChangeBatchers);
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 

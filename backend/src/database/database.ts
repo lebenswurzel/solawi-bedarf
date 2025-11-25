@@ -58,6 +58,10 @@ import { OrderNonNullValidRange1758647660837 } from "../migrations/1758647660837
 import { UserDeletedFlag1762292718642 } from "../migrations/1762292718642-user-deleted-flag";
 import { OrderItemAvailability1763546749274 } from "../migrations/1763546749274-order-item-availability";
 import { DropOrderProductConfiguration1764020937539 } from "../migrations/1764020937539-drop-order-product-configuration";
+import {
+  OrderSubscriber,
+  OrderItemSubscriber,
+} from "./subscribers/OrderSubscriber";
 
 const entities = [
   User,
@@ -133,7 +137,7 @@ const dataSourceOptions: PostgresConnectionOptions = {
   synchronize: syncronize,
   logging: false,
   entities,
-  subscribers: [],
+  subscribers: [OrderSubscriber, OrderItemSubscriber],
   migrations,
   migrationsRun: !syncronize,
   extra: {
