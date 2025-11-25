@@ -1,4 +1,4 @@
-<!--
+/*
 This file is part of the SoLawi Bedarf app
 
 This program is free software: you can redistribute it and/or modify
@@ -13,37 +13,20 @@ GNU Affero General Public License for more details.
 
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
--->
-<script setup lang="ts">
-defineProps<{ busy: boolean }>();
-</script>
+*/
+import Koa from "koa";
 
-<template>
-  <transition name="fade">
-    <v-progress-linear
-      v-if="busy"
-      indeterminate
-      color="primary"
-      class="progress-bar"
-    ></v-progress-linear>
-  </transition>
-</template>
+export const durationLogger = async (ctx: Koa.Context, next: Koa.Next) => {
+  const start = Date.now();
 
-<style>
-.progress-bar {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-}
+  try {
+    await next();
+  } finally {
+    const duration = Date.now() - start;
+    const method = ctx.method || "UNKNOWN";
+    const url = ctx.url || "UNKNOWN";
+    const status = ctx.status || 0;
 
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-</style>
+    console.log(`[${method}] ${url} - ${status} - ${duration}ms`);
+  }
+};

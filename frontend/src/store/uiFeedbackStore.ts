@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { defineStore } from "pinia";
-import { ref, Ref } from "vue";
+import { computed, ref, Ref, watch } from "vue";
 
 interface UiFeedbackStore {
   error: Ref<string | null>;
@@ -25,6 +25,10 @@ interface UiFeedbackStore {
   success: Ref<string | null>;
   setSuccess: (message: string) => void;
   clearSuccess: () => void;
+
+  busy: Ref<boolean>;
+  startBusy: () => () => void;
+  withBusy: <T>(fn: () => T | Promise<T>) => Promise<T>;
 }
 
 export const useUiFeedback = defineStore(
@@ -55,6 +59,62 @@ export const useUiFeedback = defineStore(
       success.value = null;
     };
 
+    // Track busy state per caller ID
+    const busyCallers = ref<Set<string>>(new Set());
+    let busyCallerCounter = 0;
+
+    // Internal state: true if any caller is busy
+    const hasBusyCallers = computed(() => busyCallers.value.size > 0);
+
+    // Display state: only true if busy has been true for at least 1 second
+    const busyDisplayState = ref<boolean>(false);
+    let busyTimeoutId: ReturnType<typeof setTimeout> | null = null;
+
+    // Watch for changes in busy state and implement 1-second delay
+    watch(
+      hasBusyCallers,
+      (isBusy) => {
+        // Clear any pending timeouts
+        if (busyTimeoutId !== null) {
+          clearTimeout(busyTimeoutId);
+          busyTimeoutId = null;
+        }
+
+        if (isBusy) {
+          // If becoming busy, wait 1 second before showing
+          busyTimeoutId = setTimeout(() => {
+            busyDisplayState.value = true;
+            busyTimeoutId = null;
+          }, 500);
+        } else {
+          // If no longer busy, hide immediately
+          busyDisplayState.value = false;
+        }
+      },
+      { immediate: true },
+    );
+
+    const startBusy = () => {
+      const callerId = `busy-${++busyCallerCounter}`;
+      busyCallers.value.add(callerId);
+      return () => {
+        busyCallers.value.delete(callerId);
+      };
+    };
+
+    const withBusy = async <T>(fn: () => T | Promise<T>): Promise<T> => {
+      const stopBusy = startBusy();
+      try {
+        return await fn();
+      } finally {
+        stopBusy();
+      }
+    };
+
+    const busy = computed(() => {
+      return busyDisplayState.value;
+    });
+
     return {
       error,
       setError,
@@ -62,6 +122,9 @@ export const useUiFeedback = defineStore(
       success,
       setSuccess,
       clearSuccess,
+      busy,
+      startBusy,
+      withBusy,
     };
   },
 );

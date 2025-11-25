@@ -1,4 +1,4 @@
-<!--
+/*
 This file is part of the SoLawi Bedarf app
 
 This program is free software: you can redistribute it and/or modify
@@ -13,37 +13,23 @@ GNU Affero General Public License for more details.
 
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
--->
-<script setup lang="ts">
-defineProps<{ busy: boolean }>();
-</script>
+*/
+import { MigrationInterface, QueryRunner } from "typeorm";
 
-<template>
-  <transition name="fade">
-    <v-progress-linear
-      v-if="busy"
-      indeterminate
-      color="primary"
-      class="progress-bar"
-    ></v-progress-linear>
-  </transition>
-</template>
+export class DropOrderProductConfiguration1764020937539
+  implements MigrationInterface
+{
+  name = "DropOrderProductConfiguration1764020937539";
 
-<style>
-.progress-bar {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(
+      `ALTER TABLE "order" DROP COLUMN "productConfiguration"`,
+    );
+  }
+
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(
+      `ALTER TABLE "order" ADD "productConfiguration" json NOT NULL DEFAULT '{}'`,
+    );
+  }
 }
-
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-</style>

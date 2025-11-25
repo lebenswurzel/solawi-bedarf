@@ -38,6 +38,7 @@ const onDateChange = () => {
 </script>
 <template>
   <v-alert class="mb-2" type="info" variant="tonal">
+    <h4>Wie verwende ich diese Übersicht?</h4>
     Übersichten über bereits erfolgte Verteilungen in der jeweiligen Kategorie.
     In die Berechnung mit einbezogen sind alle Verteilungen dieser Saison, die
     veröffentlicht sind und deren Lieferdatum in der Vergangenheit liegt.
@@ -52,22 +53,29 @@ const onDateChange = () => {
     Es können auch Datumswerte in der Zukunft ausgewählt werden, um angepasste
     Bedarfsanmeldungen darzustellen.
   </v-alert>
-  <v-alert class="mb-2" type="warning" variant="tonal">
+  <v-alert class="mb-2" type="info" variant="tonal">
+    <h4>
+      Hinweis zur Berücksichtigung von Bedarfsänderungen während der Saison
+    </h4>
     <p>
-      Für den Sonderfall, dass während der Saison in einem Depot ein Produkt
-      bestellt wird, welches bisher noch nicht an dieses Depot zu verteilen war,
-      wird der Zielwert für dieses Depot nicht korrekt angezeigt. Dieser Fall
-      kann eintreten, wenn ein neuer Ernteteiler hinzukommt oder durch die
-      Bedarfsanpassung eines bestehenden Ernteteilers.
+      Insbesondere bei selten bestellten Produkten kann es vorkommen, dass durch
+      Bedarfsänderungen während der Saison in einem Depot ein Produkt anfangs
+      nicht, in ab einem späteren Monat jedoch schon bestellt wird.
     </p>
     <p>
-      <u>Beispiel:</u>
-      <br />
-      Depot 1 hat bisher keine Eier bekommen, da sie nicht bestellt wurden. Ein
-      neuer Ernteteiler bestellt ab Mitte der Saison Eier. Folglich stehen in
-      diesem Depot noch 25 Eierlieferungen aus. Angezeigt werden aber 50
-      Lieferungen, welche für die komplette Saison gelten würden.
-      <br />
+      Bisher (bis ca. November 2025) wurde dadurch ein irreführender Wert
+      angezeigt, der suggeriert hat, dass dieses Depot mit dem Produkt stark
+      "unterversorgt" war. Dies ist ab jetzt anders und in die Berechnung für
+      die an das Depot erfolgten Lieferungen wird ein fiktiver Wert
+      einberechnet, der dem Durchschnitt der an die anderen Depots gelieferten
+      Werte entspricht.
+    </p>
+    <p>
+      Depots, bei denen das der Fall ist, sind bei dem jeweiligen Produkt mit
+      einer
+      <span class="text-decoration-underline">Unterstreichung</span>
+      gekennzeichnet und im Tooltip findet sich die Zahl der "angenommenen
+      Verteilungen".
     </p>
   </v-alert>
 

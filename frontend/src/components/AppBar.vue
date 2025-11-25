@@ -27,6 +27,7 @@ import { useOrderStore } from "../store/orderStore.ts";
 import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import { useTheme } from "vuetify";
 import SeasonSelector from "./SeasonSelector.vue";
+import { useUiFeedback } from "../store/uiFeedbackStore.ts";
 
 const drawer = ref(false);
 
@@ -35,10 +36,12 @@ const userStore = useUserStore();
 const configStore = useConfigStore();
 const productStore = useProductStore();
 const orderStore = useOrderStore();
+const uiFeedbackStore = useUiFeedback();
 
 const { currentUser, isLoggedIn, isSessionExpired } = storeToRefs(userStore);
 const theme = useTheme();
 const { config, seasonColorClass } = storeToRefs(configStore);
+const { busy } = storeToRefs(uiFeedbackStore);
 
 onMounted(async () => {
   if (window.innerWidth >= 1280) {
@@ -178,6 +181,14 @@ const adminNavEntries: NavEntry[] = [
         <v-icon color="secondary">mdi-logout</v-icon>
       </v-btn>
     </template>
+    <transition name="fade">
+      <v-progress-linear
+        v-if="busy"
+        indeterminate
+        color="primary"
+        class="busy-indicator"
+      />
+    </transition>
   </v-app-bar>
   <v-navigation-drawer v-model="drawer">
     <v-list>
@@ -259,5 +270,22 @@ const adminNavEntries: NavEntry[] = [
 <style>
 .v-list-item__prepend > .v-icon ~ .v-list-item__spacer {
   width: 8px;
+}
+
+.busy-indicator {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

@@ -57,17 +57,34 @@ import { getVersion } from "./services/getVersion";
 import { updateUser } from "./services/user/updateUser";
 import { importApplicant } from "./services/applicant/importApplicant";
 import { errorLogger } from "./middleware/errorLogger";
+import { durationLogger } from "./middleware/durationLogger";
+import { flushAllChangeBatchers } from "./middleware/flushAllChangeBatchers";
 import { getErrorLog } from "./services/getErrorLog";
 import { getUserShipments } from "./services/shipment/getUserShipments";
-import { calcMsrp } from "./services/bi/calcMsrp";
 import { deleteShipment } from "./services/shipment/deleteShipment";
+import { availabilityWeightsHandler } from "./services/bi/availabilityWeights";
 
 const port = config.server.serverPort;
 const app = new Koa();
 const router = new Router();
 
+// Add duration logger middleware (before error logger to measure full request duration)
+if (config.debug.logDuration) {
+  console.log("Duration logging enabled");
+  app.use(durationLogger);
+} else {
+  console.log(
+    `Duration logging disabled (DEBUG_LOG_DURATION=${process.env.DEBUG_LOG_DURATION})`,
+  );
+}
+
 // Add error logger middleware
 app.use(errorLogger);
+
+// Add change batcher flush middleware
+// This automatically flushes all registered change batchers after each request
+// This ensures calculations run before the response is sent
+app.use(flushAllChangeBatchers);
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -124,7 +141,6 @@ router.get("/shop/order", getOrder);
 router.get("/shop/orders", getAllOrders);
 router.post("/shop/order", saveOrder);
 router.post("/shop/order/modify", modifyOrder);
-router.get("/shop/calcMsrp", calcMsrp);
 
 router.get("/shipment", getUserShipments);
 router.get("/shipments", getShipments);
@@ -142,6 +158,7 @@ router.post("/content/text", saveTextContent);
 router.delete("/content/text", deleteTextContent);
 
 router.get("/bi", biHandler);
+router.get("/bi/availabilityWeights", availabilityWeightsHandler);
 router.get("/overview", getOverview);
 
 router.get("/version", getVersion);

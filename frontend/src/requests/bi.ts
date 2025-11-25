@@ -14,7 +14,10 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { BIData } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
+import {
+  AvailabilityWeights,
+  BIData,
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { getUrl, verifyResponse } from "./requests.ts";
 
 export const getBI = async (
@@ -37,5 +40,28 @@ export const getBI = async (
 
   await verifyResponse(response);
 
+  return await response.json();
+};
+
+export const getAvailabilityWeights = async (
+  configId: number,
+  dateOfInterest?: Date,
+  includeForecast?: boolean,
+  includeDeliveryStats?: boolean,
+): Promise<AvailabilityWeights> => {
+  let parameters = "";
+  if (includeForecast) {
+    parameters += "&includeForecast=true";
+  }
+  if (dateOfInterest !== undefined) {
+    parameters += `&dateOfInterest=${dateOfInterest.toISOString()}`;
+  }
+  if (includeDeliveryStats) {
+    parameters += "&includeDeliveryStats=true";
+  }
+  const response = await fetch(
+    getUrl(`/bi/availabilityWeights?configId=${configId}${parameters}`),
+  );
+  await verifyResponse(response, false);
   return await response.json();
 };

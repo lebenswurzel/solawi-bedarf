@@ -32,8 +32,12 @@ const props = defineProps<{
 
 const biStore = useBIStore();
 const configStore = useConfigStore();
-const { productsById, deliveredByProductIdDepotId, soldByProductId } =
-  storeToRefs(biStore);
+const {
+  productsById,
+  requiredByProductIdDepotId,
+  soldByProductId,
+  deliveredByProductIdDepotId,
+} = storeToRefs(biStore);
 const { depots } = storeToRefs(configStore);
 
 const open = ref<boolean>(false);
@@ -52,11 +56,11 @@ const productOptions = computed(() => {
 
 const neededQuantity = computed(() => {
   if (props.shipmentItem.productId) {
-    const deliveredByDepotId =
-      deliveredByProductIdDepotId.value[props.shipmentItem.productId];
-    if (deliveredByDepotId) {
+    const requiredByDepotId =
+      requiredByProductIdDepotId.value[props.shipmentItem.productId];
+    if (requiredByDepotId) {
       const valueForShipment = props.shipmentItem.depotIds.reduce(
-        (acc, cur) => acc + deliveredByDepotId[cur]?.valueForShipment || 0,
+        (acc, cur) => acc + requiredByDepotId[cur]?.valueForShipment || 0,
         0,
       );
       const { multiplicator, conversionFrom, conversionTo } =
@@ -87,12 +91,11 @@ const getAvailableDepotsForProduct = (productId?: number) => {
   if (!productId) {
     return [];
   }
+  const requiredByDepotId = requiredByProductIdDepotId.value[productId];
   const deliveredByDepotId = deliveredByProductIdDepotId.value[productId];
   const usedDepotIds = props.usedDepotIdsByProductId[productId];
-  if (deliveredByDepotId) {
-    const depotIds = Object.keys(deliveredByDepotId).map((key) =>
-      parseInt(key),
-    );
+  if (requiredByDepotId) {
+    const depotIds = Object.keys(requiredByDepotId).map((key) => parseInt(key));
     return depots.value
       .filter((d) => depotIds.includes(d.id))
       .filter(
@@ -100,16 +103,19 @@ const getAvailableDepotsForProduct = (productId?: number) => {
           !usedDepotIds.includes(d.id) ||
           props.shipmentItem.depotIds.includes(d.id),
       )
-      .filter((d) => deliveredByDepotId[d.id].valueForShipment > 0)
+      .filter((d) => requiredByDepotId[d.id].valueForShipment > 0)
       .sort((a, b) => a.rank - b.rank)
-      .map((d) => ({ depot: d, delivered: deliveredByDepotId[d.id] }));
+      .map((d) => ({
+        depot: d,
+        delivered: { ...requiredByDepotId[d.id], ...deliveredByDepotId[d.id] },
+      }));
   }
 };
 
 const depotOptions = computed(() => {
   return getAvailableDepotsForProduct(props.shipmentItem.productId)?.map(
     (dd) => ({
-      title: `${dd.depot.name} (${dd.delivered.actuallyDelivered / 100}/${
+      title: `${dd.depot.name} (${((dd.delivered.actuallyDelivered || 0) + dd.delivered.assumedDelivered) / 100}/${
         dd.delivered.frequency
       })`,
       value: dd.depot.id,

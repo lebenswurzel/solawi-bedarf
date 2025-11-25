@@ -23,8 +23,8 @@ import {
 import {
   BIData,
   CapacityByDepotId,
-  DeliveredByProductIdDepotId,
   ProductsById,
+  RequiredByProductIdDepotId,
   SoldByProductId,
 } from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import { Depot } from "../../database/Depot";
@@ -39,8 +39,7 @@ import {
   getDateQueryParameter,
   getNumericQueryParameter,
 } from "../../util/requestUtil";
-import { LessThan, MoreThan } from "typeorm";
-import { mergeShipmentWithForecast } from "../../util/shipmentUtil";
+import { EntityManager } from "typeorm";
 import { RequisitionConfig } from "../../database/RequisitionConfig";
 import {
   getSameOrNextThursday,
@@ -52,61 +51,13 @@ const isOrderValidOnDate = (order: Order, targetDate: Date): boolean => {
 };
 
 /**
- * Finds the valid order for a specific user at a specific date.
- * Returns the order that was valid at the given date based on validFrom and validTo.
+ * Returns all currently valid orders for a given date.
  */
-const findValidOrderForUserAtDate = (
-  orders: Order[],
-  userId: number,
-  targetDate: Date,
-): Order | null => {
-  const userOrders = orders.filter((o) => o.userId === userId);
-
-  // Find the order that was valid at the target date
-  return (
-    userOrders.find((order) => isOrderValidOnDate(order, targetDate)) || null
-  );
-};
-
-/**
- * Gets the currently valid order for a user (validTo is null or in the future).
- */
-const getCurrentValidOrderForUser = (
-  orders: Order[],
-  userId: number,
-  targetDate: Date,
-): Order | null => {
-  return findValidOrderForUserAtDate(orders, userId, targetDate);
-};
-
-/**
- * Groups orders by user and returns the currently valid order for each user.
- */
-const getCurrentValidOrdersByUser = (
+export const getCurrentValidOrders = (
   orders: Order[],
   targetDate: Date,
-): { [userId: number]: Order } => {
-  const result: { [userId: number]: Order } = {};
-
-  // Group orders by user
-  const ordersByUser: { [userId: number]: Order[] } = {};
-  orders.forEach((order) => {
-    if (!ordersByUser[order.userId]) {
-      ordersByUser[order.userId] = [];
-    }
-    ordersByUser[order.userId].push(order);
-  });
-
-  // Find current valid order for each user
-  Object.entries(ordersByUser).forEach(([userIdStr, userOrders]) => {
-    const userId = parseInt(userIdStr);
-    const validOrder = getCurrentValidOrderForUser(orders, userId, targetDate);
-    if (validOrder) {
-      result[userId] = validOrder;
-    }
-  });
-
-  return result;
+): Order[] => {
+  return orders.filter((order) => isOrderValidOnDate(order, targetDate));
 };
 
 export const biHandler = async (
@@ -146,8 +97,14 @@ export const biHandler = async (
 /**
  * Calculates the target date for the BI in case no explicit date of interest is provided.
  */
-const determineTargetDate = async (configId: number): Promise<Date> => {
-  const config = await AppDataSource.getRepository(RequisitionConfig).findOne({
+export const determineTargetDate = async (
+  configId: number,
+  entityManager?: EntityManager,
+): Promise<Date> => {
+  const repository = entityManager
+    ? entityManager.getRepository(RequisitionConfig)
+    : AppDataSource.getRepository(RequisitionConfig);
+  const config = await repository.findOne({
     where: { id: configId },
   });
   if (!config) {
@@ -199,45 +156,8 @@ export const bi = async (
     where: { requisitionConfigId: configId },
   });
 
-  let extendedShipmentsWhere = {
-    validFrom: LessThan(targetDate),
-  };
-  let forecastShipments: Shipment[] = [];
-
-  if (orderValidFrom) {
-    // console.log("shipments before validFrom", userOrder.validFrom);
-    extendedShipmentsWhere = {
-      validFrom: LessThan(orderValidFrom),
-    };
-
-    if (includeForecast) {
-      forecastShipments = await AppDataSource.getRepository(Shipment).find({
-        relations: { shipmentItems: true },
-        where: {
-          requisitionConfigId: configId,
-          ...extendedShipmentsWhere,
-          validTo: MoreThan(new Date()), // use current date for finding forecast shipments
-          type: ShipmentType.FORECAST,
-          active: true,
-        },
-      });
-    }
-  }
-
-  // console.log("forecastShipments", forecastShipments);
-
-  const shipments = await AppDataSource.getRepository(Shipment).find({
-    relations: { shipmentItems: true },
-    where: {
-      requisitionConfigId: configId,
-      ...extendedShipmentsWhere,
-      type: ShipmentType.NORMAL,
-      active: true,
-    },
-  });
-
   const soldByProductId: SoldByProductId = {};
-  const deliveredByProductIdDepotId: DeliveredByProductIdDepotId = {};
+  const requiredByProductIdDepotId: RequiredByProductIdDepotId = {};
   const capacityByDepotId: CapacityByDepotId = {};
 
   depots.forEach((depot) => {
@@ -260,11 +180,8 @@ export const bi = async (
   );
 
   // Use only currently valid orders for sold calculations
-  const currentValidOrdersByUser = getCurrentValidOrdersByUser(
-    orders,
-    targetDate,
-  );
-  Object.values(currentValidOrdersByUser).forEach((order) =>
+  const currentValidOrders = getCurrentValidOrders(orders, targetDate);
+  currentValidOrders.forEach((order) =>
     order.orderItems.forEach((orderItem) => {
       const product = soldByProductId[orderItem.productId];
       soldByProductId[orderItem.productId].sold +=
@@ -277,25 +194,23 @@ export const bi = async (
   );
 
   // Use only currently valid orders for delivery calculations
-  Object.values(currentValidOrdersByUser).forEach((order) =>
+  currentValidOrders.forEach((order) =>
     order.orderItems.forEach((orderItem) => {
       const product = soldByProductId[orderItem.productId];
-      if (!deliveredByProductIdDepotId[orderItem.productId]) {
-        deliveredByProductIdDepotId[orderItem.productId] = {};
+      if (!requiredByProductIdDepotId[orderItem.productId]) {
+        requiredByProductIdDepotId[orderItem.productId] = {};
       }
-      if (!deliveredByProductIdDepotId[orderItem.productId][order.depotId]) {
-        deliveredByProductIdDepotId[orderItem.productId][order.depotId] = {
+      if (!requiredByProductIdDepotId[orderItem.productId][order.depotId]) {
+        requiredByProductIdDepotId[orderItem.productId][order.depotId] = {
           value: 0,
           valueForShipment: 0,
-          actuallyDelivered: 0,
           frequency: product.frequency,
-          deliveryCount: 0,
         };
       }
-      deliveredByProductIdDepotId[orderItem.productId][order.depotId].value +=
+      requiredByProductIdDepotId[orderItem.productId][order.depotId].value +=
         orderItem.value;
       if (isOrderValidOnDate(order, targetDate)) {
-        deliveredByProductIdDepotId[orderItem.productId][
+        requiredByProductIdDepotId[orderItem.productId][
           order.depotId
         ].valueForShipment += orderItem.value;
       }
@@ -303,7 +218,7 @@ export const bi = async (
   );
 
   // Use only currently valid orders for depot capacity calculations
-  Object.values(currentValidOrdersByUser).forEach((order) => {
+  currentValidOrders.forEach((order) => {
     if (order.depotId) {
       if (
         !capacityByDepotId[order.depotId].userIds.includes(order.userId) &&
@@ -314,36 +229,6 @@ export const bi = async (
       }
     }
   });
-
-  mergeShipmentWithForecast(shipments, forecastShipments).forEach(
-    (shipmentItem) => {
-      const product = soldByProductId[shipmentItem.productId];
-      if (!deliveredByProductIdDepotId[shipmentItem.productId]) {
-        deliveredByProductIdDepotId[shipmentItem.productId] = {};
-      }
-      if (
-        !deliveredByProductIdDepotId[shipmentItem.productId][
-          shipmentItem.depotId
-        ]
-      ) {
-        deliveredByProductIdDepotId[shipmentItem.productId][
-          shipmentItem.depotId
-        ] = {
-          value: 0,
-          valueForShipment: 0,
-          actuallyDelivered: 0,
-          frequency: product.frequency,
-          deliveryCount: 0,
-        };
-      }
-
-      deliveredByProductIdDepotId[shipmentItem.productId][
-        shipmentItem.depotId
-      ].actuallyDelivered += shipmentItem.multiplicator;
-      deliveredByProductIdDepotId[shipmentItem.productId][shipmentItem.depotId]
-        .deliveryCount++;
-    },
-  );
 
   // clean the data
   Object.keys(capacityByDepotId).forEach((key) => {
@@ -372,12 +257,9 @@ export const bi = async (
 
   return {
     soldByProductId,
-    deliveredByProductIdDepotId,
+    requiredByProductIdDepotId,
     capacityByDepotId,
     productsById,
-    offers: Object.values(currentValidOrdersByUser).reduce(
-      (acc, cur) => acc + cur.offer,
-      0,
-    ),
+    offers: currentValidOrders.reduce((acc, cur) => acc + cur.offer, 0),
   };
 };

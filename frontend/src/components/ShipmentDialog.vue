@@ -92,7 +92,7 @@ const biStore = useBIStore();
 const configStore = useConfigStore();
 const productStore = useProductStore();
 const textContentStore = useTextContentStore();
-const { productsById, deliveredByProductIdDepotId, capacityByDepotId } =
+const { productsById, requiredByProductIdDepotId, capacityByDepotId } =
   storeToRefs(biStore);
 const { depots, activeConfigId } = storeToRefs(configStore);
 const { productCategories } = storeToRefs(productStore);
@@ -152,50 +152,52 @@ const dateChangedHint = computed(() => {
 
 const onEditShipment = async (shipmentId: number) => {
   try {
-    const shipmentWithItemsResponse: ShipmentFullInformation[] = (
-      await getShipments(activeConfigId.value, shipmentId, true, shipmentType)
-    ).shipments;
+    await useUiFeedback().withBusy(async () => {
+      const shipmentWithItemsResponse: ShipmentFullInformation[] = (
+        await getShipments(activeConfigId.value, shipmentId, true, shipmentType)
+      ).shipments;
 
-    if (shipmentWithItemsResponse.length !== 1) {
-      setError(`Keine Verteilung mit ID=${shipmentId} gefunden`);
-      return;
-    }
-    const serverSavedShipment = shipmentWithItemsResponse[0];
+      if (shipmentWithItemsResponse.length !== 1) {
+        setError(`Keine Verteilung mit ID=${shipmentId} gefunden`);
+        return;
+      }
+      const serverSavedShipment = shipmentWithItemsResponse[0];
 
-    await biStore.update(
-      activeConfigId.value,
-      undefined,
-      undefined,
-      new Date(serverSavedShipment.validFrom),
-    );
+      await biStore.update(
+        activeConfigId.value,
+        undefined,
+        undefined,
+        new Date(serverSavedShipment.validFrom),
+      );
 
-    const shipmentItems: EditShipmentItem[] = (
-      serverSavedShipment.shipmentItems || []
-    ).map((item) => {
-      return {
-        ...item,
-        showItem: true,
-        depotIds: [item.depotId],
+      const shipmentItems: EditShipmentItem[] = (
+        serverSavedShipment.shipmentItems || []
+      ).map((item) => {
+        return {
+          ...item,
+          showItem: true,
+          depotIds: [item.depotId],
+        };
+      });
+
+      const additionalShipmentItems: EditAdditionalShipmentItem[] = (
+        serverSavedShipment.additionalShipmentItems || []
+      ).map((item) => {
+        return {
+          ...item,
+          showItem: true,
+          depotIds: [item.depotId],
+        };
+      });
+
+      editShipment.value = {
+        ...serverSavedShipment,
+        shipmentItems,
+        additionalShipmentItems,
       };
+      savedShipment.value = serverSavedShipment;
+      updateProductVisibility();
     });
-
-    const additionalShipmentItems: EditAdditionalShipmentItem[] = (
-      serverSavedShipment.additionalShipmentItems || []
-    ).map((item) => {
-      return {
-        ...item,
-        showItem: true,
-        depotIds: [item.depotId],
-      };
-    });
-
-    editShipment.value = {
-      ...serverSavedShipment,
-      shipmentItems,
-      additionalShipmentItems,
-    };
-    savedShipment.value = serverSavedShipment;
-    updateProductVisibility();
   } catch (error) {
     setError("Fehler beim Laden der Verteilung", error as Error);
   }
@@ -331,7 +333,7 @@ const onSaveConfirmed = (revisionMessage?: string) => {
   saveShipment({
     ...prepareShipment(
       editShipment.value,
-      deliveredByProductIdDepotId.value,
+      requiredByProductIdDepotId.value,
       capacityByDepotId.value,
     ),
     revisionMessage,

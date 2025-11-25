@@ -137,7 +137,6 @@ export const updateOrderValidFrom = async (
     order.category = appConfig.defaultCategory;
     order.validFrom = orderValidFrom;
     order.validTo = config.validTo;
-    order.productConfiguration = "";
     order.requisitionConfigId = configId;
     await AppDataSource.getRepository(Order).save(order);
   }

@@ -78,7 +78,7 @@ testAsAdmin("create new depots", async ({ userData }: TestUserData) => {
   });
 
   // create a depot with the same name again -> error
-  expect(() => saveDepot(ctx)).rejects.toThrowError();
+  await expect(() => saveDepot(ctx)).rejects.toThrowError();
 
   expect(await getDepots()).toHaveLength(currentDepotNumber + 1);
 
@@ -173,7 +173,6 @@ testAsAdmin("update depot info", async ({ userData }: TestUserData) => {
   order.depotId = depot1.id;
   order.offer = 3;
   order.category = UserCategory.CAT100;
-  order.productConfiguration = "{}";
   order.userId = userData.userId;
   order.requisitionConfigId = configId;
   order.validFrom = new Date();

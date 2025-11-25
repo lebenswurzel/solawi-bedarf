@@ -39,14 +39,9 @@ export const getOrder = async (
     relations = { orderItems: false };
   }
 
-  const columnsToSelect = determineColumnsToSelect(
-    option.includes("no-product-configuration"),
-  );
-
   // If a specific order ID is requested, return that order
   if (orderId) {
     const order = await AppDataSource.getRepository(Order).findOne({
-      select: columnsToSelect as (keyof Order)[],
       where: {
         id: parseInt(orderId),
         userId: requestUserId,
@@ -65,7 +60,6 @@ export const getOrder = async (
 
   // Get all orders for the user and config
   const allOrders: OrderType[] = await AppDataSource.getRepository(Order).find({
-    select: columnsToSelect as (keyof Order)[],
     where: { userId: requestUserId, requisitionConfigId: configId },
     relations,
     order: { validFrom: "DESC" }, // Most recent first
@@ -77,20 +71,4 @@ export const getOrder = async (
     allOrders.find((o) => o.validFrom <= now && o.validTo > now) || null;
 
   ctx.body = currentOrder || {};
-};
-
-export const determineColumnsToSelect = (
-  excludeProductConfiguration: boolean,
-): (keyof Order)[] => {
-  const allColumns: string[] = AppDataSource.getRepository(
-    Order,
-  ).metadata.columns.map((col) => col.propertyName);
-
-  if (excludeProductConfiguration) {
-    return allColumns.filter(
-      (col) => col !== "productConfiguration",
-    ) as (keyof Order)[];
-  } else {
-    return allColumns as (keyof Order)[];
-  }
 };

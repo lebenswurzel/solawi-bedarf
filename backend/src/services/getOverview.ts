@@ -127,6 +127,7 @@ export const getUserOrderOverview = async (
       orderItems: {
         productId: true,
         value: true,
+        availability: true,
       },
       requisitionConfig: {
         name: true,
