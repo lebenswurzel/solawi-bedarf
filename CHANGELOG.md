@@ -278,11 +278,15 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 
 # v0.11.5 - 2025-11-03 - Korrektur Verteilungsstatistik
 
-#306: Korrektur bei der Berechnung der Verteilungsstatistik für Zeitpunkte vor Saisonbeginn
+#306 Korrektur bei der Berechnung der Verteilungsstatistik für Zeitpunkte vor Saisonbeginn
 
 # v0.12.0 - 2025-11-10 - Nutzerdaten löschen
 
-#307: Korrektur Anzahl der Verteilungen (Abzug von Verteilungen um den Jahreswechsel herum)
-#309: Nutzerdaten können jetzt gelöscht werden
+#307 Korrektur Anzahl der Verteilungen (Abzug von Verteilungen um den Jahreswechsel herum)
+#309 Nutzerdaten können jetzt gelöscht werden
 
 # NEW
+
+#302 Mehrere Bedarfsänderungen pro Saison; verbesserte Berechnung des Orientierungswerts
+#302 Verbesserte Berechnung der Verteilungen je Produkt je Depot bei wenig nachgefragten Produkten
+#302 Nutzerrückmeldung bei länger laufenden Operationen
