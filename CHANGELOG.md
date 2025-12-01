@@ -285,8 +285,10 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #307 Korrektur Anzahl der Verteilungen (Abzug von Verteilungen um den Jahreswechsel herum)
 #309 Nutzerdaten können jetzt gelöscht werden
 
-# NEW
+# v0.13.0 - 2025-12-01 - Mehrere Bedarfsänderungen
 
 #302 Mehrere Bedarfsänderungen pro Saison; verbesserte Berechnung des Orientierungswerts
 #302 Verbesserte Berechnung der Verteilungen je Produkt je Depot bei wenig nachgefragten Produkten
 #302 Nutzerrückmeldung bei länger laufenden Operationen
+
+# NEW
