@@ -26,6 +26,6 @@
     "typescript": "^5.2.2",
     "@vitest/coverage-v8": "^4.0.10",
     "@types/pdfmake": "^0.2.9",
-    "vitest": "^4.0.10"
+    "vitest": "^4.0.14"
   }
 }
