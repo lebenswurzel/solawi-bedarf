@@ -229,11 +229,12 @@ export const createTestApplicantWithUser = async (options?: {
   addressData?: Partial<Address>;
 }): Promise<{ applicant: Applicant; user: User }> => {
   // Create user first
-  const user = new User();
-  user.name = options?.userName ?? "testuser";
-  user.active = false;
-  user.hash = await hashPassword(options?.password ?? "testpassword123");
-  user.role = UserRole.USER;
+  const user = new User(
+    options?.userName ?? "testuser",
+    await hashPassword(options?.password ?? "testpassword123"),
+    UserRole.USER,
+    false,
+  );
   const savedUser = await AppDataSource.getRepository(User).save(user);
 
   // Create address

@@ -55,7 +55,7 @@ const clearAllTables = async () => {
   await AppDataSource.getRepository(Token).deleteAll();
   await AppDataSource.getRepository(Applicant).deleteAll();
   await AppDataSource.getRepository(UserAddress).deleteAll();
-  await AppDataSource.getRepository(PasswordReset).delete({});
+  await AppDataSource.getRepository(PasswordReset).deleteAll();
   await AppDataSource.getRepository(User).deleteAll();
 
   // delete everything that remains
