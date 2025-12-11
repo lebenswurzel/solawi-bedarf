@@ -31,6 +31,7 @@ const emit = defineEmits(["loginOk", "loginFailed"]);
 const password = ref<string>();
 const username = ref<string>();
 const untilMidnight = ref<boolean>();
+const showPassword = ref<boolean>(false);
 
 const router = useRouter();
 const route = useRoute();
@@ -81,8 +82,23 @@ onMounted(() => {
         v-model="username"
         label="Anmeldename"
         placeholder="LW23042"
+        @keyup.enter="onLogin"
       ></v-text-field>
-      <v-text-field label="Passwort" type="password" v-model="password" />
+      <v-text-field
+        label="Passwort"
+        :type="showPassword ? 'text' : 'password'"
+        v-model="password"
+        @keyup.enter="onLogin"
+      >
+        <template #append-inner>
+          <v-icon
+            :icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
+            @click="showPassword = !showPassword"
+            tabindex="-1"
+            style="cursor: pointer"
+          />
+        </template>
+      </v-text-field>
       <v-checkbox label="Heute angemeldet bleiben" v-model="untilMidnight" />
     </v-card-text>
     <v-card-actions class="justify-center">

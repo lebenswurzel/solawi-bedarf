@@ -292,3 +292,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #302 Nutzerrückmeldung bei länger laufenden Operationen
 
 # NEW
+
+#334 Login kann mit Enter-Taste bestätigt werden; Passwort kann angezeigt werden
