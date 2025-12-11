@@ -58,7 +58,7 @@ import { OrderNonNullValidRange1758647660837 } from "../migrations/1758647660837
 import { UserDeletedFlag1762292718642 } from "../migrations/1762292718642-user-deleted-flag";
 import { DropOrderProductConfiguration1764020937539 } from "../migrations/1764020937539-drop-order-product-configuration";
 import { PasswordReset } from "./PasswordReset";
-import { PasswortReset1757256737447 } from "../migrations/1757256737447-passwort-reset";
+import { PasswortReset1765491964 } from "../migrations/1765491964-passwort-reset";
 
 const entities = [
   User,
@@ -108,7 +108,7 @@ const migrations = [
   OrderNonNullValidRange1758647660837,
   UserDeletedFlag1762292718642,
   DropOrderProductConfiguration1764020937539,
-  PasswortReset1757256737447,
+  PasswortReset1765491964,
 ];
 
 const configuredPort = config.testing.isTesting
