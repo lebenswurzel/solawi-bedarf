@@ -16,8 +16,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class PasswortReset1765491964 implements MigrationInterface {
-  name = "PasswortReset1765491964";
+export class PasswortReset1765491964000 implements MigrationInterface {
+  name = "PasswortReset1765491964000";
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
