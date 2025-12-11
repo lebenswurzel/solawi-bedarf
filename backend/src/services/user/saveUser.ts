@@ -78,11 +78,11 @@ export const saveUser = async (
       }
     } else {
       const user = new User(
-      requestUser.name,
-      await hashPassword(requestUser.password!),
-      requestUser.role,
-      requestUser.active,
-    );
+        requestUser.name,
+        await hashPassword(requestUser.password!),
+        requestUser.role,
+        requestUser.active,
+      );
       await AppDataSource.getRepository(User).save(user);
       if (requestUser.orderValidFrom) {
         await updateOrderValidFrom(

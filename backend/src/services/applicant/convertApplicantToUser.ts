@@ -60,11 +60,7 @@ export const convertApplicantToUser = async (
   }
 
   await AppDataSource.transaction(async (entityManager) => {
-    const user = new User();
-    user.name = request.name;
-    user.active = false;
-    user.hash = applicant.hash;
-    user.role = UserRole.USER;
+    const user = new User(request.name, applicant.hash, UserRole.USER, false);
     await entityManager.save(user);
 
     applicant.active = false;
