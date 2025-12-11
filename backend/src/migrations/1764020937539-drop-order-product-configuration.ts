@@ -16,9 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class DropOrderProductConfiguration1764020937539
-  implements MigrationInterface
-{
+export class DropOrderProductConfiguration1764020937539 implements MigrationInterface {
   name = "DropOrderProductConfiguration1764020937539";
 
   public async up(queryRunner: QueryRunner): Promise<void> {

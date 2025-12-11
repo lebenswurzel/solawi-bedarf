@@ -80,16 +80,16 @@ export async function startServer(): Promise<Server> {
   useDependencies(app);
 
   // Add duration logger middleware (before error logger to measure full request duration)
-if (config.debug.logDuration) {
-  console.log("Duration logging enabled");
-  app.use(durationLogger);
-} else {
-  console.log(
-    `Duration logging disabled (DEBUG_LOG_DURATION=${process.env.DEBUG_LOG_DURATION})`,
-  );
-}
+  if (config.debug.logDuration) {
+    console.log("Duration logging enabled");
+    app.use(durationLogger);
+  } else {
+    console.log(
+      `Duration logging disabled (DEBUG_LOG_DURATION=${process.env.DEBUG_LOG_DURATION})`,
+    );
+  }
 
-// Add error logger middleware
+  // Add error logger middleware
   app.use(errorLogger);
 
   const connectToDatabase = async (tries: number = 10) => {
@@ -156,16 +156,15 @@ if (config.debug.logDuration) {
   router.post("/applicant", saveApplicant);
   router.get("/applicant", getApplicant);
   router.post("/applicant/:id/convert-to-user", convertApplicantToUser);
-router.post("/applicant/:id/activate", activateApplicant);
-router.post("/applicant/:id/deactivate", deactivateApplicant);
-router.delete("/applicant", deleteApplicant);
+  router.post("/applicant/:id/activate", activateApplicant);
+  router.post("/applicant/:id/deactivate", deactivateApplicant);
+  router.delete("/applicant", deleteApplicant);
   router.put("/applicant/import", importApplicant);
 
   router.get("/shop/order", getOrder);
   router.get("/shop/orders", getAllOrders);
   router.post("/shop/order", saveOrder);
   router.post("/shop/order/modify", modifyOrder);
-
 
   router.get("/shipment", getUserShipments);
   router.get("/shipments", getShipments);
@@ -184,7 +183,7 @@ router.delete("/applicant", deleteApplicant);
 
   router.get("/bi", biHandler);
   router.get("/bi/availabilityWeights", availabilityWeightsHandler);
-router.get("/overview", getOverview);
+  router.get("/overview", getOverview);
 
   router.get("/version", getVersion);
 

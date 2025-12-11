@@ -28,9 +28,7 @@ import { Applicant } from "./Applicant";
 import { UserAddress } from "./UserAddress";
 import { TextContent } from "./TextContent";
 import { InitialSetup1708028123640 } from "../migrations/1708028123640-initial-setup";
-import {
-  AddTextContentDepotCapacityOrderAlternateDepot1708028123641
-} from "../migrations/1708028123641-add-textContent-depot-capacity-order-alternateDepot";
+import { AddTextContentDepotCapacityOrderAlternateDepot1708028123641 } from "../migrations/1708028123641-add-textContent-depot-capacity-order-alternateDepot";
 import { RequisitionConfig } from "./RequisitionConfig";
 import { Shipment } from "./Shipment";
 import { ShipmentItem } from "./ShipmentItem";
@@ -40,9 +38,7 @@ import { OrderValidFrom1711780969019 } from "../migrations/1711780969019-order-v
 import { PostgresConnectionOptions } from "typeorm/driver/postgres/PostgresConnectionOptions";
 import { DepotRank1726862542988 } from "../migrations/1726862542988-depot-rank";
 import { MultiSeason1727640942892 } from "../migrations/1727640942892-multi-season";
-import {
-  MultiSeasonForShipmentAndOrder1727966567905
-} from "../migrations/1727966567905-multi-season-for-shipment-and-order";
+import { MultiSeasonForShipmentAndOrder1727966567905 } from "../migrations/1727966567905-multi-season-for-shipment-and-order";
 import { NonUniqueProductNames1728134733135 } from "../migrations/1728134733135-non-unique-product-names";
 import { ConfigPublicFlag1728677345133 } from "../migrations/1728677345133-config-public-flag";
 import { AddMaintenanceMsgText1730887882789 } from "../migrations/1730887882789-add-maintenance-msg-text";

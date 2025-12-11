@@ -16,9 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class AddTextContentDepotCapacityOrderAlternateDepot1708028123641
-  implements MigrationInterface
-{
+export class AddTextContentDepotCapacityOrderAlternateDepot1708028123641 implements MigrationInterface {
   name = "AddTextContentDepotCapacityOrderAlternateDepot1708028123641";
 
   public async up(queryRunner: QueryRunner): Promise<void> {
