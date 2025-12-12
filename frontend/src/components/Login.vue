@@ -77,11 +77,7 @@ onMounted(() => {
       Noch kein Login?
       <router-link to="/register">Hier Registrieren</router-link>
     </v-card-subtitle>
-    <v-card-subtitle>
-      Passwort vergessen?
-      <router-link to="/requestpassword">Passwort zurücksetzen</router-link>
-    </v-card-subtitle>
-    <v-card-text>
+    <v-card-text class="pb-0">
       <v-text-field
         v-model="username"
         label="Anmeldename"
@@ -103,7 +99,12 @@ onMounted(() => {
           />
         </template>
       </v-text-field>
-      <v-checkbox label="Heute angemeldet bleiben" v-model="untilMidnight" />
+      <v-checkbox
+        label="Heute angemeldet bleiben"
+        v-model="untilMidnight"
+        hide-details
+        density="compact"
+      />
     </v-card-text>
     <v-card-actions class="justify-center">
       <v-btn class="text-white" @click="onLogin" variant="elevated">
@@ -111,5 +112,11 @@ onMounted(() => {
       </v-btn>
       <slot name="actions"></slot>
     </v-card-actions>
+    <v-card-text>
+      <v-card-subtitle class="text-center">
+        Passwort vergessen?
+        <router-link to="/requestpassword">Passwort zurücksetzen</router-link>
+      </v-card-subtitle>
+    </v-card-text>
   </v-card>
 </template>

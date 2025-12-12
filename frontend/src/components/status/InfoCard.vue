@@ -49,9 +49,11 @@ const displayTitle = computed(() => {
       <v-card-title class="text-center">{{ displayTitle }}</v-card-title>
       <v-card-text class="text-center">
         <slot />
-        <router-link v-if="linkTo" :to="linkTo">{{
-          linkText || (linkTo == "/" ? "Startseite" : "Weiter")
-        }}</router-link>
+        <div class="text-center mt-4" v-if="linkTo">
+          <router-link :to="linkTo">{{
+            linkText || (linkTo == "/" ? "Startseite" : "Weiter")
+          }}</router-link>
+        </div>
       </v-card-text>
     </v-card>
   </div>

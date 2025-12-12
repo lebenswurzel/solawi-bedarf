@@ -128,7 +128,7 @@ const submit = async () => {
         type="success"
         title="Passwort erfolgreich geändert"
         linkTo="/login"
-        linkText="anmelden"
+        linkText="Anmelden"
       >
         Du kannst Dich jetzt mit deinem neuen Passwort
       </InfoCard>
