@@ -15,6 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import {
+  OrderPaymentType,
   ProductCategoryType,
   ShipmentType,
   TextContentCategory,
@@ -49,6 +50,16 @@ export type SaveUserRequest = Required<NewUser> & {
   password?: string;
   orderValidFrom: Date | null;
   requisitionConfigId: number;
+};
+
+export type OrderPayment = {
+  paymentType: OrderPaymentType;
+  amount: number;
+  bankDetails: {
+    accountHolder: string;
+    iban: string;
+    bankName: string;
+  };
 };
 
 export type UserOrder = {
@@ -159,8 +170,7 @@ export interface SavedOrderWithPredecessor extends SavedOrder {
 //omit validFrom and validTo as they are set by the server
 export interface ConfirmedOrder extends Omit<Order, "validFrom" | "validTo"> {
   sendConfirmationEmail?: boolean;
-  confirmSepaUpdate: boolean;
-  confirmBankTransfer: boolean;
+  payment: OrderPayment;
   id?: OrderId;
 }
 
@@ -320,8 +330,10 @@ export interface ShipmentItem extends BaseShipmentItem {
   conversionTo: number; // in delivered units
 }
 
-export interface EditShipmentItem
-  extends Omit<ShipmentItem, "depotId" | "productId" | "unit"> {
+export interface EditShipmentItem extends Omit<
+  ShipmentItem,
+  "depotId" | "productId" | "unit"
+> {
   productId?: ProductId;
   depotIds: DepotId[];
   unit?: Unit;
@@ -335,8 +347,10 @@ export interface AdditionalShipmentItem extends BaseShipmentItem {
   description: string | null;
 }
 
-export interface EditAdditionalShipmentItem
-  extends Omit<AdditionalShipmentItem, "depotId" | "product" | "unit"> {
+export interface EditAdditionalShipmentItem extends Omit<
+  AdditionalShipmentItem,
+  "depotId" | "product" | "unit"
+> {
   depotIds: DepotId[];
   product?: string;
   unit?: Unit;
@@ -371,8 +385,10 @@ export interface ShipmentFullInformation extends Shipment {
   revisionMessages: RevisionMessageJson[];
 }
 
-export interface EditShipment
-  extends Omit<Shipment, "id" | "shipmentItems" | "additionalShipmentItems"> {
+export interface EditShipment extends Omit<
+  Shipment,
+  "id" | "shipmentItems" | "additionalShipmentItems"
+> {
   shipmentItems: EditShipmentItem[];
   additionalShipmentItems: EditAdditionalShipmentItem[];
 }

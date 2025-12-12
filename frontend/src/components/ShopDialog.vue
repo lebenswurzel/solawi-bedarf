@@ -34,16 +34,20 @@ import {
 } from "@lebenswurzel/solawi-bedarf-shared/src/validation/reason.ts";
 import SeasonText from "./styled/SeasonText.vue";
 import { useUiFeedback } from "../store/uiFeedbackStore.ts";
-import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
-import { UserWithOrders } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
+import {
+  OrderPaymentType,
+  UserCategory,
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
+import {
+  OrderPayment,
+  UserWithOrders,
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { useTextContentStore } from "../store/textContentStore.ts";
 import MsrpDisplay from "./shop/MsrpDisplay.vue";
 import { useUserStore } from "../store/userStore.ts";
 import ContributionSelect from "./shop/ContributionSelect.vue";
-import {
-  getBankTransferMessage,
-  getSepaUpdateMessage,
-} from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition.ts";
+import OrderPaymentComponent from "./shop/OrderPayment.vue";
+import { getBankTransferMessage } from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition.ts";
 
 const props = defineProps<{ open: boolean; requestUser?: UserWithOrders }>();
 const emit = defineEmits(["close"]);
@@ -73,13 +77,27 @@ const { organizationInfo } = storeToRefs(textContentStore);
 
 const confirmGTC = ref(false);
 const confirmContribution = ref(false);
-const confirmSepaUpdate = ref(false);
-const confirmBankTransfer = ref(false);
 const openFAQ = ref(false);
 const loading = ref(false);
 const showDepotNote = ref(false);
+const payment = ref<OrderPayment>({
+  paymentType: OrderPaymentType.UNCONFIRMED,
+  amount: 0,
+  bankDetails: {
+    accountHolder: "",
+    iban: "",
+    bankName: "",
+  },
+});
 
 const sendConfirmationEmail = ref(false);
+
+const confirmSepaUpdate = computed(() => {
+  return payment.value?.paymentType == OrderPaymentType.SEPA;
+});
+const confirmBankTransfer = computed(() => {
+  return payment.value?.paymentType == OrderPaymentType.BANK_TRANSFER;
+});
 
 const categoryOptions = computed(() => {
   return Object.entries(language.app.options.orderUserCategories).map(
@@ -290,8 +308,7 @@ const onSave = () => {
       confirmGTC: confirmGTC.value,
       requisitionConfigId: activeConfigId.value,
       sendConfirmationEmail: sendConfirmationEmail.value,
-      confirmSepaUpdate: sepaUpdateSelected.value,
-      confirmBankTransfer: bankTransferSelected.value,
+      payment: payment.value!,
       id: modificationOrderId.value,
     },
     props.requestUser?.id!,
@@ -337,7 +354,8 @@ const onSave = () => {
         />
         <v-text-field
           class="mb-5"
-          v-model="offer"
+          :model-value="offer"
+          @update:model-value="(val: string) => (offer = Number(val))"
           type="number"
           :hint="offerHint"
           :persistent-hint="!!offerHint"
@@ -447,44 +465,17 @@ const onSave = () => {
           density="compact"
         />
 
-        <div
-          class="mt-3"
-          v-if="enableConfirmSepaUpdate || enableConfirmBankTransfer"
-        >
-          {{ t.confirmPaymentMethod.title }}
-          <v-checkbox
-            v-if="enableConfirmSepaUpdate"
-            v-model="confirmSepaUpdate"
-            :label="
-              getSepaUpdateMessage(
-                modificationOrder?.validFrom ?? new Date(),
-                modificationOrder?.validTo ?? new Date(),
-                offer,
-                predecessorOffer,
-                textContentStore.organizationInfoFlat,
-              )
-            "
-            hide-details
-            density="compact"
-            :error="bankTransferSelected && sepaUpdateSelected"
-          />
-          <div v-if="enableConfirmBankTransfer">
-            <v-checkbox
-              v-if="enableConfirmBankTransfer"
-              v-model="confirmBankTransfer"
-              :label="bankTransferMessage.message"
-              hide-details
-              density="compact"
-              :error="bankTransferSelected && sepaUpdateSelected"
-            />
-            <p
-              class="text-body-2 pl-10"
-              v-for="text in bankTransferMessage.accountDetails.split('\n')"
-            >
-              {{ text }}
-            </p>
-          </div>
-        </div>
+        <OrderPaymentComponent
+          :payment="payment"
+          :enable-confirm-sepa-update="enableConfirmSepaUpdate"
+          :enable-confirm-bank-transfer="enableConfirmBankTransfer"
+          :modification-order="modificationOrder"
+          :offer="offer"
+          :predecessor-offer="predecessorOffer"
+          :organization-info-flat="textContentStore.organizationInfoFlat"
+          :bank-transfer-message="bankTransferMessage"
+          @update:payment="(p: OrderPayment) => (payment = p)"
+        />
 
         <v-switch
           v-model="sendConfirmationEmail"

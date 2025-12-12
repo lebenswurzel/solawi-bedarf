@@ -1,0 +1,192 @@
+<!--
+This file is part of the SoLawi Bedarf app
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<script setup lang="ts">
+import { computed } from "vue";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
+import { OrderPaymentType } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
+import {
+  OrderPayment,
+  OrganizationInfoFlat,
+  SavedOrder,
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
+import { getSepaUpdateMessage } from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition.ts";
+import { validatePayment } from "@lebenswurzel/solawi-bedarf-shared/src/util/ibanHelper.ts";
+
+const props = defineProps<{
+  payment: OrderPayment;
+  enableConfirmSepaUpdate: boolean;
+  enableConfirmBankTransfer: boolean;
+  modificationOrder?: SavedOrder;
+  offer: number;
+  predecessorOffer: number;
+  organizationInfoFlat: OrganizationInfoFlat;
+  bankTransferMessage: {
+    message: string;
+    accountDetails: string;
+    amount: number;
+  };
+}>();
+
+const emit = defineEmits<{
+  "update:payment": [payment: OrderPayment];
+}>();
+
+const t = language.pages.shop.dialog;
+
+const sepaLabel = computed(() => {
+  return getSepaUpdateMessage(
+    props.modificationOrder?.validFrom ?? new Date(),
+    props.modificationOrder?.validTo ?? new Date(),
+    props.offer,
+    props.predecessorOffer,
+    props.organizationInfoFlat,
+  );
+});
+
+const onSepaUpdate = (checked: boolean | null) => {
+  if (checked) {
+    emit("update:payment", {
+      ...props.payment,
+      amount: props.offer,
+      paymentType: OrderPaymentType.SEPA,
+    });
+  } else if (props.payment.paymentType === OrderPaymentType.SEPA) {
+    emit("update:payment", {
+      ...props.payment,
+      paymentType: OrderPaymentType.UNCONFIRMED,
+    });
+  }
+};
+
+const onBankTransfer = (checked: boolean | null) => {
+  if (checked) {
+    emit("update:payment", {
+      ...props.payment,
+      amount: props.bankTransferMessage.amount,
+      paymentType: OrderPaymentType.BANK_TRANSFER,
+    });
+  } else if (props.payment.paymentType === OrderPaymentType.BANK_TRANSFER) {
+    emit("update:payment", {
+      ...props.payment,
+      paymentType: OrderPaymentType.UNCONFIRMED,
+    });
+  }
+};
+
+const isSepaSelected = computed(() => {
+  return props.payment.paymentType === OrderPaymentType.SEPA;
+});
+
+const validationResult = computed(() => {
+  if (isSepaSelected.value) {
+    return validatePayment(props.payment);
+  }
+  return { valid: true, error: undefined };
+});
+
+const ibanError = computed(() => {
+  if (isSepaSelected.value && !validationResult.value.valid) {
+    return validationResult.value.error;
+  }
+  return undefined;
+});
+
+const onAccountHolderUpdate = (value: string) => {
+  emit("update:payment", {
+    ...props.payment,
+    bankDetails: {
+      ...props.payment.bankDetails,
+      accountHolder: value,
+    },
+  });
+};
+
+const onIbanUpdate = (value: string) => {
+  emit("update:payment", {
+    ...props.payment,
+    bankDetails: {
+      ...props.payment.bankDetails,
+      iban: value,
+    },
+  });
+};
+
+const onBankNameUpdate = (value: string) => {
+  emit("update:payment", {
+    ...props.payment,
+    bankDetails: {
+      ...props.payment.bankDetails,
+      bankName: value,
+    },
+  });
+};
+</script>
+
+<template>
+  <div class="mt-3" v-if="enableConfirmSepaUpdate || enableConfirmBankTransfer">
+    {{ t.confirmPaymentMethod.title }}
+    <v-checkbox
+      v-if="enableConfirmSepaUpdate"
+      :model-value="payment.paymentType == OrderPaymentType.SEPA"
+      @update:model-value="onSepaUpdate"
+      :label="sepaLabel"
+      hide-details
+      density="compact"
+    />
+    <div v-if="isSepaSelected" class="pl-10 mt-2">
+      <v-text-field
+        :model-value="payment.bankDetails.accountHolder"
+        @update:model-value="onAccountHolderUpdate"
+        label="Kontoinhaber"
+        variant="outlined"
+        density="compact"
+        class="mb-2"
+      />
+      <v-text-field
+        :model-value="payment.bankDetails.iban"
+        @update:model-value="onIbanUpdate"
+        label="IBAN"
+        variant="outlined"
+        density="compact"
+        :error-messages="ibanError"
+        class="mb-2"
+      />
+      <v-text-field
+        :model-value="payment.bankDetails.bankName"
+        @update:model-value="onBankNameUpdate"
+        label="Kreditinstitut"
+        variant="outlined"
+        density="compact"
+      />
+    </div>
+    <div v-if="enableConfirmBankTransfer">
+      <v-checkbox
+        :model-value="payment.paymentType == OrderPaymentType.BANK_TRANSFER"
+        @update:model-value="onBankTransfer"
+        :label="bankTransferMessage.message"
+        hide-details
+        density="compact"
+      />
+      <p
+        class="text-body-2 pl-10"
+        v-for="text in bankTransferMessage.accountDetails.split('\n')"
+      >
+        {{ text }}
+      </p>
+    </div>
+  </div>
+</template>
