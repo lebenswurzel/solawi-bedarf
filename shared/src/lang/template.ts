@@ -17,12 +17,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import { escapeHtmlEntities } from "../util/stringHelper";
 
-const regex = /{([a-zA-Z0-9]+)}/g;
+const regex = /{([a-zA-Z0-9\.]+)}/g;
 
 export const interpolate = (
   template: string,
   variables: Record<string, string>,
-  escapeHtml?: boolean,
+  escapeHtml?: boolean
 ) => {
   if (escapeHtml) {
     return template.replace(regex, (match, key) => {
