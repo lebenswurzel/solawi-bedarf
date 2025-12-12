@@ -46,6 +46,8 @@ const ORG_INFO: OrganizationInfo = {
     street: "",
   },
   appUrl: "https://localhost:8080",
+  name: "",
+  bankAccount: "",
 };
 
 const USERNAME = "USERNAME";
@@ -70,7 +72,7 @@ class FakedDependencies implements EmailService, TextContentRepo, UserRepo {
   }
 
   removeUserEmailAddress() {
-    this.user.applicant.address.address = null;
+    this.user.applicant.address.address = "";
   }
 
   sendEmail(_: SendEmailRequest): ResultAsync<void, InfrastructureError> {
@@ -108,7 +110,7 @@ class FakedDependencies implements EmailService, TextContentRepo, UserRepo {
 
 function extractTokenFromHtml(email: SendEmailRequest): string | null {
   const emailContent = email.html ?? email.paragraphs?.join("\n\n");
-  const m = emailContent.match(/token=([a-zA-Z0-9]+)/);
+  const m = emailContent!.match(/token=([a-zA-Z0-9]+)/);
 
   return m ? m[1] : null;
 }
@@ -116,12 +118,12 @@ function extractTokenFromHtml(email: SendEmailRequest): string | null {
 function mockSendEmail(
   dependencies: FakedDependencies,
 ): [MockInstance, { value: string }] {
-  const tokenStore = { value: undefined };
+  const tokenStore = { value: "" };
   const mock = vi
     .spyOn(dependencies, "sendEmail")
     .mockImplementation((email) => {
-      tokenStore.value = extractTokenFromHtml(email);
-      return undefined;
+      tokenStore.value = extractTokenFromHtml(email)!;
+      return okAsync();
     });
   return [mock, tokenStore];
 }
@@ -205,7 +207,7 @@ describe("checking token", () => {
     // ACT
     const checkResult = await service.checkPasswordResetToken(
       USERNAME,
-      reset.token,
+      reset.token!,
     );
 
     // ASSERT
@@ -239,7 +241,7 @@ describe("password reset", () => {
     const service = newPasswordResetService(dependencies);
 
     // ACT
-    const endResult = await service.resetPassword(reset.token, PASSWORD);
+    const endResult = await service.resetPassword(reset.token!, PASSWORD);
 
     // ASSERT
     expect(endResult).toEqual(ok());
@@ -273,7 +275,7 @@ describe("password reset", () => {
     const service = newPasswordResetService(dependencies);
 
     // ACT
-    const endResult = await service.resetPassword(reset.token, PASSWORD);
+    const endResult = await service.resetPassword(reset.token!, PASSWORD);
 
     // ASSERT
     expect(endResult).toEqual(ok());
@@ -293,7 +295,7 @@ describe("password reset", () => {
     const service = newPasswordResetService(dependencies);
 
     // ACT
-    const endResult = await service.resetPassword(reset.token, PASSWORD);
+    const endResult = await service.resetPassword(reset.token!, PASSWORD);
 
     // ASSERT
     expect(endResult).toEqual(ok());
@@ -309,8 +311,8 @@ describe("password reset", () => {
     const service = newPasswordResetService(dependencies);
 
     // ACT
-    const endResult1 = await service.resetPassword(reset.token, PASSWORD);
-    const endResult2 = await service.resetPassword(reset.token, PASSWORD);
+    const endResult1 = await service.resetPassword(reset.token!, PASSWORD);
+    const endResult2 = await service.resetPassword(reset.token!, PASSWORD);
 
     // ASSERT
     expect(endResult1).toEqual(ok());
@@ -378,20 +380,20 @@ describe("password reset workflow", () => {
 
     // Use token from e-mail for reset
     const email = emailService.requests.pop();
-    const passwordResetToken = extractTokenFromHtml(email);
+    const passwordResetToken = extractTokenFromHtml(email!);
     expect(
-      await service.resetPassword(passwordResetToken, "NEWPASSWORD"),
+      await service.resetPassword(passwordResetToken!, "NEWPASSWORD"),
     ).toEqual(ok());
 
     // The second attempt should fail
     expect(
-      await service.resetPassword(passwordResetToken, "NEWPASSWORD"),
+      await service.resetPassword(passwordResetToken!, "NEWPASSWORD"),
     ).toEqual(err(SolawiError.invalidInput("request is invalid")));
 
     // ASSERT
 
     // Password should be changed
-    const hash = (await dependencies.findUserByName(USERNAME)).hash;
+    const hash = (await dependencies.findUserByName(USERNAME))!.hash;
     expect(await comparePassword("NEWPASSWORD", hash)).true;
 
     // All tokens should be invalid
