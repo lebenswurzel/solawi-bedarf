@@ -60,7 +60,7 @@ export class PasswordResetService {
     }
 
     // SEC: Defense against timing attacks: sleep between 25–100 ms
-    let delay =
+    const delay =
       Math.random() * (this.randomSleepTime[1] - this.randomSleepTime[0]) +
       this.randomSleepTime[0];
     await sleep(delay);
@@ -77,7 +77,7 @@ export class PasswordResetService {
       return ok(); // SEC: Protect against username enumeration
     }
 
-    let userEmail = this.getEmail(user);
+    const userEmail = this.getEmail(user);
     if (userEmail.isErr()) {
       console.log(
         "Password request rejected because of missing email of",
@@ -130,7 +130,7 @@ export class PasswordResetService {
       return err(SolawiError.invalidInput("invalid request"));
     }
 
-    let user = await this.deps.findUserByName(userName);
+    const user = await this.deps.findUserByName(userName);
     if (!user) {
       return err(SolawiError.rejected("user does not exist"));
     }
@@ -157,7 +157,7 @@ export class PasswordResetService {
       return err(SolawiError.invalidInput("invalid request"));
     }
 
-    let user = await this.deps.findUserByPasswordResetToken(token, {
+    const user = await this.deps.findUserByPasswordResetToken(token, {
       passwordResets: true,
       applicant: { address: true },
     });
