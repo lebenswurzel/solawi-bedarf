@@ -106,17 +106,7 @@ const isSepaSelected = computed(() => {
 });
 
 const validationResult = computed(() => {
-  if (isSepaSelected.value) {
-    return validatePayment(props.payment);
-  }
-  return { valid: true, error: undefined };
-});
-
-const ibanError = computed(() => {
-  if (isSepaSelected.value && !validationResult.value.valid) {
-    return validationResult.value.error;
-  }
-  return undefined;
+  return validatePayment(props.payment);
 });
 
 const onAccountHolderUpdate = (value: string) => {
@@ -142,19 +132,17 @@ const onBankNameUpdate = (value: string) => {
     },
   });
 };
-
-const validateAccountHolder = (value: string) => {
-  return value.length > 0 ? true : "Bitte Kontoinhaber angeben";
-};
-
-const validateBankName = (value: string) => {
-  return value.length > 0 ? true : "Bitte Kreditinstitut angeben";
-};
 </script>
 
 <template>
   <div class="mt-3" v-if="enableConfirmSepaUpdate || enableConfirmBankTransfer">
     {{ t.confirmPaymentMethod.title }}
+    <div
+      v-if="validationResult.errors?.paymentType"
+      class="text-body-2 text-error"
+    >
+      {{ validationResult.errors?.paymentType }}
+    </div>
     <v-checkbox
       v-if="enableConfirmSepaUpdate"
       :model-value="payment.paymentType == OrderPaymentType.SEPA"
@@ -170,7 +158,7 @@ const validateBankName = (value: string) => {
         label="Kontoinhaber"
         variant="outlined"
         density="compact"
-        :rules="[validateAccountHolder]"
+        :error-messages="validationResult.errors?.accountHolder"
         class="mb-2"
       />
       <v-text-field
@@ -179,7 +167,7 @@ const validateBankName = (value: string) => {
         label="IBAN"
         variant="outlined"
         density="compact"
-        :error-messages="ibanError"
+        :error-messages="validationResult.errors?.iban"
         class="mb-2"
       />
       <v-text-field
@@ -188,7 +176,7 @@ const validateBankName = (value: string) => {
         label="Kreditinstitut"
         variant="outlined"
         density="compact"
-        :rules="[validateBankName]"
+        :error-messages="validationResult.errors?.bankName"
       />
     </div>
     <div v-if="enableConfirmBankTransfer">

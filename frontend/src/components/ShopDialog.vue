@@ -48,6 +48,7 @@ import { useUserStore } from "../store/userStore.ts";
 import ContributionSelect from "./shop/ContributionSelect.vue";
 import OrderPaymentComponent from "./shop/OrderPayment.vue";
 import { getBankTransferMessage } from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition.ts";
+import { validatePayment } from "@lebenswurzel/solawi-bedarf-shared/src/util/ibanHelper.ts";
 
 const props = defineProps<{ open: boolean; requestUser?: UserWithOrders }>();
 const emit = defineEmits(["close"]);
@@ -191,7 +192,7 @@ const offerHint = computed((): string | undefined => {
       msrp: Math.ceil(minOffer(effectiveMsrp.value.monthly.total)).toString(),
     });
   }
-  if (enableOfferReason.value) {
+  if (enableOfferReason.value && offerReasonHint.value) {
     return t.offer.lowOfferHint;
   }
   return undefined;
@@ -211,6 +212,10 @@ const isPaymentSelectionValid = computed(() => {
   return bankTransferSelected.value != sepaUpdateSelected.value;
 });
 
+const paymentValidation = computed(() => {
+  return validatePayment(payment.value);
+});
+
 const disableSubmit = computed(() => {
   return (
     !confirmGTC.value ||
@@ -219,7 +224,8 @@ const disableSubmit = computed(() => {
     offerReasonHint.value ||
     categoryReasonHint.value ||
     (requireConfirmContribution.value && !confirmContribution.value) ||
-    !isPaymentSelectionValid.value // must select exactly one payment method
+    !isPaymentSelectionValid.value || // must select exactly one payment method
+    !paymentValidation.value.valid // payment validation must pass
   );
 });
 
@@ -357,7 +363,7 @@ const onSave = () => {
           :model-value="offer"
           @update:model-value="(val: string) => (offer = Number(val))"
           type="number"
-          :hint="offerHint"
+          :error-messages="offerHint"
           :persistent-hint="!!offerHint"
           :label="t.offer.label"
         />
@@ -492,6 +498,9 @@ const onSave = () => {
           v-if="!props.requestUser?.emailEnabled"
           >{{ t.sendConfirmationEmail.notAvailable }}</v-alert
         >
+        <div v-if="!!disableSubmit" class="text-body-2 text-error">
+          {{ language.pages.shop.dialog.missingFields }}
+        </div>
       </v-card-text>
       <v-card-actions
         class="d-flex flex-wrap flex-sm-row flex-column justify-center"
