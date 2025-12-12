@@ -81,37 +81,35 @@ const submit = async () => {
       </v-card>
     </v-form>
 
-    <div style="display: flex; justify-content: center" v-else>
-      <div style="max-width: 400px">
-        <v-card class="ma-2" v-if="success">
-          <v-card-title class="text-center"> E-Mail gesendet </v-card-title>
-          <v-card-item class="justify-center">
-            <v-icon color="success" icon="mdi-check-bold" size="x-large" />
-          </v-card-item>
-          <v-card-text class="text-center">
-            Falls der eingegebene Benutzername existiert, wurde eine E-Mail mit
-            einem Link zum Zurücksetzen des Passworts verschickt. Bitte prüfe
-            auch Deinen Spam-Ordner.
-          </v-card-text>
-        </v-card>
-        <v-card class="ma-2" v-else>
-          <v-card-title class="text-center">
-            Ups, da ist etwas schief gegangen!
-          </v-card-title>
-          <v-card-item class="justify-center">
-            <v-icon
-              color="error"
-              icon="mdi-alert-circle-outline"
-              size="x-large"
-            />
-          </v-card-item>
-          <v-card-text class="text-center">
-            Bitte versuche es später erneut. Wenn dieser Fehler wiederholt
-            auftritt, wende Dich bitte an
-            {{ organizationInfo.address.email }}. Danke für Dein Verständnis.
-          </v-card-text>
-        </v-card>
-      </div>
+    <div class="mx-auto" style="max-width: 400px" v-else>
+      <v-card class="ma-2" v-if="success">
+        <v-card-title class="text-center"> E-Mail gesendet </v-card-title>
+        <v-card-item class="justify-center">
+          <v-icon color="success" icon="mdi-check-bold" size="x-large" />
+        </v-card-item>
+        <v-card-text class="text-center">
+          Falls der eingegebene Benutzername existiert, wurde eine E-Mail mit
+          einem Link zum Zurücksetzen des Passworts verschickt. Bitte prüfe auch
+          Deinen Spam-Ordner.
+        </v-card-text>
+      </v-card>
+      <v-card class="ma-2" v-else>
+        <v-card-title class="text-center">
+          Ups, da ist etwas schief gegangen!
+        </v-card-title>
+        <v-card-item class="justify-center">
+          <v-icon
+            color="error"
+            icon="mdi-alert-circle-outline"
+            size="x-large"
+          />
+        </v-card-item>
+        <v-card-text class="text-center">
+          Bitte versuche es später erneut. Wenn dieser Fehler wiederholt
+          auftritt, wende Dich bitte an
+          {{ organizationInfo.address.email }}. Danke für Dein Verständnis.
+        </v-card-text>
+      </v-card>
     </div>
   </div>
 </template>

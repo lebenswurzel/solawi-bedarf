@@ -107,8 +107,8 @@ const submit = async () => {
       </v-form>
     </v-card>
 
-    <div class="justify-center" v-else>
-      <div style="max-width: 400px">
+    <div v-else>
+      <div style="max-width: 400px" class="mx-auto">
         <v-card class="ma-2" v-if="success">
           <v-card-title class="text-center">
             Passwort erfolgreich geändert
