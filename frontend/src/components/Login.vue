@@ -32,6 +32,7 @@ const password = ref<string>();
 const username = ref<string>();
 const untilMidnight = ref<boolean>();
 const showPassword = ref<boolean>(false);
+const valid = ref<boolean>(false);
 
 const router = useRouter();
 const route = useRoute();
@@ -40,6 +41,7 @@ const { setError, setSuccess } = useUiFeedback();
 const versionInfoStore = useVersionInfoStore();
 
 const onLogin = async () => {
+  if (!valid.value) return;
   login(username.value!, password.value!, untilMidnight.value!)
     .then(async () => {
       await userStore.update();
@@ -77,46 +79,48 @@ onMounted(() => {
       Noch kein Login?
       <router-link to="/register">Hier Registrieren</router-link>
     </v-card-subtitle>
-    <v-card-text class="pb-0">
-      <v-text-field
-        v-model="username"
-        label="Anmeldename"
-        placeholder="LW23042"
-        @keyup.enter="onLogin"
-      ></v-text-field>
-      <v-text-field
-        label="Passwort"
-        :type="showPassword ? 'text' : 'password'"
-        v-model="password"
-        @keyup.enter="onLogin"
-      >
-        <template #append-inner>
-          <v-icon
-            :icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
-            @click="showPassword = !showPassword"
-            tabindex="-1"
-            style="cursor: pointer"
-          />
-        </template>
-      </v-text-field>
-      <v-checkbox
-        label="Heute angemeldet bleiben"
-        v-model="untilMidnight"
-        hide-details
-        density="compact"
-      />
-    </v-card-text>
-    <v-card-actions class="justify-center">
-      <v-btn class="text-white" @click="onLogin" variant="elevated">
-        Login
-      </v-btn>
-      <slot name="actions"></slot>
-    </v-card-actions>
-    <v-card-text>
-      <v-card-subtitle class="text-center">
-        Passwort vergessen?
-        <router-link to="/requestpassword">Passwort zurücksetzen</router-link>
-      </v-card-subtitle>
-    </v-card-text>
+    <v-form v-model="valid" @submit.prevent @submit="onLogin">
+      <v-card-text class="pb-0">
+        <v-text-field
+          v-model="username"
+          label="Anmeldename"
+          placeholder="LW23042"
+          :rules="[(v) => !!v || 'Anmeldename ist erforderlich']"
+        ></v-text-field>
+        <v-text-field
+          label="Passwort"
+          :type="showPassword ? 'text' : 'password'"
+          v-model="password"
+          :rules="[(v) => !!v || 'Passwort ist erforderlich']"
+        >
+          <template #append-inner>
+            <v-icon
+              :icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
+              @click="showPassword = !showPassword"
+              tabindex="-1"
+              style="cursor: pointer"
+            />
+          </template>
+        </v-text-field>
+        <v-checkbox
+          label="Heute angemeldet bleiben"
+          v-model="untilMidnight"
+          hide-details
+          density="compact"
+        />
+      </v-card-text>
+      <v-card-actions class="justify-center">
+        <v-btn class="text-white" type="submit" variant="elevated">
+          Login
+        </v-btn>
+        <slot name="actions"></slot>
+      </v-card-actions>
+      <v-card-text>
+        <v-card-subtitle class="text-center">
+          Passwort vergessen?
+          <router-link to="/requestpassword">Passwort zurücksetzen</router-link>
+        </v-card-subtitle>
+      </v-card-text>
+    </v-form>
   </v-card>
 </template>
