@@ -617,6 +617,34 @@ export const language = {
       ],
       contributionKindBulletPoint: "* Art der Mitarbeit: {contributionKind}\n",
     },
+    passwordResetRequest: {
+      subject: "Anfrage Passwort zurücksetzen",
+      body: [
+        "Liebe(r) {userName},",
+
+        "auf {appUrl} wurde eine Anfrage zum Zurücksetzen deines Passworts eingereicht.",
+
+        "<a href='{passwordResetLink}'>Klicke bitte auf diesen Link</a>, um ein neues Passwort zu vergeben.",
+
+        "Falls die Anfrage nicht von Dir stammt, dann kannst du diese Nachricht ignorieren.",
+
+        "Viele Grüße",
+
+        "Dein {solawiName}",
+      ],
+    },
+    passwordReset: {
+      subject: "Das Passwort wurde zurückgesetzt",
+      body: [
+        "Liebe(r) {userName},",
+
+        "dein Passwort wurde zurückgesetzt. Falls du das nicht warst, dann setze dein Passwort bitte neu.",
+
+        "Viele Grüße",
+
+        "Dein {solawiName}",
+      ],
+    },
   },
 };
 

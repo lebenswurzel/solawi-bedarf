@@ -14,16 +14,8 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-export const http = {
-  ok: 200,
-  created: 201,
-  no_content: 204,
-  bad_request: 400,
-  unauthorized: 401,
-  forbidden: 403,
-  not_found: 404,
-  method_not_allowed: 405,
-  conflict: 409,
-  unprocessable_entity: 422,
-  internal_server_error: 500,
-};
+import { OrganizationInfo } from "@lebenswurzel/solawi-bedarf-shared/src/types";
+
+export interface TextContentRepo {
+  getOrganizationInfo(): Promise<OrganizationInfo>;
+}

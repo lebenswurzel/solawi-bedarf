@@ -17,6 +17,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { parseISO } from "date-fns";
 import {
   GetUserResponse,
+  PasswordResetRequest,
+  RequestPasswordResetRequest,
   SaveUserRequest,
   UpdateUserRequest,
   UserWithOrders,
@@ -83,6 +85,32 @@ export const updateUser = async (user: UpdateUserRequest) => {
   const response = await fetch(getUrl("/user"), {
     method: "PUT",
     body: JSON.stringify(user),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  await verifyResponse(response);
+};
+
+export const requestPasswordReset = async (
+  req: RequestPasswordResetRequest,
+) => {
+  const response = await fetch(getUrl("/user/requestPasswordReset"), {
+    method: "POST",
+    body: JSON.stringify(req),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  await verifyResponse(response);
+};
+
+export const resetPassword = async (req: PasswordResetRequest) => {
+  const response = await fetch(getUrl("/user/passwordReset"), {
+    method: "POST",
+    body: JSON.stringify(req),
     headers: {
       "Content-Type": "application/json",
     },

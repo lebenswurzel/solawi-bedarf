@@ -21,9 +21,7 @@ import {
 } from "@lebenswurzel/solawi-bedarf-shared/src/config";
 import { getOrganizationInfoValueByKey } from "@lebenswurzel/solawi-bedarf-shared/src/text/textContent";
 
-export class OrganizationInfoTextContent1738274522237
-  implements MigrationInterface
-{
+export class OrganizationInfoTextContent1738274522237 implements MigrationInterface {
   name = "OrganizationInfoTextContent1738274522237";
 
   public async up(queryRunner: QueryRunner): Promise<void> {

@@ -26,6 +26,19 @@ import AdminApplicantView from "./views/AdminApplicantView.vue";
 import AdminDepotView from "./views/AdminDepotView.vue";
 import FAQView from "./views/FAQView.vue";
 import AdminTextView from "./views/AdminTextView.vue";
+import ResetPasswordView from "./views/ResetPasswordView.vue";
+import RequestPasswordResetView from "./views/RequestPasswordResetView.vue";
+
+/**
+ * Routes that don't require a login and redirect to the login page if the user is not logged in
+ */
+export const nonLoginRedirectRoutes = [
+  "/register",
+  "/resetpassword",
+  "/requestpassword",
+  "/login",
+  "/faq",
+];
 
 const routes = [
   { path: "/register", component: RegisterView },
@@ -53,6 +66,8 @@ const routes = [
     path: "/adminstatus",
     component: () => import("./views/AdminStatusView.vue"),
   },
+  { path: "/requestpassword", component: RequestPasswordResetView },
+  { path: "/resetpassword", component: ResetPasswordView },
   { path: "/login", component: LoginView },
   { path: "/", component: HomeView },
 ];

@@ -44,11 +44,12 @@ import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang";
 export const initDb = async () => {
   const userCount = await AppDataSource.getRepository(User).count();
   if (userCount == 0 && !config.ldap.enabled) {
-    const user = new User();
-    user.name = config.server.initialUsername;
-    user.hash = await hashPassword(config.server.initialPassword);
-    user.role = UserRole.ADMIN;
-    user.active = true;
+    const user = new User(
+      config.server.initialUsername,
+      await hashPassword(config.server.initialPassword),
+      UserRole.ADMIN,
+      true,
+    );
     await AppDataSource.getRepository(User).save(user);
   }
   const configCount =
