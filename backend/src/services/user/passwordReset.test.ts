@@ -107,7 +107,9 @@ class FakedDependencies implements EmailService, TextContentRepo, UserRepo {
 }
 
 function extractTokenFromHtml(email: SendEmailRequest): string | null {
-  let m = email.paragraphs.join("\n\n").match(/token=([a-zA-Z0-9]+)/);
+  const emailContent = email.html ?? email.paragraphs?.join("\n\n");
+  const m = emailContent.match(/token=([a-zA-Z0-9]+)/);
+
   return m ? m[1] : null;
 }
 
