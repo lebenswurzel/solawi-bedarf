@@ -99,15 +99,16 @@ export class PasswordResetService {
       sender: config.email.sender,
       receiver: userEmail.value,
       subject: text.subject,
-      paragraphs: interpolate(
-        text.body.join("\n\n"),
+      html: interpolate(
+        text.body.join("</p><p>"),
         {
           userName,
+          appUrl: organizationInfo.appUrl,
           solawiName: organizationInfo.address.name,
           passwordResetLink: `${organizationInfo.appUrl}/#/resetpassword?token=${reset.token}`, // TODO: url build service interface
         },
         false,
-      ).split("\n\n"),
+      ),
     });
 
     return ok();

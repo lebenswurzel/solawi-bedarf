@@ -622,9 +622,11 @@ export const language = {
       body: [
         "Liebe(r) {userName},",
 
-        "du möchest dein Passwort zurücksetzen?",
+        "auf {appUrl} wurde eine Anfrage zum Zurücksetzen deines Passworts eingereicht.",
 
-        "<a href='{passwordResetLink}'>Dann klicke bitte auf diesen Link.</a>",
+        "<a href='{passwordResetLink}'>Klicke bitte auf diesen Link</a>, um ein neues Passwort zu vergeben.",
+
+        "Falls die Anfrage nicht von Dir stammt, dann kannst du diese Nachricht ignorieren.",
 
         "Viele Grüße",
 
