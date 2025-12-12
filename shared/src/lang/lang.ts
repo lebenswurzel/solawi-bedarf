@@ -264,7 +264,7 @@ export const language = {
             "Ich habe zur Kenntnis genommen, dass es für eine gut funktionierende Solawi essentiell ist, die mit meiner Mitgliedschaft verbundenen Mitarbeitsstunden zu erfüllen und dies zu dokumentieren. Die Bedingungen der Beteiligung und Konsequenzen bei fehlender Beteiligung und Dokumentation sind mir bewusst.",
         },
         confirmPaymentMethod: {
-          title: "Bestätigung der Zahlungsmethode (nur zuteffendes auswählen):",
+          title: "Bitte wähle eine Zahlungsmethode:",
         },
         confirmSepaUpdate: {
           title: "Bestätigung der SEPA-Lastschrift",
@@ -295,6 +295,7 @@ export const language = {
         action: {
           faq: "Informationen & Grundlagen",
         },
+        missingFields: "Bitte fülle alle erforderlichen Felder aus.",
       },
       messages: {
         newOfferLowerThanPreviousOffer:

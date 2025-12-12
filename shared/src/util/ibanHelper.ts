@@ -46,24 +46,35 @@ export const validatePayment = (
   payment: OrderPayment
 ): {
   valid: boolean;
-  error?: string;
+  errors: {
+    paymentType?: string;
+    accountHolder?: string;
+    iban?: string;
+    bankName?: string;
+  };
 } => {
+  const errors: {
+    paymentType?: string;
+    accountHolder?: string;
+    iban?: string;
+    bankName?: string;
+  } = {};
   if (payment.paymentType === OrderPaymentType.SEPA) {
+    if (!payment.bankDetails.accountHolder) {
+      errors.accountHolder = "Bitte Kontoinhaber angeben";
+    }
     const result = validateIBAN(getCleanIban(payment.bankDetails.iban));
-    return {
-      valid: result.valid,
-      error: !result.valid
-        ? getFirstErrorMessage(result.errorCodes)
-        : undefined,
-    };
-  } else if (payment.paymentType === OrderPaymentType.BANK_TRANSFER) {
-    return {
-      valid: true,
-      error: undefined,
-    };
+    if (!result.valid) {
+      errors.iban = getFirstErrorMessage(result.errorCodes);
+    }
+    if (!payment.bankDetails.bankName) {
+      errors.bankName = "Bitte Kreditinstitut angeben";
+    }
+  } else if (payment.paymentType === OrderPaymentType.UNCONFIRMED) {
+    errors.paymentType = "Keine Zahlungsmethode ausgewählt";
   }
   return {
-    valid: false,
-    error: "Keine Zahlungsmethode ausgewählt",
+    valid: Object.keys(errors).length === 0,
+    errors,
   };
 };
