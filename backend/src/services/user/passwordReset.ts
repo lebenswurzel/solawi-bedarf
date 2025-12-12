@@ -104,7 +104,7 @@ export class PasswordResetService {
         {
           userName,
           solawiName: organizationInfo.address.name,
-          passwordResetLink: `${organizationInfo.appUrl}/passwordReset?token=${reset.token}`, // TODO: url build service interface
+          passwordResetLink: `${organizationInfo.appUrl}/#/resetpassword?token=${reset.token}`, // TODO: url build service interface
         },
         false,
       ).split("\n\n"),

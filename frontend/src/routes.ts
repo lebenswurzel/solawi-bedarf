@@ -29,6 +29,17 @@ import AdminTextView from "./views/AdminTextView.vue";
 import ResetPasswordView from "./views/ResetPasswordView.vue";
 import RequestPasswordResetView from "./views/RequestPasswordResetView.vue";
 
+/**
+ * Routes that don't require a login and redirect to the login page if the user is not logged in
+ */
+export const nonLoginRedirectRoutes = [
+  "/register",
+  "/resetpassword",
+  "/requestpassword",
+  "/login",
+  "/faq",
+];
+
 const routes = [
   { path: "/register", component: RegisterView },
   { path: "/shop/:userId?", component: ShopView },

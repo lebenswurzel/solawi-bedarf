@@ -28,6 +28,7 @@ import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import { useTheme } from "vuetify";
 import SeasonSelector from "./SeasonSelector.vue";
 import { useUiFeedback } from "../store/uiFeedbackStore.ts";
+import { nonLoginRedirectRoutes } from "../routes.ts";
 
 const drawer = ref(false);
 
@@ -47,7 +48,11 @@ onMounted(async () => {
   if (window.innerWidth >= 1280) {
     drawer.value = true;
   }
-  if (window.location.hash != "#/register") {
+  if (
+    !nonLoginRedirectRoutes.some((route) =>
+      window.location.hash.startsWith("#" + route),
+    )
+  ) {
     await userStore.init();
   }
 });
