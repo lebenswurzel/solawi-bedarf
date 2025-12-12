@@ -116,16 +116,18 @@ function extractTokenFromHtml(email: SendEmailRequest): string | null {
 function mockSendEmail(
   dependencies: FakedDependencies,
 ): [MockInstance, { value: string }] {
-  let tokenStore = { value: undefined };
-  let mock = vi.spyOn(dependencies, "sendEmail").mockImplementation((email) => {
-    tokenStore.value = extractTokenFromHtml(email);
-    return undefined;
-  });
+  const tokenStore = { value: undefined };
+  const mock = vi
+    .spyOn(dependencies, "sendEmail")
+    .mockImplementation((email) => {
+      tokenStore.value = extractTokenFromHtml(email);
+      return undefined;
+    });
   return [mock, tokenStore];
 }
 
 function newPasswordResetService(dependencies: Dependencies) {
-  let service = new PasswordResetService(dependencies);
+  const service = new PasswordResetService(dependencies);
   service.randomSleepTime = [0, 0];
   return service;
 }
@@ -133,10 +135,10 @@ function newPasswordResetService(dependencies: Dependencies) {
 describe("password reset request", () => {
   test("should send e-mail", async () => {
     // ARRANGE
-    let dependencies = new FakedDependencies();
-    let [sendEmailMock, tokenStore] = mockSendEmail(dependencies);
+    const dependencies = new FakedDependencies();
+    const [sendEmailMock, tokenStore] = mockSendEmail(dependencies);
 
-    let service = newPasswordResetService(dependencies);
+    const service = newPasswordResetService(dependencies);
 
     // ACT
     const startResult = await service.requestPasswordReset(USERNAME);
@@ -151,12 +153,12 @@ describe("password reset request", () => {
 
   test("should not return error on invalid user name to protect against user enumeration", async () => {
     // ARRANGE
-    let dependencies = new FakedDependencies();
+    const dependencies = new FakedDependencies();
 
-    let service = newPasswordResetService(dependencies);
+    const service = newPasswordResetService(dependencies);
 
     // ACT
-    let result = await service.requestPasswordReset("OTHER USER");
+    const result = await service.requestPasswordReset("OTHER USER");
 
     // ASSERT
     expect(result).toEqual(ok());
@@ -164,13 +166,13 @@ describe("password reset request", () => {
 
   test("should not return error on missing email to protect against user enumeration", async () => {
     // ARRANGE
-    let dependencies = new FakedDependencies();
+    const dependencies = new FakedDependencies();
     dependencies.removeUserEmailAddress();
 
-    let service = newPasswordResetService(dependencies);
+    const service = newPasswordResetService(dependencies);
 
     // ACT
-    let result = await service.requestPasswordReset(USERNAME);
+    const result = await service.requestPasswordReset(USERNAME);
 
     // ASSERT
     expect(result).toEqual(ok());
@@ -178,10 +180,10 @@ describe("password reset request", () => {
 
   test("should not send e-mail on invalid user name", async () => {
     // ARRANGE
-    let dependencies = new FakedDependencies();
-    let [sendEmailMock, _] = mockSendEmail(dependencies);
+    const dependencies = new FakedDependencies();
+    const [sendEmailMock, _] = mockSendEmail(dependencies);
 
-    let service = newPasswordResetService(dependencies);
+    const service = newPasswordResetService(dependencies);
 
     // ACT
     await service.requestPasswordReset("OTHER USER");
@@ -194,11 +196,11 @@ describe("password reset request", () => {
 describe("checking token", () => {
   test("should succeed on valid token", async () => {
     // ARRANGE
-    let dependencies = new FakedDependencies();
+    const dependencies = new FakedDependencies();
 
-    let reset = dependencies.user.createPasswordReset();
+    const reset = dependencies.user.createPasswordReset();
 
-    let service = newPasswordResetService(dependencies);
+    const service = newPasswordResetService(dependencies);
 
     // ACT
     const checkResult = await service.checkPasswordResetToken(
@@ -212,9 +214,9 @@ describe("checking token", () => {
 
   test("should fail on invalid token", async () => {
     // ARRANGE
-    let dependencies = new FakedDependencies();
+    const dependencies = new FakedDependencies();
 
-    let service = newPasswordResetService(dependencies);
+    const service = newPasswordResetService(dependencies);
 
     // ACT
     const checkResult = await service.checkPasswordResetToken(
@@ -230,11 +232,11 @@ describe("checking token", () => {
 describe("password reset", () => {
   test("should reset password", async () => {
     // ARRANGE
-    let dependencies = new FakedDependencies();
+    const dependencies = new FakedDependencies();
 
-    let reset = dependencies.user.createPasswordReset();
+    const reset = dependencies.user.createPasswordReset();
 
-    let service = newPasswordResetService(dependencies);
+    const service = newPasswordResetService(dependencies);
 
     // ACT
     const endResult = await service.resetPassword(reset.token, PASSWORD);
@@ -246,11 +248,11 @@ describe("password reset", () => {
 
   test("should reject invalid token", async () => {
     // ARRANGE
-    let dependencies = new FakedDependencies();
+    const dependencies = new FakedDependencies();
 
     dependencies.user.createPasswordReset();
 
-    let service = newPasswordResetService(dependencies);
+    const service = newPasswordResetService(dependencies);
 
     // ACT
     const endResult = await service.resetPassword("WRONG", PASSWORD);
@@ -264,11 +266,11 @@ describe("password reset", () => {
 
   test("should send e-mail", async () => {
     // ARRANGE
-    let dependencies = new FakedDependencies();
-    let reset = dependencies.user.createPasswordReset();
-    let [sendEmailMock, _] = mockSendEmail(dependencies);
+    const dependencies = new FakedDependencies();
+    const reset = dependencies.user.createPasswordReset();
+    const [sendEmailMock, _] = mockSendEmail(dependencies);
 
-    let service = newPasswordResetService(dependencies);
+    const service = newPasswordResetService(dependencies);
 
     // ACT
     const endResult = await service.resetPassword(reset.token, PASSWORD);
@@ -280,15 +282,15 @@ describe("password reset", () => {
 
   test("should reset all existing sessions", async () => {
     // ARRANGE
-    let dependencies = new FakedDependencies();
+    const dependencies = new FakedDependencies();
 
-    let reset = dependencies.user.createPasswordReset();
-    let token = new Token();
+    const reset = dependencies.user.createPasswordReset();
+    const token = new Token();
     token.exp = new Date(Date.now() + 24 * 60 * 60 * 1000);
     token.active = true;
     dependencies.user.token = [token];
 
-    let service = newPasswordResetService(dependencies);
+    const service = newPasswordResetService(dependencies);
 
     // ACT
     const endResult = await service.resetPassword(reset.token, PASSWORD);
@@ -300,11 +302,11 @@ describe("password reset", () => {
 
   test("should only work once", async () => {
     // ARRANGE
-    let dependencies = new FakedDependencies();
+    const dependencies = new FakedDependencies();
 
-    let reset = dependencies.user.createPasswordReset();
+    const reset = dependencies.user.createPasswordReset();
 
-    let service = newPasswordResetService(dependencies);
+    const service = newPasswordResetService(dependencies);
 
     // ACT
     const endResult1 = await service.resetPassword(reset.token, PASSWORD);
@@ -339,11 +341,11 @@ describe("password reset workflow", () => {
   test("should reset password", async () => {
     // ARRANGE
     const emailService = new FakeEmailService();
-    let dependencies = setUpDeps(emailService);
+    const dependencies = setUpDeps(emailService);
 
-    let service = newPasswordResetService(dependencies);
+    const service = newPasswordResetService(dependencies);
 
-    let user = new User(
+    const user = new User(
       USERNAME,
       await hashPassword(PASSWORD),
       UserRole.USER,
