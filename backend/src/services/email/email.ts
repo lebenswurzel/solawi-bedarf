@@ -99,6 +99,13 @@ export const sendEmail = async ({
       // headers: { "x-myheader": "test header" },
     });
     console.log("sendEmail", info);
+  } else {
+    console.log(
+      "Email sending is disabled! Attempt to send email to",
+      receiver,
+      "subject:",
+      subject,
+    );
   }
 };
 

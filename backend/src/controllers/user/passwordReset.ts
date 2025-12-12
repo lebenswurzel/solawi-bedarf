@@ -16,7 +16,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { KoaAppContext } from "../ctx";
 import { PasswordResetService } from "../../services/user/passwordReset";
-import { getStringQueryParameter } from "../../util/requestUtil";
 import { handleError, handleResult } from "../error";
 import {
   PasswordResetRequest,
@@ -30,7 +29,7 @@ export async function passwordResetRequest(ctx: KoaAppContext) {
     return handleError(ctx, SolawiError.invalidInput("username empty"));
   }
 
-  let service = new PasswordResetService(ctx.deps);
+  const service = new PasswordResetService(ctx.deps);
   return handleResult(
     ctx,
     await service.requestPasswordReset(request.username),
@@ -46,7 +45,7 @@ export async function passwordReset(ctx: KoaAppContext) {
     return handleError(ctx, SolawiError.invalidInput("password empty"));
   }
 
-  let service = new PasswordResetService(ctx.deps);
+  const service = new PasswordResetService(ctx.deps);
   return handleResult(
     ctx,
     await service.resetPassword(request.token, request.password),
