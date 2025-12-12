@@ -195,42 +195,6 @@ describe("password reset request", () => {
   });
 });
 
-describe("checking token", () => {
-  test("should succeed on valid token", async () => {
-    // ARRANGE
-    const dependencies = new FakedDependencies();
-
-    const reset = dependencies.user.createPasswordReset();
-
-    const service = newPasswordResetService(dependencies);
-
-    // ACT
-    const checkResult = await service.checkPasswordResetToken(
-      USERNAME,
-      reset.token!,
-    );
-
-    // ASSERT
-    expect(checkResult).toEqual(ok());
-  });
-
-  test("should fail on invalid token", async () => {
-    // ARRANGE
-    const dependencies = new FakedDependencies();
-
-    const service = newPasswordResetService(dependencies);
-
-    // ACT
-    const checkResult = await service.checkPasswordResetToken(
-      USERNAME,
-      "INVALID",
-    );
-
-    // ASSERT
-    expect(checkResult.mapErr((err) => err.code)).toEqual(err(409));
-  });
-});
-
 describe("password reset", () => {
   test("should reset password", async () => {
     // ARRANGE

@@ -618,7 +618,7 @@ export const language = {
       contributionKindBulletPoint: "* Art der Mitarbeit: {contributionKind}\n",
     },
     passwordResetRequest: {
-      subject: "Passwort zurücksetzen",
+      subject: "Anfrage Passwort zurücksetzen",
       body: [
         "Liebe(r) {userName},",
 
@@ -634,7 +634,7 @@ export const language = {
       ],
     },
     passwordReset: {
-      subject: "Passwort zurückgesetzt",
+      subject: "Das Passwort wurde zurückgesetzt",
       body: [
         "Liebe(r) {userName},",
 
