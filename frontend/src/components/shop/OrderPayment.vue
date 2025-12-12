@@ -47,6 +47,24 @@ const emit = defineEmits<{
 
 const t = language.pages.shop.dialog;
 
+const updatePayment = (updates: {
+  paymentType?: OrderPaymentType;
+  amount?: number;
+  bankDetails?: Partial<OrderPayment["bankDetails"]>;
+}) => {
+  const updatedPayment: OrderPayment = {
+    ...props.payment,
+    ...updates,
+    bankDetails: updates.bankDetails
+      ? {
+          ...props.payment.bankDetails,
+          ...updates.bankDetails,
+        }
+      : props.payment.bankDetails,
+  };
+  emit("update:payment", updatedPayment);
+};
+
 const sepaLabel = computed(() => {
   return getSepaUpdateMessage(
     props.modificationOrder?.validFrom ?? new Date(),
@@ -59,14 +77,12 @@ const sepaLabel = computed(() => {
 
 const onSepaUpdate = (checked: boolean | null) => {
   if (checked) {
-    emit("update:payment", {
-      ...props.payment,
+    updatePayment({
       amount: props.offer,
       paymentType: OrderPaymentType.SEPA,
     });
   } else if (props.payment.paymentType === OrderPaymentType.SEPA) {
-    emit("update:payment", {
-      ...props.payment,
+    updatePayment({
       paymentType: OrderPaymentType.UNCONFIRMED,
     });
   }
@@ -74,14 +90,12 @@ const onSepaUpdate = (checked: boolean | null) => {
 
 const onBankTransfer = (checked: boolean | null) => {
   if (checked) {
-    emit("update:payment", {
-      ...props.payment,
+    updatePayment({
       amount: props.bankTransferMessage.amount,
       paymentType: OrderPaymentType.BANK_TRANSFER,
     });
   } else if (props.payment.paymentType === OrderPaymentType.BANK_TRANSFER) {
-    emit("update:payment", {
-      ...props.payment,
+    updatePayment({
       paymentType: OrderPaymentType.UNCONFIRMED,
     });
   }
@@ -106,33 +120,35 @@ const ibanError = computed(() => {
 });
 
 const onAccountHolderUpdate = (value: string) => {
-  emit("update:payment", {
-    ...props.payment,
+  updatePayment({
     bankDetails: {
-      ...props.payment.bankDetails,
       accountHolder: value,
     },
   });
 };
 
 const onIbanUpdate = (value: string) => {
-  emit("update:payment", {
-    ...props.payment,
+  updatePayment({
     bankDetails: {
-      ...props.payment.bankDetails,
       iban: value,
     },
   });
 };
 
 const onBankNameUpdate = (value: string) => {
-  emit("update:payment", {
-    ...props.payment,
+  updatePayment({
     bankDetails: {
-      ...props.payment.bankDetails,
       bankName: value,
     },
   });
+};
+
+const validateAccountHolder = (value: string) => {
+  return value.length > 0 ? true : "Bitte Kontoinhaber angeben";
+};
+
+const validateBankName = (value: string) => {
+  return value.length > 0 ? true : "Bitte Kreditinstitut angeben";
 };
 </script>
 
@@ -154,6 +170,7 @@ const onBankNameUpdate = (value: string) => {
         label="Kontoinhaber"
         variant="outlined"
         density="compact"
+        :rules="[validateAccountHolder]"
         class="mb-2"
       />
       <v-text-field
@@ -171,6 +188,7 @@ const onBankNameUpdate = (value: string) => {
         label="Kreditinstitut"
         variant="outlined"
         density="compact"
+        :rules="[validateBankName]"
       />
     </div>
     <div v-if="enableConfirmBankTransfer">
