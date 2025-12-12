@@ -294,6 +294,7 @@ export const getBankTransferMessage = (
 ): {
   message: string;
   accountDetails: string;
+  amount: number;
 } => {
   const { startMonth, count } = getOrderValidMonths(
     orderValidFrom,
@@ -302,9 +303,10 @@ export const getBankTransferMessage = (
     requisitionConfigValidTo,
     timezone
   );
+  const amount = (offer - previousOffer) * count;
   return {
     message: interpolate(language.pages.shop.dialog.confirmBankTransfer.label, {
-      difference: ((offer - previousOffer) * count).toString(),
+      difference: amount.toString(),
       date: format(
         new Date(startMonth.getFullYear(), startMonth.getMonth(), 14),
         "dd.MM.yyyy"
@@ -316,6 +318,7 @@ export const getBankTransferMessage = (
       interpolate(language.pages.shop.dialog.confirmBankTransfer.reference, {
         userName,
       }),
+    amount,
   };
 };
 

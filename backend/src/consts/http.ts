@@ -23,5 +23,7 @@ export const http = {
   forbidden: 403,
   not_found: 404,
   method_not_allowed: 405,
+  conflict: 409,
+  unprocessable_entity: 422,
   internal_server_error: 500,
 };

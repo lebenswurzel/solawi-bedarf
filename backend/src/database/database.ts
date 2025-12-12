@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import "reflect-metadata";
-import { DataSource, DataSourceOptions } from "typeorm";
+import { DataSource } from "typeorm";
 import { User } from "./User";
 import { config } from "../config";
 import { Token } from "./Token";
@@ -57,11 +57,14 @@ import { PageElementTexts1758569141622 } from "../migrations/1758569141622-page-
 import { OrderNonNullValidRange1758647660837 } from "../migrations/1758647660837-order-non-null-valid-range";
 import { UserDeletedFlag1762292718642 } from "../migrations/1762292718642-user-deleted-flag";
 import { DropOrderProductConfiguration1764020937539 } from "../migrations/1764020937539-drop-order-product-configuration";
+import { PasswordReset } from "./PasswordReset";
+import { PasswortReset1765491964000 } from "../migrations/1765491964000-passwort-reset";
 
 const entities = [
   User,
   Order,
   Token,
+  PasswordReset,
   Product,
   ProductCategory,
   Depot,
@@ -105,6 +108,7 @@ const migrations = [
   OrderNonNullValidRange1758647660837,
   UserDeletedFlag1762292718642,
   DropOrderProductConfiguration1764020937539,
+  PasswortReset1765491964000,
 ];
 
 const configuredPort = config.testing.isTesting

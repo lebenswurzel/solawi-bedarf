@@ -32,15 +32,17 @@ import {
   getBankTransferMessage,
   getSepaUpdateMessage,
 } from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition";
-import { TextContentCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
-import { TextContent } from "../../database/TextContent";
 import {
-  makeFlatOrganizationInfo,
-  makeOrganizationInfo,
-} from "@lebenswurzel/solawi-bedarf-shared/src/text/textContent";
-import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang";
+  OrderPaymentType,
+  TextContentCategory,
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import { TextContent } from "../../database/TextContent";
+import { makeFlatOrganizationInfo } from "@lebenswurzel/solawi-bedarf-shared/src/text/textContent";
 import { FindOptionsWhere } from "typeorm";
-import { Msrp } from "@lebenswurzel/solawi-bedarf-shared/src/types";
+import {
+  Msrp,
+  OrderPayment,
+} from "@lebenswurzel/solawi-bedarf-shared/src/types";
 
 interface SendOrderConfirmationMailParams {
   order: Order;
@@ -49,8 +51,7 @@ interface SendOrderConfirmationMailParams {
   changingUserId: number;
   requisitionConfig: RequisitionConfig;
   sendConfirmationEmailToUser: boolean;
-  confirmSepaUpdate: boolean;
-  confirmBankTransfer: boolean;
+  orderPayment: OrderPayment;
   effectiveMsrp: Msrp;
 }
 
@@ -61,8 +62,7 @@ export const sendOrderConfirmationMail = async ({
   changingUserId,
   requisitionConfig,
   sendConfirmationEmailToUser,
-  confirmSepaUpdate,
-  confirmBankTransfer,
+  orderPayment,
   effectiveMsrp,
 }: SendOrderConfirmationMailParams): Promise<void> => {
   // Only send email if confirmation is requested or BCC receiver is configured
@@ -110,7 +110,7 @@ export const sendOrderConfirmationMail = async ({
   const currentDate = toZonedTime(new Date(), config.timezone);
 
   let paymentMessage: string = "Keine Angabe";
-  if (confirmSepaUpdate) {
+  if (orderPayment.paymentType === OrderPaymentType.SEPA) {
     paymentMessage = getSepaUpdateMessage(
       order.validFrom ?? new Date(),
       order.validTo ?? new Date(),
@@ -118,7 +118,7 @@ export const sendOrderConfirmationMail = async ({
       previousOrder?.offer ?? 0,
       organizationInfoFlat,
     );
-  } else if (confirmBankTransfer) {
+  } else if (orderPayment.paymentType === OrderPaymentType.BANK_TRANSFER) {
     const bankTransferMessage = getBankTransferMessage(
       order.validFrom ?? new Date(),
       order.validTo ?? new Date(),

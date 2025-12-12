@@ -36,12 +36,13 @@
     "vue": "^3.4.21",
     "vue-leaflet": "^0.1.0",
     "vue-router": "^4.6.3",
-    "vue-tsc": "^3.1.2",
     "vuetify": "^3.10.11"
   },
   "devDependencies": {
+    "vue-tsc": "^3.1.2",
     "@types/papaparse": "^5.5.0",
     "@vitejs/plugin-vue": "^6.0.2",
+    "entities": "^7.0.0",
     "eslint": "^9.3.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-vue": "^10.5.1",
