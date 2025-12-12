@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { router } from "../routes.ts";
+import { nonLoginRedirectRoutes, router } from "../routes.ts";
 
 const host = "api";
 
@@ -27,8 +27,11 @@ export const verifyResponse = async (
   if (
     redirectToLogin &&
     response.status == 401 &&
-    router.currentRoute.value.path != "/login"
+    !nonLoginRedirectRoutes.some((route: string) =>
+      router.currentRoute.value.path.startsWith(route),
+    )
   ) {
+    // redirect to login page for urls that require a login
     await router.push({
       path: "/login",
       query: { redirect: router.currentRoute.value.path },
