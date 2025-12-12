@@ -252,8 +252,7 @@ export const saveOrder = async (
     changingUserId: id,
     requisitionConfig,
     sendConfirmationEmailToUser,
-    confirmSepaUpdate: body.confirmSepaUpdate,
-    confirmBankTransfer: body.confirmBankTransfer,
+    orderPayment: body.payment,
     effectiveMsrp,
   });
 

@@ -90,3 +90,9 @@ export enum ShipmentType {
   DRAFT = "DRAFT",
   FORECAST = "FORECAST",
 }
+
+export enum OrderPaymentType {
+  SEPA = "SEPA",
+  BANK_TRANSFER = "BANK_TRANSFER",
+  UNCONFIRMED = "UNCONFIRMED",
+}
