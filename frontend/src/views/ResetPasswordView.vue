@@ -20,6 +20,7 @@ import { useRoute } from "vue-router";
 import { resetPassword } from "../requests/user.ts";
 import { useTextContentStore } from "../store/textContentStore.js";
 import { storeToRefs } from "pinia";
+import InfoCard from "../components/status/InfoCard.vue";
 
 const route = useRoute();
 
@@ -108,37 +109,20 @@ const submit = async () => {
     </v-card>
 
     <div v-else>
-      <div style="max-width: 400px" class="mx-auto">
-        <v-card class="ma-2" v-if="success">
-          <v-card-title class="text-center">
-            Passwort erfolgreich geändert
-          </v-card-title>
-          <v-card-item class="justify-center">
-            <v-icon color="success" icon="mdi-check-bold" size="x-large" />
-          </v-card-item>
-          <v-card-text class="text-center">
-            Du kannst Dich jetzt mit deinem neuen Passwort
-            <router-link to="/login">anmelden</router-link>.
-          </v-card-text>
-        </v-card>
-        <v-card class="ma-2" v-else>
-          <v-card-title class="text-center">
-            Ups, da ist etwas schief gegangen!
-          </v-card-title>
-          <v-card-item class="justify-center">
-            <v-icon
-              color="error"
-              icon="mdi-alert-circle-outline"
-              size="x-large"
-            />
-          </v-card-item>
-          <v-card-text class="text-center">
-            Bitte versuche es später erneut. Wenn dieser Fehler wiederholt
-            auftritt, wende dich bitte an
-            {{ organizationInfo.address.email }}. Danke für dein Verständnis.
-          </v-card-text>
-        </v-card>
-      </div>
+      <InfoCard
+        v-if="success"
+        type="success"
+        title="Passwort erfolgreich geändert"
+        linkTo="/login"
+        linkText="anmelden"
+      >
+        Du kannst Dich jetzt mit deinem neuen Passwort
+      </InfoCard>
+      <InfoCard v-else type="error" linkTo="/">
+        Bitte versuche es später erneut. Wenn dieser Fehler wiederholt auftritt,
+        wende dich bitte an {{ organizationInfo.address.email }}. Danke für dein
+        Verständnis.
+      </InfoCard>
     </div>
   </div>
 </template>

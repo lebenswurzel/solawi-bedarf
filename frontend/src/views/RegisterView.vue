@@ -33,6 +33,7 @@ import {
 import { Address } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { useTextContentStore } from "../store/textContentStore.js";
 import { storeToRefs } from "pinia";
+import InfoCard from "../components/status/InfoCard.vue";
 
 const textContentStore = useTextContentStore();
 const { organizationInfo } = storeToRefs(textContentStore);
@@ -191,39 +192,17 @@ const click = async () => {
       </v-card-actions>
     </v-form>
   </v-card>
-  <div style="display: flex; justify-content: center" v-else>
-    <div style="max-width: 400px">
-      <v-card class="ma-2" v-if="success">
-        <v-card-title class="text-center">
-          Registrierung erfolgreich
-        </v-card-title>
-        <v-card-item class="justify-center">
-          <v-icon color="success" icon="mdi-check-bold" size="x-large" />
-        </v-card-item>
-        <v-card-text class="text-center">
-          Vielen Dank, dass Du Dich registriert hast. Du erhältst in Kürze eine
-          E-Mail mit Deinem Anmeldenamen. Für die Anmeldung brauchst Du außerdem
-          das soeben festgelegte Passwort. Bitte nicht vergessen! Du kannst das
-          Browser-Fenster jetzt schließen.
-        </v-card-text>
-      </v-card>
-      <v-card class="ma-2" v-else>
-        <v-card-title class="text-center">
-          Upps, da ist etwas schief gegangen!
-        </v-card-title>
-        <v-card-item class="justify-center">
-          <v-icon
-            color="error"
-            icon="mdi-alert-circle-outline"
-            size="x-large"
-          />
-        </v-card-item>
-        <v-card-text class="text-center">
-          Bitte registriere Dich noch einmal zu einem späteren Zeitpunkt. Wenn
-          dieser Fehler wiederholt auftritt, wende Dich bitte an
-          {{ organizationInfo.address.email }}. Danke für Dein Verständnis.
-        </v-card-text>
-      </v-card>
-    </div>
+  <div v-else>
+    <InfoCard v-if="success" type="success" title="Registrierung erfolgreich">
+      Vielen Dank, dass Du Dich registriert hast. Du erhältst in Kürze eine
+      E-Mail mit Deinem Anmeldenamen. Für die Anmeldung brauchst Du außerdem das
+      soeben festgelegte Passwort. Bitte nicht vergessen! Du kannst das
+      Browser-Fenster jetzt schließen.
+    </InfoCard>
+    <InfoCard v-else type="error" linkTo="/">
+      Bitte registriere Dich noch einmal zu einem späteren Zeitpunkt. Wenn
+      dieser Fehler wiederholt auftritt, wende Dich bitte an
+      {{ organizationInfo.address.email }}. Danke für Dein Verständnis.
+    </InfoCard>
   </div>
 </template>
