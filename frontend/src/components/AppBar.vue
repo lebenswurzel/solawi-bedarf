@@ -29,6 +29,7 @@ import { useTheme } from "vuetify";
 import SeasonSelector from "./SeasonSelector.vue";
 import { useUiFeedback } from "../store/uiFeedbackStore.ts";
 import { nonLoginRedirectRoutes } from "../routes.ts";
+import { useTextContentStore } from "../store/textContentStore.ts";
 
 const drawer = ref(false);
 
@@ -38,11 +39,13 @@ const configStore = useConfigStore();
 const productStore = useProductStore();
 const orderStore = useOrderStore();
 const uiFeedbackStore = useUiFeedback();
+const textContentStore = useTextContentStore();
 
 const { currentUser, isLoggedIn, isSessionExpired } = storeToRefs(userStore);
 const theme = useTheme();
 const { config, seasonColorClass } = storeToRefs(configStore);
 const { busy } = storeToRefs(uiFeedbackStore);
+const { organizationInfo } = storeToRefs(textContentStore);
 
 onMounted(async () => {
   if (window.innerWidth >= 1280) {
@@ -163,7 +166,9 @@ const adminNavEntries: NavEntry[] = [
     </template>
 
     <v-toolbar-title class="d-inline-flex">
-      <div>{{ language.app.title }}</div>
+      <a :href="organizationInfo.appUrl" class="title-link">
+        {{ language.app.title }}
+      </a>
       <div
         style="
           color: #797779;
@@ -275,6 +280,19 @@ const adminNavEntries: NavEntry[] = [
 <style>
 .v-list-item__prepend > .v-icon ~ .v-list-item__spacer {
   width: 8px;
+}
+
+.title-link {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.title-link:hover,
+.title-link:visited,
+.title-link:active {
+  color: inherit;
+  text-decoration: none;
 }
 
 .busy-indicator {
