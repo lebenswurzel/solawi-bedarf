@@ -14,18 +14,19 @@
   "dependencies": {
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
+    "ibantools": "^4.5.1",
     "jszip": "^3.10.1",
-    "pdf-lib": "^1.17.1",
     "marked": "^17.0.0",
+    "pdf-lib": "^1.17.1",
     "pdfmake": "^0.2.20"
   },
   "devDependencies": {
+    "@types/pdfmake": "^0.2.9",
+    "@vitest/coverage-v8": "^4.0.10",
     "eslint": "^9.20.1",
     "eslint-config-prettier": "^10.1.8",
     "prettier": "^3.6.2",
     "typescript": "^5.2.2",
-    "@vitest/coverage-v8": "^4.0.10",
-    "@types/pdfmake": "^0.2.9",
     "vitest": "^4.0.10"
   }
 }
