@@ -81,18 +81,32 @@ const submit = async () => {
             label="Neues Passwort"
             autocomplete="new-password"
             :rules="passwordRules"
-            :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
-            @click:append-inner="showPassword = !showPassword"
-          />
+          >
+            <template #append-inner>
+              <v-icon
+                :icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
+                @click="showPassword = !showPassword"
+                tabindex="-1"
+                style="cursor: pointer"
+              />
+            </template>
+          </v-text-field>
           <v-text-field
             v-model="passwordRepeat"
             :type="showPasswordRepeat ? 'text' : 'password'"
             label="Passwort wiederholen"
             autocomplete="new-password"
             :rules="repeatRules"
-            :append-inner-icon="showPasswordRepeat ? 'mdi-eye-off' : 'mdi-eye'"
-            @click:append-inner="showPasswordRepeat = !showPasswordRepeat"
-          />
+          >
+            <template #append-inner>
+              <v-icon
+                :icon="showPasswordRepeat ? 'mdi-eye-off' : 'mdi-eye'"
+                @click="showPasswordRepeat = !showPasswordRepeat"
+                tabindex="-1"
+                style="cursor: pointer"
+              />
+            </template>
+          </v-text-field>
         </v-card-text>
         <v-card-actions class="justify-center">
           <v-btn
