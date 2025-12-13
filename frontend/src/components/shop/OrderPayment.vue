@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, watchEffect } from "vue";
 import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
 import { OrderPaymentType } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import {
@@ -34,11 +34,9 @@ import { storeToRefs } from "pinia";
 
 const props = defineProps<{
   payment: OrderPayment;
-  enableConfirmSepaUpdate: boolean;
-  enableConfirmBankTransfer: boolean;
-  modificationOrder?: SavedOrder;
+  modificationOrder: SavedOrder;
+  predecessorOrder?: SavedOrder;
   offer: number;
-  predecessorOffer: number;
   organizationInfoFlat: OrganizationInfoFlat;
   requestUser: UserWithOrders;
 }>();
@@ -53,6 +51,7 @@ const configStore = useConfigStore();
 const { config } = storeToRefs(configStore);
 
 const updatePayment = (updates: {
+  paymentRequired?: boolean;
   paymentType?: OrderPaymentType;
   amount?: number;
   bankDetails?: Partial<OrderPayment["bankDetails"]>;
@@ -60,6 +59,7 @@ const updatePayment = (updates: {
   const updatedPayment: OrderPayment = {
     ...props.payment,
     ...updates,
+    paymentRequired: updates.paymentRequired ?? props.payment.paymentRequired,
     bankDetails: updates.bankDetails
       ? {
           ...props.payment.bankDetails,
@@ -70,27 +70,85 @@ const updatePayment = (updates: {
   emit("update:payment", updatedPayment);
 };
 
+const predecessorOffer = computed((): number => {
+  return props.predecessorOrder?.offer ?? 0;
+});
+
+const monthlyOfferDifference = computed(() => {
+  return props.offer - predecessorOffer.value;
+});
+
+const enableConfirmSepaUpdate = computed((): boolean => {
+  if (props.predecessorOrder) {
+    return monthlyOfferDifference.value >= 10;
+  }
+  return true;
+});
+
+const enableConfirmBankTransfer = computed((): boolean => {
+  if (props.predecessorOrder) {
+    return monthlyOfferDifference.value > 0;
+  }
+  return true;
+});
+
+watchEffect(() => {
+  updatePayment({
+    paymentRequired:
+      enableConfirmSepaUpdate.value || enableConfirmBankTransfer.value,
+  });
+});
+
 const sepaLabel = computed(() => {
   return getSepaUpdateMessage(
-    props.modificationOrder?.validFrom ?? new Date(),
-    props.modificationOrder?.validTo ?? new Date(),
+    props.modificationOrder.validFrom,
+    props.modificationOrder.validTo,
     props.offer,
-    props.predecessorOffer,
+    predecessorOffer.value,
     props.organizationInfoFlat,
   );
 });
 
 const bankTransferMessage = computed(() => {
   return getBankTransferMessage(
-    props.modificationOrder?.validFrom ?? new Date(),
-    props.modificationOrder?.validTo ?? new Date(),
+    props.modificationOrder.validFrom,
+    props.modificationOrder.validTo,
     config.value?.validFrom ?? new Date(),
     config.value?.validTo ?? new Date(),
     props.offer,
-    props.predecessorOffer,
+    predecessorOffer.value,
     props.requestUser.name,
     props.organizationInfoFlat["organization.bankAccount"],
   );
+});
+
+watchEffect(() => {
+  updatePayment({
+    paymentRequired: monthlyOfferDifference.value > 0,
+  });
+});
+
+watchEffect(() => {
+  // make sure to set the payment type to unconfirmed if the condition for
+  // using the payment method is not met
+  if (
+    !enableConfirmSepaUpdate.value &&
+    props.payment.paymentType === OrderPaymentType.SEPA
+  ) {
+    updatePayment({
+      paymentType: OrderPaymentType.UNCONFIRMED,
+      amount: 0,
+    });
+  }
+  if (
+    !enableConfirmBankTransfer.value &&
+    props.payment.paymentType === OrderPaymentType.BANK_TRANSFER
+  ) {
+    updatePayment({
+      paymentType: OrderPaymentType.UNCONFIRMED,
+      amount: 0,
+    });
+  }
 });
 
 const onSepaUpdate = (checked: boolean | null) => {
@@ -102,6 +160,7 @@ const onSepaUpdate = (checked: boolean | null) => {
   } else if (props.payment.paymentType === OrderPaymentType.SEPA) {
     updatePayment({
       paymentType: OrderPaymentType.UNCONFIRMED,
+      amount: 0,
     });
   }
 };
@@ -115,6 +174,7 @@ const onBankTransfer = (checked: boolean | null) => {
   } else if (props.payment.paymentType === OrderPaymentType.BANK_TRANSFER) {
     updatePayment({
       paymentType: OrderPaymentType.UNCONFIRMED,
+      amount: 0,
     });
   }
 };
