@@ -22,9 +22,15 @@ import {
   OrderPayment,
   OrganizationInfoFlat,
   SavedOrder,
+  UserWithOrders,
 } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
-import { getSepaUpdateMessage } from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition.ts";
+import {
+  getBankTransferMessage,
+  getSepaUpdateMessage,
+} from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition.ts";
 import { validatePayment } from "@lebenswurzel/solawi-bedarf-shared/src/util/ibanHelper.ts";
+import { useConfigStore } from "../../store/configStore";
+import { storeToRefs } from "pinia";
 
 const props = defineProps<{
   payment: OrderPayment;
@@ -34,11 +40,7 @@ const props = defineProps<{
   offer: number;
   predecessorOffer: number;
   organizationInfoFlat: OrganizationInfoFlat;
-  bankTransferMessage: {
-    message: string;
-    accountDetails: string;
-    amount: number;
-  };
+  requestUser: UserWithOrders;
 }>();
 
 const emit = defineEmits<{
@@ -46,6 +48,9 @@ const emit = defineEmits<{
 }>();
 
 const t = language.pages.shop.dialog;
+
+const configStore = useConfigStore();
+const { config } = storeToRefs(configStore);
 
 const updatePayment = (updates: {
   paymentType?: OrderPaymentType;
@@ -75,6 +80,19 @@ const sepaLabel = computed(() => {
   );
 });
 
+const bankTransferMessage = computed(() => {
+  return getBankTransferMessage(
+    props.modificationOrder?.validFrom ?? new Date(),
+    props.modificationOrder?.validTo ?? new Date(),
+    config.value?.validFrom ?? new Date(),
+    config.value?.validTo ?? new Date(),
+    props.offer,
+    props.predecessorOffer,
+    props.requestUser.name,
+    props.organizationInfoFlat["organization.bankAccount"],
+  );
+});
+
 const onSepaUpdate = (checked: boolean | null) => {
   if (checked) {
     updatePayment({
@@ -91,7 +109,7 @@ const onSepaUpdate = (checked: boolean | null) => {
 const onBankTransfer = (checked: boolean | null) => {
   if (checked) {
     updatePayment({
-      amount: props.bankTransferMessage.amount,
+      amount: bankTransferMessage.value.amount,
       paymentType: OrderPaymentType.BANK_TRANSFER,
     });
   } else if (props.payment.paymentType === OrderPaymentType.BANK_TRANSFER) {
