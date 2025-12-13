@@ -52,15 +52,21 @@ export type SaveUserRequest = Required<NewUser> & {
   requisitionConfigId: number;
 };
 
+export type BankDetails = {
+  accountHolder: string;
+  iban: string;
+  bankName: string;
+};
+
 export type OrderPayment = {
   paymentType: OrderPaymentType;
   paymentRequired: boolean;
   amount: number;
-  bankDetails: {
-    accountHolder: string;
-    iban: string;
-    bankName: string;
-  };
+  bankDetails: BankDetails;
+};
+
+export type OrderPaymentOverview = OrderPayment & {
+  paymentProcessed: boolean;
 };
 
 export type UserOrder = {
@@ -453,7 +459,8 @@ export interface OrderOverviewApplicant {
 }
 
 export type OrderOverviewWithApplicantItem = OrderOverviewItem &
-  OrderOverviewApplicant;
+  OrderOverviewApplicant &
+  OrderPaymentOverview;
 
 export interface Msrp {
   monthly: {

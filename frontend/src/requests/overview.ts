@@ -21,8 +21,16 @@ export const getOverview = async (
   configId: number,
   withApplicant: boolean = false,
   dateOfInterest?: Date,
+  withPaymentInfo: boolean = false,
 ): Promise<OrderOverviewWithApplicantItem[]> => {
-  const options = withApplicant ? "with-applicant" : "";
+  const optionsArray: string[] = [];
+  if (withApplicant) {
+    optionsArray.push("with-applicant");
+  }
+  if (withPaymentInfo) {
+    optionsArray.push("with-payment-info");
+  }
+  const options = optionsArray.join(",");
   const dateOfInterestQuery = dateOfInterest
     ? `&dateOfInterest=${dateOfInterest.toISOString()}`
     : "";

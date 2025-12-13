@@ -18,6 +18,7 @@ import Koa from "koa";
 import Router from "koa-router";
 import { LessThan } from "typeorm";
 import { appConfig } from "@lebenswurzel/solawi-bedarf-shared/src/config";
+import { validatePayment } from "@lebenswurzel/solawi-bedarf-shared/src/util/ibanHelper";
 import {
   calculateEffectiveMsrpChain,
   calculateOrderValidMonths,
@@ -62,6 +63,7 @@ import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import { sendOrderConfirmationMail } from "../email/orderConfirmationMail";
 import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang";
 import { availabilityWeights } from "../bi/availabilityWeights";
+import { PaymentInfo } from "../../database/PaymentInfo";
 
 export const saveOrder = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -210,6 +212,15 @@ export const saveOrder = async (
     ctx.throw(http.bad_request, "no offer reason");
   }
 
+  // todo: should also validate payment amount against the effective MSRP change
+  const validationResult = validatePayment(body.payment);
+  if (!validationResult.valid) {
+    ctx.throw(
+      http.bad_request,
+      Object.values(validationResult.errors).join("\n"),
+    );
+  }
+
   selectedOrder.offer = body.offer;
   selectedOrder.depotId = body.depotId;
   selectedOrder.alternateDepotId = body.alternateDepotId;
@@ -220,6 +231,14 @@ export const saveOrder = async (
     // only the user who has created the order can confirm it
     selectedOrder.confirmGTC = body.confirmGTC || false;
   }
+
+  selectedOrder.paymentInfo = new PaymentInfo();
+  selectedOrder.paymentInfo.paymentType = body.payment.paymentType;
+  selectedOrder.paymentInfo.paymentRequired = body.payment.paymentRequired;
+  selectedOrder.paymentInfo.amount = body.payment.amount;
+  selectedOrder.paymentInfo.bankDetails = JSON.stringify(
+    body.payment.bankDetails,
+  );
 
   await AppDataSource.transaction(async (entityManager) => {
     // save order

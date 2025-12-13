@@ -59,6 +59,8 @@ import { UserDeletedFlag1762292718642 } from "../migrations/1762292718642-user-d
 import { DropOrderProductConfiguration1764020937539 } from "../migrations/1764020937539-drop-order-product-configuration";
 import { PasswordReset } from "./PasswordReset";
 import { PasswortReset1765491964000 } from "../migrations/1765491964000-passwort-reset";
+import { PaymentInfo } from "./PaymentInfo";
+import { AddPaymentInfo1765663537156 } from "../migrations/1765663537156-add-payment-info";
 
 const entities = [
   User,
@@ -77,6 +79,7 @@ const entities = [
   ShipmentItem,
   AdditionalShipmentItem,
   ErrorLog,
+  PaymentInfo,
 ];
 
 // Run the following SQL once if the InitialSetup migration is not in the migrations table
@@ -109,6 +112,7 @@ const migrations = [
   UserDeletedFlag1762292718642,
   DropOrderProductConfiguration1764020937539,
   PasswortReset1765491964000,
+  AddPaymentInfo1765663537156,
 ];
 
 const configuredPort = config.testing.isTesting
