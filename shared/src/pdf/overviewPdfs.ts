@@ -19,6 +19,7 @@ import {
   OrderOverviewApplicant,
   OrderOverviewItem,
   OrderOverviewWithApplicantItem,
+  OrderPaymentOverview,
   ProductCategoryWithProducts,
 } from "../types";
 import { interpolate } from "../lang/template";
@@ -61,7 +62,8 @@ export const generateOverviewCsv = (
   overview: OrderOverviewWithApplicantItem[],
   productCategories: ProductCategoryWithProducts[],
   withApplicant: boolean,
-  withProductCategoryId: boolean
+  withProductCategoryId: boolean,
+  withPaymentInfo: boolean
 ) => {
   const fixedHeader = [
     "name",
@@ -82,6 +84,15 @@ export const generateOverviewCsv = (
     "street",
     "postalcode",
     "city",
+  ];
+  const fixedPaymentHeader = [
+    "paymentType",
+    "paymentRequired",
+    "paymentProcessed",
+    "amount",
+    "accountHolder",
+    "iban",
+    "bankName",
   ];
   const dynamicHeader: string[] = [];
   const prices: {
@@ -126,6 +137,17 @@ export const generateOverviewCsv = (
     };
   };
 
+  const getPaymentFields = (payment: OrderPaymentOverview) => {
+    return {
+      paymentType: csvQuote(payment.paymentType),
+      paymentRequired: payment.paymentRequired.toString(),
+      paymentProcessed: payment.paymentProcessed.toString(),
+      amount: payment.amount.toString(),
+      accountHolder: csvQuote(payment.bankDetails.accountHolder),
+      iban: csvQuote(payment.bankDetails.iban),
+      bankName: csvQuote(payment.bankDetails.bankName),
+    };
+  };
   const data = overview.map((overviewItem) => ({
     name: overviewItem.name,
     identifier: overviewItem.identifier,
@@ -138,6 +160,7 @@ export const generateOverviewCsv = (
     categoryReason: csvQuote(overviewItem.categoryReason),
     seasonName: overviewItem.seasonName,
     ...(withApplicant ? getApplicantFields(overviewItem) : {}),
+    ...(withPaymentInfo ? getPaymentFields(overviewItem) : {}),
     ...overviewItem.items.reduce(
       (acc, cur) => {
         const key = getItemKey(cur.category, cur.name, cur.unit);
@@ -163,6 +186,7 @@ export const generateOverviewCsv = (
   const header = [
     ...fixedHeader,
     ...(withApplicant ? fixedApplicantHeader : []),
+    ...(withPaymentInfo ? fixedPaymentHeader : []),
     ...dynamicHeader,
   ];
 

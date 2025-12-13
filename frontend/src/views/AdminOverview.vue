@@ -46,6 +46,7 @@ const textContentStore = useTextContentStore();
 const { organizationInfo } = storeToRefs(textContentStore);
 
 const orderOveriewWithApplicant = ref(false);
+const orderOveriewWithPaymentInfo = ref(false);
 const orderOveriewWithProductCategoryId = ref(true);
 const orderOverviewSeasons = computed(() =>
   configStore.availableConfigs.map((c) => ({
@@ -73,6 +74,7 @@ const onUserCsvClick = async () => {
             configId,
             orderOveriewWithApplicant.value,
             dateOfInterest.value,
+            orderOveriewWithPaymentInfo.value,
           ),
       ),
     ).then((os) => os.flat());
@@ -85,6 +87,7 @@ const onUserCsvClick = async () => {
       productCategories,
       orderOveriewWithApplicant.value,
       orderOveriewWithProductCategoryId.value,
+      orderOveriewWithPaymentInfo.value,
     );
     const blob = new Blob([csv], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
@@ -111,6 +114,7 @@ const onDepotPdfClick = async () => {
       configStore.activeConfigId,
       undefined,
       dateOfInterest.value,
+      false,
     );
     const productCategories = await getProductCategory(
       configStore.activeConfigId,
@@ -146,6 +150,7 @@ const onUserPdfClick = async () => {
       configStore.activeConfigId,
       undefined,
       dateOfInterest.value,
+      false,
     );
     const productCategories = await getProductCategory(
       configStore.activeConfigId,
@@ -221,6 +226,19 @@ const onUserPdfClick = async () => {
               orderOveriewWithApplicant
                 ? 'Name, E-Mail, Telefonnummer und Adresse der Ernteteiler werden in der CSV ausgegeben.'
                 : 'Es ist nur die LW-Nummer der Ernteteiler enthalten.'
+            "
+          ></v-checkbox>
+        </v-col>
+        <v-col cols="12" md="4">
+          <v-checkbox
+            v-model="orderOveriewWithPaymentInfo"
+            label="Inklusive Zahlungsinformationen"
+            density="compact"
+            persistent-hint
+            :hint="
+              orderOveriewWithPaymentInfo
+                ? 'Zahlungstyp, Betrag, Zahlungsstatus und Bankverbindung werden in der CSV ausgegeben.'
+                : 'Zahlungsinformationen werden nicht in der CSV ausgegeben.'
             "
           ></v-checkbox>
         </v-col>

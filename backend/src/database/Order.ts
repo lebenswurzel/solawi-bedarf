@@ -20,6 +20,8 @@ import {
   Column,
   ManyToOne,
   OneToMany,
+  OneToOne,
+  JoinColumn,
 } from "typeorm";
 import { User } from "./User";
 import { Depot } from "./Depot";
@@ -27,6 +29,7 @@ import { OrderItem } from "./OrderItem";
 import { BaseEntity } from "./BaseEntity";
 import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import { RequisitionConfig } from "./RequisitionConfig";
+import { PaymentInfo } from "./PaymentInfo";
 
 @Entity()
 export class Order extends BaseEntity {
@@ -89,4 +92,12 @@ export class Order extends BaseEntity {
 
   @ManyToOne(() => RequisitionConfig, { nullable: false })
   requisitionConfig: RequisitionConfig;
+
+  @OneToOne(() => PaymentInfo, {
+    nullable: true,
+    cascade: true,
+    onDelete: "CASCADE",
+  })
+  @JoinColumn()
+  paymentInfo: PaymentInfo;
 }

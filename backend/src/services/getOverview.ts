@@ -21,7 +21,10 @@ import { Order } from "../database/Order";
 import { getUserFromContext } from "./getUserFromContext";
 import { AppDataSource } from "../database/database";
 import { FindOptionsWhere, LessThan, MoreThan } from "typeorm";
-import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import {
+  OrderPaymentType,
+  UserRole,
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import {
   calculateOrderValidMonths,
   getMsrp,
@@ -34,6 +37,7 @@ import {
 } from "../util/requestUtil";
 import {
   Address,
+  BankDetails,
   OrderOverviewApplicant,
   OrderOverviewWithApplicantItem,
 } from "@lebenswurzel/solawi-bedarf-shared/src/types";
@@ -68,6 +72,7 @@ export const getOverview = async (
     undefined,
     undefined,
     options.includes("with-applicant"),
+    options.includes("with-payment-info"),
     dateOfInterest,
   );
   ctx.body = { overview };
@@ -78,6 +83,7 @@ export const getUserOrderOverview = async (
   userId?: number,
   orderId?: number,
   withApplicant: boolean = false,
+  withPaymentInfo: boolean = false,
   dateOfInterest?: Date,
 ): Promise<OrderOverviewWithApplicantItem[]> => {
   const { productsById } = await bi(configId);
@@ -90,16 +96,60 @@ export const getUserOrderOverview = async (
     };
   }
 
-  const orders = await AppDataSource.getRepository(Order).find({
-    relations: {
-      orderItems: {
-        product: true,
-      },
-      user: true,
-      depot: true,
-      alternateDepot: true,
-      requisitionConfig: true,
+  const relations: any = {
+    orderItems: {
+      product: true,
     },
+    user: true,
+    depot: true,
+    alternateDepot: true,
+    requisitionConfig: true,
+  };
+
+  if (withPaymentInfo) {
+    relations.paymentInfo = true;
+  }
+
+  const select: any = {
+    offer: true,
+    offerReason: true,
+    category: true,
+    categoryReason: true,
+    validFrom: true,
+    validTo: true,
+    depot: {
+      name: true,
+    },
+    alternateDepot: {
+      name: true,
+    },
+    user: {
+      name: true,
+      id: true,
+    },
+    orderItems: {
+      productId: true,
+      value: true,
+    },
+    requisitionConfig: {
+      name: true,
+      validFrom: true,
+      validTo: true,
+    },
+  };
+
+  if (withPaymentInfo) {
+    select.paymentInfo = {
+      paymentType: true,
+      paymentRequired: true,
+      paymentProcessed: true,
+      amount: true,
+      bankDetails: true,
+    };
+  }
+
+  const orders = await AppDataSource.getRepository(Order).find({
+    relations,
     where: {
       ...whereDateOfInterest,
       offer: MoreThan(0),
@@ -107,33 +157,7 @@ export const getUserOrderOverview = async (
       userId,
       id: orderId,
     },
-    select: {
-      offer: true,
-      offerReason: true,
-      category: true,
-      categoryReason: true,
-      validFrom: true,
-      validTo: true,
-      depot: {
-        name: true,
-      },
-      alternateDepot: {
-        name: true,
-      },
-      user: {
-        name: true,
-        id: true,
-      },
-      orderItems: {
-        productId: true,
-        value: true,
-      },
-      requisitionConfig: {
-        name: true,
-        validFrom: true,
-        validTo: true,
-      },
-    },
+    select,
   });
 
   const getApplicantAddress = async (
@@ -206,6 +230,41 @@ export const getUserOrderOverview = async (
         );
       }
       const applicantData = await getApplicantAddress(order.user.id);
+
+      let paymentData: {
+        paymentType: OrderPaymentType;
+        paymentRequired: boolean;
+        paymentProcessed: boolean;
+        amount: number;
+        bankDetails: BankDetails;
+      };
+      if (withPaymentInfo && order.paymentInfo) {
+        const bankDetails = JSON.parse(
+          order.paymentInfo.bankDetails ||
+            "{ accountHolder: '', iban: '', bankName: '' }",
+        ) as BankDetails;
+        paymentData = {
+          paymentType: order.paymentInfo.paymentType,
+          paymentRequired: order.paymentInfo.paymentRequired,
+          paymentProcessed: order.paymentInfo.paymentProcessed,
+          amount: order.paymentInfo.amount,
+          bankDetails,
+        };
+      } else {
+        // Return empty payment info if not requested or not available
+        paymentData = {
+          paymentType: OrderPaymentType.UNCONFIRMED,
+          paymentRequired: false,
+          paymentProcessed: false,
+          amount: 0,
+          bankDetails: {
+            accountHolder: "",
+            iban: "",
+            bankName: "",
+          },
+        };
+      }
+
       return {
         name: order.user.name,
         identifier: makeIdentifier(
@@ -224,6 +283,7 @@ export const getUserOrderOverview = async (
         categoryReason: order.categoryReason || "",
         seasonName: order.requisitionConfig.name,
         ...applicantData,
+        ...paymentData,
         items: order.orderItems.map((orderItem) => ({
           name: orderItem.product.name,
           value: orderItem.value,
