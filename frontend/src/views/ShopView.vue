@@ -160,7 +160,11 @@ const orderPhase = computed(() => {
 });
 
 const disableSaveButton = computed(() => {
-  return !submit.value || visibleOrderId.value !== modificationOrderId.value;
+  return (
+    !submit.value ||
+    visibleOrderId.value !== modificationOrderId.value ||
+    !modificationOrderId.value
+  );
 });
 </script>
 
@@ -293,6 +297,11 @@ const disableSaveButton = computed(() => {
       </v-card-actions>
     </v-card-actions>
   </v-card>
-  <ShopDialog :open="open" @close="onClose" :request-user="requestUser" />
+  <ShopDialog
+    :open="open"
+    @close="onClose"
+    :request-user="requestUser"
+    v-if="requestUser"
+  />
   <FAQDialog :open="faqOpen" @close="onFaqClose" />
 </template>

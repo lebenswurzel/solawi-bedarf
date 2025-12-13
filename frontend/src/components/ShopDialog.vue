@@ -47,10 +47,9 @@ import MsrpDisplay from "./shop/MsrpDisplay.vue";
 import { useUserStore } from "../store/userStore.ts";
 import ContributionSelect from "./shop/ContributionSelect.vue";
 import OrderPaymentComponent from "./shop/OrderPayment.vue";
-import { getBankTransferMessage } from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition.ts";
 import { validatePayment } from "@lebenswurzel/solawi-bedarf-shared/src/util/ibanHelper.ts";
 
-const props = defineProps<{ open: boolean; requestUser?: UserWithOrders }>();
+const props = defineProps<{ open: boolean; requestUser: UserWithOrders }>();
 const emit = defineEmits(["close"]);
 const t = language.pages.shop.dialog;
 
@@ -209,7 +208,10 @@ const isPaymentSelectionValid = computed(() => {
   if (!enableConfirmBankTransfer.value && !enableConfirmSepaUpdate.value) {
     return true;
   }
-  return bankTransferSelected.value != sepaUpdateSelected.value;
+  return (
+    bankTransferSelected.value != sepaUpdateSelected.value &&
+    paymentValidation.value.valid
+  );
 });
 
 const paymentValidation = computed(() => {
@@ -224,8 +226,7 @@ const disableSubmit = computed(() => {
     offerReasonHint.value ||
     categoryReasonHint.value ||
     (requireConfirmContribution.value && !confirmContribution.value) ||
-    !isPaymentSelectionValid.value || // must select exactly one payment method
-    !paymentValidation.value.valid // payment validation must pass
+    !isPaymentSelectionValid.value
   );
 });
 
@@ -252,36 +253,21 @@ const requireConfirmContribution = computed(() => {
 });
 
 const enableConfirmSepaUpdate = computed((): boolean => {
-  return (
-    (orderStore.getPredecessorOrder(modificationOrderId.value) &&
-      monthlyOfferDifference.value >= 10) ??
-    false
-  );
+  if (orderStore.getPredecessorOrder(modificationOrderId.value)) {
+    return monthlyOfferDifference.value >= 10;
+  }
+  return true;
 });
 
 const enableConfirmBankTransfer = computed((): boolean => {
-  return (
-    (orderStore.getPredecessorOrder(modificationOrderId.value) &&
-      monthlyOfferDifference.value > 0) ??
-    false
-  );
-});
-
-const bankTransferMessage = computed(() => {
-  return getBankTransferMessage(
-    modificationOrder.value?.validFrom ?? new Date(),
-    modificationOrder.value?.validTo ?? new Date(),
-    config.value?.validFrom ?? new Date(),
-    config.value?.validTo ?? new Date(),
-    offer.value,
-    predecessorOffer.value,
-    props.requestUser?.name || "???",
-    textContentStore.organizationInfo.bankAccount,
-  );
+  if (orderStore.getPredecessorOrder(modificationOrderId.value)) {
+    return monthlyOfferDifference.value > 0;
+  }
+  return true;
 });
 
 watchEffect(() => {
-  sendConfirmationEmail.value = props.requestUser?.emailEnabled || false;
+  sendConfirmationEmail.value = props.requestUser.emailEnabled || false;
 });
 
 const onDepotChanged = (val: number) => {
@@ -317,7 +303,7 @@ const onSave = () => {
       payment: payment.value!,
       id: modificationOrderId.value,
     },
-    props.requestUser?.id!,
+    props.requestUser.id,
   )
     .then(async () => {
       await biStore.update(activeConfigId.value, modificationOrderId.value);
@@ -479,7 +465,7 @@ const onSave = () => {
           :offer="offer"
           :predecessor-offer="predecessorOffer"
           :organization-info-flat="textContentStore.organizationInfoFlat"
-          :bank-transfer-message="bankTransferMessage"
+          :request-user="props.requestUser"
           @update:payment="(p: OrderPayment) => (payment = p)"
         />
 
@@ -529,6 +515,8 @@ const onSave = () => {
           {{ language.app.actions.save }}
         </v-btn>
       </v-card-actions>
+      {{ payment }}
+      {{ paymentValidation }}
     </v-card>
   </v-dialog>
   <FAQDialog :open="openFAQ" @close="() => (openFAQ = false)" />
