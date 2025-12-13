@@ -82,6 +82,7 @@ const loading = ref(false);
 const showDepotNote = ref(false);
 const payment = ref<OrderPayment>({
   paymentType: OrderPaymentType.UNCONFIRMED,
+  paymentRequired: false,
   amount: 0,
   bankDetails: {
     accountHolder: "",
@@ -91,13 +92,6 @@ const payment = ref<OrderPayment>({
 });
 
 const sendConfirmationEmail = ref(false);
-
-const confirmSepaUpdate = computed(() => {
-  return payment.value?.paymentType == OrderPaymentType.SEPA;
-});
-const confirmBankTransfer = computed(() => {
-  return payment.value?.paymentType == OrderPaymentType.BANK_TRANSFER;
-});
 
 const categoryOptions = computed(() => {
   return Object.entries(language.app.options.orderUserCategories).map(
@@ -204,16 +198,6 @@ const alternateDepotHint = computed(() => {
     : t.alternateDepot.hint;
 });
 
-const isPaymentSelectionValid = computed(() => {
-  if (!enableConfirmBankTransfer.value && !enableConfirmSepaUpdate.value) {
-    return true;
-  }
-  return (
-    bankTransferSelected.value != sepaUpdateSelected.value &&
-    paymentValidation.value.valid
-  );
-});
-
 const paymentValidation = computed(() => {
   return validatePayment(payment.value);
 });
@@ -226,44 +210,12 @@ const disableSubmit = computed(() => {
     offerReasonHint.value ||
     categoryReasonHint.value ||
     (requireConfirmContribution.value && !confirmContribution.value) ||
-    !isPaymentSelectionValid.value
+    !paymentValidation.value.valid
   );
-});
-
-const sepaUpdateSelected = computed(() => {
-  return confirmSepaUpdate.value && enableConfirmSepaUpdate.value;
-});
-
-const bankTransferSelected = computed(() => {
-  return confirmBankTransfer.value && enableConfirmBankTransfer.value;
-});
-
-const predecessorOffer = computed((): number => {
-  return orderStore.getPredecessorOrder(modificationOrderId.value)
-    ? (orderStore.getPredecessorOrder(modificationOrderId.value)?.offer ?? 0)
-    : 0;
-});
-
-const monthlyOfferDifference = computed(() => {
-  return offer.value - predecessorOffer.value;
 });
 
 const requireConfirmContribution = computed(() => {
   return category.value != UserCategory.CAT130;
-});
-
-const enableConfirmSepaUpdate = computed((): boolean => {
-  if (orderStore.getPredecessorOrder(modificationOrderId.value)) {
-    return monthlyOfferDifference.value >= 10;
-  }
-  return true;
-});
-
-const enableConfirmBankTransfer = computed((): boolean => {
-  if (orderStore.getPredecessorOrder(modificationOrderId.value)) {
-    return monthlyOfferDifference.value > 0;
-  }
-  return true;
 });
 
 watchEffect(() => {
@@ -458,12 +410,13 @@ const onSave = () => {
         />
 
         <OrderPaymentComponent
+          v-if="modificationOrder"
           :payment="payment"
-          :enable-confirm-sepa-update="enableConfirmSepaUpdate"
-          :enable-confirm-bank-transfer="enableConfirmBankTransfer"
           :modification-order="modificationOrder"
           :offer="offer"
-          :predecessor-offer="predecessorOffer"
+          :predecessor-order="
+            orderStore.getPredecessorOrder(modificationOrderId)
+          "
           :organization-info-flat="textContentStore.organizationInfoFlat"
           :request-user="props.requestUser"
           @update:payment="(p: OrderPayment) => (payment = p)"
@@ -515,8 +468,6 @@ const onSave = () => {
           {{ language.app.actions.save }}
         </v-btn>
       </v-card-actions>
-      {{ payment }}
-      {{ paymentValidation }}
     </v-card>
   </v-dialog>
   <FAQDialog :open="openFAQ" @close="() => (openFAQ = false)" />

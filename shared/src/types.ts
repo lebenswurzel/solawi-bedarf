@@ -54,6 +54,7 @@ export type SaveUserRequest = Required<NewUser> & {
 
 export type OrderPayment = {
   paymentType: OrderPaymentType;
+  paymentRequired: boolean;
   amount: number;
   bankDetails: {
     accountHolder: string;

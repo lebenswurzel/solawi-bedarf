@@ -70,7 +70,10 @@ export const validatePayment = (
     if (!payment.bankDetails.bankName) {
       errors.bankName = "Bitte Kreditinstitut angeben";
     }
-  } else if (payment.paymentType === OrderPaymentType.UNCONFIRMED) {
+  } else if (
+    payment.paymentType === OrderPaymentType.UNCONFIRMED &&
+    payment.paymentRequired
+  ) {
     errors.paymentType = "Keine Zahlungsmethode ausgewählt";
   }
   return {
