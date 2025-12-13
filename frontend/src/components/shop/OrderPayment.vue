@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { computed, watchEffect } from "vue";
+import { computed, watch } from "vue";
 import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
 import { OrderPaymentType } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import {
@@ -92,11 +92,39 @@ const enableConfirmBankTransfer = computed((): boolean => {
   return true;
 });
 
-watchEffect(() => {
-  updatePayment({
-    paymentRequired:
-      enableConfirmSepaUpdate.value || enableConfirmBankTransfer.value,
-  });
+watch([enableConfirmSepaUpdate, enableConfirmBankTransfer], () => {
+  const updates: Partial<OrderPayment> = {};
+  if (
+    (enableConfirmSepaUpdate.value || enableConfirmBankTransfer.value) &&
+    !props.payment.paymentRequired
+  ) {
+    updates.paymentRequired = true;
+  } else if (
+    !(enableConfirmSepaUpdate.value || enableConfirmBankTransfer.value) &&
+    props.payment.paymentRequired
+  ) {
+    updates.paymentRequired = false;
+  }
+
+  // make sure to set the payment type to unconfirmed if the condition for
+  // using the payment method is not met anymore
+  if (
+    !enableConfirmSepaUpdate.value &&
+    props.payment.paymentType === OrderPaymentType.SEPA
+  ) {
+    updates.paymentType = OrderPaymentType.UNCONFIRMED;
+    updates.amount = 0;
+  }
+  if (
+    !enableConfirmBankTransfer.value &&
+    props.payment.paymentType === OrderPaymentType.BANK_TRANSFER
+  ) {
+    updates.paymentType = OrderPaymentType.UNCONFIRMED;
+    updates.amount = 0;
+  }
+  if (Object.keys(updates).length > 0) {
+    updatePayment(updates);
+  }
 });
 
 const sepaLabel = computed(() => {
@@ -122,34 +150,15 @@ const bankTransferMessage = computed(() => {
   );
 });
 
-watchEffect(() => {
-  updatePayment({
-    paymentRequired: monthlyOfferDifference.value > 0,
-  });
-});
-
-watchEffect(() => {
-  // make sure to set the payment type to unconfirmed if the condition for
-  // using the payment method is not met
-  if (
-    !enableConfirmSepaUpdate.value &&
-    props.payment.paymentType === OrderPaymentType.SEPA
-  ) {
+watch(
+  [monthlyOfferDifference],
+  () => {
     updatePayment({
-      paymentType: OrderPaymentType.UNCONFIRMED,
-      amount: 0,
+      paymentRequired: monthlyOfferDifference.value > 0,
     });
-  }
-  if (
-    !enableConfirmBankTransfer.value &&
-    props.payment.paymentType === OrderPaymentType.BANK_TRANSFER
-  ) {
-    updatePayment({
-      paymentType: OrderPaymentType.UNCONFIRMED,
-      amount: 0,
-    });
-  }
-});
+  },
+  { immediate: true },
+);
 
 const onSepaUpdate = (checked: boolean | null) => {
   if (checked) {
