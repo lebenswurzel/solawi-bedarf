@@ -295,6 +295,8 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 
 #334 Login kann mit Enter-Taste bestätigt werden; Passwort kann angezeigt werden
 
-# NEW
+# v0.14.0 - 2025-12-13 - Passwort Zurücksetzen
 
 #118 Funktion zum Zurücksetzen des Passworts hinzugefügt
+
+# NEW
