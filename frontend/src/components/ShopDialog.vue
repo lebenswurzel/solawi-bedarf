@@ -34,10 +34,7 @@ import {
 } from "@lebenswurzel/solawi-bedarf-shared/src/validation/reason.ts";
 import SeasonText from "./styled/SeasonText.vue";
 import { useUiFeedback } from "../store/uiFeedbackStore.ts";
-import {
-  OrderPaymentType,
-  UserCategory,
-} from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
+import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import {
   OrderPayment,
   UserWithOrders,
@@ -69,6 +66,7 @@ const {
   category,
   categoryReason,
   offerReason,
+  paymentInfo,
   modificationOrderItems,
   modificationOrderId,
   modificationOrder,
@@ -80,16 +78,6 @@ const confirmContribution = ref(false);
 const openFAQ = ref(false);
 const loading = ref(false);
 const showDepotNote = ref(false);
-const paymentInfo = ref<OrderPayment>({
-  paymentType: OrderPaymentType.UNCONFIRMED,
-  paymentRequired: false,
-  amount: 0,
-  bankDetails: {
-    accountHolder: "",
-    iban: "",
-    bankName: "",
-  },
-});
 
 const sendConfirmationEmail = ref(false);
 
@@ -199,6 +187,9 @@ const alternateDepotHint = computed(() => {
 });
 
 const paymentValidation = computed(() => {
+  if (!paymentInfo.value) {
+    return { valid: false, errors: {} };
+  }
   return validatePayment(paymentInfo.value);
 });
 
@@ -252,7 +243,7 @@ const onSave = () => {
       confirmGTC: confirmGTC.value,
       requisitionConfigId: activeConfigId.value,
       sendConfirmationEmail: sendConfirmationEmail.value,
-      paymentInfo: paymentInfo.value!,
+      paymentInfo: paymentInfo.value,
       id: modificationOrderId.value,
     },
     props.requestUser.id,
@@ -362,6 +353,7 @@ const onSave = () => {
           </v-expand-transition>
         </v-alert>
         <ContributionSelect />
+        {{ paymentInfo }}
         <v-text-field
           class="mb-5"
           v-if="enableCategoryReason"

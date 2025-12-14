@@ -20,21 +20,27 @@ import Router from "koa-router";
 import { AppDataSource } from "../../database/database";
 import { Order } from "../../database/Order";
 import { getConfigIdFromQuery } from "../../util/requestUtil";
+import { SavedOrder } from "@lebenswurzel/solawi-bedarf-shared/src/types";
+import { unpackOrderPayment } from "./getOrder";
 
 export const getAllOrders = async (
-  ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
+  ctx: Koa.ParameterizedContext<
+    any,
+    Router.IRouterParamContext<any, {}>,
+    SavedOrder[]
+  >,
 ) => {
   const requestUserId = await getRequestUserId(ctx);
   const configId = getConfigIdFromQuery(ctx);
   const allOrders = await getUserOrders(requestUserId, configId);
-  ctx.body = allOrders || [];
+  ctx.body = allOrders.map(unpackOrderPayment);
 };
 
 export const getUserOrders = async (userId: number, configId: number) => {
   const allOrders: Order[] = await AppDataSource.getRepository(Order).find({
     where: { userId: userId, requisitionConfigId: configId },
     order: { validFrom: "ASC" }, // Most recent last
-    relations: { orderItems: true },
+    relations: { orderItems: true, paymentInfo: true },
   });
   return allOrders;
 };

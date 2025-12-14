@@ -17,10 +17,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { defineStore, storeToRefs } from "pinia";
 import { computed, ref, watch } from "vue";
 import { getAllOrders } from "../requests/shop.ts";
-import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
+import {
+  OrderPaymentType,
+  UserCategory,
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import { appConfig } from "@lebenswurzel/solawi-bedarf-shared/src/config.ts";
 import {
   OrderItem,
+  OrderPayment,
   SavedOrder,
   SavedOrderWithPredecessor,
 } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
@@ -29,6 +33,19 @@ import { determineModificationOrderId } from "@lebenswurzel/solawi-bedarf-shared
 import { useUserStore } from "./userStore.ts";
 import { isDebugEnabled } from "../lib/debug";
 import { useUiFeedback } from "./uiFeedbackStore.ts";
+
+export const getDefaultPaymentInfo = (): OrderPayment => {
+  return {
+    paymentType: OrderPaymentType.UNCONFIRMED,
+    paymentRequired: false,
+    amount: 0,
+    bankDetails: {
+      accountHolder: "",
+      iban: "",
+      bankName: "",
+    },
+  };
+};
 
 export const useOrderStore = defineStore("orderStore", () => {
   const userStore = useUserStore();
@@ -48,6 +65,8 @@ export const useOrderStore = defineStore("orderStore", () => {
   const offerReason = ref<string | null>(null);
   const category = ref<UserCategory>(appConfig.defaultCategory);
   const categoryReason = ref<string | null>(null);
+  const paymentInfo = ref<OrderPayment>(getDefaultPaymentInfo());
+
   const visibleOrderId = ref<number | undefined>(undefined);
   const uiFeedbackStore = useUiFeedback();
 
@@ -203,6 +222,7 @@ export const useOrderStore = defineStore("orderStore", () => {
       const order = allOrders.value.find((o) => o.id === visibleOrderId.value);
       offer.value = order?.offer || 0;
       offerReason.value = order?.offerReason || null;
+      paymentInfo.value = order?.paymentInfo || getDefaultPaymentInfo();
       depotId.value = { saved: order?.depotId, actual: order?.depotId };
       alternateDepotId.value = order?.alternateDepotId || null;
       category.value = order?.category || appConfig.defaultCategory;
@@ -235,6 +255,7 @@ export const useOrderStore = defineStore("orderStore", () => {
   const clear = async () => {
     offer.value = 0;
     offerReason.value = null;
+    paymentInfo.value = getDefaultPaymentInfo();
     depotId.value = { saved: undefined, actual: undefined };
     alternateDepotId.value = null;
     category.value = appConfig.defaultCategory;
@@ -249,6 +270,7 @@ export const useOrderStore = defineStore("orderStore", () => {
     savedOrderItemsByProductId,
     offer,
     offerReason,
+    paymentInfo,
     depotId,
     alternateDepotId,
     category,
