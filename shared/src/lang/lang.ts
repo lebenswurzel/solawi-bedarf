@@ -15,6 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import {
+  OrderPaymentType,
   ProductCategoryType,
   ShipmentType,
   UserCategory,
@@ -124,6 +125,11 @@ export const language = {
           subtitle:
             "Die Produkte werden durch Kooperationspartner bereitgestellt",
         },
+      },
+      paymentTypes: {
+        [OrderPaymentType.SEPA]: "SEPA-Lastschrift",
+        [OrderPaymentType.BANK_TRANSFER]: "Überweisung",
+        [OrderPaymentType.UNCONFIRMED]: "Unbestätigt",
       },
     },
     errors: {
