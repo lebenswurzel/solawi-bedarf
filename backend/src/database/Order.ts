@@ -99,5 +99,5 @@ export class Order extends BaseEntity {
     onDelete: "CASCADE",
   })
   @JoinColumn()
-  paymentInfo: PaymentInfo;
+  paymentInfo: PaymentInfo | null;
 }

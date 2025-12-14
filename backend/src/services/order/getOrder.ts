@@ -19,11 +19,15 @@ import Koa from "koa";
 import Router from "koa-router";
 import { AppDataSource } from "../../database/database";
 import { Order } from "../../database/Order";
-import { Order as OrderType } from "@lebenswurzel/solawi-bedarf-shared/src/types";
+import {
+  BankDetails,
+  SavedOrder,
+} from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import {
   getConfigIdFromQuery,
   getStringQueryParameter,
 } from "../../util/requestUtil";
+import { http } from "../../consts/http";
 
 export const getOrder = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -34,9 +38,9 @@ export const getOrder = async (
   const option = getStringQueryParameter(ctx.request.query, "options", "");
   const orderId = getStringQueryParameter(ctx.request.query, "orderId", "");
 
-  let relations = { orderItems: true };
+  const relations = { orderItems: true, paymentInfo: true };
   if (option.includes("no-order-items")) {
-    relations = { orderItems: false };
+    relations.orderItems = false;
   }
 
   // If a specific order ID is requested, return that order
@@ -51,7 +55,7 @@ export const getOrder = async (
     });
 
     if (order) {
-      ctx.body = order;
+      ctx.body = unpackOrderPayment(order);
     } else {
       ctx.body = {};
     }
@@ -59,7 +63,7 @@ export const getOrder = async (
   }
 
   // Get all orders for the user and config
-  const allOrders: OrderType[] = await AppDataSource.getRepository(Order).find({
+  const allOrders: Order[] = await AppDataSource.getRepository(Order).find({
     where: { userId: requestUserId, requisitionConfigId: configId },
     relations,
     order: { validFrom: "DESC" }, // Most recent first
@@ -67,8 +71,40 @@ export const getOrder = async (
 
   // If no specific order requested, return the currently valid one
   const now = new Date();
-  const currentOrder =
-    allOrders.find((o) => o.validFrom <= now && o.validTo > now) || null;
+  const currentOrder = allOrders.find(
+    (o) => o.validFrom <= now && o.validTo > now,
+  );
 
-  ctx.body = currentOrder || {};
+  if (!currentOrder) {
+    ctx.throw(http.not_found, "no current order found");
+  }
+
+  ctx.body = unpackOrderPayment(currentOrder);
+};
+
+/**
+ * Converts the database representation of an order to the shared representation.
+ * Especially unpacks the bank details from a JSON string to a BankDetails object.
+ *
+ * @param order The database representation of an order
+ * @returns The shared representation of an order
+ */
+export const unpackOrderPayment = (order: Order): SavedOrder => {
+  const paymentInfo = order.paymentInfo;
+  if (!paymentInfo) {
+    return {
+      ...order,
+      paymentInfo: null,
+    };
+  }
+  return {
+    ...order,
+    paymentInfo: {
+      paymentType: paymentInfo.paymentType,
+      paymentRequired: paymentInfo.paymentRequired,
+      paymentProcessed: paymentInfo.paymentProcessed,
+      amount: paymentInfo.amount,
+      bankDetails: JSON.parse(paymentInfo.bankDetails) as BankDetails,
+    },
+  };
 };

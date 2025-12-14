@@ -19,7 +19,7 @@ import {
   OrderOverviewApplicant,
   OrderOverviewItem,
   OrderOverviewWithApplicantItem,
-  OrderPaymentOverview,
+  OrderPayment,
   ProductCategoryWithProducts,
 } from "../types";
 import { interpolate } from "../lang/template";
@@ -137,11 +137,11 @@ export const generateOverviewCsv = (
     };
   };
 
-  const getPaymentFields = (payment: OrderPaymentOverview) => {
+  const getPaymentFields = (payment: OrderPayment) => {
     return {
       paymentType: csvQuote(payment.paymentType),
       paymentRequired: payment.paymentRequired.toString(),
-      paymentProcessed: payment.paymentProcessed.toString(),
+      paymentProcessed: payment.paymentProcessed?.toString() ?? "false",
       amount: payment.amount.toString(),
       accountHolder: csvQuote(payment.bankDetails.accountHolder),
       iban: csvQuote(payment.bankDetails.iban),
