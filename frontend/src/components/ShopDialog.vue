@@ -45,6 +45,7 @@ import { useUserStore } from "../store/userStore.ts";
 import ContributionSelect from "./shop/ContributionSelect.vue";
 import OrderPaymentComponent from "./shop/OrderPayment.vue";
 import { validatePayment } from "@lebenswurzel/solawi-bedarf-shared/src/util/ibanHelper.ts";
+import DebugOnly from "./debug/DebugOnly.vue";
 
 const props = defineProps<{ open: boolean; requestUser: UserWithOrders }>();
 const emit = defineEmits(["close"]);
@@ -353,7 +354,6 @@ const onSave = () => {
           </v-expand-transition>
         </v-alert>
         <ContributionSelect />
-        {{ paymentInfo }}
         <v-text-field
           class="mb-5"
           v-if="enableCategoryReason"
@@ -362,6 +362,9 @@ const onSave = () => {
           :hint="categoryReasonHint ? t.categoryReason.hint : undefined"
           :persistent-hint="categoryReasonHint"
         />
+        <DebugOnly
+          ><span class="text-caption">{{ paymentInfo }}</span>
+        </DebugOnly>
         <div class="mb-3">{{ t.confirm.title }}</div>
         <v-checkbox
           v-model="confirmGTC"
