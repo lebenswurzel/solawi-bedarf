@@ -274,13 +274,17 @@ export const language = {
         },
         confirmSepaUpdate: {
           title: "Bestätigung der SEPA-Lastschrift",
-          label:
-            "Ich ermächtige den {organization.name}, ab {from} bis {to} den monatlichen Beitrag in Höhe von {total}€ (statt bisher {previousOffer}€) per SEPA-Lastschrift von meinem bekannten Konto einzuziehen.",
+          labelModificationOrder:
+            "Ich ermächtige den {organization.name}, ab {from} bis {to} den monatlichen Beitrag in Höhe von {total}€ (statt bisher {previousOffer}€) per SEPA-Lastschrift von meinem Konto einzuziehen.",
+          labelNewOrder:
+            "Ich ermächtige den {organization.name}, ab {from} bis {to} den monatlichen Beitrag in Höhe von {total}€ per SEPA-Lastschrift von meinem Konto einzuziehen.",
         },
         confirmBankTransfer: {
           title: "Bestätigung der Überweisung",
-          label:
+          labelModificationOrder:
             "Ich überweise den zusätzlichen Gesamtbetrag von {difference}€ bis zum {date} auf folgendes Konto:",
+          labelNewOrder:
+            "Ich überweise den Jahresgesamtbetrag von {difference}€ bis zum {date} auf folgendes Konto:",
           reference: "Verwendungszweck: Bedarfsanpassung {userName}",
         },
         depotNote: {

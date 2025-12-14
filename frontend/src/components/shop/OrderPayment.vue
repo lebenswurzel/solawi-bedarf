@@ -100,6 +100,7 @@ const sepaLabel = computed(() => {
     props.offer,
     predecessorOffer.value,
     props.organizationInfoFlat,
+    !!props.predecessorOrder,
   );
 });
 
@@ -113,6 +114,7 @@ const bankTransferMessage = computed(() => {
     predecessorOffer.value,
     props.requestUser.name,
     props.organizationInfoFlat["organization.bankAccount"],
+    !!props.predecessorOrder,
   );
 });
 

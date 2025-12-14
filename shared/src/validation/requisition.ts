@@ -270,15 +270,21 @@ export const getSepaUpdateMessage = (
   validTo: Date,
   offer: number,
   previousOffer: number,
-  organizationInfo: OrganizationInfoFlat
+  organizationInfo: OrganizationInfoFlat,
+  hasPreviousOrder: boolean
 ) => {
-  return interpolate(language.pages.shop.dialog.confirmSepaUpdate.label, {
-    ...organizationInfo,
-    from: prettyDateWithMonthAndYear(getSameOrNextThursday(validFrom)),
-    to: prettyDateWithMonthAndYear(validTo),
-    total: offer.toString() || "?",
-    previousOffer: previousOffer.toString() || "?",
-  });
+  return interpolate(
+    hasPreviousOrder
+      ? language.pages.shop.dialog.confirmSepaUpdate.labelModificationOrder
+      : language.pages.shop.dialog.confirmSepaUpdate.labelNewOrder,
+    {
+      ...organizationInfo,
+      from: prettyDateWithMonthAndYear(getSameOrNextThursday(validFrom)),
+      to: prettyDateWithMonthAndYear(validTo),
+      total: offer.toString() || "?",
+      previousOffer: previousOffer.toString() || "?",
+    }
+  );
 };
 
 export const getBankTransferMessage = (
@@ -290,6 +296,7 @@ export const getBankTransferMessage = (
   previousOffer: number,
   userName: string,
   accountDetails: string,
+  hasPreviousOrder: boolean,
   timezone?: string
 ): {
   message: string;
@@ -305,13 +312,18 @@ export const getBankTransferMessage = (
   );
   const amount = (offer - previousOffer) * count;
   return {
-    message: interpolate(language.pages.shop.dialog.confirmBankTransfer.label, {
-      difference: amount.toString(),
-      date: format(
-        new Date(startMonth.getFullYear(), startMonth.getMonth(), 14),
-        "dd.MM.yyyy"
-      ),
-    }),
+    message: interpolate(
+      hasPreviousOrder
+        ? language.pages.shop.dialog.confirmBankTransfer.labelModificationOrder
+        : language.pages.shop.dialog.confirmBankTransfer.labelNewOrder,
+      {
+        difference: amount.toString(),
+        date: format(
+          new Date(startMonth.getFullYear(), startMonth.getMonth(), 14),
+          "dd.MM.yyyy"
+        ),
+      }
+    ),
     accountDetails:
       accountDetails +
       "\n" +
