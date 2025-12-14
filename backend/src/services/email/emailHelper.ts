@@ -23,6 +23,7 @@ import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import {
   Msrp,
   OrganizationInfo,
+  SavedOrder,
 } from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import {
   getSameOrNextThursday,
@@ -69,7 +70,7 @@ const escapeMdTableCell = (value: string): string => {
 
 export const buildOrderEmail = async (
   bodyTemplate: string,
-  order: Order,
+  order: SavedOrder,
   effectiveMsrp: Msrp,
   orderUser: User,
   seasonName: string,

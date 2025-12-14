@@ -39,19 +39,15 @@ import {
 import { TextContent } from "../../database/TextContent";
 import { makeFlatOrganizationInfo } from "@lebenswurzel/solawi-bedarf-shared/src/text/textContent";
 import { FindOptionsWhere } from "typeorm";
-import {
-  Msrp,
-  OrderPayment,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types";
+import { Msrp, SavedOrder } from "@lebenswurzel/solawi-bedarf-shared/src/types";
 
 interface SendOrderConfirmationMailParams {
-  order: Order;
-  previousOrder: Order | null;
+  order: SavedOrder;
+  previousOrder: SavedOrder | null;
   requestUserId: number;
   changingUserId: number;
   requisitionConfig: RequisitionConfig;
   sendConfirmationEmailToUser: boolean;
-  orderPayment: OrderPayment;
   effectiveMsrp: Msrp;
 }
 
@@ -62,7 +58,6 @@ export const sendOrderConfirmationMail = async ({
   changingUserId,
   requisitionConfig,
   sendConfirmationEmailToUser,
-  orderPayment,
   effectiveMsrp,
 }: SendOrderConfirmationMailParams): Promise<void> => {
   // Only send email if confirmation is requested or BCC receiver is configured
@@ -110,31 +105,35 @@ export const sendOrderConfirmationMail = async ({
   const currentDate = toZonedTime(new Date(), config.timezone);
 
   let paymentMessage: string = "Keine Angabe";
-  if (orderPayment.paymentType === OrderPaymentType.SEPA) {
-    paymentMessage = getSepaUpdateMessage(
-      order.validFrom ?? new Date(),
-      order.validTo ?? new Date(),
-      order.offer,
-      previousOrder?.offer ?? 0,
-      organizationInfoFlat,
-    );
-  } else if (orderPayment.paymentType === OrderPaymentType.BANK_TRANSFER) {
-    const bankTransferMessage = getBankTransferMessage(
-      order.validFrom ?? new Date(),
-      order.validTo ?? new Date(),
-      requisitionConfig.validFrom,
-      requisitionConfig.validTo,
-      order.offer,
-      previousOrder?.offer ?? 0,
-      orderUser.name,
-      organizationInfo.bankAccount,
-      config.timezone,
-    );
-    paymentMessage =
-      bankTransferMessage.message +
-      "\n\n```\n" +
-      bankTransferMessage.accountDetails +
-      "\n```";
+  if (order.paymentInfo) {
+    if (order.paymentInfo.paymentType === OrderPaymentType.SEPA) {
+      paymentMessage = getSepaUpdateMessage(
+        order.validFrom ?? new Date(),
+        order.validTo ?? new Date(),
+        order.offer,
+        previousOrder?.offer ?? 0,
+        organizationInfoFlat,
+      );
+    } else if (
+      order.paymentInfo.paymentType === OrderPaymentType.BANK_TRANSFER
+    ) {
+      const bankTransferMessage = getBankTransferMessage(
+        order.validFrom ?? new Date(),
+        order.validTo ?? new Date(),
+        requisitionConfig.validFrom,
+        requisitionConfig.validTo,
+        order.offer,
+        previousOrder?.offer ?? 0,
+        orderUser.name,
+        organizationInfo.bankAccount,
+        config.timezone,
+      );
+      paymentMessage =
+        bankTransferMessage.message +
+        "\n\n```\n" +
+        bankTransferMessage.accountDetails +
+        "\n```";
+    }
   }
 
   const textContentFilter: FindOptionsWhere<TextContent> = {

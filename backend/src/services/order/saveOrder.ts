@@ -28,8 +28,10 @@ import {
   ConfirmedOrder,
   Msrp,
   OrderId,
+  OrderPayment,
   ProductId,
   ProductsById,
+  SavedOrder,
   OrderItem as SharedOrderItem,
 } from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import {
@@ -64,6 +66,7 @@ import { sendOrderConfirmationMail } from "../email/orderConfirmationMail";
 import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang";
 import { availabilityWeights } from "../bi/availabilityWeights";
 import { PaymentInfo } from "../../database/PaymentInfo";
+import { unpackOrderPayment } from "./getOrder";
 
 export const saveOrder = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -110,13 +113,13 @@ export const saveOrder = async (
   // Find all orders for the user and config to determine the current valid one
   const allOrders = await AppDataSource.getRepository(Order).find({
     where: { userId: requestUserId, requisitionConfigId: configId },
-    relations: { orderItems: true },
+    relations: { orderItems: true, paymentInfo: true },
     order: { validFrom: "ASC" },
   });
 
   // Find the currently valid order
   const modificationOrderId = determineModificationOrderId(
-    allOrders,
+    allOrders.map(unpackOrderPayment),
     currentTime,
     config.timezone,
   );
@@ -179,7 +182,7 @@ export const saveOrder = async (
   }
 
   const predecessorOrder = determinePredecessorOrder(
-    relevantOrders,
+    relevantOrders.map(unpackOrderPayment),
     selectedOrderId,
   );
 
@@ -197,7 +200,7 @@ export const saveOrder = async (
     body.orderItems,
     productsById,
     requisitionConfig,
-    relevantOrders,
+    relevantOrders.map(unpackOrderPayment),
   );
   if (!isOfferValid(body.offer, effectiveMsrp.monthly.total)) {
     ctx.throw(http.bad_request, "bid too low");
@@ -213,12 +216,14 @@ export const saveOrder = async (
   }
 
   // todo: should also validate payment amount against the effective MSRP change
-  const validationResult = validatePayment(body.payment);
-  if (!validationResult.valid) {
-    ctx.throw(
-      http.bad_request,
-      Object.values(validationResult.errors).join("\n"),
-    );
+  if (body.paymentInfo) {
+    const validationResult = validatePayment(body.paymentInfo);
+    if (!validationResult.valid) {
+      ctx.throw(
+        http.bad_request,
+        Object.values(validationResult.errors).join("\n"),
+      );
+    }
   }
 
   selectedOrder.offer = body.offer;
@@ -232,13 +237,9 @@ export const saveOrder = async (
     selectedOrder.confirmGTC = body.confirmGTC || false;
   }
 
-  selectedOrder.paymentInfo = new PaymentInfo();
-  selectedOrder.paymentInfo.paymentType = body.payment.paymentType;
-  selectedOrder.paymentInfo.paymentRequired = body.payment.paymentRequired;
-  selectedOrder.paymentInfo.amount = body.payment.amount;
-  selectedOrder.paymentInfo.bankDetails = JSON.stringify(
-    body.payment.bankDetails,
-  );
+  if (body.paymentInfo) {
+    updatePaymentInfo(selectedOrder, body.paymentInfo);
+  }
 
   await AppDataSource.transaction(async (entityManager) => {
     // save order
@@ -265,13 +266,12 @@ export const saveOrder = async (
 
   // Send confirmation email to user (if option is set) and always to the EMAIL_ORDER_UPDATED_BCC (if set)
   await sendOrderConfirmationMail({
-    order: selectedOrder,
+    order: unpackOrderPayment(selectedOrder),
     previousOrder: predecessorOrder ?? null,
     requestUserId,
     changingUserId: id,
     requisitionConfig,
     sendConfirmationEmailToUser,
-    orderPayment: body.payment,
     effectiveMsrp,
   });
 
@@ -283,7 +283,7 @@ const determineEffectiveMsrp = async (
   actualOrderItems: SharedOrderItem[],
   productsById: ProductsById,
   requisitionConfig: RequisitionConfig,
-  orders: Order[],
+  orders: SavedOrder[],
 ): Promise<{
   effectiveMsrp: Msrp;
 }> => {
@@ -342,4 +342,25 @@ const determineEffectiveMsrp = async (
   return {
     effectiveMsrp: result[result.length - 1],
   };
+};
+
+const updatePaymentInfo = (order: Order, paymentInfo: OrderPayment) => {
+  if (!order.paymentInfo) {
+    order.paymentInfo = new PaymentInfo();
+    order.paymentInfo.paymentProcessed = false;
+  } else {
+    if (order.paymentInfo.paymentProcessed) {
+      // set payment processed to false if payment details are changed
+      order.paymentInfo.paymentProcessed =
+        order.paymentInfo.paymentType === paymentInfo.paymentType &&
+        order.paymentInfo.paymentRequired === paymentInfo.paymentRequired &&
+        order.paymentInfo.amount === paymentInfo.amount &&
+        order.paymentInfo.bankDetails ===
+          JSON.stringify(paymentInfo.bankDetails);
+    }
+  }
+  order.paymentInfo.paymentType = paymentInfo.paymentType;
+  order.paymentInfo.paymentRequired = paymentInfo.paymentRequired;
+  order.paymentInfo.amount = paymentInfo.amount;
+  order.paymentInfo.bankDetails = JSON.stringify(paymentInfo.bankDetails);
 };

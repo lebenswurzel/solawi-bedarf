@@ -61,12 +61,9 @@ export type BankDetails = {
 export type OrderPayment = {
   paymentType: OrderPaymentType;
   paymentRequired: boolean;
+  paymentProcessed?: boolean;
   amount: number;
   bankDetails: BankDetails;
-};
-
-export type OrderPaymentOverview = OrderPayment & {
-  paymentProcessed: boolean;
 };
 
 export type UserOrder = {
@@ -163,6 +160,7 @@ export interface Order {
   confirmGTC: boolean;
   createdAt?: string | Date;
   updatedAt?: string | Date;
+  paymentInfo: OrderPayment | null;
 }
 
 export interface SavedOrder extends Order {
@@ -177,7 +175,6 @@ export interface SavedOrderWithPredecessor extends SavedOrder {
 //omit validFrom and validTo as they are set by the server
 export interface ConfirmedOrder extends Omit<Order, "validFrom" | "validTo"> {
   sendConfirmationEmail?: boolean;
-  payment: OrderPayment;
   id?: OrderId;
 }
 
@@ -460,7 +457,7 @@ export interface OrderOverviewApplicant {
 
 export type OrderOverviewWithApplicantItem = OrderOverviewItem &
   OrderOverviewApplicant &
-  OrderPaymentOverview;
+  OrderPayment;
 
 export interface Msrp {
   monthly: {

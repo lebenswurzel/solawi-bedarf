@@ -63,6 +63,7 @@ describe("calculateEffectiveMsrpChain", () => {
   ): SavedOrder => {
     return {
       id,
+      paymentInfo: null,
       orderItems,
       depotId,
       alternateDepotId: null,

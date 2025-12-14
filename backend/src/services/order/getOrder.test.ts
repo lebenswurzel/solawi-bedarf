@@ -15,19 +15,18 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { expect, test } from "vitest";
-import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
-import { Order as OrderType } from "@lebenswurzel/solawi-bedarf-shared/src/types";
+import {
+  OrderPaymentType,
+  UserCategory,
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import { ConfirmedOrder } from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import {
   TestUserData,
   createBasicTestCtx,
   testAsUser1,
 } from "../../../testSetup";
 import { Order } from "../../database/Order";
-import {
-  getDepotByName,
-  getRequisitionConfigId,
-  updateRequisition,
-} from "../../../test/testHelpers";
+import { getDepotByName, updateRequisition } from "../../../test/testHelpers";
 import { getOrder } from "./getOrder";
 import { saveOrder } from "./saveOrder";
 import { AppDataSource } from "../../database/database";
@@ -58,7 +57,7 @@ testAsUser1("get order", async ({ userData }: TestUserData) => {
     configId,
   });
 
-  await getOrder(ctx);
+  await expect(() => getOrder(ctx)).rejects.toThrowError("Error 404");
 
   // no order yet
   expect(ctx.body).toMatchObject({});
@@ -72,7 +71,7 @@ testAsUser1("get order", async ({ userData }: TestUserData) => {
   );
 
   const depot = await getDepotByName("d1");
-  const saveOrderRequest: OrderType = {
+  const saveOrderRequest: ConfirmedOrder = {
     category: UserCategory.CAT100,
     categoryReason: "nothing special",
     depotId: depot.id,
@@ -81,6 +80,17 @@ testAsUser1("get order", async ({ userData }: TestUserData) => {
     alternateDepotId: null,
     offerReason: "",
     requisitionConfigId: configId,
+    confirmGTC: true,
+    paymentInfo: {
+      paymentType: OrderPaymentType.BANK_TRANSFER,
+      paymentRequired: true,
+      amount: 3,
+      bankDetails: {
+        accountHolder: "John Doe",
+        iban: "DE1234567890",
+        bankName: "Solawi Bank",
+      },
+    },
   };
 
   // create order

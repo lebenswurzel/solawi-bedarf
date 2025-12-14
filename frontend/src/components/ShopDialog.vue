@@ -80,7 +80,7 @@ const confirmContribution = ref(false);
 const openFAQ = ref(false);
 const loading = ref(false);
 const showDepotNote = ref(false);
-const payment = ref<OrderPayment>({
+const paymentInfo = ref<OrderPayment>({
   paymentType: OrderPaymentType.UNCONFIRMED,
   paymentRequired: false,
   amount: 0,
@@ -199,7 +199,7 @@ const alternateDepotHint = computed(() => {
 });
 
 const paymentValidation = computed(() => {
-  return validatePayment(payment.value);
+  return validatePayment(paymentInfo.value);
 });
 
 const disableSubmit = computed(() => {
@@ -252,7 +252,7 @@ const onSave = () => {
       confirmGTC: confirmGTC.value,
       requisitionConfigId: activeConfigId.value,
       sendConfirmationEmail: sendConfirmationEmail.value,
-      payment: payment.value!,
+      paymentInfo: paymentInfo.value!,
       id: modificationOrderId.value,
     },
     props.requestUser.id,
@@ -411,7 +411,7 @@ const onSave = () => {
 
         <OrderPaymentComponent
           v-if="modificationOrder"
-          :payment="payment"
+          :paymentInfo="paymentInfo"
           :modification-order="modificationOrder"
           :offer="offer"
           :predecessor-order="
@@ -419,7 +419,7 @@ const onSave = () => {
           "
           :organization-info-flat="textContentStore.organizationInfoFlat"
           :request-user="props.requestUser"
-          @update:payment="(p: OrderPayment) => (payment = p)"
+          @update:paymentInfo="(p: OrderPayment) => (paymentInfo = p)"
         />
 
         <v-switch

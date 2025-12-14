@@ -33,7 +33,7 @@ import { useConfigStore } from "../../store/configStore";
 import { storeToRefs } from "pinia";
 
 const props = defineProps<{
-  payment: OrderPayment;
+  paymentInfo: OrderPayment;
   modificationOrder: SavedOrder;
   predecessorOrder?: SavedOrder;
   offer: number;
@@ -42,7 +42,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  "update:payment": [payment: OrderPayment];
+  "update:paymentInfo": [paymentInfo: OrderPayment];
 }>();
 
 const t = language.pages.shop.dialog;
@@ -57,17 +57,18 @@ const updatePayment = (updates: {
   bankDetails?: Partial<OrderPayment["bankDetails"]>;
 }) => {
   const updatedPayment: OrderPayment = {
-    ...props.payment,
+    ...props.paymentInfo,
     ...updates,
-    paymentRequired: updates.paymentRequired ?? props.payment.paymentRequired,
+    paymentRequired:
+      updates.paymentRequired ?? props.paymentInfo.paymentRequired,
     bankDetails: updates.bankDetails
       ? {
-          ...props.payment.bankDetails,
+          ...props.paymentInfo.bankDetails,
           ...updates.bankDetails,
         }
-      : props.payment.bankDetails,
+      : props.paymentInfo.bankDetails,
   };
-  emit("update:payment", updatedPayment);
+  emit("update:paymentInfo", updatedPayment);
 };
 
 const predecessorOffer = computed((): number => {
@@ -90,41 +91,6 @@ const enableConfirmBankTransfer = computed((): boolean => {
     return monthlyOfferDifference.value > 0;
   }
   return true;
-});
-
-watch([enableConfirmSepaUpdate, enableConfirmBankTransfer], () => {
-  const updates: Partial<OrderPayment> = {};
-  if (
-    (enableConfirmSepaUpdate.value || enableConfirmBankTransfer.value) &&
-    !props.payment.paymentRequired
-  ) {
-    updates.paymentRequired = true;
-  } else if (
-    !(enableConfirmSepaUpdate.value || enableConfirmBankTransfer.value) &&
-    props.payment.paymentRequired
-  ) {
-    updates.paymentRequired = false;
-  }
-
-  // make sure to set the payment type to unconfirmed if the condition for
-  // using the payment method is not met anymore
-  if (
-    !enableConfirmSepaUpdate.value &&
-    props.payment.paymentType === OrderPaymentType.SEPA
-  ) {
-    updates.paymentType = OrderPaymentType.UNCONFIRMED;
-    updates.amount = 0;
-  }
-  if (
-    !enableConfirmBankTransfer.value &&
-    props.payment.paymentType === OrderPaymentType.BANK_TRANSFER
-  ) {
-    updates.paymentType = OrderPaymentType.UNCONFIRMED;
-    updates.amount = 0;
-  }
-  if (Object.keys(updates).length > 0) {
-    updatePayment(updates);
-  }
 });
 
 const sepaLabel = computed(() => {
@@ -151,13 +117,52 @@ const bankTransferMessage = computed(() => {
 });
 
 watch(
-  [monthlyOfferDifference],
+  [
+    enableConfirmSepaUpdate,
+    enableConfirmBankTransfer,
+    monthlyOfferDifference,
+    bankTransferMessage,
+  ],
   () => {
-    updatePayment({
-      paymentRequired: monthlyOfferDifference.value > 0,
-    });
+    const updates: Partial<OrderPayment> = {};
+    if (
+      (enableConfirmSepaUpdate.value || enableConfirmBankTransfer.value) &&
+      !props.paymentInfo.paymentRequired
+    ) {
+      updates.paymentRequired = true;
+    } else if (
+      !(enableConfirmSepaUpdate.value || enableConfirmBankTransfer.value) &&
+      props.paymentInfo.paymentRequired
+    ) {
+      updates.paymentRequired = false;
+    }
+
+    // make sure to set the payment type to unconfirmed if the condition for
+    // using the payment method is not met anymore
+    if (
+      !enableConfirmSepaUpdate.value &&
+      props.paymentInfo.paymentType === OrderPaymentType.SEPA
+    ) {
+      updates.paymentType = OrderPaymentType.UNCONFIRMED;
+      updates.amount = 0;
+    }
+    if (
+      !enableConfirmBankTransfer.value &&
+      props.paymentInfo.paymentType === OrderPaymentType.BANK_TRANSFER
+    ) {
+      updates.paymentType = OrderPaymentType.UNCONFIRMED;
+      updates.amount = 0;
+    }
+    if (props.paymentInfo.paymentType == OrderPaymentType.BANK_TRANSFER) {
+      updates.amount = bankTransferMessage.value.amount;
+    }
+    if (props.paymentInfo.paymentType == OrderPaymentType.SEPA) {
+      updates.amount = props.offer;
+    }
+    if (Object.keys(updates).length > 0) {
+      updatePayment(updates);
+    }
   },
-  { immediate: true },
 );
 
 const onSepaUpdate = (checked: boolean | null) => {
@@ -166,7 +171,7 @@ const onSepaUpdate = (checked: boolean | null) => {
       amount: props.offer,
       paymentType: OrderPaymentType.SEPA,
     });
-  } else if (props.payment.paymentType === OrderPaymentType.SEPA) {
+  } else if (props.paymentInfo.paymentType === OrderPaymentType.SEPA) {
     updatePayment({
       paymentType: OrderPaymentType.UNCONFIRMED,
       amount: 0,
@@ -180,7 +185,7 @@ const onBankTransfer = (checked: boolean | null) => {
       amount: bankTransferMessage.value.amount,
       paymentType: OrderPaymentType.BANK_TRANSFER,
     });
-  } else if (props.payment.paymentType === OrderPaymentType.BANK_TRANSFER) {
+  } else if (props.paymentInfo.paymentType === OrderPaymentType.BANK_TRANSFER) {
     updatePayment({
       paymentType: OrderPaymentType.UNCONFIRMED,
       amount: 0,
@@ -189,11 +194,11 @@ const onBankTransfer = (checked: boolean | null) => {
 };
 
 const isSepaSelected = computed(() => {
-  return props.payment.paymentType === OrderPaymentType.SEPA;
+  return props.paymentInfo.paymentType === OrderPaymentType.SEPA;
 });
 
 const validationResult = computed(() => {
-  return validatePayment(props.payment);
+  return validatePayment(props.paymentInfo);
 });
 
 const onAccountHolderUpdate = (value: string) => {
@@ -232,7 +237,7 @@ const onBankNameUpdate = (value: string) => {
     </div>
     <v-checkbox
       v-if="enableConfirmSepaUpdate"
-      :model-value="payment.paymentType == OrderPaymentType.SEPA"
+      :model-value="paymentInfo.paymentType == OrderPaymentType.SEPA"
       @update:model-value="onSepaUpdate"
       :label="sepaLabel"
       hide-details
@@ -240,7 +245,7 @@ const onBankNameUpdate = (value: string) => {
     />
     <div v-if="isSepaSelected" class="pl-10 mt-2">
       <v-text-field
-        :model-value="payment.bankDetails.accountHolder"
+        :model-value="paymentInfo.bankDetails.accountHolder"
         @update:model-value="onAccountHolderUpdate"
         label="Kontoinhaber"
         variant="outlined"
@@ -249,7 +254,7 @@ const onBankNameUpdate = (value: string) => {
         class="mb-2"
       />
       <v-text-field
-        :model-value="payment.bankDetails.iban"
+        :model-value="paymentInfo.bankDetails.iban"
         @update:model-value="onIbanUpdate"
         label="IBAN"
         variant="outlined"
@@ -258,7 +263,7 @@ const onBankNameUpdate = (value: string) => {
         class="mb-2"
       />
       <v-text-field
-        :model-value="payment.bankDetails.bankName"
+        :model-value="paymentInfo.bankDetails.bankName"
         @update:model-value="onBankNameUpdate"
         label="Kreditinstitut"
         variant="outlined"
@@ -268,7 +273,7 @@ const onBankNameUpdate = (value: string) => {
     </div>
     <div v-if="enableConfirmBankTransfer">
       <v-checkbox
-        :model-value="payment.paymentType == OrderPaymentType.BANK_TRANSFER"
+        :model-value="paymentInfo.paymentType == OrderPaymentType.BANK_TRANSFER"
         @update:model-value="onBankTransfer"
         :label="bankTransferMessage.message"
         hide-details
