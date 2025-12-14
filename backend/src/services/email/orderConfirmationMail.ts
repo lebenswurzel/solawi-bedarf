@@ -113,6 +113,7 @@ export const sendOrderConfirmationMail = async ({
         order.offer,
         previousOrder?.offer ?? 0,
         organizationInfoFlat,
+        !!previousOrder,
       );
     } else if (
       order.paymentInfo.paymentType === OrderPaymentType.BANK_TRANSFER
@@ -126,6 +127,7 @@ export const sendOrderConfirmationMail = async ({
         previousOrder?.offer ?? 0,
         orderUser.name,
         organizationInfo.bankAccount,
+        !!previousOrder,
         config.timezone,
       );
       paymentMessage =
