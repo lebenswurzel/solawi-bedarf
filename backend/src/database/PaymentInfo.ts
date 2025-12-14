@@ -15,8 +15,9 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { OrderPaymentType } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 import { EncryptTransformer } from "./EncryptTransformer";
+import { BaseEntity } from "./BaseEntity";
 
 @Entity()
 export class PaymentInfo extends BaseEntity {
