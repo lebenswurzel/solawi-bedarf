@@ -16,15 +16,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class AddPaymentInfo1765663537156 implements MigrationInterface {
-  name = "AddPaymentInfo1765663537156";
+export class AddPaymentInfo1765710381587 implements MigrationInterface {
+  name = "AddPaymentInfo1765710381587";
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
       `CREATE TYPE "public"."payment_info_paymenttype_enum" AS ENUM('SEPA', 'BANK_TRANSFER', 'UNCONFIRMED')`,
     );
     await queryRunner.query(
-      `CREATE TABLE "payment_info" ("id" SERIAL NOT NULL, "paymentType" "public"."payment_info_paymenttype_enum" NOT NULL, "paymentRequired" boolean NOT NULL DEFAULT false, "paymentProcessed" boolean NOT NULL DEFAULT false, "amount" integer NOT NULL DEFAULT '0', "bankDetails" character varying NOT NULL, CONSTRAINT "PK_b2ba4f3b3f40c6a37e54fb8b252" PRIMARY KEY ("id"))`,
+      `CREATE TABLE "payment_info" ("createdAt" TIMESTAMP NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "updatedAt" TIMESTAMP NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "id" SERIAL NOT NULL, "paymentType" "public"."payment_info_paymenttype_enum" NOT NULL, "paymentRequired" boolean NOT NULL DEFAULT false, "paymentProcessed" boolean NOT NULL DEFAULT false, "amount" integer NOT NULL DEFAULT '0', "bankDetails" character varying NOT NULL, CONSTRAINT "PK_b2ba4f3b3f40c6a37e54fb8b252" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(`ALTER TABLE "order" ADD "paymentInfoId" integer`);
     await queryRunner.query(
