@@ -30,7 +30,11 @@ import {
 import { http } from "../../consts/http";
 
 export const getOrder = async (
-  ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
+  ctx: Koa.ParameterizedContext<
+    any,
+    Router.IRouterParamContext<any, {}>,
+    SavedOrder
+  >,
 ) => {
   const requestUserId = await getRequestUserId(ctx);
 
@@ -57,7 +61,7 @@ export const getOrder = async (
     if (order) {
       ctx.body = unpackOrderPayment(order);
     } else {
-      ctx.body = {};
+      ctx.throw(http.not_found, `no order found with id ${orderId}`);
     }
     return;
   }
