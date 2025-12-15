@@ -44,7 +44,6 @@ import MsrpDisplay from "./shop/MsrpDisplay.vue";
 import { useUserStore } from "../store/userStore.ts";
 import ContributionSelect from "./shop/ContributionSelect.vue";
 import OrderPaymentComponent from "./shop/OrderPayment.vue";
-import { validatePayment } from "@lebenswurzel/solawi-bedarf-shared/src/util/ibanHelper.ts";
 import DebugOnly from "./debug/DebugOnly.vue";
 
 const props = defineProps<{ open: boolean; requestUser: UserWithOrders }>();
@@ -79,6 +78,7 @@ const confirmContribution = ref(false);
 const openFAQ = ref(false);
 const loading = ref(false);
 const showDepotNote = ref(false);
+const paymentValidationValid = ref(false);
 
 const sendConfirmationEmail = ref(false);
 
@@ -187,13 +187,6 @@ const alternateDepotHint = computed(() => {
     : t.alternateDepot.hint;
 });
 
-const paymentValidation = computed(() => {
-  if (!paymentInfo.value) {
-    return { valid: false, errors: {} };
-  }
-  return validatePayment(paymentInfo.value);
-});
-
 const disableSubmit = computed(() => {
   return (
     !confirmGTC.value ||
@@ -202,7 +195,7 @@ const disableSubmit = computed(() => {
     offerReasonHint.value ||
     categoryReasonHint.value ||
     (requireConfirmContribution.value && !confirmContribution.value) ||
-    !paymentValidation.value.valid
+    !paymentValidationValid.value
   );
 });
 
@@ -415,6 +408,7 @@ const onSave = () => {
           :organization-info-flat="textContentStore.organizationInfoFlat"
           :request-user="props.requestUser"
           @update:paymentInfo="(p: OrderPayment) => (paymentInfo = p)"
+          @update:validationValid="(v: boolean) => (paymentValidationValid = v)"
         />
 
         <v-switch

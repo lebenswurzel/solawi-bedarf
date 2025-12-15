@@ -271,6 +271,9 @@ export const language = {
         },
         confirmPaymentMethod: {
           title: "Bitte wähle eine Zahlungsmethode:",
+          subtitleModificationOrder: "",
+          subtitleNewOrder:
+            "(Diese Angabe ist optional, hilft uns aber sehr bei der organisatorischen Abwicklung.)",
         },
         confirmSepaUpdate: {
           title: "Bestätigung der SEPA-Lastschrift",
@@ -285,7 +288,9 @@ export const language = {
             "Ich überweise den zusätzlichen Gesamtbetrag von {difference}€ bis zum {date} auf folgendes Konto:",
           labelNewOrder:
             "Ich überweise den Jahresgesamtbetrag von {difference}€ bis zum {date} auf folgendes Konto:",
-          reference: "Verwendungszweck: Bedarfsanpassung {userName}",
+          referenceModificationOrder:
+            "Verwendungszweck: Bedarfsanpassung {userName}",
+          referenceNewOrder: "Verwendungszweck: Jahresbeitrag {userName}",
         },
         depotNote: {
           title: "Hinweis zu Depots mit (*)",

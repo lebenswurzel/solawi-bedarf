@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { computed, watch } from "vue";
+import { computed, onMounted, watch } from "vue";
 import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
 import { OrderPaymentType } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import {
@@ -43,6 +43,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   "update:paymentInfo": [paymentInfo: OrderPayment];
+  "update:validationValid": [validationValid: boolean];
 }>();
 
 const t = language.pages.shop.dialog;
@@ -68,6 +69,7 @@ const updatePayment = (updates: {
         }
       : props.paymentInfo.bankDetails,
   };
+
   emit("update:paymentInfo", updatedPayment);
 };
 
@@ -93,6 +95,10 @@ const enableConfirmBankTransfer = computed((): boolean => {
   return true;
 });
 
+const isModificationOrder = computed(() => {
+  return !!props.predecessorOrder;
+});
+
 const sepaLabel = computed(() => {
   return getSepaUpdateMessage(
     props.modificationOrder.validFrom,
@@ -100,7 +106,7 @@ const sepaLabel = computed(() => {
     props.offer,
     predecessorOffer.value,
     props.organizationInfoFlat,
-    !!props.predecessorOrder,
+    isModificationOrder.value,
   );
 });
 
@@ -114,8 +120,23 @@ const bankTransferMessage = computed(() => {
     predecessorOffer.value,
     props.requestUser.name,
     props.organizationInfoFlat["organization.bankAccount"],
-    !!props.predecessorOrder,
+    isModificationOrder.value,
   );
+});
+
+const requirePaymentInformation = computed(() => {
+  return isModificationOrder.value;
+});
+
+const initializePaymentInformation = () => {
+  const initial: Partial<OrderPayment> = {
+    paymentRequired: requirePaymentInformation.value,
+  };
+  updatePayment(initial);
+};
+
+onMounted(() => {
+  initializePaymentInformation();
 });
 
 watch(
@@ -131,7 +152,7 @@ watch(
       (enableConfirmSepaUpdate.value || enableConfirmBankTransfer.value) &&
       !props.paymentInfo.paymentRequired
     ) {
-      updates.paymentRequired = true;
+      updates.paymentRequired = requirePaymentInformation.value;
     } else if (
       !(enableConfirmSepaUpdate.value || enableConfirmBankTransfer.value) &&
       props.paymentInfo.paymentRequired
@@ -200,8 +221,21 @@ const isSepaSelected = computed(() => {
 });
 
 const validationResult = computed(() => {
-  return validatePayment(props.paymentInfo);
+  const result = validatePayment(
+    props.paymentInfo,
+    props.offer,
+    bankTransferMessage.value.amount,
+  );
+  return result;
 });
+
+watch(
+  () => validationResult.value,
+  (newValidationResult) => {
+    emit("update:validationValid", newValidationResult.valid);
+  },
+  { immediate: true },
+);
 
 const onAccountHolderUpdate = (value: string) => {
   updatePayment({
@@ -231,11 +265,18 @@ const onBankNameUpdate = (value: string) => {
 <template>
   <div class="mt-3" v-if="enableConfirmSepaUpdate || enableConfirmBankTransfer">
     {{ t.confirmPaymentMethod.title }}
+    <div class="text-body-2">
+      {{
+        isModificationOrder
+          ? t.confirmPaymentMethod.subtitleModificationOrder
+          : t.confirmPaymentMethod.subtitleNewOrder
+      }}
+    </div>
     <div
-      v-if="validationResult.errors?.paymentType"
+      v-if="validationResult.errors?.general?.length > 0"
       class="text-body-2 text-error"
     >
-      {{ validationResult.errors?.paymentType }}
+      {{ validationResult.errors?.general?.join("\n") }}
     </div>
     <v-checkbox
       v-if="enableConfirmSepaUpdate"

@@ -287,6 +287,30 @@ export const getSepaUpdateMessage = (
   );
 };
 
+export const getRequiredBankTransferAmount = (
+  offer: number,
+  previousOffer: number,
+  orderValidFrom: Date,
+  orderValidTo: Date,
+  requisitionConfigValidFrom: Date,
+  requisitionConfigValidTo: Date,
+  timezone?: string
+): {
+  startMonth: Date;
+  monthCount: number;
+  amount: number;
+} => {
+  const { startMonth, count: monthCount } = getOrderValidMonths(
+    orderValidFrom,
+    orderValidTo,
+    requisitionConfigValidFrom,
+    requisitionConfigValidTo,
+    timezone
+  );
+  const amount = (offer - previousOffer) * monthCount;
+  return { startMonth, monthCount, amount };
+};
+
 export const getBankTransferMessage = (
   orderValidFrom: Date,
   orderValidTo: Date,
@@ -303,14 +327,15 @@ export const getBankTransferMessage = (
   accountDetails: string;
   amount: number;
 } => {
-  const { startMonth, count } = getOrderValidMonths(
+  const { startMonth, amount } = getRequiredBankTransferAmount(
+    offer,
+    previousOffer,
     orderValidFrom,
     orderValidTo,
     requisitionConfigValidFrom,
     requisitionConfigValidTo,
     timezone
   );
-  const amount = (offer - previousOffer) * count;
   return {
     message: interpolate(
       hasPreviousOrder
@@ -327,9 +352,15 @@ export const getBankTransferMessage = (
     accountDetails:
       accountDetails +
       "\n" +
-      interpolate(language.pages.shop.dialog.confirmBankTransfer.reference, {
-        userName,
-      }),
+      interpolate(
+        hasPreviousOrder
+          ? language.pages.shop.dialog.confirmBankTransfer
+              .referenceModificationOrder
+          : language.pages.shop.dialog.confirmBankTransfer.referenceNewOrder,
+        {
+          userName,
+        }
+      ),
     amount,
   };
 };
