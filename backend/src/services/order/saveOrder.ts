@@ -47,6 +47,7 @@ import {
   canEditOrder,
   determineModificationOrderId,
   determinePredecessorOrder,
+  getRequiredBankTransferAmount,
   isOfferChangeValid,
   isRequisitionActive,
   isValidBiddingOrder,
@@ -217,7 +218,24 @@ export const saveOrder = async (
 
   // todo: should also validate payment amount against the effective MSRP change
   if (body.paymentInfo) {
-    const validationResult = validatePayment(body.paymentInfo);
+    body.paymentInfo.paymentRequired = !!predecessorOrder;
+
+    const { amount: requiredBankTransferAmount } =
+      getRequiredBankTransferAmount(
+        body.offer,
+        predecessorOrder?.offer ?? 0,
+        selectedOrder.validFrom,
+        selectedOrder.validTo,
+        requisitionConfig.validFrom,
+        requisitionConfig.validTo,
+        config.timezone,
+      );
+
+    const validationResult = validatePayment(
+      body.paymentInfo,
+      body.offer,
+      requiredBankTransferAmount,
+    );
     if (!validationResult.valid) {
       ctx.throw(
         http.bad_request,

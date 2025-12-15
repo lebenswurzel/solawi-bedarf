@@ -42,23 +42,24 @@ const getCleanIban = (iban: string) => {
   return iban.replace(/\s/g, "");
 };
 
+export type ValidationErrors = {
+  accountHolder?: string;
+  iban?: string;
+  bankName?: string;
+  general: string[];
+};
+
 export const validatePayment = (
-  payment: OrderPayment
+  payment: OrderPayment,
+  requiredSepaAmount: number,
+  requiredBankTransferAmount: number
 ): {
   valid: boolean;
-  errors: {
-    paymentType?: string;
-    accountHolder?: string;
-    iban?: string;
-    bankName?: string;
-  };
+  errors: ValidationErrors;
 } => {
-  const errors: {
-    paymentType?: string;
-    accountHolder?: string;
-    iban?: string;
-    bankName?: string;
-  } = {};
+  const errors: ValidationErrors = {
+    general: [],
+  };
   if (payment.paymentType === OrderPaymentType.SEPA) {
     if (!payment.bankDetails.accountHolder) {
       errors.accountHolder = "Bitte Kontoinhaber angeben";
@@ -74,10 +75,28 @@ export const validatePayment = (
     payment.paymentType === OrderPaymentType.UNCONFIRMED &&
     payment.paymentRequired
   ) {
-    errors.paymentType = "Keine Zahlungsmethode ausgewählt";
+    errors.general.push("Keine Zahlungsmethode ausgewählt");
+  }
+  if (
+    payment.paymentType === OrderPaymentType.SEPA &&
+    payment.amount !== requiredSepaAmount
+  ) {
+    errors.general.push(
+      "Die SEPA-Zahlung muss der geforderten Höhe entsprechen" +
+        ` (${requiredSepaAmount}€ statt ${payment.amount}€)`
+    );
+  }
+  if (
+    payment.paymentType === OrderPaymentType.BANK_TRANSFER &&
+    payment.amount !== requiredBankTransferAmount
+  ) {
+    errors.general.push(
+      "Die Banküberweisung muss der geforderten Höhe entsprechen" +
+        ` (${requiredBankTransferAmount}€ statt ${payment.amount}€)`
+    );
   }
   return {
-    valid: Object.keys(errors).length === 0,
+    valid: Object.keys(errors).length === 1 && errors.general.length === 0,
     errors,
   };
 };
