@@ -299,6 +299,8 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 
 #118 Funktion zum Zurücksetzen des Passworts hinzugefügt
 
-# NEW
+# v0.14.1 - 2025-12-17 - Fix Rosenkohl
 
 #341 Fix: Verteilungsdialog: Keine Depotauswahl bei Produkten mit bisher keiner Lieferung
+
+# NEW
