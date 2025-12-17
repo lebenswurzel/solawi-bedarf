@@ -92,7 +92,7 @@ const getAvailableDepotsForProduct = (productId?: number) => {
     return [];
   }
   const requiredByDepotId = requiredByProductIdDepotId.value[productId];
-  const deliveredByDepotId = deliveredByProductIdDepotId.value[productId];
+  const deliveredByDepotId = deliveredByProductIdDepotId.value[productId] ?? {};
   const usedDepotIds = props.usedDepotIdsByProductId[productId];
   if (requiredByDepotId) {
     const depotIds = Object.keys(requiredByDepotId).map((key) => parseInt(key));
@@ -113,9 +113,16 @@ const getAvailableDepotsForProduct = (productId?: number) => {
 };
 
 const depotOptions = computed(() => {
+  const getDeliveredValue = (value: number | undefined) => {
+    // check for NaN
+    if (isNaN(value || 0)) {
+      return 0;
+    }
+    return value || 0;
+  };
   return getAvailableDepotsForProduct(props.shipmentItem.productId)?.map(
     (dd) => ({
-      title: `${dd.depot.name} (${((dd.delivered.actuallyDelivered || 0) + dd.delivered.assumedDelivered) / 100}/${
+      title: `${dd.depot.name} (${(getDeliveredValue(dd.delivered.actuallyDelivered) + getDeliveredValue(dd.delivered.assumedDelivered)) / 100}/${
         dd.delivered.frequency
       })`,
       value: dd.depot.id,
