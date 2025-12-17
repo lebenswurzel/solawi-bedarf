@@ -300,3 +300,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #118 Funktion zum Zurücksetzen des Passworts hinzugefügt
 
 # NEW
+
+#341 Fix: Verteilungsdialog: Keine Depotauswahl bei Produkten mit bisher keiner Lieferung
