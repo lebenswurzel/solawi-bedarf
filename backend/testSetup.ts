@@ -64,7 +64,11 @@ const clearAllTables = async () => {
   }
 };
 
+let reinitializationCount = 0;
+
 const reinitializeDatabase = async () => {
+  reinitializationCount++;
+  console.log("Reinitializing database... (" + reinitializationCount + ")");
   await clearAllTables();
   await initDb();
 
