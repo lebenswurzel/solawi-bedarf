@@ -304,3 +304,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #341 Fix: Verteilungsdialog: Keine Depotauswahl bei Produkten mit bisher keiner Lieferung
 
 # NEW
+
+#279 Beim Abspeichern der Bedarfsanmeldung kann der Nutzer Zahlungsinformationen angeben
