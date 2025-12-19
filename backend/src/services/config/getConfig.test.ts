@@ -25,6 +25,7 @@ import {
   TestAdminAndUserData,
   TestUserData,
   createBasicTestCtx,
+  setupDatabaseCleanup,
   testAsAdmin,
   testAsAdminAndUser,
   testAsUser1,
@@ -40,6 +41,8 @@ import { getDepotByName } from "../../../test/testHelpers";
 import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import { saveOrder } from "../order/saveOrder";
 import { Order } from "../../database/Order";
+
+setupDatabaseCleanup();
 
 test("prevent unauthorized access", async () => {
   const ctx = createBasicTestCtx();

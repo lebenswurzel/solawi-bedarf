@@ -31,6 +31,7 @@ import {
 import {
   TestUserData,
   createBasicTestCtx,
+  setupDatabaseCleanup,
   testAsAdmin,
   testAsUser1,
 } from "../../../testSetup";
@@ -46,6 +47,8 @@ import {
   organizationInfoKeys,
 } from "@lebenswurzel/solawi-bedarf-shared/src/config";
 import { getOrganizationInfoValueByKey } from "@lebenswurzel/solawi-bedarf-shared/src/text/textContent";
+
+setupDatabaseCleanup();
 
 test("prevent unauthorized access", async () => {
   const ctx = createBasicTestCtx();

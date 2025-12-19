@@ -23,6 +23,7 @@ import { genProduct } from "@lebenswurzel/solawi-bedarf-shared/testSetup";
 import { createTestProductCategory } from "../../../test/testHelpers";
 import {
   createBasicTestCtx,
+  setupDatabaseCleanup,
   testAsAdmin,
   testAsUser1,
   TestUserData,
@@ -31,6 +32,8 @@ import { http } from "../../consts/http";
 import { Product } from "../../database/Product";
 import { AppDataSource } from "../../database/database";
 import { saveProduct } from "./saveProduct";
+
+setupDatabaseCleanup();
 
 test("prevent unauthorized access", async () => {
   const ctx = createBasicTestCtx();

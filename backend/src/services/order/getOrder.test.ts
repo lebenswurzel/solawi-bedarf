@@ -23,6 +23,7 @@ import { ConfirmedOrder } from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import {
   TestUserData,
   createBasicTestCtx,
+  setupDatabaseCleanup,
   testAsUser1,
 } from "../../../testSetup";
 import { Order } from "../../database/Order";
@@ -33,6 +34,8 @@ import { AppDataSource } from "../../database/database";
 import { RequisitionConfig } from "../../database/RequisitionConfig";
 import { addMonths } from "date-fns";
 import { updateOrderValidFrom } from "../user/saveUser";
+
+setupDatabaseCleanup();
 
 test("prevent unauthorized access", async () => {
   const ctx = createBasicTestCtx();
@@ -84,10 +87,10 @@ testAsUser1("get order", async ({ userData }: TestUserData) => {
     paymentInfo: {
       paymentType: OrderPaymentType.BANK_TRANSFER,
       paymentRequired: true,
-      amount: 3,
+      amount: 0,
       bankDetails: {
-        accountHolder: "John Doe",
-        iban: "DE1234567890",
+        accountHolder: "Gerda Gemüse",
+        iban: "DE73916490657576621284",
         bankName: "Solawi Bank",
       },
     },

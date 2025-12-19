@@ -19,8 +19,10 @@ import { http } from "../../consts/http";
 import { AppDataSource } from "../../database/database";
 import { Applicant } from "../../database/Applicant";
 import { saveApplicant } from "./saveApplicant";
-import { createBasicTestCtx } from "../../../testSetup";
+import { createBasicTestCtx, setupDatabaseCleanup } from "../../../testSetup";
 import { createTestApplicant } from "../../../test/testHelpers";
+
+setupDatabaseCleanup();
 
 test("create applicant with active=true", async () => {
   const requestBody = {

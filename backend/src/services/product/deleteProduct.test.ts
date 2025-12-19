@@ -25,6 +25,7 @@ import {
 import {
   TestUserData,
   createBasicTestCtx,
+  setupDatabaseCleanup,
   testAsAdmin,
   testAsUser1,
 } from "../../../testSetup";
@@ -39,6 +40,8 @@ import {
   createTestProductCategory,
 } from "../../../test/testHelpers";
 import { bi } from "../bi/bi";
+
+setupDatabaseCleanup();
 import { saveProduct } from "./saveProduct";
 import { deleteProduct } from "./deleteProduct";
 import { Product } from "../../database/Product";

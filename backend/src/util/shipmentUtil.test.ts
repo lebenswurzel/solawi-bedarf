@@ -26,11 +26,18 @@ import {
   getRequisitionConfigId,
   updateRequisition,
 } from "../../test/testHelpers";
-import { createBasicTestCtx, testAsAdmin, TestUserData } from "../../testSetup";
+import {
+  createBasicTestCtx,
+  setupDatabaseCleanup,
+  testAsAdmin,
+  TestUserData,
+} from "../../testSetup";
 import { AppDataSource } from "../database/database";
 import { Shipment, Shipment as ShipmentEntity } from "../database/Shipment";
 import { saveShipment } from "../services/shipment/saveShipment";
 import { mergeShipmentWithForecast } from "./shipmentUtil";
+
+setupDatabaseCleanup();
 
 const createTestShipment = async (
   description: string,

@@ -35,6 +35,9 @@ import { TypeormTextContentRepo, TypeormUserRepo } from "../../adapter/typeorm";
 import { AppDataSource } from "../../database/database";
 import { mergeMethods } from "../../util/mergeMethods";
 import { generateToken } from "./login";
+import { setupDatabaseCleanup } from "../../../testSetup";
+
+setupDatabaseCleanup();
 
 const ORG_INFO: OrganizationInfo = {
   address: {
