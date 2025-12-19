@@ -18,6 +18,7 @@ import { expect, test } from "vitest";
 import {
   TestUserData,
   createBasicTestCtx,
+  setupDatabaseCleanup,
   testAsAdmin,
   testAsUser1,
 } from "../../../testSetup";
@@ -28,6 +29,8 @@ import {
 } from "../../database/RequisitionConfig";
 import { AppDataSource } from "../../database/database";
 import { deleteConfig } from "./deleteConfig";
+
+setupDatabaseCleanup();
 import { createConfig } from "./createConfig";
 import {
   CreateConfigRequest,

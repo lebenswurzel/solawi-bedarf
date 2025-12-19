@@ -17,6 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { expect, test } from "vitest";
 import {
   createBasicTestCtx,
+  setupDatabaseCleanup,
   TestAdminAndUserData,
   testAsAdmin,
   testAsAdminAndUser,
@@ -28,6 +29,8 @@ import { UpdateUserRequest } from "@lebenswurzel/solawi-bedarf-shared/src/types"
 import { AppDataSource } from "../../database/database";
 import { getRequisitionConfigId } from "../../../test/testHelpers";
 import { Order } from "../../database/Order";
+
+setupDatabaseCleanup();
 
 test("prevent unauthorized access", async () => {
   const ctx = createBasicTestCtx();

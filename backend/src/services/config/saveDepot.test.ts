@@ -19,6 +19,7 @@ import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import {
   TestUserData,
   createBasicTestCtx,
+  setupDatabaseCleanup,
   testAsAdmin,
   testAsUser1,
 } from "../../../testSetup";
@@ -32,6 +33,8 @@ import {
 } from "../../../test/testHelpers";
 import { DepotInfo } from "./depotTypes";
 import { saveDepot } from "./saveDepot";
+
+setupDatabaseCleanup();
 
 test("prevent unauthorized access", async () => {
   const ctx = createBasicTestCtx();

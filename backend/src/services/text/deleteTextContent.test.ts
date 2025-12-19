@@ -27,6 +27,7 @@ import {
 import {
   TestUserData,
   createBasicTestCtx,
+  setupDatabaseCleanup,
   testAsAdmin,
   testAsUser1,
 } from "../../../testSetup";
@@ -40,6 +41,8 @@ import {
   pageElementDefaults,
   pdfTextsDefaults,
 } from "@lebenswurzel/solawi-bedarf-shared/src/config";
+
+setupDatabaseCleanup();
 
 test("prevent unauthorized access", async () => {
   const ctx = createBasicTestCtx();

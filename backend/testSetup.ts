@@ -85,15 +85,23 @@ const reinitializeDatabase = async () => {
   await fillDatabaseWithTestData();
 };
 
-beforeAll(async () => {
-  await AppDataSource.initialize().then(async () => {
+/**
+ * Sets up database reinitialization after each test.
+ * Call this function in test files that need database cleanup between tests.
+ * Tests that don't interact with the database (e.g., pure utility function tests)
+ * should not call this to improve test performance.
+ */
+export const setupDatabaseCleanup = () => {
+  beforeAll(async () => {
+    await AppDataSource.initialize().then(async () => {
+      await reinitializeDatabase();
+    });
+  });
+
+  afterEach(async () => {
     await reinitializeDatabase();
   });
-});
-
-afterEach(async () => {
-  await reinitializeDatabase();
-});
+};
 
 ////////////////////////////////////////////////////
 // test helper methods

@@ -15,11 +15,18 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { expect, test } from "vitest";
-import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
-import { ConfirmedOrder } from "@lebenswurzel/solawi-bedarf-shared/src/types";
+import {
+  OrderPaymentType,
+  UserCategory,
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import {
+  ConfirmedOrder,
+  OrderPayment,
+} from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import {
   TestUserData,
   createBasicTestCtx,
+  setupDatabaseCleanup,
   testAsUser1,
 } from "../../../testSetup";
 import { Depot } from "../../database/Depot";
@@ -36,6 +43,8 @@ import { saveOrder } from "./saveOrder";
 import { Product } from "../../database/Product";
 import { addMonths } from "date-fns";
 import { updateOrderValidFrom } from "../user/saveUser";
+
+setupDatabaseCleanup();
 
 test("prevent unauthorized access", async () => {
   const ctx = createBasicTestCtx();
@@ -72,9 +81,8 @@ testAsUser1("update default order", async ({ userData }: TestUserData) => {
     offer: 0,
     alternateDepotId: null,
     offerReason: null,
-    validFrom: new Date("2024-01-01"),
-    validTo: new Date("2024-12-31"),
     requisitionConfigId: configId,
+    paymentInfo: null,
   };
 
   const ctx = createBasicTestCtx(request, userData.token, undefined, {
@@ -131,6 +139,18 @@ testAsUser1("save order with products", async ({ userData }: TestUserData) => {
     alternateDepotId: null,
     offerReason: null,
     requisitionConfigId: configId,
+    paymentInfo: null,
+  };
+
+  const paymentInfo: OrderPayment = {
+    paymentType: OrderPaymentType.SEPA,
+    paymentRequired: true,
+    amount: 100,
+    bankDetails: {
+      accountHolder: "John Doe",
+      iban: "DE73916490657576621284",
+      bankName: "Bank of America",
+    },
   };
 
   const product1 = await getProductByName("p1");
@@ -146,6 +166,7 @@ testAsUser1("save order with products", async ({ userData }: TestUserData) => {
   };
   const request = {
     ...baseRequest,
+    paymentInfo,
     offer: 100,
     orderItems: [orderItem1, orderItem2],
   };
@@ -335,9 +356,19 @@ const _createCtx = async (
     offer: 0,
     alternateDepotId: null,
     offerReason: null,
-    validFrom: dateDeltaDays(-1),
-    validTo: dateDeltaDays(10),
+    paymentInfo: null,
     requisitionConfigId: configId,
+  };
+
+  const paymentInfo: OrderPayment = {
+    paymentType: OrderPaymentType.SEPA,
+    paymentRequired: true,
+    amount: updatedFields.offer ?? 21,
+    bankDetails: {
+      accountHolder: "Gerda Gemüse",
+      iban: "DE73916490657576621284",
+      bankName: "Solawi Bank",
+    },
   };
 
   const product1 = await getProductByName("p1");
@@ -352,6 +383,7 @@ const _createCtx = async (
   };
   const request = {
     ...baseRequest,
+    paymentInfo,
     offer: 21,
     orderItems: [orderItem1, orderItem2],
   };

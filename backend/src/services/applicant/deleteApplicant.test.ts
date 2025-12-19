@@ -23,6 +23,7 @@ import { UserAddress } from "../../database/UserAddress";
 import { deleteApplicant } from "./deleteApplicant";
 import {
   createBasicTestCtx,
+  setupDatabaseCleanup,
   testAsAdmin,
   testAsUser1,
   TestUserData,
@@ -31,6 +32,8 @@ import {
   createTestApplicant,
   createTestApplicantWithUser,
 } from "../../../test/testHelpers";
+
+setupDatabaseCleanup();
 
 test("prevent unauthorized access", async () => {
   const ctx = createBasicTestCtx(undefined, undefined, undefined, { id: "1" });

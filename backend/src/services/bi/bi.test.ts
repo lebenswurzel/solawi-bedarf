@@ -36,6 +36,7 @@ import {
 } from "../../../test/testHelpers";
 import {
   getUserId,
+  setupDatabaseCleanup,
   testAsAdminAndUser,
   testAsUser1,
   TestAdminAndUserData,
@@ -44,6 +45,8 @@ import {
 import { bi } from "./bi";
 import { RequisitionConfig } from "../../database/RequisitionConfig";
 import { availabilityWeights } from "./availabilityWeights";
+
+setupDatabaseCleanup();
 
 /**
  * Creates and saves a test Depot entity

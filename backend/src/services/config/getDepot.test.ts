@@ -18,12 +18,15 @@ import { expect, test } from "vitest";
 import {
   TestUserData,
   createBasicTestCtx,
+  setupDatabaseCleanup,
   testAsAdmin,
   testAsUser1,
 } from "../../../testSetup";
 import { Depot } from "../../database/Depot";
 import { AppDataSource } from "../../database/database";
 import { getDepot } from "./getDepot";
+
+setupDatabaseCleanup();
 
 test("prevent unauthorized access", async () => {
   const ctx = createBasicTestCtx();

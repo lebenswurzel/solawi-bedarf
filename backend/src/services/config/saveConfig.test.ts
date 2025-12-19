@@ -25,6 +25,7 @@ import {
   TestUserData,
   createBasicTestCtx,
   loginUser,
+  setupDatabaseCleanup,
   testAsAdmin,
   testAsUser1,
 } from "../../../testSetup";
@@ -36,6 +37,8 @@ import { AppDataSource } from "../../database/database";
 import { getConfig } from "./getConfig";
 import { saveConfig } from "./saveConfig";
 import { http } from "../../consts/http";
+
+setupDatabaseCleanup();
 import { createConfig } from "./createConfig";
 
 test("prevent unauthorized access", async () => {

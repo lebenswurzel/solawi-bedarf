@@ -22,6 +22,7 @@ import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import { convertApplicantToUser } from "./convertApplicantToUser";
 import {
   createBasicTestCtx,
+  setupDatabaseCleanup,
   testAsAdmin,
   testAsUser1,
   TestUserData,
@@ -30,6 +31,8 @@ import {
   createTestApplicant,
   createTestApplicantWithUser,
 } from "../../../test/testHelpers";
+
+setupDatabaseCleanup();
 
 test("prevent unauthorized access", async () => {
   const ctx = createBasicTestCtx({ name: "testuser" });

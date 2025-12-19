@@ -21,6 +21,7 @@ import { Applicant } from "../../database/Applicant";
 import { deactivateApplicant } from "./deactivateApplicant";
 import {
   createBasicTestCtx,
+  setupDatabaseCleanup,
   testAsAdmin,
   testAsUser1,
   TestUserData,
@@ -29,6 +30,8 @@ import {
   createTestApplicant,
   createTestApplicantWithUser,
 } from "../../../test/testHelpers";
+
+setupDatabaseCleanup();
 
 test("prevent unauthorized access", async () => {
   const ctx = createBasicTestCtx();

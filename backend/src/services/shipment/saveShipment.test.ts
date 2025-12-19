@@ -30,6 +30,7 @@ import {
 } from "../../../test/testHelpers";
 import {
   createBasicTestCtx,
+  setupDatabaseCleanup,
   testAsAdmin,
   testAsUser1,
   TestUserData,
@@ -41,6 +42,8 @@ import {
 import { AppDataSource } from "../../database/database";
 import { Shipment as ShipmentEntity } from "../../database/Shipment";
 import { saveShipment } from "./saveShipment";
+
+setupDatabaseCleanup();
 
 const createTestShipment = async (
   description: string,
