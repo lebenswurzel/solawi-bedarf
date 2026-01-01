@@ -308,3 +308,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #279 Beim Abspeichern der Bedarfsanmeldung kann der Nutzer Zahlungsinformationen angeben
 
 # NEW
+
+#345 Fix: Spinner-Buttons für Eingabefelder in der Bedarfsanmeldung funktioniert jetzt auch in Firefox
