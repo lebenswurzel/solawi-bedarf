@@ -34,7 +34,10 @@ import {
 } from "@lebenswurzel/solawi-bedarf-shared/src/validation/reason.ts";
 import SeasonText from "./styled/SeasonText.vue";
 import { useUiFeedback } from "../store/uiFeedbackStore.ts";
-import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
+import {
+  UserCategory,
+  UserRole,
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import {
   OrderPayment,
   UserWithOrders,
@@ -45,6 +48,7 @@ import { useUserStore } from "../store/userStore.ts";
 import ContributionSelect from "./shop/ContributionSelect.vue";
 import OrderPaymentComponent from "./shop/OrderPayment.vue";
 import DebugOnly from "./debug/DebugOnly.vue";
+import { isValidBiddingOrder } from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition.ts";
 
 const props = defineProps<{ open: boolean; requestUser: UserWithOrders }>();
 const emit = defineEmits(["close"]);
@@ -65,6 +69,7 @@ const {
   alternateDepotId,
   category,
   categoryReason,
+  savedOrder,
   offerReason,
   paymentInfo,
   modificationOrderItems,
@@ -177,6 +182,22 @@ const offerHint = computed((): string | undefined => {
   if (enableOfferReason.value && offerReasonHint.value) {
     return t.offer.lowOfferHint;
   }
+  if (
+    !isValidBiddingOrder(
+      userStore.currentUser?.role ?? UserRole.USER,
+      config.value!,
+      new Date(),
+      savedOrder.value,
+      {
+        offer: offer.value,
+        orderItems: modificationOrderItems.value,
+      },
+    )
+  ) {
+    return interpolate(t.offer.tooLowInBiddingRound, {
+      currentOffer: modificationOrder.value?.offer.toString() ?? "???",
+    });
+  }
   return undefined;
 });
 
@@ -191,8 +212,7 @@ const disableSubmit = computed(() => {
   return (
     !confirmGTC.value ||
     !depotId.value ||
-    needsHigherOffer.value ||
-    offerReasonHint.value ||
+    offerHint.value ||
     categoryReasonHint.value ||
     (requireConfirmContribution.value && !confirmContribution.value) ||
     !paymentValidationValid.value

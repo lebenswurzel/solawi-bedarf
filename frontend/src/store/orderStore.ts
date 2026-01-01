@@ -123,14 +123,20 @@ export const useOrderStore = defineStore("orderStore", () => {
     }));
   });
 
+  /**
+   * The order that is currently being modified. This is the currently saved order but with the
+   * current order item changes applied.
+   */
   const modificationOrder = computed(
     (): SavedOrderWithPredecessor | undefined => {
       const order = allOrders.value.find(
         (o) => o.id === modificationOrderId.value,
       );
-      console.log("actualOrderItemsByProductId", {
-        ...actualOrderItemsByProductId.value,
-      });
+      if (isDebugEnabled()) {
+        console.log("actualOrderItemsByProductId", {
+          ...actualOrderItemsByProductId.value,
+        });
+      }
       if (order) {
         return {
           ...order,
@@ -139,6 +145,10 @@ export const useOrderStore = defineStore("orderStore", () => {
       }
     },
   );
+
+  const savedOrder = computed((): SavedOrder | undefined => {
+    return findOrderById(modificationOrderId.value!);
+  });
 
   const predecessorOrder = computed((): SavedOrder | undefined => {
     return allOrders.value.find((o) => o.id === predecessorOrderId.value);
@@ -189,7 +199,9 @@ export const useOrderStore = defineStore("orderStore", () => {
         modOrderId ||
         predecessorOrder?.id ||
         (orders.length > 0 ? orders[orders.length - 1].id : undefined);
-      console.log("orderStore.update visibleOrderId", visibleOrderId.value);
+      if (isDebugEnabled()) {
+        console.log("orderStore.update visibleOrderId", visibleOrderId.value);
+      }
     });
   };
 
@@ -198,12 +210,14 @@ export const useOrderStore = defineStore("orderStore", () => {
     modificationOrderId.value = orderId;
     predecessorOrderId.value = modOrder?.predecessorId || undefined;
 
-    console.log(
-      "modificationOrderId",
-      modificationOrderId.value,
-      "predecessorOrderId",
-      predecessorOrderId.value,
-    );
+    if (isDebugEnabled()) {
+      console.log(
+        "modificationOrderId",
+        modificationOrderId.value,
+        "predecessorOrderId",
+        predecessorOrderId.value,
+      );
+    }
   };
 
   const getPredecessorOrder = (
@@ -281,6 +295,7 @@ export const useOrderStore = defineStore("orderStore", () => {
     modificationOrderId,
     ordersWithActualOrderItems,
     modificationOrder,
+    savedOrder,
     predecessorOrder,
     selectedShipmentDate,
     isModifyingOrder,

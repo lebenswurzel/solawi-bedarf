@@ -142,7 +142,15 @@ export const saveOrder = async (
     (o) => o.validFrom <= selectedOrder.validFrom,
   );
 
-  if (!isValidBiddingOrder(role, requisitionConfig, currentTime, null, body)) {
+  if (
+    !isValidBiddingOrder(
+      role,
+      requisitionConfig,
+      currentTime,
+      selectedOrder,
+      body,
+    )
+  ) {
     ctx.throw(http.bad_request, "not valid in bidding round");
   }
   let dateOfInterest = getSameOrNextThursday(selectedOrder.validFrom);

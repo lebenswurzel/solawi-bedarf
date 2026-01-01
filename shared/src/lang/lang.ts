@@ -239,6 +239,8 @@ export const language = {
           label: "Solawi-Beitrag pro Monat [€]",
           hint: "Mindestwert für Deinen Solawi-Beitrag: {msrp}€",
           lowOfferHint: "Begründung für Deinen Solawi-Beitrag erforderlich",
+          tooLowInBiddingRound:
+            "In der Bieterrunde darf der Solawi-Beitrag nicht geringer sein als der bereits gespeicherte Wert ({currentOffer}€)",
         },
         offerReason: {
           label: "Warum möchtest Du weniger zahlen?",

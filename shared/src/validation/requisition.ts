@@ -84,8 +84,9 @@ export const isValidBiddingOrder = (
   userRole: UserRole,
   requisitionConfig: ExistingConfig,
   now: Date,
-  savedOrder: ConfirmedOrder | null,
-  actualOrder: ConfirmedOrder
+  savedOrder: Pick<ConfirmedOrder, "offer" | "orderItems"> | undefined,
+  actualOrder: Pick<ConfirmedOrder, "offer" | "orderItems">,
+  allowItemReduction: boolean = true
 ) => {
   if (!isIncreaseOnly(userRole, requisitionConfig, now)) {
     return true;
@@ -98,6 +99,9 @@ export const isValidBiddingOrder = (
 
   if (savedOrder.offer > actualOrder.offer) {
     return false;
+  }
+  if (allowItemReduction) {
+    return true;
   }
   for (let savedOrderItem of savedOrder.orderItems) {
     const actualOrderItem = actualOrder.orderItems.find(
