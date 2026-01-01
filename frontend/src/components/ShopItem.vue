@@ -137,9 +137,29 @@ const model = ref<string>();
 const oldValue = ref<string>();
 const errorMessage = ref<string | null>(null);
 
-const onUpdate = (value: string) => {
-  model.value = value;
-};
+const modelValue = computed({
+  get: () => model.value || "0",
+  set: (value: string) => {
+    model.value = value;
+    let numValue = parseInt(value || "0");
+    let minValue = minValueAvailable.value;
+    if (
+      config.value &&
+      !isIncreaseOnly(currentUser.value?.role, config.value, now.value)
+    ) {
+      minValue = 0;
+    }
+    numValue = sanitizeOrderItem({
+      value: numValue,
+      minValue: minValue,
+      maxValue: maxValueAvailable.value,
+      step: product.value.quantityStep,
+    });
+    model.value = numValue.toString();
+    validateValue(numValue);
+    orderStore.updateOrderItem(product.value.id, numValue);
+  },
+});
 
 const getProductMsrpWeight = (): number => {
   if (!visibleOrderId.value) {
@@ -170,28 +190,6 @@ const validateValue = (value: number) => {
   );
   errorMessage.value = error;
   return error === null;
-};
-
-const onBlur = (blur: boolean) => {
-  if (!blur) {
-    let value = parseInt(model.value || "0");
-    let minValue = minValueAvailable.value;
-    if (
-      config.value &&
-      !isIncreaseOnly(currentUser.value?.role, config.value, now.value)
-    ) {
-      minValue = 0;
-    }
-    value = sanitizeOrderItem({
-      value,
-      minValue: minValue,
-      maxValue: maxValueAvailable.value,
-      step: product.value.quantityStep,
-    });
-    model.value = value.toString();
-    validateValue(value);
-    orderStore.updateOrderItem(product.value.id, value);
-  }
 };
 
 watch([productsById, savedOrderItemsByProductId], () => {
@@ -303,16 +301,9 @@ onMounted(() => {
           :min="minValueAvailable"
           :max="maxValueAvailable"
           :step="product.quantityStep"
-          :model-value="model"
+          v-model="modelValue"
           :disabled="!product?.active || !submit || !isModifyingOrder"
           :error-messages="errorMessage"
-          @update:model-value="
-            (v) => {
-              onUpdate(v);
-              validateValue(parseInt(v || '0'));
-            }
-          "
-          @update:focused="onBlur"
           variant="outlined"
           :class="{ 'highlighted-field': shouldHighlightMainField }"
         >
