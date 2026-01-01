@@ -51,6 +51,6 @@
     "@vitest/coverage-v8": "^4.0.10",
     "prettier": "^3.6.2",
     "unplugin-swc": "^1.5.8",
-    "vitest": "^4.0.10"
+    "vitest": "^4.0.16"
   }
 }
