@@ -307,7 +307,9 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 
 #279 Beim Abspeichern der Bedarfsanmeldung kann der Nutzer Zahlungsinformationen angeben
 
-# NEW
+# v0.15.1 - 2026-01-01 - Fix Produktmengenänderung in Firefox
 
 #345 Fix: Spinner-Buttons für Eingabefelder in der Bedarfsanmeldung funktioniert jetzt auch in Firefox
 #347 Verringerung des Solawi-Beitrags in der Bieterrunde nicht erlaubt
+
+# NEW
