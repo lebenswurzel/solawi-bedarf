@@ -110,7 +110,7 @@ export function createDefaultPdf(
       ],
     },
     layout: "noBorders",
-    margin: [0, logo ? 10 : 60, 0, 20],
+    margin: [0, 0, 0, 20],
   });
   if (pdf.additionalTopMessage) {
     content.push(pdf.additionalTopMessage);
@@ -209,7 +209,7 @@ export function createDefaultPdf(
     },
     header,
     footer,
-    pageMargins: [40, 60, 40, 60],
+    pageMargins: [40, pdf.headerTextLeft ? 60 : 30, 40, 60],
   });
 }
 
