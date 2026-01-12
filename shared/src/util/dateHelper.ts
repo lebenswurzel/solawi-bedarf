@@ -70,7 +70,13 @@ export const prettyDate = (
     : "nie";
 };
 
-export const prettyCompactDate = (date?: Date | string | null): string => {
+export const prettyCompactDate = (
+  date?: Date | string | null,
+  timezone?: string
+): string => {
+  if (timezone && date) {
+    date = toZonedTime(date, timezone);
+  }
   return date ? format(date, "dd.MM.yyyy, HH:mm:ss", { locale: de }) : "nie";
 };
 

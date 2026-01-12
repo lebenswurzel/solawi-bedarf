@@ -185,7 +185,7 @@ export const sendOrderConfirmationMail = async ({
   let pdfBlob: Blob | null = null;
   if (dataByUserAndProductCategory.length > 0) {
     const pdf = createDefaultPdf(
-      dataByUserAndProductCategory[0],
+      { ...dataByUserAndProductCategory[0], timezone: config.timezone },
       organizationInfo,
     );
     pdfBlob = await new Promise((resolve, _) => {

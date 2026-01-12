@@ -78,6 +78,7 @@ export interface PdfSpec {
   tables: PdfTable[];
   additionalContent?: Content[];
   additionalTopMessage?: Content;
+  timezone?: string;
 }
 
 export function createDefaultPdf(
@@ -154,7 +155,7 @@ export function createDefaultPdf(
     content.push(...pdf.additionalContent);
   }
 
-  const creationDate = prettyCompactDate(new Date());
+  const creationDate = prettyCompactDate(new Date(), pdf.timezone);
 
   const footerTextLeft = pdf.footerTextLeft || "";
 
