@@ -312,4 +312,9 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #345 Fix: Spinner-Buttons für Eingabefelder in der Bedarfsanmeldung funktioniert jetzt auch in Firefox
 #347 Verringerung des Solawi-Beitrags in der Bieterrunde nicht erlaubt
 
+# v0.15.2 - 2026-01-12 - Schmalere PDF-Ränder
+
+#348 Fix: Zeitstempel in Bedarfsanmeldungs-PDFs wird jetzt in der richtigen Zeitzone angezeigt
+#348 Oberer Rand in PDFs ist jetzt deutlich schmaler
+
 # NEW
