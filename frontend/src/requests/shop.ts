@@ -20,6 +20,15 @@ import {
 } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { getUrl, verifyResponse } from "./requests.ts";
 
+const getOrderOptions = (
+  noOrderItems?: boolean,
+  noPaymentInfo?: boolean,
+) =>
+  [
+    noOrderItems ? "no-order-items" : "",
+    noPaymentInfo ? "no-payment-info" : "",
+  ].join(",");
+
 export const saveOrder = async (order: ConfirmedOrder, userId: number) => {
   const response = await fetch(getUrl(`/shop/order?id=${userId}`), {
     method: "POST",
@@ -36,13 +45,10 @@ export const getOrder = async (
   userId: number,
   configId: number,
   noOrderItems?: boolean,
-  noProductConfiguration?: boolean,
+  noPaymentInfo?: boolean,
   orderId?: number,
 ): Promise<SavedOrder | null> => {
-  const options = [
-    noOrderItems ? "no-order-items" : "",
-    noProductConfiguration ? "no-product-configuration" : "",
-  ].join(",");
+  const options = getOrderOptions(noOrderItems, noPaymentInfo);
 
   const params = new URLSearchParams({
     id: userId.toString(),
@@ -71,9 +77,19 @@ export const getOrder = async (
 export const getAllOrders = async (
   userId: number,
   configId: number,
+  noOrderItems?: boolean,
+  noPaymentInfo?: boolean,
 ): Promise<SavedOrder[]> => {
+  const options = getOrderOptions(noOrderItems, noPaymentInfo);
+
+  const params = new URLSearchParams({
+    id: userId.toString(),
+    configId: configId.toString(),
+    options,
+  });
+
   const response = await fetch(
-    getUrl(`/shop/orders?id=${userId}&configId=${configId}`),
+    getUrl(`/shop/orders?${params.toString()}`),
   );
 
   await verifyResponse(response);
