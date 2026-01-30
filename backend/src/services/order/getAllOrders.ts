@@ -19,7 +19,10 @@ import Koa from "koa";
 import Router from "koa-router";
 import { AppDataSource } from "../../database/database";
 import { Order } from "../../database/Order";
-import { getConfigIdFromQuery } from "../../util/requestUtil";
+import {
+  getConfigIdFromQuery,
+  getStringQueryParameter,
+} from "../../util/requestUtil";
 import { SavedOrder } from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import { unpackOrderPayment } from "./getOrder";
 
@@ -32,15 +35,36 @@ export const getAllOrders = async (
 ) => {
   const requestUserId = await getRequestUserId(ctx);
   const configId = getConfigIdFromQuery(ctx);
-  const allOrders = await getUserOrders(requestUserId, configId);
+  const option = getStringQueryParameter(ctx.request.query, "options", "");
+  const noOrderItems = option.includes("no-order-items");
+  const noPaymentInfo = option.includes("no-payment-info");
+
+  const allOrders = await getUserOrders(
+    requestUserId,
+    configId,
+    noOrderItems,
+    noPaymentInfo,
+  );
   ctx.body = allOrders.map(unpackOrderPayment);
 };
 
-export const getUserOrders = async (userId: number, configId: number) => {
+export const getUserOrders = async (
+  userId: number,
+  configId: number,
+  noOrderItems: boolean,
+  noPaymentInfo: boolean,
+) => {
+  const relations = { orderItems: true, paymentInfo: true };
+  if (noOrderItems) {
+    relations.orderItems = false;
+  }
+  if (noPaymentInfo) {
+    relations.paymentInfo = false;
+  }
   const allOrders: Order[] = await AppDataSource.getRepository(Order).find({
     where: { userId: userId, requisitionConfigId: configId },
     order: { validFrom: "ASC" }, // Most recent last
-    relations: { orderItems: true, paymentInfo: true },
+    relations,
   });
   return allOrders;
 };

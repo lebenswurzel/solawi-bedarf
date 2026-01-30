@@ -16,28 +16,38 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from "vue";
-import { Applicant } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
+import {
+  Applicant,
+  SavedOrder,
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { LMap, LTileLayer, LMarker, LPopup } from "@vue-leaflet/vue-leaflet";
 import "leaflet/dist/leaflet.css";
 import { icon, LatLngTuple } from "leaflet";
 import { useConfigStore } from "../../store/configStore";
-import { getOrder } from "../../requests/shop";
+import { getAllOrders } from "../../requests/shop";
 import { storeToRefs } from "pinia";
 import { useUserStore } from "../../store/userStore";
 import { getApplicants } from "../../requests/applicant";
 import { ApplicantState } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import { getAddressCoordinates } from "../../lib/addressUtils";
+import { prettyDateWithMonthAndYear } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper";
 
 const mapCenter = ref([51.0504, 13.7373] as [number, number]); // Center of Dresden
 const zoom = ref(10);
 
 interface Marker {
+  userId: number;
   position: LatLngTuple;
   address: string;
   name: string;
   realName: string;
   depotId: number;
   depotName: string;
+  orders: SavedOrder[];
+}
+
+interface ApplicantWithOrders extends Applicant {
+  orders: SavedOrder[];
 }
 
 const loadingProgress = ref<string | null>(null);
@@ -46,7 +56,7 @@ const userStore = useUserStore();
 const { activeConfigId, depots } = storeToRefs(configStore);
 const { userOptions } = storeToRefs(userStore);
 
-const activeUsers = ref<Applicant[]>([]);
+const activeUsers = ref<ApplicantWithOrders[]>([]);
 const processedUsers = ref(0);
 const isProcessing = ref(false);
 const isFullscreen = ref(false);
@@ -123,12 +133,14 @@ const updateDepotMarkers = async () => {
       }
       const coords = await getAddressCoordinates(address);
       const marker = {
+        userId: 0,
         position: coords || [0, 0],
         address: depot.address,
         name: depot.name,
         realName: depot.name,
         depotId: depot.id,
         depotName: depot.name,
+        orders: [],
       };
       if (coords) {
         markers.push(marker);
@@ -144,14 +156,16 @@ const markers = computed((): Marker[] => {
   return activeUsers.value.map((applicant) => {
     const address = `${applicant.address.street}, ${applicant.address.postalcode} ${applicant.address.city}, Germany`;
     return {
+      userId: applicant.orders[0].userId || 0,
       position: [0, 0] as LatLngTuple, // Will be updated after geocoding
       address,
       name: applicant.name || "",
       realName: `${applicant.address.firstname} ${applicant.address.lastname}`,
-      depotId: (applicant as any).depotId,
+      depotId: applicant.orders[0].depotId,
       depotName:
-        depots.value.find((d) => d.id === (applicant as any).depotId)?.name ||
+        depots.value.find((d) => d.id === applicant.orders[0].depotId)?.name ||
         "Unbekannt",
+      orders: applicant.orders,
     };
   });
 });
@@ -194,22 +208,20 @@ onMounted(async () => {
         return null;
       }
 
-      const order = await getOrder(
+      const orders = await getAllOrders(
         matchingUser.value,
         activeConfigId.value,
-        false,
+        true,
         true,
       );
-      if (order && order.offer > 0) {
-        return { ...applicant, depotId: order.depotId };
+      if (orders && orders.some((o) => o.offer > 0)) {
+        return { ...applicant, orders };
       }
       return null;
     }),
   );
 
-  activeUsers.value = activeApplicants.filter(
-    (a): a is Applicant & { depotId: number } => a !== null,
-  );
+  activeUsers.value = activeApplicants.filter((a) => a !== null);
   isProcessing.value = false;
 
   // Geocode addresses to get coordinates
@@ -304,6 +316,22 @@ watch(relevantDepots, () => {
               {{ marker.address }}
               <br />
               <strong>Depot:</strong> {{ marker.depotName }}
+              <br />
+              <strong>Bedarfsanmeldungen:</strong> {{ marker.orders.length }}
+              <v-btn
+                icon="mdi-storefront-outline"
+                variant="plain"
+                :to="{ path: `/shop/${marker.userId}` }"
+                size="x-small"
+                class="ma-0 pa-0"
+              ></v-btn>
+              <br />
+              <template v-for="order in marker.orders" :key="order.id">
+                <li style="list-style-type: none">
+                  ab {{ prettyDateWithMonthAndYear(order.validFrom) }}:
+                  {{ order.offer }} €
+                </li>
+              </template>
             </div>
           </LPopup>
         </LMarker>

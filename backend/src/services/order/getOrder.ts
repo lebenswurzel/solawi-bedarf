@@ -46,6 +46,9 @@ export const getOrder = async (
   if (option.includes("no-order-items")) {
     relations.orderItems = false;
   }
+  if (option.includes("no-payment-info")) {
+    relations.paymentInfo = false;
+  }
 
   // If a specific order ID is requested, return that order
   if (orderId) {
