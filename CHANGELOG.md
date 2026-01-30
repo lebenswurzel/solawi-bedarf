@@ -318,3 +318,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #348 Oberer Rand in PDFs ist jetzt deutlich schmaler
 
 # NEW
+
+#350 Fehler bei der Kartenansicht für Admins behoben
