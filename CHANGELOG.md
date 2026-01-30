@@ -317,6 +317,8 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #348 Fix: Zeitstempel in Bedarfsanmeldungs-PDFs wird jetzt in der richtigen Zeitzone angezeigt
 #348 Oberer Rand in PDFs ist jetzt deutlich schmaler
 
-# NEW
+# v0.15.3 - 2026-01-30 - Kartenansicht Fix
 
 #350 Fehler bei der Kartenansicht für Admins behoben
+
+# NEW
