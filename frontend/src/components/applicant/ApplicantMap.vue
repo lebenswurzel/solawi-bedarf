@@ -359,6 +359,9 @@ watch(relevantDepots, () => {
     item-title="name"
     item-value="id"
     density="compact"
+    chips
+    clearable
+    closable-chips
   >
     <template v-slot:prepend-item>
       <v-list-item title="Alle auswählen" @click="toggleAllDepots">
@@ -368,6 +371,10 @@ watch(relevantDepots, () => {
       </v-list-item>
 
       <v-divider class="mt-2"></v-divider>
+    </template>
+
+    <template v-slot:chip="{ props, item }">
+      <v-chip v-bind="props">{{ item.title }}</v-chip>
     </template>
   </v-select>
 
