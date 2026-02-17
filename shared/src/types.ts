@@ -198,6 +198,11 @@ export interface Applicant {
   createdAt?: string;
 }
 
+export interface ApplicantWithOrders extends Applicant {
+  userId: number;
+  orders: SavedOrder[];
+}
+
 export interface ApplicantExport extends Address {
   comment: string;
 }
