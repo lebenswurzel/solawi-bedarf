@@ -16,15 +16,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { LatLngTuple } from "leaflet";
 
-const getCachedCoordinates = (address: string): LatLngTuple | null => {
+const getCachedCoordinates = (
+  address: string,
+): LatLngTuple | null | undefined => {
   const cached = localStorage.getItem(`geo_${address}`);
   if (cached) {
     return JSON.parse(cached);
   }
-  return null;
+  return undefined;
 };
 
-const cacheCoordinates = (address: string, coordinates: LatLngTuple) => {
+const cacheCoordinates = (address: string, coordinates: LatLngTuple | null) => {
   localStorage.setItem(`geo_${address}`, JSON.stringify(coordinates));
 };
 
@@ -34,7 +36,7 @@ export const getAddressCoordinates = async (
   try {
     // Check cache first
     const cachedCoords = getCachedCoordinates(address);
-    if (cachedCoords) {
+    if (cachedCoords !== undefined) {
       return cachedCoords;
     }
 
@@ -51,8 +53,10 @@ export const getAddressCoordinates = async (
       cacheCoordinates(address, coords);
       return coords;
     }
+    cacheCoordinates(address, null);
     return null;
   } catch (error) {
+    cacheCoordinates(address, null);
     console.error("Error geocoding address:", error);
     return null;
   }
