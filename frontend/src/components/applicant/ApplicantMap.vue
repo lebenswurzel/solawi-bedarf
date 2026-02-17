@@ -15,9 +15,10 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref, watchEffect } from "vue";
 import {
   Applicant,
+  Depot,
   SavedOrder,
 } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { LMap, LTileLayer, LMarker, LPopup } from "@vue-leaflet/vue-leaflet";
@@ -37,16 +38,18 @@ const zoom = ref(10);
 
 interface Marker {
   userId: number;
-  position: LatLngTuple;
+  position: LatLngTuple | null;
   address: string;
   name: string;
   realName: string;
   depotId: number;
   depotName: string;
   orders: SavedOrder[];
+  visible: boolean;
 }
 
 interface ApplicantWithOrders extends Applicant {
+  userId: number;
   orders: SavedOrder[];
 }
 
@@ -63,6 +66,7 @@ const isFullscreen = ref(false);
 const allApplicants = ref<Applicant[]>([]);
 const failedAddressQueries = ref<Marker[]>([]);
 const selectedDepots = ref<number[]>([]);
+const relevantDepots = ref<Depot[]>([]);
 const selectAllDepots = ref<boolean>(true);
 
 const mapRef = ref<InstanceType<typeof LMap> | null>(null);
@@ -122,6 +126,10 @@ const createDepotIcon = (color: string) => {
 
 const depotMarkers = ref<Marker[]>([]);
 
+// Persist geocoded positions by userId so they survive computed re-runs when selectedDepots changes
+const markerPositionsByUserId = ref<Record<number, LatLngTuple | null>>({});
+const geocodingInFlight = ref<Set<number>>(new Set());
+
 const updateDepotMarkers = async () => {
   const markers: Marker[] = [];
   for (const depot of relevantDepots.value) {
@@ -141,6 +149,7 @@ const updateDepotMarkers = async () => {
         depotId: depot.id,
         depotName: depot.name,
         orders: [],
+        visible: true,
       };
       if (coords) {
         markers.push(marker);
@@ -153,11 +162,13 @@ const updateDepotMarkers = async () => {
 };
 
 const markers = computed((): Marker[] => {
+  const positions = markerPositionsByUserId.value;
   return activeUsers.value.map((applicant) => {
+    const userId = applicant.userId;
     const address = `${applicant.address.street}, ${applicant.address.postalcode} ${applicant.address.city}, Germany`;
     return {
-      userId: applicant.orders[0].userId || 0,
-      position: [0, 0] as LatLngTuple, // Will be updated after geocoding
+      userId,
+      position: positions[userId] ?? null,
       address,
       name: applicant.name || "",
       realName: `${applicant.address.firstname} ${applicant.address.lastname}`,
@@ -166,15 +177,52 @@ const markers = computed((): Marker[] => {
         depots.value.find((d) => d.id === applicant.orders[0].depotId)?.name ||
         "Unbekannt",
       orders: applicant.orders,
+      visible: selectedDepots.value.includes(applicant.orders[0].depotId),
     };
   });
 });
 
-const relevantDepots = computed(() => {
-  const dd = depots.value.filter((d) =>
-    markers.value.map((m) => m.depotId).includes(d.id),
-  );
-  return [...dd];
+// On-demand geocoding: fetch coordinates only for markers not yet in cache
+watchEffect(() => {
+  const users = activeUsers.value;
+  const cache = markerPositionsByUserId.value;
+  const inFlight = geocodingInFlight.value;
+
+  for (const applicant of users) {
+    const userId = applicant.userId;
+    if (userId in cache || inFlight.has(userId)) continue;
+
+    const address = `${applicant.address.street}, ${applicant.address.postalcode} ${applicant.address.city}, Germany`;
+
+    inFlight.add(userId);
+    getAddressCoordinates(address)
+      .then((coords) => {
+        markerPositionsByUserId.value[userId] = coords as LatLngTuple;
+        if (!coords) {
+          failedAddressQueries.value.push({
+            userId,
+            position: null,
+            address,
+            name: applicant.name || "",
+            realName: `${applicant.address.firstname} ${applicant.address.lastname}`,
+            depotId: applicant.orders[0].depotId,
+            depotName:
+              depots.value.find((d) => d.id === applicant.orders[0].depotId)
+                ?.name || "Unbekannt",
+            orders: applicant.orders,
+            visible: selectedDepots.value.includes(applicant.orders[0].depotId),
+          });
+        }
+      })
+      .catch((error) => {
+        markerPositionsByUserId.value[userId] = null;
+        console.error("Error geocoding address:", error);
+      })
+      .finally(() => {
+        inFlight.delete(userId);
+        geocodingInFlight.value = new Set(inFlight);
+      });
+  }
 });
 
 const toggleFullscreen = () => {
@@ -185,67 +233,53 @@ const toggleFullscreen = () => {
   }, 300);
 };
 
-watch(relevantDepots, () => {
-  updateDepotMarkers();
-});
-
 onMounted(async () => {
   isProcessing.value = true;
   processedUsers.value = 0;
 
   allApplicants.value = await getApplicants(ApplicantState.CONFIRMED);
 
+  const depotIds: Set<number> = new Set();
   // Filter applicants to only those with active orders
-  const activeApplicants = await Promise.all(
-    allApplicants.value.map(async (applicant) => {
-      processedUsers.value++;
-      // Find matching user by name
-      const matchingUser = userOptions.value.find(
-        (u) => u.title === applicant.name,
-      );
-      if (!matchingUser) {
-        console.warn(`No matching user found for applicant ${applicant.name}`);
+  const activeApplicants: ApplicantWithOrders[] = (
+    await Promise.all(
+      allApplicants.value.map(async (applicant) => {
+        processedUsers.value++;
+        // Find matching user by name
+        const matchingUser = userOptions.value.find(
+          (u) => u.title === applicant.name,
+        );
+        if (!matchingUser) {
+          console.warn(
+            `No matching user found for applicant ${applicant.name}`,
+          );
+          return null;
+        }
+
+        const orders = await getAllOrders(
+          matchingUser.value,
+          activeConfigId.value,
+          true,
+          true,
+        );
+        if (orders && orders.some((o) => o.offer > 0)) {
+          depotIds.add(orders[0].depotId);
+          return { ...applicant, orders, userId: matchingUser.value };
+        }
         return null;
-      }
+      }),
+    )
+  ).filter((a) => a !== null);
 
-      const orders = await getAllOrders(
-        matchingUser.value,
-        activeConfigId.value,
-        true,
-        true,
-      );
-      if (orders && orders.some((o) => o.offer > 0)) {
-        return { ...applicant, orders };
-      }
-      return null;
-    }),
-  );
+  relevantDepots.value = depots.value.filter((d) => depotIds.has(d.id));
+  selectedDepots.value = relevantDepots.value.map((d) => d.id);
 
-  activeUsers.value = activeApplicants.filter((a) => a !== null);
+  activeUsers.value = activeApplicants
+    .filter((a) => a !== null)
+    .map((a) => ({ ...a, userId: a.userId }));
   isProcessing.value = false;
 
-  // Geocode addresses to get coordinates
-  const total = markers.value.length;
-  let current = 0;
-
-  for (const marker of markers.value) {
-    try {
-      current++;
-      loadingProgress.value = `Lade Adresse ${current} von ${total}`;
-
-      const coords = await getAddressCoordinates(marker.address);
-      if (coords) {
-        marker.position = coords;
-      } else {
-        failedAddressQueries.value.push(marker);
-      }
-    } catch (error) {
-      console.error("Error geocoding address:", error);
-    }
-  }
-
   await updateDepotMarkers();
-  loadingProgress.value = null;
 });
 
 const toggleAllDepots = () => {
@@ -257,10 +291,6 @@ const toggleAllDepots = () => {
     selectAllDepots.value = true;
   }
 };
-
-watch(relevantDepots, () => {
-  selectedDepots.value = relevantDepots.value.map((d) => d.id);
-});
 </script>
 
 <template>
@@ -290,9 +320,9 @@ watch(relevantDepots, () => {
         layer-type="base"
         name="OpenStreetMap"
       />
-      <template v-for="marker in markers" :key="marker.address">
+      <template v-for="marker in markers" :key="marker.userId">
         <LMarker
-          v-if="selectedDepots.includes(marker?.depotId)"
+          v-if="marker.position && marker.visible"
           :lat-lng="marker.position"
           :icon="createMarkerIcon(getDepotColor(marker.depotId))"
         >
@@ -338,7 +368,8 @@ watch(relevantDepots, () => {
       </template>
       <template v-for="marker in depotMarkers" :key="`depot-${marker.depotId}`">
         <LMarker
-          :lat-lng="marker.position"
+          v-if="marker.visible && marker.position"
+          :lat-lng="marker.position!"
           :icon="createDepotIcon(getDepotColor(marker.depotId))"
         >
           <LPopup>
