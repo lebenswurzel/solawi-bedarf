@@ -20,6 +20,7 @@ import {
   Applicant,
   Depot,
   SavedOrder,
+  ApplicantWithOrders,
 } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { LMap, LTileLayer, LMarker, LPopup } from "@vue-leaflet/vue-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -46,11 +47,6 @@ interface Marker {
   depotName: string;
   orders: SavedOrder[];
   visible: boolean;
-}
-
-interface ApplicantWithOrders extends Applicant {
-  userId: number;
-  orders: SavedOrder[];
 }
 
 const loadingProgress = ref<string | null>(null);
@@ -161,23 +157,27 @@ const updateDepotMarkers = async () => {
   depotMarkers.value = markers;
 };
 
+const isVisible = (applicant: ApplicantWithOrders): boolean => {
+  return selectedDepots.value.includes(applicant.orders[0]?.depotId || 0);
+};
+
 const markers = computed((): Marker[] => {
   const positions = markerPositionsByUserId.value;
   return activeUsers.value.map((applicant) => {
     const userId = applicant.userId;
     const address = `${applicant.address.street}, ${applicant.address.postalcode} ${applicant.address.city}, Germany`;
+    const depotId = applicant.orders[0]?.depotId || 0;
     return {
       userId,
-      position: positions[userId] ?? null,
+      position: positions[userId] || null,
       address,
       name: applicant.name || "",
       realName: `${applicant.address.firstname} ${applicant.address.lastname}`,
-      depotId: applicant.orders[0].depotId,
+      depotId: depotId || 0,
       depotName:
-        depots.value.find((d) => d.id === applicant.orders[0].depotId)?.name ||
-        "Unbekannt",
+        depots.value.find((d) => d.id === depotId)?.name || "Unbekannt",
       orders: applicant.orders,
-      visible: selectedDepots.value.includes(applicant.orders[0].depotId),
+      visible: isVisible(applicant),
     };
   });
 });
@@ -190,7 +190,9 @@ watchEffect(() => {
 
   for (const applicant of users) {
     const userId = applicant.userId;
-    if (userId in cache || inFlight.has(userId)) continue;
+    if (userId in cache || inFlight.has(userId) || !isVisible(applicant)) {
+      continue;
+    }
 
     const address = `${applicant.address.street}, ${applicant.address.postalcode} ${applicant.address.city}, Germany`;
 
@@ -266,7 +268,9 @@ onMounted(async () => {
           depotIds.add(orders[0].depotId);
           return { ...applicant, orders, userId: matchingUser.value };
         }
-        return null;
+
+        // user without orders
+        return { ...applicant, userId: matchingUser.value, orders: [] };
       }),
     )
   ).filter((a) => a !== null);
@@ -274,9 +278,7 @@ onMounted(async () => {
   relevantDepots.value = depots.value.filter((d) => depotIds.has(d.id));
   selectedDepots.value = relevantDepots.value.map((d) => d.id);
 
-  activeUsers.value = activeApplicants
-    .filter((a) => a !== null)
-    .map((a) => ({ ...a, userId: a.userId }));
+  activeUsers.value = [...activeApplicants];
   isProcessing.value = false;
 
   await updateDepotMarkers();
@@ -294,6 +296,19 @@ const toggleAllDepots = () => {
 </script>
 
 <template>
+  <div style="text-caption">
+    Markers: {{ markers.length }}
+    <br />
+    Depot Markers: {{ depotMarkers.length }}
+    <br />
+    Selected Depots: {{ selectedDepots.length }}
+    <br />
+    Relevant Depots: {{ relevantDepots.length }}
+    <br />
+    All Applicants: {{ allApplicants.length }}
+    <br />
+    Active Users: {{ activeUsers.length }}
+  </div>
   <div class="map-container" :class="{ fullscreen: isFullscreen }">
     <div v-if="isProcessing" class="loading-overlay">
       Lade aktive Nutzer... ({{ processedUsers }} von
@@ -357,7 +372,7 @@ const toggleAllDepots = () => {
               ></v-btn>
               <br />
               <template v-for="order in marker.orders" :key="order.id">
-                <li style="list-style-type: none">
+                <li class="order-list-item">
                   ab {{ prettyDateWithMonthAndYear(order.validFrom) }}:
                   {{ order.offer }} €
                 </li>
@@ -475,5 +490,11 @@ const toggleAllDepots = () => {
   background-color: rgba(255, 255, 255, 0.9) !important;
   border-radius: 4px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.order-list-item {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
 }
 </style>
