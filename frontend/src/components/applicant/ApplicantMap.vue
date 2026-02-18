@@ -49,6 +49,12 @@ interface Marker {
   visible: boolean;
 }
 
+interface FailedAddressQuery {
+  address: string;
+  name: string;
+  realName: string;
+}
+
 const loadingProgress = ref<string | null>(null);
 const configStore = useConfigStore();
 const userStore = useUserStore();
@@ -60,7 +66,7 @@ const processedUsers = ref(0);
 const isProcessing = ref(false);
 const isFullscreen = ref(false);
 const allApplicants = ref<Applicant[]>([]);
-const failedAddressQueries = ref<Marker[]>([]);
+const failedAddressQueries = ref<FailedAddressQuery[]>([]);
 const selectedDepots = ref<number[]>([]);
 const relevantDepots = ref<Depot[]>([]);
 const selectAllDepots = ref<boolean>(true);
@@ -202,17 +208,9 @@ watchEffect(() => {
         markerPositionsByUserId.value[userId] = coords as LatLngTuple;
         if (!coords) {
           failedAddressQueries.value.push({
-            userId,
-            position: null,
             address,
             name: applicant.name || "",
             realName: `${applicant.address.firstname} ${applicant.address.lastname}`,
-            depotId: applicant.orders[0].depotId,
-            depotName:
-              depots.value.find((d) => d.id === applicant.orders[0].depotId)
-                ?.name || "Unbekannt",
-            orders: applicant.orders,
-            visible: selectedDepots.value.includes(applicant.orders[0].depotId),
           });
         }
       })
@@ -276,7 +274,8 @@ onMounted(async () => {
   ).filter((a) => a !== null);
 
   relevantDepots.value = depots.value.filter((d) => depotIds.has(d.id));
-  selectedDepots.value = relevantDepots.value.map((d) => d.id);
+  // selectedDepots.value = relevantDepots.value.map((d) => d.id);
+  selectedDepots.value = [relevantDepots.value[2].id];
 
   activeUsers.value = [...activeApplicants];
   isProcessing.value = false;
