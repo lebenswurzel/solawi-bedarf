@@ -33,6 +33,7 @@ import { getApplicants } from "../../requests/applicant";
 import { ApplicantState } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import { getAddressCoordinates } from "../../lib/addressUtils";
 import { prettyDateWithMonthAndYear } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper";
+import CompactUserTable from "./CompactUserTable.vue";
 
 const mapCenter = ref([51.0504, 13.7373] as [number, number]); // Center of Dresden
 const zoom = ref(10);
@@ -93,6 +94,7 @@ const markerColors = [
 
 // Get color based on depot ID
 const getDepotColor = (depotId: number): string => {
+  if (depotId == 0) return "white";
   const depotIndex = relevantDepots.value.map((d) => d.id).indexOf(depotId);
   return markerColors[depotIndex % markerColors.length];
 };
@@ -188,6 +190,10 @@ const markers = computed((): Marker[] => {
       visible: isVisible(applicant),
     };
   });
+});
+
+const usersWithoutOrders = computed(() => {
+  return allUsers.value.filter((user) => user.orders.length === 0);
 });
 
 // On-demand geocoding: fetch coordinates only for addresses not yet in cache (users and depots)
@@ -314,19 +320,6 @@ const toggleAllDepots = () => {
 </script>
 
 <template>
-  <div style="text-caption">
-    Markers: {{ markers.length }}
-    <br />
-    Depot Markers: {{ depotMarkers.length }}
-    <br />
-    Selected Depots: {{ selectedDepots.length }}
-    <br />
-    Relevant Depots: {{ relevantDepots.length }}
-    <br />
-    Active Users: {{ allUsers.length }}
-    <br />
-    In Flight: {{ geocodingInFlight.size }}
-  </div>
   <div class="map-container" :class="{ fullscreen: isFullscreen }">
     <div v-if="geocodingInFlight.size > 0" class="loading-overlay">
       Lade Addressen... ({{ geocodingInFlight.size }} verbleibend)
@@ -415,6 +408,7 @@ const toggleAllDepots = () => {
       </template>
     </LMap>
   </div>
+
   <v-select
     v-model="selectedDepots"
     :items="relevantDepots"
@@ -440,6 +434,17 @@ const toggleAllDepots = () => {
       <v-chip v-bind="props">{{ item.title }}</v-chip>
     </template>
   </v-select>
+
+  <v-expansion-panels class="mb-2">
+    <v-expansion-panel>
+      <v-expansion-panel-title>
+        Benutzer ohne Bestellungen ({{ visibleUsers.length }} ausgewählt)
+      </v-expansion-panel-title>
+      <v-expansion-panel-text>
+        <CompactUserTable :users="usersWithoutOrders" v-model="visibleUsers" />
+      </v-expansion-panel-text>
+    </v-expansion-panel>
+  </v-expansion-panels>
 
   <v-alert
     v-if="failedAddressQueries.length > 0"
