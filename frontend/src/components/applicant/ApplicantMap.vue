@@ -51,6 +51,7 @@ interface Marker {
 }
 
 interface FailedAddressQuery {
+  userId: number;
   address: string;
   name: string;
   realName: string;
@@ -232,6 +233,7 @@ watchEffect(() => {
     const address = `${applicant.address.street}, ${applicant.address.postalcode} ${applicant.address.city}, Germany`;
     geocodeAddress(address, () => {
       failedAddressQueries.value.push({
+        userId: applicant.userId,
         address,
         name: applicant.name || "",
         realName: `${applicant.address.firstname} ${applicant.address.lastname}`,
@@ -244,6 +246,7 @@ watchEffect(() => {
     const address = normalizeDepotAddress(depot.address);
     geocodeAddress(address, () => {
       failedAddressQueries.value.push({
+        userId: 0,
         address: depot.address!,
         name: depot.name,
         realName: depot.name,
@@ -301,8 +304,7 @@ onMounted(async () => {
   ).filter((a) => a !== null);
 
   relevantDepots.value = depots.value.filter((d) => depotIds.has(d.id));
-  // selectedDepots.value = relevantDepots.value.map((d) => d.id);
-  selectedDepots.value = [relevantDepots.value[2].id];
+  selectedDepots.value = relevantDepots.value.map((d) => d.id);
 
   allUsers.value = [...activeApplicants];
   isProcessing.value = false;
@@ -419,6 +421,7 @@ const toggleAllDepots = () => {
     chips
     clearable
     closable-chips
+    label="Depots"
   >
     <template v-slot:prepend-item>
       <v-list-item title="Alle auswählen" @click="toggleAllDepots">
@@ -441,7 +444,11 @@ const toggleAllDepots = () => {
         Benutzer ohne Bestellungen ({{ visibleUsers.length }} ausgewählt)
       </v-expansion-panel-title>
       <v-expansion-panel-text>
-        <CompactUserTable :users="usersWithoutOrders" v-model="visibleUsers" />
+        <CompactUserTable
+          :users="usersWithoutOrders"
+          v-model="visibleUsers"
+          :failedAddressUserIds="failedAddressQueries.map((f) => f.userId)"
+        />
       </v-expansion-panel-text>
     </v-expansion-panel>
   </v-expansion-panels>
