@@ -19,7 +19,7 @@ import {
   ApplicantWithOrders,
   UserId,
 } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 
 const model = defineModel<UserId[]>({ required: true });
 
@@ -28,6 +28,8 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{ (e: "update:value", value: UserId[]): void }>();
+
+const search = ref("");
 
 const headers = [
   { title: "ID", key: "id" },
@@ -54,8 +56,20 @@ const items = computed(() => {
     :items="items"
     density="compact"
     show-select
+    :search="search"
     v-model="model"
   >
+    <template v-slot:top>
+      <v-text-field
+        prepend-inner-icon="mdi-magnify"
+        v-model="search"
+        variant="outlined"
+        density="compact"
+        label="Suche"
+        single-line
+        clearable
+      />
+    </template>
     <template v-slot:item.name="{ item }">
       <v-btn
         icon="mdi-account-arrow-right"
