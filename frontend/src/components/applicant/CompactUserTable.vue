@@ -25,6 +25,7 @@ const model = defineModel<UserId[]>({ required: true });
 
 const props = defineProps<{
   users: ApplicantWithOrders[];
+  failedAddressUserIds: UserId[];
 }>();
 
 const emit = defineEmits<{ (e: "update:value", value: UserId[]): void }>();
@@ -78,6 +79,12 @@ const items = computed(() => {
         density="compact"
       ></v-btn>
       {{ item.name }}
+    </template>
+    <template v-slot:item.address="{ item }">
+      <template v-if="props.failedAddressUserIds.includes(item.id)">
+        <v-icon icon="mdi-alert-circle" color="warning"></v-icon>
+      </template>
+      {{ item.address }}
     </template>
   </v-data-table>
 </template>
