@@ -126,25 +126,28 @@ const createDepotIcon = (color: string) => {
   });
 };
 
-const depotMarkers = ref<Marker[]>([]);
+// Persist geocoded positions by address so they survive computed re-runs and are shared between user and depot markers
+const markerPositionsByAddress = ref<Record<string, LatLngTuple | null>>({});
+const geocodingInFlight = ref<Set<string>>(new Set());
 
-// Persist geocoded positions by userId so they survive computed re-runs when selectedDepots changes
-const markerPositionsByUserId = ref<Record<number, LatLngTuple | null>>({});
-const geocodingInFlight = ref<Set<number>>(new Set());
+const normalizeDepotAddress = (depotAddress: string): string => {
+  if (depotAddress.includes(":")) {
+    return depotAddress.split(":")[1].trim();
+  }
+  return depotAddress;
+};
 
-const updateDepotMarkers = async () => {
-  const markers: Marker[] = [];
+const depotMarkers = computed((): Marker[] => {
+  const positions = markerPositionsByAddress.value;
+  const result: Marker[] = [];
   for (const depot of relevantDepots.value) {
-    if (depot.address) {
-      let address = depot.address;
-      if (depot.address.includes(":")) {
-        // remove district name
-        address = depot.address.split(":")[1].trim();
-      }
-      const coords = await getAddressCoordinates(address);
-      const marker = {
+    if (!depot.address) continue;
+    const address = normalizeDepotAddress(depot.address);
+    const position = positions[address] ?? null;
+    if (position) {
+      result.push({
         userId: 0,
-        position: coords || [0, 0],
+        position,
         address: depot.address,
         name: depot.name,
         realName: depot.name,
@@ -152,30 +155,25 @@ const updateDepotMarkers = async () => {
         depotName: depot.name,
         orders: [],
         visible: true,
-      };
-      if (coords) {
-        markers.push(marker);
-      } else {
-        failedAddressQueries.value.push(marker);
-      }
+      });
     }
   }
-  depotMarkers.value = markers;
-};
+  return result;
+});
 
 const isVisible = (applicant: ApplicantWithOrders): boolean => {
   return selectedDepots.value.includes(applicant.orders[0]?.depotId || 0);
 };
 
 const markers = computed((): Marker[] => {
-  const positions = markerPositionsByUserId.value;
+  const positions = markerPositionsByAddress.value;
   return activeUsers.value.map((applicant) => {
     const userId = applicant.userId;
     const address = `${applicant.address.street}, ${applicant.address.postalcode} ${applicant.address.city}, Germany`;
     const depotId = applicant.orders[0]?.depotId || 0;
     return {
       userId,
-      position: positions[userId] || null,
+      position: positions[address] ?? null,
       address,
       name: applicant.name || "",
       realName: `${applicant.address.firstname} ${applicant.address.lastname}`,
@@ -188,40 +186,60 @@ const markers = computed((): Marker[] => {
   });
 });
 
-// On-demand geocoding: fetch coordinates only for markers not yet in cache
+// On-demand geocoding: fetch coordinates only for addresses not yet in cache (users and depots)
 watchEffect(() => {
-  const users = activeUsers.value;
-  const cache = markerPositionsByUserId.value;
+  console.log("watchEffect for geocoding");
+  const cache = markerPositionsByAddress.value;
   const inFlight = geocodingInFlight.value;
 
-  for (const applicant of users) {
-    const userId = applicant.userId;
-    if (userId in cache || inFlight.has(userId) || !isVisible(applicant)) {
-      continue;
-    }
-
-    const address = `${applicant.address.street}, ${applicant.address.postalcode} ${applicant.address.city}, Germany`;
-
-    inFlight.add(userId);
+  const geocodeAddress = (address: string, onFailure: () => void) => {
+    if (address in cache || inFlight.has(address)) return;
+    inFlight.add(address);
     getAddressCoordinates(address)
       .then((coords) => {
-        markerPositionsByUserId.value[userId] = coords as LatLngTuple;
-        if (!coords) {
-          failedAddressQueries.value.push({
-            address,
-            name: applicant.name || "",
-            realName: `${applicant.address.firstname} ${applicant.address.lastname}`,
-          });
-        }
+        markerPositionsByAddress.value = {
+          ...markerPositionsByAddress.value,
+          [address]: coords,
+        };
+        if (!coords) onFailure();
       })
       .catch((error) => {
-        markerPositionsByUserId.value[userId] = null;
+        markerPositionsByAddress.value = {
+          ...markerPositionsByAddress.value,
+          [address]: null,
+        };
         console.error("Error geocoding address:", error);
       })
       .finally(() => {
-        inFlight.delete(userId);
-        geocodingInFlight.value = new Set(inFlight);
+        const prev = geocodingInFlight.value;
+        const next = new Set(prev);
+        next.delete(address);
+        geocodingInFlight.value = next;
       });
+  };
+
+  for (const applicant of activeUsers.value) {
+    if (!isVisible(applicant)) continue;
+    const address = `${applicant.address.street}, ${applicant.address.postalcode} ${applicant.address.city}, Germany`;
+    geocodeAddress(address, () => {
+      failedAddressQueries.value.push({
+        address,
+        name: applicant.name || "",
+        realName: `${applicant.address.firstname} ${applicant.address.lastname}`,
+      });
+    });
+  }
+
+  for (const depot of relevantDepots.value) {
+    if (!depot.address) continue;
+    const address = normalizeDepotAddress(depot.address);
+    geocodeAddress(address, () => {
+      failedAddressQueries.value.push({
+        address: depot.address!,
+        name: depot.name,
+        realName: depot.name,
+      });
+    });
   }
 });
 
@@ -279,8 +297,6 @@ onMounted(async () => {
 
   activeUsers.value = [...activeApplicants];
   isProcessing.value = false;
-
-  await updateDepotMarkers();
 });
 
 const toggleAllDepots = () => {
@@ -307,11 +323,12 @@ const toggleAllDepots = () => {
     All Applicants: {{ allApplicants.length }}
     <br />
     Active Users: {{ activeUsers.length }}
+    <br />
+    In Flight: {{ geocodingInFlight.size }}
   </div>
   <div class="map-container" :class="{ fullscreen: isFullscreen }">
-    <div v-if="isProcessing" class="loading-overlay">
-      Lade aktive Nutzer... ({{ processedUsers }} von
-      {{ allApplicants.length }})
+    <div v-if="geocodingInFlight.size > 0" class="loading-overlay">
+      Lade Addressen... ({{ geocodingInFlight.size }} verbleibend)
     </div>
     <div v-else-if="loadingProgress" class="loading-overlay">
       {{ loadingProgress }}

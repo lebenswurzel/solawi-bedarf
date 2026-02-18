@@ -56,10 +56,6 @@ const convertOldCacheToNewFormat = (address: string) => {
   }
 };
 
-// const clearCache = (address: string) => {
-//   localStorage.removeItem(`geo_${address}`);
-// };
-
 /** Nominatim allows at most 1 request per second. Chain so each caller waits for the previous one's slot. */
 let slotDone: Promise<void> = Promise.resolve();
 
@@ -86,7 +82,6 @@ export const getAddressCoordinates = async (
 ): Promise<LatLngTuple | null> => {
   try {
     // Check cache first
-    // clearCache(address);
     convertOldCacheToNewFormat(address);
     const cachedCoords = getCachedCoordinates(address);
     if (cachedCoords !== undefined) {
