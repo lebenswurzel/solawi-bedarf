@@ -17,10 +17,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <script setup lang="ts">
 import { computed, onMounted, ref, watchEffect } from "vue";
 import {
-  Applicant,
   Depot,
   SavedOrder,
   ApplicantWithOrders,
+  UserId,
 } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { LMap, LTileLayer, LMarker, LPopup } from "@vue-leaflet/vue-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -61,15 +61,16 @@ const userStore = useUserStore();
 const { activeConfigId, depots } = storeToRefs(configStore);
 const { userOptions } = storeToRefs(userStore);
 
-const activeUsers = ref<ApplicantWithOrders[]>([]);
+const allUsers = ref<ApplicantWithOrders[]>([]);
 const processedUsers = ref(0);
 const isProcessing = ref(false);
 const isFullscreen = ref(false);
-const allApplicants = ref<Applicant[]>([]);
 const failedAddressQueries = ref<FailedAddressQuery[]>([]);
 const selectedDepots = ref<number[]>([]);
 const relevantDepots = ref<Depot[]>([]);
 const selectAllDepots = ref<boolean>(true);
+
+const visibleUsers = ref<UserId[]>([]);
 
 const mapRef = ref<InstanceType<typeof LMap> | null>(null);
 
@@ -162,12 +163,15 @@ const depotMarkers = computed((): Marker[] => {
 });
 
 const isVisible = (applicant: ApplicantWithOrders): boolean => {
-  return selectedDepots.value.includes(applicant.orders[0]?.depotId || 0);
+  return (
+    selectedDepots.value.includes(applicant.orders[0]?.depotId || 0) ||
+    visibleUsers.value.includes(applicant.userId)
+  );
 };
 
 const markers = computed((): Marker[] => {
   const positions = markerPositionsByAddress.value;
-  return activeUsers.value.map((applicant) => {
+  return allUsers.value.map((applicant) => {
     const userId = applicant.userId;
     const address = `${applicant.address.street}, ${applicant.address.postalcode} ${applicant.address.city}, Germany`;
     const depotId = applicant.orders[0]?.depotId || 0;
@@ -188,7 +192,6 @@ const markers = computed((): Marker[] => {
 
 // On-demand geocoding: fetch coordinates only for addresses not yet in cache (users and depots)
 watchEffect(() => {
-  console.log("watchEffect for geocoding");
   const cache = markerPositionsByAddress.value;
   const inFlight = geocodingInFlight.value;
 
@@ -218,7 +221,7 @@ watchEffect(() => {
       });
   };
 
-  for (const applicant of activeUsers.value) {
+  for (const applicant of allUsers.value) {
     if (!isVisible(applicant)) continue;
     const address = `${applicant.address.street}, ${applicant.address.postalcode} ${applicant.address.city}, Germany`;
     geocodeAddress(address, () => {
@@ -255,13 +258,13 @@ onMounted(async () => {
   isProcessing.value = true;
   processedUsers.value = 0;
 
-  allApplicants.value = await getApplicants(ApplicantState.CONFIRMED);
+  const allApplicants = await getApplicants(ApplicantState.CONFIRMED);
 
   const depotIds: Set<number> = new Set();
   // Filter applicants to only those with active orders
   const activeApplicants: ApplicantWithOrders[] = (
     await Promise.all(
-      allApplicants.value.map(async (applicant) => {
+      allApplicants.map(async (applicant) => {
         processedUsers.value++;
         // Find matching user by name
         const matchingUser = userOptions.value.find(
@@ -295,7 +298,7 @@ onMounted(async () => {
   // selectedDepots.value = relevantDepots.value.map((d) => d.id);
   selectedDepots.value = [relevantDepots.value[2].id];
 
-  activeUsers.value = [...activeApplicants];
+  allUsers.value = [...activeApplicants];
   isProcessing.value = false;
 });
 
@@ -320,9 +323,7 @@ const toggleAllDepots = () => {
     <br />
     Relevant Depots: {{ relevantDepots.length }}
     <br />
-    All Applicants: {{ allApplicants.length }}
-    <br />
-    Active Users: {{ activeUsers.length }}
+    Active Users: {{ allUsers.length }}
     <br />
     In Flight: {{ geocodingInFlight.size }}
   </div>
