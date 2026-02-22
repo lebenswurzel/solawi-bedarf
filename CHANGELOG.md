@@ -322,3 +322,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #350 Fehler bei der Kartenansicht für Admins behoben
 
 # NEW
+
+#357 Kartenansicht für Admins: Darstellung von Nutzern ohne Bestellung
