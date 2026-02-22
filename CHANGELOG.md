@@ -321,6 +321,8 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 
 #350 Fehler bei der Kartenansicht für Admins behoben
 
-# NEW
+# v0.15.4 - 2026-02-22 - Kartenverbesserung
 
 #357 Kartenansicht für Admins: Darstellung von Nutzern ohne Bestellung
+
+# NEW
