@@ -29,7 +29,7 @@
     "ldapjs": "^3.0.7",
     "neverthrow": "^8.2.0",
     "nodemailer": "^7.0.12",
-    "pg": "^8.16.3",
+    "pg": "^8.19.0",
     "qs": "^6.15.0",
     "reflect-metadata": "^0.2.1",
     "ts-node": "^10.9.1",
