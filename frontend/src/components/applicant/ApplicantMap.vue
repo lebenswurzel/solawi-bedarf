@@ -434,7 +434,7 @@ const toggleAllDepots = () => {
     </template>
 
     <template v-slot:chip="{ props, item }">
-      <v-chip v-bind="props">{{ item.title }}</v-chip>
+      <v-chip v-bind="props">{{ item.name }}</v-chip>
     </template>
   </v-select>
 
