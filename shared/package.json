@@ -16,9 +16,9 @@
     "date-fns-tz": "^3.2.0",
     "ibantools": "^4.5.1",
     "jszip": "^3.10.1",
-    "marked": "^17.0.0",
+    "marked": "^17.0.4",
     "pdf-lib": "^1.17.1",
-    "pdfmake": "^0.2.21"
+    "pdfmake": "^0.3.5"
   },
   "devDependencies": {
     "@types/pdfmake": "^0.2.9",
