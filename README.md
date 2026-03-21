@@ -32,7 +32,9 @@ for the first time setup:
    - EMAIL\_\*
 4. (optional) Copy of `.env-sample` to `.env` and adjust the external ports for the different containers
 5. Run `./dev/build/build-and-deploy.bash init` from the project root to build containers locally
-6. If everything looks fine, run `docker compose up d` to start
+6. If everything looks fine, run `docker compose up -d` to start
+7. The website is now available at `http://localhost:8184` (or the external port you have set as `FRONTEND_EXTERNAL_PORT` in the .env file)
+8. Next steps: log in as admin (username: `admin`, password: INITIAL_PASSWORD in the `env-be-prod.env` file), adjust your season configuration ("Konfiguration"), etc.
 
 ### Configuration variables
 
