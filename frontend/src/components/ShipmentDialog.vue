@@ -598,7 +598,7 @@ watchEffect(async () => {
                       item.productId &&
                       totalShippedQuantityByProductId[item.productId]
                     "
-                    class="ml-2 text-caption opacity-60"
+                    class="ml-2 text-body-small opacity-60"
                     >(Summe geliefert:
                     {{
                       totalShippedQuantityByProductId[item.productId].quantity
@@ -652,7 +652,7 @@ watchEffect(async () => {
               >
             </div>
             <v-list class="ma-0 pa-0" v-if="showAdditionalShipmentItems">
-              <div class="text-caption mb-2">
+              <div class="text-body-small mb-2">
                 Als Zusatzprodukt gelten Lebensmittel, die nicht direkt bestellt
                 wurden, die aber verfügbar sind und frei an die Depots verteilt
                 werden.

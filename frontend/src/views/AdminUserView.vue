@@ -618,7 +618,7 @@ const filterDeleted = (tableItem: { deleted?: boolean }): boolean => {
         <span class="text-h6">Anzeigefilter für die Tabelle</span>
         <v-row dense>
           <v-col cols="12" md="6">
-            <div class="text-caption">Bedarf gültig ab Datum</div>
+            <div class="text-body-small">Bedarf gültig ab Datum</div>
             <v-chip-group
               multiple
               selected-class="text-primary"
@@ -634,7 +634,7 @@ const filterDeleted = (tableItem: { deleted?: boolean }): boolean => {
             </v-chip-group>
           </v-col>
           <v-col cols="12" md="3">
-            <div class="text-caption">Rolle</div>
+            <div class="text-body-small">Rolle</div>
             <v-chip-group
               multiple
               selected-class="text-primary"
@@ -650,7 +650,7 @@ const filterDeleted = (tableItem: { deleted?: boolean }): boolean => {
             </v-chip-group>
           </v-col>
           <v-col cols="12" md="3">
-            <div class="text-caption">Bedarf bestätigt</div>
+            <div class="text-body-small">Bedarf bestätigt</div>
             <v-chip-group
               selected-class="text-primary"
               column
@@ -671,7 +671,7 @@ const filterDeleted = (tableItem: { deleted?: boolean }): boolean => {
               open-on-click
             >
               <template v-slot:activator="{ props }">
-                <div v-bind="props" class="text-caption">
+                <div v-bind="props" class="text-body-small">
                   Gelöschte Nutzer<v-icon>mdi-information-outline</v-icon>
                 </div>
               </template>
@@ -690,7 +690,7 @@ const filterDeleted = (tableItem: { deleted?: boolean }): boolean => {
             </v-chip-group>
           </v-col>
           <v-col cols="9">
-            <div class="text-caption">Depot</div>
+            <div class="text-body-small">Depot</div>
             <v-chip-group
               multiple
               selected-class="text-primary"

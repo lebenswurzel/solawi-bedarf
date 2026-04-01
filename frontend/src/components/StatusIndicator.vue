@@ -78,7 +78,7 @@ watch(isSessionExpired, (value) => {
     <v-sheet
       :color="remainingTokenTimeSeconds < 300 ? 'orange' : 'info'"
       rounded
-      class="text-caption ma-1 pa-1"
+      class="text-body-small ma-1 pa-1"
       elevation="10"
     >
       <v-icon>mdi-timer-alert-outline</v-icon>

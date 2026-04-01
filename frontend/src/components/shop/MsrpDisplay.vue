@@ -188,7 +188,7 @@ const msrpValidation = computed(() => {
         {{ t.cards.products.offer }}
         <strong class="mr-1">{{ relevantOffer.toString() }} € pro Monat</strong>
         <template v-if="previousMsrp">
-          <span class="text-caption"
+          <span class="text-body-small"
             >(vorher: {{ previousMsrp?.offer.toString() }} € pro Monat)</span
           >
         </template>
@@ -216,7 +216,7 @@ const msrpValidation = computed(() => {
             : msrp.contribution
         "
       />
-      <div class="mb-2 text-caption">
+      <div class="mb-2 text-body-small">
         Zahlungsmethode:
         {{
           language.app.options.paymentTypes[
@@ -226,7 +226,7 @@ const msrpValidation = computed(() => {
       </div>
       <template v-if="!props.order.confirmGTC">
         <v-alert
-          class="py-2 text-caption font-weight-bold mb-2"
+          class="py-2 text-body-small font-weight-bold mb-2"
           icon="mdi-lightbulb-alert"
           variant="outlined"
         >

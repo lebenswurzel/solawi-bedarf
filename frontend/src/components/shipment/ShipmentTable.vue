@@ -117,7 +117,7 @@ const onRowClick = async (
           >
         </template>
         <v-expand-transition>
-          <div class="text-caption" v-if="showHelp">
+          <div class="text-body-small" v-if="showHelp">
             <p class="pt-1">
               Zweck der Prognose-Verteilungen ist es, neuen Ernteteilern, die
               während der Saison dazu kommen, eine sinnvolle Abschätzung ihres
@@ -200,7 +200,7 @@ const onRowClick = async (
         <p
           v-for="revisionMessage in item.revisionMessages"
           :key="revisionMessage.createdAt"
-          class="text-caption opacity-60"
+          class="text-body-small opacity-60"
         >
           {{
             revisionMessage?.createdAt
