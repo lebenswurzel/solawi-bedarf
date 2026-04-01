@@ -486,7 +486,7 @@ const updatedAtDistribution = computed(
       <v-container fluid>
         <v-row>
           <v-col cols="12">
-            <div class="text-subtitle-1">
+            <div class="text-body-large">
               Monatliche Aufschlüsselung der Beiträge
             </div>
             <v-table>
@@ -535,7 +535,7 @@ const updatedAtDistribution = computed(
       <v-container fluid>
         <v-row>
           <v-col cols="12" sm="6" lg="4">
-            <div class="text-subtitle-1">Mitgliedschaftsmodell</div>
+            <div class="text-body-large">Mitgliedschaftsmodell</div>
             <DistributionPlot
               :distribution-data="categoriesDistribution"
               :fixed-digits="1"
@@ -543,21 +543,21 @@ const updatedAtDistribution = computed(
           </v-col>
 
           <v-col cols="12" sm="6" lg="4">
-            <div class="text-subtitle-1">Gewählter Monatsbeitrag</div>
+            <div class="text-body-large">Gewählter Monatsbeitrag</div>
             <DistributionPlot
               :distribution-data="offerRanges.data"
               :fixed-digits="1"
             />
           </v-col>
           <v-col cols="12" sm="6" lg="4">
-            <div class="text-subtitle-1">Depot-Belegung</div>
+            <div class="text-body-large">Depot-Belegung</div>
             <DistributionPlot
               :distribution-data="depotDistribution"
               :fixed-digits="1"
             />
           </v-col>
           <v-col cols="12" sm="6" lg="4">
-            <div class="text-subtitle-1">
+            <div class="text-body-large">
               Erstmaliges Anlegen der Bedarfsanmeldung
             </div>
             <div class="text-subtitle-2 opacity-60">
@@ -567,7 +567,7 @@ const updatedAtDistribution = computed(
             <DistributionPlot :distribution-data="createdAtDistribution" />
           </v-col>
           <v-col cols="12" sm="6" lg="4">
-            <div class="text-subtitle-1">
+            <div class="text-body-large">
               Letztmalige Aktualisierung der Bedarfsanmeldung
             </div>
             <div class="text-subtitle-2 opacity-60">

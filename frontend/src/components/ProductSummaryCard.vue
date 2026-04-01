@@ -81,7 +81,7 @@ const getContributionLabel = (category: UserCategory) => {
       <!-- Name und Beschreibung -->
       <v-row>
         <v-col cols="12">
-          <div class="text-body-1">
+          <div class="text-body-large">
             <strong>{{ product.name || "Nicht angegeben" }}</strong>
             <v-chip
               size="small"
@@ -101,7 +101,7 @@ const getContributionLabel = (category: UserCategory) => {
       <!-- Orientierungswerte -->
       <v-row class="mb-1" dense>
         <v-col cols="12">
-          <div class="text-subtitle-1 font-weight-medium mb-2">
+          <div class="text-body-large font-weight-medium mb-2">
             Orientierungswerte (je {{ baseUnit }})
           </div>
           <v-row>
@@ -131,16 +131,16 @@ const getContributionLabel = (category: UserCategory) => {
       <!-- Verteilhäufigkeit und Gesamtmenge -->
       <v-row>
         <v-col cols="12" sm="6">
-          <div class="text-subtitle-1 font-weight-medium mb-1">
+          <div class="text-body-large font-weight-medium mb-1">
             Verteilhäufigkeit
           </div>
-          <div class="text-body-1">
+          <div class="text-body-large">
             {{ product.frequency || 0 }} Mal pro Jahr
           </div>
         </v-col>
         <v-col cols="12" sm="6">
-          <div class="text-subtitle-1 font-weight-medium mb-1">Gesamtmenge</div>
-          <div class="text-body-1">
+          <div class="text-body-large font-weight-medium mb-1">Gesamtmenge</div>
+          <div class="text-body-large">
             {{ product.quantity || 0 }} {{ baseUnit }}
           </div>
         </v-col>
