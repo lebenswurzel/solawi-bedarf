@@ -457,7 +457,7 @@ const toggleAllDepots = () => {
     v-if="failedAddressQueries.length > 0"
     color="warning"
     title="Fehlgeschlagene Addressabfragen"
-    class="text-caption"
+    class="text-body-small"
   >
     <p v-for="failedQuery in failedAddressQueries">
       <v-btn

@@ -247,7 +247,7 @@ const adminNavEntries: NavEntry[] = [
       <v-divider></v-divider>
       <div class="ma-2">{{ currentUser?.name }}</div>
       <div
-        class="ma-2 text-caption opacity-50"
+        class="ma-2 text-body-small opacity-50"
         v-if="isLoggedIn || isSessionExpired"
       >
         {{ userStore.remainingTimeHumanized }}

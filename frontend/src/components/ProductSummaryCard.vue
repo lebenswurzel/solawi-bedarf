@@ -112,7 +112,7 @@ const getContributionLabel = (category: UserCategory) => {
               :key="category"
             >
               <v-card variant="tonal" class="pa-3">
-                <div class="text-caption text-medium-emphasis mb-1">
+                <div class="text-body-small text-medium-emphasis mb-1">
                   {{ getContributionLabel(category) }}
                 </div>
                 <div class="text-h6">

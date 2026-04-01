@@ -240,7 +240,7 @@ onMounted(() => {
           </template>
         </v-tooltip>
         <DebugOnly>
-          <span class="opacity-60 text-caption">
+          <span class="opacity-60 text-body-small">
             ID{{ product.id }} {{ productsById[props.productId].msrp }}ct
           </span>
         </DebugOnly>

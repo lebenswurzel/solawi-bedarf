@@ -163,7 +163,7 @@ const onCloseProduct = async () => {
         {{ productAvailability[item.id]?.roundedDeliveries || 0 }}/{{
           productAvailability[item.id]?.frequency || 0
         }}
-        <span class="text-caption opacity-50"
+        <span class="text-body-small opacity-50"
           >{{
             Math.round(productAvailability[item.id]?.deliveryPercentage || 0)
           }}%</span

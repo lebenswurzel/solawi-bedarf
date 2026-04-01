@@ -148,11 +148,11 @@ const deliveryInfoCache = computed(() => {
     :item-value="(item) => item"
     :items-per-page="10"
     :search="search"
-    :header-props="{ class: 'text-caption' }"
+    :header-props="{ class: 'text-body-small' }"
   >
     <template v-slot:item="{ item }">
       <tr>
-        <td class="text-caption">{{ item.name }}</td>
+        <td class="text-body-small">{{ item.name }}</td>
         <td>
           {{
             Math.round(productAvailability?.[item.id]?.deliveryPercentage) ||

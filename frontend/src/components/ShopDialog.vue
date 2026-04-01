@@ -376,7 +376,7 @@ const onSave = () => {
           :persistent-hint="categoryReasonHint"
         />
         <DebugOnly
-          ><span class="text-caption">{{ paymentInfo }}</span>
+          ><span class="text-body-small">{{ paymentInfo }}</span>
         </DebugOnly>
         <div class="mb-3">{{ t.confirm.title }}</div>
         <v-checkbox
