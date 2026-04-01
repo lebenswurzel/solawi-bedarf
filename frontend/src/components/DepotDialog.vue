@@ -75,7 +75,7 @@ const onSave = () => {
   <v-dialog :model-value="open" @update:model-value="onClose">
     <v-card>
       <v-card-title>
-        <span class="text-h5">{{ t.dialog.title }}</span>
+        {{ t.dialog.title }}
       </v-card-title>
       <v-card-text>
         <v-text-field

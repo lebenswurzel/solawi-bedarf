@@ -320,7 +320,7 @@ const updateEndBiddingRound = (val: string) => {
     <v-card-text>
       <v-container fluid>
         <v-row dense>
-          <v-col cols="12" style="text-h5">Anzeige für aktive Benutzer:</v-col>
+          <v-col cols="12">Anzeige für aktive Benutzer:</v-col>
         </v-row>
         <v-row dense>
           <v-col cols="12" md="6">
@@ -341,9 +341,7 @@ const updateEndBiddingRound = (val: string) => {
           </v-col>
         </v-row>
         <v-row>
-          <v-col cols="12" style="text-h5"
-            >Anzeige für inaktive Benutzer:</v-col
-          >
+          <v-col cols="12">Anzeige für inaktive Benutzer:</v-col>
         </v-row>
         <v-row dense>
           <v-col cols="12" md="6">

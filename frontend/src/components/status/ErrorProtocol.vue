@@ -277,7 +277,7 @@ onMounted(async () => {
 
     <v-dialog v-model="showDialog" max-width="1200px">
       <v-card v-if="selectedError">
-        <v-card-title class="text-h5">
+        <v-card-title>
           Fehlerdetails
           <v-btn
             icon="mdi-close"

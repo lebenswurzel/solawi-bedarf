@@ -524,7 +524,7 @@ watchEffect(async () => {
           Um Produkte hinzufügen zu können, bitte erst die Verteilung speichern.
         </v-alert>
         <template v-else>
-          <div class="text-h5">
+          <div class="text-headline-small">
             <v-icon v-if="showShipmentItems" @click="showShipmentItems = false"
               >mdi-collapse-all</v-icon
             >
@@ -637,7 +637,7 @@ watchEffect(async () => {
             Produkt hinzufügen
           </v-btn>
           <template v-if="!isForecast">
-            <div class="text-h5">
+            <div class="text-headline-small">
               <v-icon
                 v-if="showAdditionalShipmentItems"
                 @click="showAdditionalShipmentItems = false"

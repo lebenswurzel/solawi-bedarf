@@ -280,9 +280,7 @@ const onSave = () => {
 <template>
   <v-dialog :model-value="open" @update:model-value="onClose">
     <v-card>
-      <v-card-title>
-        <span class="text-h5">Bedarfsanmeldung für <SeasonText /></span>
-      </v-card-title>
+      <v-card-title> Bedarfsanmeldung für <SeasonText /> </v-card-title>
       <v-card-text>
         <v-alert
           class="mb-5"

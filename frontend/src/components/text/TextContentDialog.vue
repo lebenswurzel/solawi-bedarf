@@ -95,9 +95,7 @@ const onDelete = () => {
       <v-container fluid class="pa-2">
         <v-row dense>
           <v-col cols="6">
-            <v-card-title>
-              <span class="text-h5"> Text Editor </span>
-            </v-card-title>
+            <v-card-title> Text Editor </v-card-title>
           </v-col>
           <v-col cols="6">
             Modus:
