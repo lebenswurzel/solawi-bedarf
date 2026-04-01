@@ -16,12 +16,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { createApp } from "vue";
 import { createPinia } from "pinia";
-import App from "./App.vue";
 
-import "@mdi/font/css/materialdesignicons.css";
+// Vuetify base styles must load before any import that pulls in component CSS
+// (e.g. App.vue), or cascade layer order can invert and core.reset beats components.
 import "vuetify/styles";
+import "@mdi/font/css/materialdesignicons.css";
 import "./styles/animation.css";
 import "./styles/global.css";
+import App from "./App.vue";
 import { createVuetify } from "vuetify";
 import { md3 } from "vuetify/blueprints";
 import { router } from "./routes";
@@ -42,6 +44,9 @@ const vuetify = createVuetify({
     },
     VTextarea: {
       variant: "filled",
+    },
+    VBtn: {
+      class: "text-uppercase",
     },
   },
   theme: {
