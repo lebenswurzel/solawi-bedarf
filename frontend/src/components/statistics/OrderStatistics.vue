@@ -560,7 +560,7 @@ const updatedAtDistribution = computed(
             <div class="text-body-large">
               Erstmaliges Anlegen der Bedarfsanmeldung
             </div>
-            <div class="text-subtitle-2 opacity-60">
+            <div class="text-label-large opacity-60">
               Kalenderwoche in der erstmalig eine Bedarfsanmeldung angelegt
               wurde
             </div>
@@ -570,7 +570,7 @@ const updatedAtDistribution = computed(
             <div class="text-body-large">
               Letztmalige Aktualisierung der Bedarfsanmeldung
             </div>
-            <div class="text-subtitle-2 opacity-60">
+            <div class="text-label-large opacity-60">
               Kalenderwoche in der zuletzt die Bedarfsanmeldung aktualisiert
               wurde
             </div>
