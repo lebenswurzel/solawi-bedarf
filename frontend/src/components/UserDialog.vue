@@ -106,7 +106,7 @@ watchEffect(async () => {
   <v-dialog :model-value="open" @update:model-value="onClose">
     <v-card>
       <v-card-title>
-        <span class="text-h5">{{ t.title }}</span>
+        {{ t.title }}
       </v-card-title>
       <v-card-text>
         <v-text-field
