@@ -265,7 +265,7 @@ const onBankNameUpdate = (value: string) => {
 <template>
   <div class="mt-3" v-if="enableConfirmSepaUpdate || enableConfirmBankTransfer">
     {{ t.confirmPaymentMethod.title }}
-    <div class="text-body-2">
+    <div class="text-body-medium">
       {{
         isModificationOrder
           ? t.confirmPaymentMethod.subtitleModificationOrder
@@ -274,7 +274,7 @@ const onBankNameUpdate = (value: string) => {
     </div>
     <div
       v-if="validationResult.errors?.general?.length > 0"
-      class="text-body-2 text-error"
+      class="text-body-medium text-error"
     >
       {{ validationResult.errors?.general?.join("\n") }}
     </div>
@@ -323,7 +323,7 @@ const onBankNameUpdate = (value: string) => {
         density="compact"
       />
       <p
-        class="text-body-2 pl-10"
+        class="text-body-medium pl-10"
         v-for="text in bankTransferMessage.accountDetails.split('\n')"
       >
         {{ text }}

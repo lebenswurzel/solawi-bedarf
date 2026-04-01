@@ -117,7 +117,7 @@ const onDelete = () => {
         ></v-text-field>
         <v-textarea v-model="dialogTextContent!.content"></v-textarea>
         <div class="text-h6">Vorschau:</div>
-        <div class="text-body-2 preview" v-html="html"></div>
+        <div class="text-body-medium preview" v-html="html"></div>
       </v-card-text>
       <v-card-actions>
         <v-btn @click="onClose"> {{ language.app.actions.close }} </v-btn>

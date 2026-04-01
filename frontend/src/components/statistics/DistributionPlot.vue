@@ -40,7 +40,7 @@ const toFixedValue = (value: number) => {
 </script>
 
 <template>
-  <div class="text-subtitle-2 opacity-60">
+  <div class="text-label-large opacity-60">
     Anzahl:
     {{
       toFixedValue(

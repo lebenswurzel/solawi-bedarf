@@ -290,7 +290,7 @@ const onSave = () => {
           :title="t.alert.title"
           variant="outlined"
         >
-          <div class="text-body-2" v-html="t.alert.text"></div>
+          <div class="text-body-medium" v-html="t.alert.text"></div>
         </v-alert>
         <MsrpDisplay
           v-if="modificationOrder"
@@ -351,7 +351,7 @@ const onSave = () => {
           <v-expand-transition>
             <div v-if="showDepotNote">
               <p
-                class="text-body-2"
+                class="text-body-medium"
                 v-for="paragraph in t.depotNote.paragraphs"
               >
                 {{
@@ -440,11 +440,11 @@ const onSave = () => {
           color="warning"
           variant="outlined"
           density="compact"
-          class="text-body-2"
+          class="text-body-medium"
           v-if="!props.requestUser?.emailEnabled"
           >{{ t.sendConfirmationEmail.notAvailable }}</v-alert
         >
-        <div v-if="!!disableSubmit" class="text-body-2 text-error">
+        <div v-if="!!disableSubmit" class="text-body-medium text-error">
           {{ language.pages.shop.dialog.missingFields }}
         </div>
       </v-card-text>
