@@ -326,3 +326,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #357 Kartenansicht für Admins: Darstellung von Nutzern ohne Bestellung
 
 # NEW
+
+#369 Aktualisierung der Grafikbibliothek Vuetify auf Version 4
