@@ -174,12 +174,14 @@ const onExportProducts = async () => {
             @click="onExportProducts"
             prepend-icon="mdi-file-delimited-outline"
             variant="plain"
+            size="small"
             >CSV-Export</v-btn
           >
           <v-btn
             @click="onCreateProduct"
             prepend-icon="mdi-plus"
             variant="plain"
+            size="small"
             >{{ language.pages.product.action.createProduct }}</v-btn
           >
         </v-col>
