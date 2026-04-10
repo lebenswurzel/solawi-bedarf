@@ -573,8 +573,7 @@ watchEffect(async () => {
               Bisher keine Produkte hinzugefügt
             </v-list-item>
             <template v-for="(item, idx) in editShipment.shipmentItems">
-              <v-list-item
-                class="ma-0 pa-0"
+              <template
                 v-if="
                   item.isNew ||
                   (item.showItem &&
@@ -583,7 +582,7 @@ watchEffect(async () => {
                       : true))
                 "
               >
-                <div
+                <v-list-item
                   v-if="shouldAddMargin(idx)"
                   class="text-h6 mb-4 d-flex align-center"
                 >
@@ -610,22 +609,28 @@ watchEffect(async () => {
                       )
                     }})</span
                   >
-                </div>
-                <ShipmentItem
-                  :shipment-item="item"
-                  :used-depot-ids-by-product-id="
-                    usedShipmentDepotIdsByProductId
-                  "
-                  :is-forecast="isForecast"
-                />
-                <template v-slot:append>
-                  <v-btn
-                    icon="mdi-close-thick"
-                    @click="() => onDeleteShipmentItem(idx)"
-                  >
-                  </v-btn>
-                </template>
-              </v-list-item>
+                </v-list-item>
+                <v-list-item class="ma-0 pa-0">
+                  <ShipmentItem
+                    :shipment-item="item"
+                    :used-depot-ids-by-product-id="
+                      usedShipmentDepotIdsByProductId
+                    "
+                    :is-forecast="isForecast"
+                  />
+                  <template v-slot:append v-if="!item.isNew">
+                    <v-btn
+                      icon="mdi-trash-can-outline"
+                      @click="() => onDeleteShipmentItem(idx)"
+                      density="compact"
+                      size="small"
+                      color="error"
+                      variant="text"
+                    >
+                    </v-btn>
+                  </template>
+                </v-list-item>
+              </template>
             </template>
           </v-list>
           <v-btn

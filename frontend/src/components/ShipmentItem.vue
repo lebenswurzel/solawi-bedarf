@@ -200,17 +200,20 @@ const selectAllDepots = computed(() => {
           </template>
         </v-select>
       </v-col>
-      <v-col :cols="props.isForecast ? 2 : 1">
-        <v-text-field
-          :label="`Benötigt [${getLangUnit(shipmentItem.unit)}]`"
-          @update:model-value="() => {}"
-          :model-value="neededQuantity"
-          :hide-details="true"
-        ></v-text-field>
-      </v-col>
-      <template v-if="!props.isForecast">
-        <v-col cols="1">
+      <v-col :cols="props.isForecast ? 2 : 3">
+        <div
+          class="shipment-item-needed-delivered d-flex flex-row ga-0 align-center w-100"
+        >
           <v-text-field
+            class="flex-1-1-0"
+            :label="`Benötigt [${getLangUnit(shipmentItem.unit)}]`"
+            @update:model-value="() => {}"
+            :model-value="neededQuantity"
+            :hide-details="true"
+          ></v-text-field>
+          <v-text-field
+            v-if="!props.isForecast"
+            class="flex-1-1-0"
             :label="`Geliefert [${getLangUnit(shipmentItem.unit)}]`"
             v-model="shipmentItem.totalShipedQuantity"
             type="number"
@@ -231,31 +234,38 @@ const selectAllDepots = computed(() => {
               </v-tooltip>
             </template>
           </v-text-field>
-        </v-col>
+        </div>
+      </v-col>
+      <template v-if="!props.isForecast">
         <v-col cols="3">
-          <div
-            class="text-label-medium shipment-item-checkboxes d-flex flex-column ga-0"
-          >
-            <v-checkbox
-              v-model="isDifferentQuantity"
-              label="abweichende Liefermenge"
-              density="compact"
-              :hide-details="true"
+          <div class="d-flex flex-row align-start ga-2">
+            <div
+              class="text-label-medium shipment-item-checkboxes d-flex flex-column ga-0 flex-grow-1"
             >
-            </v-checkbox>
-            <v-checkbox
-              label="Bio"
-              v-model="shipmentItem.isBio"
+              <v-checkbox
+                v-model="isDifferentQuantity"
+                label="abweichende Liefermenge"
+                density="compact"
+                :hide-details="true"
+              >
+              </v-checkbox>
+              <v-checkbox
+                label="Bio"
+                v-model="shipmentItem.isBio"
+                density="compact"
+                :hide-details="true"
+              ></v-checkbox>
+            </div>
+            <v-btn
+              class="flex-shrink-0 align-self-center"
+              variant="outlined"
+              @click="() => (open = !open)"
               density="compact"
-              :hide-details="true"
-            ></v-checkbox>
+            >
+              <v-icon v-if="!open"> mdi-arrow-expand-down</v-icon>
+              <v-icon v-if="open"> mdi-arrow-collapse-up</v-icon>
+            </v-btn>
           </div>
-        </v-col>
-        <v-col cols="1">
-          <v-btn variant="outlined" @click="() => (open = !open)">
-            <v-icon v-if="!open"> mdi-arrow-expand-down</v-icon>
-            <v-icon v-if="open"> mdi-arrow-collapse-up</v-icon>
-          </v-btn>
         </v-col>
       </template>
       <template v-else>
@@ -264,6 +274,7 @@ const selectAllDepots = computed(() => {
             label="Multiplikator"
             :items="multiplicatorOptions"
             v-model="shipmentItem.multiplicator"
+            :hide-details="true"
           ></v-select>
         </v-col>
       </template>
@@ -320,6 +331,16 @@ const selectAllDepots = computed(() => {
 </template>
 
 <style scoped>
+/* Equal-width Benötigt / Geliefert fields in a flex row */
+.shipment-item-needed-delivered > * {
+  min-width: 0;
+}
+
+/* Allow long checkbox labels to shrink/wrap beside the expand button in a flex row. */
+.shipment-item-checkboxes {
+  min-width: 0;
+}
+
 /* Compact checkboxes: VCheckbox ties row height to --v-input-control-height (40px for density compact). */
 .shipment-item-checkboxes :deep(.v-input) {
   --v-input-control-height: 24px;
