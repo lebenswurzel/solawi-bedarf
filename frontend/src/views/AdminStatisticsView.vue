@@ -20,6 +20,7 @@ import HomeStatsCard from "../components/HomeStatsCard.vue";
 import ProductStatistics from "../components/statistics/ProductStatistics.vue";
 import { useBIStore } from "../store/biStore";
 import { useConfigStore } from "../store/configStore.ts";
+import { useProductStore } from "../store/productStore.ts";
 import { useUserStore } from "../store/userStore.ts";
 import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
 import OrderStatistics from "../components/statistics/OrderStatistics.vue";
@@ -27,12 +28,17 @@ import ApplicantMap from "../components/applicant/ApplicantMap.vue";
 
 const configStore = useConfigStore();
 const biStore = useBIStore();
+const productStore = useProductStore();
 const userStore = useUserStore();
 const tab = ref("products");
 
 onMounted(async () => {
   await configStore.update();
-  await biStore.update(configStore.activeConfigId);
+  const configId = configStore.activeConfigId;
+  await Promise.all([
+    biStore.update(configId),
+    productStore.update(configId),
+  ]);
   await userStore.update();
 });
 </script>

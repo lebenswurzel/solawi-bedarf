@@ -18,29 +18,44 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { computed } from "vue";
 import { ProductCategoryType } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
+import type {
+  ProductsById,
+  SoldByProductId,
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { useBIStore } from "../../store/biStore";
+import { useProductStore } from "../../store/productStore.ts";
 import { convertToBigUnit } from "@lebenswurzel/solawi-bedarf-shared/src/util/unitHelper.ts";
 
 const t = language.pages.statistics;
 const biStore = useBIStore();
+const productStore = useProductStore();
 
-const selfGrownProducts = computed(() => {
-  return Object.entries(biStore.soldByProductId)
-    .filter(
-      ([productId]) =>
-        biStore.productsById[parseInt(productId)].productCategoryType ==
-        ProductCategoryType.SELFGROWN,
-    )
+function iconForCategoryType(typ: ProductCategoryType) {
+  return typ === ProductCategoryType.COOPERATION
+    ? "mdi-truck-delivery"
+    : "mdi-sprout";
+}
+
+function statsForProductCategoryId(
+  productCategoryId: number,
+  soldByProductId: SoldByProductId,
+  productsById: ProductsById,
+) {
+  const entries = Object.entries(soldByProductId)
+    .filter(([productId]) => {
+      const product = productsById[parseInt(productId)];
+      return product?.productCategoryId === productCategoryId;
+    })
     .map(([productId, value]) => ({
       sold: value,
-      product: biStore.productsById[parseInt(productId)],
+      product: productsById[parseInt(productId)]!,
     }));
-});
 
-const topProducts = computed(() => {
-  return selfGrownProducts.value
+  const topProducts = entries
     .map((value) => ({
-      percentageSold: (value.sold.sold / value.sold.quantity) * 100,
+      percentageSold: value.sold.quantity
+        ? (value.sold.sold / value.sold.quantity) * 100
+        : 0,
       name: value.product.name,
       money: Math.ceil(
         ((convertToBigUnit(value.sold.sold, value.product.unit).value || 0) *
@@ -49,17 +64,28 @@ const topProducts = computed(() => {
       ),
     }))
     .sort((a, b) => b.money - a.money);
-});
 
-const selfGrownProductSum = computed(() => {
-  return selfGrownProducts.value
-    .map(
-      (value) =>
-        ((convertToBigUnit(value.sold.sold, value.product.unit).value || 0) *
-          value.product.msrp) /
+  const sum = entries.reduce(
+    (acc, value) =>
+      acc +
+      ((convertToBigUnit(value.sold.sold, value.product.unit).value || 0) *
+        value.product.msrp) /
         1200,
-    )
-    .reduce((acc, value) => acc + value, 0);
+    0,
+  );
+
+  return { topProducts, sum };
+}
+
+const categoryPanels = computed(() => {
+  const soldByProductId = biStore.soldByProductId;
+  const productsById = biStore.productsById;
+  return productStore.productCategories.map((pc) => ({
+    id: pc.id,
+    title: pc.name,
+    icon: iconForCategoryType(pc.typ),
+    ...statsForProductCategoryId(pc.id, soldByProductId, productsById),
+  }));
 });
 </script>
 
@@ -71,21 +97,42 @@ const selfGrownProductSum = computed(() => {
     <p class="mb-4">
       {{ t.productsCard.text }}
     </p>
-    <p class="mb-4">Summe: {{ Math.ceil(selfGrownProductSum) }}€</p>
-    <v-row>
-      <v-col cols="12" sm="6" md="4" v-for="item in topProducts">
-        <v-progress-circular
-          :model-value="item.percentageSold"
-          height="30"
-          :color="item.percentageSold > 90 ? 'green' : 'blue-grey'"
-        >
-          <template v-slot:default="{ value }">{{ Math.ceil(value) }}</template>
-        </v-progress-circular>
-        &nbsp;
-        <span class="text-medium-emphasis">
-          {{ item.name }} ({{ item.money }}€)
-        </span>
-      </v-col>
-    </v-row>
+    <v-expansion-panels multiple>
+      <v-expansion-panel v-for="panel in categoryPanels" :key="panel.id">
+        <v-expansion-panel-title class="d-flex flex-wrap align-center ga-2">
+          <v-icon :icon="panel.icon" />
+          <span>{{ panel.title }}</span>
+          <v-spacer />
+          <span class="text-body-2 text-medium-emphasis">
+            {{ Math.ceil(panel.sum) }}€
+          </span>
+        </v-expansion-panel-title>
+        <v-expansion-panel-text>
+          <p
+            v-if="panel.topProducts.length === 0"
+            class="text-medium-emphasis"
+          >
+            {{ t.productsCard.emptyCategory }}
+          </p>
+          <v-row v-else>
+            <v-col cols="12" sm="6" md="4" v-for="item in panel.topProducts">
+              <v-progress-circular
+                :model-value="item.percentageSold"
+                height="30"
+                :color="item.percentageSold > 90 ? 'green' : 'blue-grey'"
+              >
+                <template v-slot:default="{ value }">{{
+                  Math.ceil(value)
+                }}</template>
+              </v-progress-circular>
+              &nbsp;
+              <span class="text-medium-emphasis">
+                {{ item.name }} ({{ item.money }}€)
+              </span>
+            </v-col>
+          </v-row>
+        </v-expansion-panel-text>
+      </v-expansion-panel>
+    </v-expansion-panels>
   </v-card-text>
 </template>
