@@ -18,7 +18,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { ref, watch } from "vue";
 import ProductCategoryDialog from "../components/ProductCategoryDialog.vue";
 import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
-import { interpolate } from "@lebenswurzel/solawi-bedarf-shared/src/lang/template.ts";
 import { onMounted } from "vue";
 import { useProductStore } from "../store/productStore.ts";
 import { NewProductCategory } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
@@ -91,13 +90,6 @@ watch(dateOfInterest, () => {
 <template>
   <v-card class="ma-2">
     <v-card-title> {{ t.title }} - {{ config?.name }} </v-card-title>
-    <v-card-subtitle>
-      {{
-        interpolate(t.subtitle, {
-          offers: (12 * biStore.offers).toString(),
-        })
-      }}
-    </v-card-subtitle>
     <v-card-text>
       <v-container fluid>
         <v-row>

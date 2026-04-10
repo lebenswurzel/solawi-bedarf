@@ -67,7 +67,7 @@ const onCloseProductCategory = async () => {
 </script>
 
 <template>
-  <v-row no-gutters>
+  <v-row no-gutters class="mb-2">
     <v-col cols="12" sm="6">
       {{
         language.app.options.productCategoryTyps[
@@ -79,17 +79,19 @@ const onCloseProductCategory = async () => {
           ? "mdi-truck-delivery"
           : "mdi-sprout"
       }}</v-icon>
-      -
-      {{
-        interpolate(t.item.subtitle, {
-          msrp: Math.round(
-            props.productCategoryWithProducts.products.reduce((acc, cur) => {
-              acc = acc + (cur.quantity * cur.msrp) / 100;
-              return acc;
-            }, 0),
-          ).toString(),
-        })
-      }}
+      <br />
+      <span class="text-body-small text-medium-emphasis"
+        >{{
+          interpolate(t.item.subtitle, {
+            msrp: Math.round(
+              props.productCategoryWithProducts.products.reduce((acc, cur) => {
+                acc = acc + (cur.quantity * cur.msrp) / 100;
+                return acc;
+              }, 0),
+            ).toString(),
+          })
+        }}
+      </span>
     </v-col>
     <v-spacer></v-spacer>
     <v-col cols="12" sm="auto" class="d-flex flex-wrap justify-end ga-2">
