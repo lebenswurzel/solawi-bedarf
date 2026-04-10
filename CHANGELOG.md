@@ -335,3 +335,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #373 Problem "no offer reason" beim Speichern des Bedarfs behoben
 
 # NEW
+
+#375 Produkte: CSV-Export enthält jetzt auch die verkaufte Menge
