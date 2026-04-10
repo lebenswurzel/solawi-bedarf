@@ -329,7 +329,9 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 
 #369 Aktualisierung der Grafikbibliothek Vuetify auf Version 4
 
-# NEW
+# v0.15.6 - 2026-04-10 - Automatische Verteilmengenwerte
 
 #371 Verteilungs-Dialog: Standardmäßig wird als "geliefert" der selbe Wert wie "benötigt" eingetragen
 #373 Problem "no offer reason" beim Speichern des Bedarfs behoben
+
+# NEW
