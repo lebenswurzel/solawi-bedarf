@@ -68,7 +68,7 @@ const onCloseProductCategory = async () => {
 
 <template>
   <v-row no-gutters>
-    <v-col cols="10">
+    <v-col cols="12" sm="6">
       {{
         language.app.options.productCategoryTyps[
           props.productCategoryWithProducts.typ
@@ -92,30 +92,24 @@ const onCloseProductCategory = async () => {
       }}
     </v-col>
     <v-spacer></v-spacer>
-    <v-col cols="1" class="d-flex">
-      <v-spacer></v-spacer>
-      <v-menu>
-        <template v-slot:activator="{ props }">
-          <v-btn variant="plain" icon="mdi-dots-vertical" v-bind="props">
-          </v-btn>
-        </template>
-        <v-list>
-          <v-list-item>
-            <v-list-item-title>
-              <v-btn @click="onEditProductCategory">
-                {{ language.app.actions.edit }}
-              </v-btn>
-            </v-list-item-title>
-          </v-list-item>
-          <v-list-item>
-            <v-list-item-title>
-              <v-btn color="error" @click="onDelete">
-                {{ language.app.actions.delete }}
-              </v-btn>
-            </v-list-item-title>
-          </v-list-item>
-        </v-list>
-      </v-menu>
+    <v-col cols="12" sm="auto" class="d-flex flex-wrap justify-end ga-2">
+      <v-btn
+        @click="onEditProductCategory"
+        prepend-icon="mdi-pencil"
+        variant="plain"
+        size="small"
+      >
+        {{ language.app.actions.edit }}
+      </v-btn>
+      <v-btn
+        color="error"
+        @click="onDelete"
+        prepend-icon="mdi-trash-can-outline"
+        variant="plain"
+        size="small"
+      >
+        {{ language.app.actions.delete }}
+      </v-btn>
     </v-col>
   </v-row>
   <ProductsTable
