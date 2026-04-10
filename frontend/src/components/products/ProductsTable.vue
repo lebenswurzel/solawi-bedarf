@@ -38,6 +38,8 @@ import { sanitizeFileName } from "@lebenswurzel/solawi-bedarf-shared/src/util/fi
 import { objectToCsv } from "@lebenswurzel/solawi-bedarf-shared/src/pdf/overviewPdfs.ts";
 const t = language.pages.product.dialog;
 
+type ProductTableRow = Product & { sold: number };
+
 const props = defineProps<{
   productCategoryWithProducts: ProductCategoryWithProducts;
 }>();
@@ -60,6 +62,15 @@ const deletionProduct = ref<Product | undefined>();
 
 provide("dialogProduct", dialogProduct);
 
+const tableItems = computed<ProductTableRow[]>(() =>
+  props.productCategoryWithProducts.products.map((p) => ({
+    ...p,
+    sold:
+      convertToBigUnit(soldByProductId.value[p.id]?.sold || 0, p.unit).value ??
+      0,
+  })),
+);
+
 const unit = language.app.units.unit;
 
 const headers = [
@@ -70,7 +81,7 @@ const headers = [
   {
     title: t.deliveries,
     key: "deliveries",
-    sortRaw(a: Product, b: Product) {
+    sortRaw(a: ProductTableRow, b: ProductTableRow) {
       return Math.sign(
         (productAvailability.value[a.id]?.deliveryPercentage || 0) -
           (productAvailability.value[b.id]?.deliveryPercentage || 0),
@@ -91,7 +102,9 @@ const onCreateProduct = () => {
   openProduct.value = true;
 };
 
-const onEditProduct = (product: Product) => {
+const onEditProduct = (row: ProductTableRow) => {
+  const { sold: _sold, ...product } = row;
+  void _sold;
   dialogProduct.value = product;
   openProduct.value = true;
 };
@@ -124,12 +137,7 @@ const onCloseProduct = async () => {
 
 const onExportProducts = async () => {
   try {
-    const rows = props.productCategoryWithProducts.products.map((p) => ({
-      ...p,
-      sold: convertToBigUnit(soldByProductId.value[p.id]?.sold || 0, p.unit)
-        .value,
-    }));
-    const csv = objectToCsv(rows);
+    const csv = objectToCsv(tableItems.value);
     const blob = new Blob([csv], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -179,8 +187,8 @@ const onExportProducts = async () => {
     </v-card-text>
     <v-data-table
       :headers="headers"
-      :items="props.productCategoryWithProducts.products"
-      :item-value="(item: Product) => item"
+      :items="tableItems"
+      :item-value="(item: ProductTableRow) => item"
       :items-per-page="10"
       :search="search"
     >
@@ -198,12 +206,6 @@ const onExportProducts = async () => {
             Math.round(productAvailability[item.id]?.deliveryPercentage || 0)
           }}%</span
         >
-      </template>
-
-      <template v-slot:item.sold="{ item }">
-        {{
-          convertToBigUnit(soldByProductId[item.id]?.sold || 0, item.unit).value
-        }}
       </template>
 
       <template v-slot:item.edit="{ item }">
