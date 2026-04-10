@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { EditShipmentItem } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { useConfigStore } from "../store/configStore";
 import { useBIStore } from "../store/biStore";
@@ -41,6 +41,7 @@ const {
 const { depots } = storeToRefs(configStore);
 
 const open = ref<boolean>(false);
+const isDifferentQuantity = ref<boolean>(false);
 
 const productOptions = computed(() => {
   const keys = Object.keys(soldByProductId.value)
@@ -79,6 +80,12 @@ const neededQuantity = computed(() => {
     }
   }
   return 0;
+});
+
+watch([neededQuantity, isDifferentQuantity], () => {
+  if (!isDifferentQuantity.value) {
+    props.shipmentItem.totalShipedQuantity = neededQuantity.value;
+  }
 });
 
 const unitOptions = computed(() => {
@@ -163,22 +170,24 @@ const selectAllDepots = computed(() => {
 </script>
 
 <template>
-  <v-container class="pa-0 ma-0" fluid>
+  <v-container class="px-0 pt-0 pb-4 ma-0" fluid>
     <v-row no-gutters align="center" justify="center" class="pa-0 ma-0">
-      <v-col :cols="props.isForecast ? 4 : 2">
+      <v-col :cols="props.isForecast ? 4 : 3">
         <v-autocomplete
           label="Produkt"
           :items="productOptions"
           :model-value="shipmentItem.productId"
           @update:model-value="onProductIdChange"
+          :hide-details="true"
         ></v-autocomplete>
       </v-col>
-      <v-col cols="4">
+      <v-col cols="3">
         <v-select
           label="Depots"
           :items="depotOptions"
           v-model="shipmentItem.depotIds"
           multiple
+          :hide-details="true"
         >
           <template v-slot:prepend-item v-if="(depotOptions?.length || 0) > 1">
             <v-list-item title="Alle auswählen" @click="onSelectAllDepots">
@@ -196,14 +205,17 @@ const selectAllDepots = computed(() => {
           :label="`Benötigt [${getLangUnit(shipmentItem.unit)}]`"
           @update:model-value="() => {}"
           :model-value="neededQuantity"
+          :hide-details="true"
         ></v-text-field>
       </v-col>
       <template v-if="!props.isForecast">
-        <v-col cols="2">
+        <v-col cols="1">
           <v-text-field
             :label="`Geliefert [${getLangUnit(shipmentItem.unit)}]`"
             v-model="shipmentItem.totalShipedQuantity"
             type="number"
+            :disabled="!isDifferentQuantity"
+            :hide-details="true"
           >
             <template
               v-slot:append-inner
@@ -220,8 +232,24 @@ const selectAllDepots = computed(() => {
             </template>
           </v-text-field>
         </v-col>
-        <v-col cols="2">
-          <v-checkbox label="isBio" v-model="shipmentItem.isBio"></v-checkbox>
+        <v-col cols="3">
+          <div
+            class="text-label-medium shipment-item-checkboxes d-flex flex-column ga-0"
+          >
+            <v-checkbox
+              v-model="isDifferentQuantity"
+              label="abweichende Liefermenge"
+              density="compact"
+              :hide-details="true"
+            >
+            </v-checkbox>
+            <v-checkbox
+              label="Bio"
+              v-model="shipmentItem.isBio"
+              density="compact"
+              :hide-details="true"
+            ></v-checkbox>
+          </div>
         </v-col>
         <v-col cols="1">
           <v-btn variant="outlined" @click="() => (open = !open)">
@@ -252,6 +280,7 @@ const selectAllDepots = computed(() => {
           label="Beschreibung"
           v-model="shipmentItem.description"
           clearable
+          :hide-details="true"
         ></v-text-field>
       </v-col>
       <v-col cols="2">
@@ -259,6 +288,7 @@ const selectAllDepots = computed(() => {
           label="Multiplikator"
           :items="multiplicatorOptions"
           v-model="shipmentItem.multiplicator"
+          :hide-details="true"
         ></v-select>
       </v-col>
       <v-col cols="2">
@@ -266,6 +296,7 @@ const selectAllDepots = computed(() => {
           label="von"
           v-model="shipmentItem.conversionFrom"
           type="number"
+          :hide-details="true"
         />
       </v-col>
       <v-col cols="2">
@@ -273,6 +304,7 @@ const selectAllDepots = computed(() => {
           label="Einheit"
           :items="unitOptions"
           v-model="shipmentItem.unit"
+          :hide-details="true"
         ></v-select>
       </v-col>
       <v-col cols="2">
@@ -280,8 +312,24 @@ const selectAllDepots = computed(() => {
           label="nach"
           v-model="shipmentItem.conversionTo"
           type="number"
+          :hide-details="true"
         />
       </v-col>
     </v-row>
   </v-container>
 </template>
+
+<style scoped>
+/* Compact checkboxes: VCheckbox ties row height to --v-input-control-height (40px for density compact). */
+.shipment-item-checkboxes :deep(.v-input) {
+  --v-input-control-height: 24px;
+}
+
+.shipment-item-checkboxes :deep(.v-selection-control) {
+  --v-selection-control-size: 20px;
+}
+
+.shipment-item-checkboxes :deep(.v-selection-control .v-icon) {
+  font-size: 18px;
+}
+</style>
