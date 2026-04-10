@@ -332,3 +332,4 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 # NEW
 
 #371 Verteilungs-Dialog: Standardmäßig wird als "geliefert" der selbe Wert wie "benötigt" eingetragen
+#373 Problem "no offer reason" beim Speichern des Bedarfs behoben
