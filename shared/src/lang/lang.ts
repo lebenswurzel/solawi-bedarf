@@ -376,7 +376,7 @@ export const language = {
         subtitle: "Admin",
       },
       item: {
-        subtitle: "Umsatz (Gesamt): {msrp} €",
+        subtitle: "Theoretischer Maximalumsatz bei 100% Verkauf: {msrp} €",
       },
       action: {
         createProductCategory: "Produktkategorie",
