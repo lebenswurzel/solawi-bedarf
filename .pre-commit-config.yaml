@@ -7,23 +7,27 @@ repos:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-yaml
-      # - id: check-added-large-files
+      - id: check-added-large-files
 
   - repo: local
     hooks:
       - id: check-typescript-frontend
         name: Checks TypeScript consistency on the frontend
         language: system
+        files: "\\.ts$|\\.vue$"
         entry: ./dev/run-npm.bash frontend vue-tsc
       - id: check-typescript-backend
         name: Checks TypeScript consistency on the backend
         language: system
+        files: "\\.ts$"
         entry: ./dev/run-npm.bash backend tsc
       - id: check-prettier-backend
         name: Checks formatting according to Prettier
         language: system
+        files: "backend/.*\\.ts"
         entry: ./dev/run-npm.bash backend format-check
       - id: check-file-headers
         name: Checks that all files have the correct headers
         language: system
+        files: ".*\\.ts$|.*\\.vue$"
         entry: ./apply_license_headers.bash
