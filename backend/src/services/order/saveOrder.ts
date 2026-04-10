@@ -330,6 +330,7 @@ const determineEffectiveMsrp = async (
       const { msrpWeightsByProductId } = await availabilityWeights(
         requisitionConfig.id,
         order.validFrom,
+        true,
       );
       productMsrpWeightsByOrderId[order.id] = msrpWeightsByProductId;
     }),
