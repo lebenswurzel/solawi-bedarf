@@ -520,6 +520,7 @@ export const language = {
       productsCard: {
         title: "Produkte nach monatlichem Umsatz",
         text: "In Bedarfsanmeldungen enthaltene Produkte mit durchschnittlichem Monatsumsatz in Klammern.",
+        emptyCategory: "Keine gemeldeten Produkte in dieser Kategorie.",
       },
       ordersCard: {
         title: "Bedarfsanmeldungen in der gewählten",
