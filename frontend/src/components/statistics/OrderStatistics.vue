@@ -15,15 +15,10 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, ref } from "vue";
 import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
-import {
-  Msrp,
-  SavedOrder,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
-import { getAllOrders } from "../../requests/shop.ts";
+import { SavedOrder } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { useConfigStore } from "../../store/configStore.ts";
-import { useUserStore } from "../../store/userStore.ts";
 import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import { storeToRefs } from "pinia";
 import { format } from "date-fns";
@@ -34,39 +29,17 @@ import DistributionPlot, {
 } from "./DistributionPlot.vue";
 import SeasonText from "../styled/SeasonText.vue";
 import {
-  calculateEffectiveOrderValidMonths,
-  getMsrp,
-} from "@lebenswurzel/solawi-bedarf-shared/src/msrp.ts";
-import { useBIStore } from "../../store/biStore.ts";
-import { useVersionInfoStore } from "../../store/versionInfoStore.ts";
+  type OrderExt,
+  useStatisticsStore,
+} from "../../store/statisticsStore.ts";
 
 const t = language.pages.statistics;
-const userStore = useUserStore();
 const configStore = useConfigStore();
 const { depots } = storeToRefs(configStore);
-const biStore = useBIStore();
-const versionInfoStore = useVersionInfoStore();
+const statisticsStore = useStatisticsStore();
+const { isProcessing, relevantOrders, ordersGroupedByMonth } =
+  storeToRefs(statisticsStore);
 
-interface OrderExt extends SavedOrder {
-  userName: string;
-  depotName: string;
-  msrp: Msrp;
-  validMonths: number;
-}
-
-interface OrdersGroupedByMonth {
-  month: string;
-  orders: OrderExt[];
-  offerSum: number;
-  msrpSum: number;
-  differenceSum: number;
-  count: number;
-  isSumOrAverage: boolean;
-}
-
-const orders = ref<OrderExt[]>([]);
-const processedOrders = ref<number>(0);
-const isProcessing = ref(false);
 const search = ref<string>("");
 
 const headers = [
@@ -87,149 +60,12 @@ const headers = [
   { title: "ID", key: "id" },
 ];
 
-const isEmpty = (obj: SavedOrder): boolean => {
-  return obj && Object.keys(obj).length === 0;
-};
-
 const prettyDate = (date?: Date | string | null): string => {
   if (date) {
     return format(date, "PPp", { locale: de });
   }
   return "nie";
 };
-
-onMounted(async () => {
-  processedOrders.value = 0;
-  isProcessing.value = true;
-
-  const allOrderExts: OrderExt[] = [];
-  await Promise.all(
-    userStore.userOptions.map(async (u) => {
-      const orders = await getAllOrders(u.value, configStore.activeConfigId);
-      processedOrders.value++;
-      for (const order of orders) {
-        if (isEmpty(order) || !order.orderItems) {
-          return undefined;
-        }
-        const depot = depots.value.filter((d) => d.id == order.depotId);
-        const validMonths = calculateEffectiveOrderValidMonths(
-          configStore.config!,
-          order,
-          versionInfoStore.versionInfo?.serverTimeZone,
-        );
-        allOrderExts.push({
-          ...order,
-          msrp: getMsrp(
-            order.category,
-            order.orderItems,
-            biStore.productsById,
-            12,
-          ),
-          validMonths,
-          userName: u.title,
-          depotName: depot.length ? depot[0].name : "unbekannt",
-        });
-      }
-    }),
-  );
-
-  orders.value = allOrderExts.filter((o) => !!o);
-  isProcessing.value = false;
-});
-
-/**
- * Group orders by month. Uses all months between validFrom and validTo of the current config.
- */
-const ordersGroupedByMonth = computed((): OrdersGroupedByMonth[] => {
-  if (!configStore.config?.validFrom || !configStore.config?.validTo) {
-    return [];
-  }
-  const months: { middleOfMonth: Date; name: string }[] = [];
-  for (
-    let i = new Date(configStore.config?.validFrom);
-    i <= configStore.config?.validTo;
-    i.setMonth(i.getMonth() + 1)
-  ) {
-    months.push({
-      middleOfMonth: new Date(i.getFullYear(), i.getMonth(), 15),
-      name: format(i, "yyyy-MM"),
-    });
-  }
-  const result = Object.values(
-    relevantOrders.value.reduce(
-      (acc, o) => {
-        months.forEach((month) => {
-          if (o.validFrom && o.validFrom > month.middleOfMonth) {
-            return;
-          }
-          if (o.validTo && o.validTo < month.middleOfMonth) {
-            return;
-          }
-          acc[month.name] = acc[month.name] || {
-            orders: [],
-            offerSum: 0,
-            msrpSum: 0,
-            differenceSum: 0,
-            count: 0,
-            month: month.name,
-          };
-          acc[month.name] = {
-            orders: [...acc[month.name].orders, o],
-            offerSum: o.offer + acc[month.name].offerSum,
-            msrpSum: o.msrp.monthly.total + acc[month.name].msrpSum,
-            differenceSum:
-              o.offer - o.msrp.monthly.total + acc[month.name].differenceSum,
-            count: 1 + acc[month.name].count,
-            month: month.name,
-            isSumOrAverage: false,
-          };
-        });
-        return acc;
-      },
-      {} as {
-        [key: string]: {
-          orders: OrderExt[];
-          offerSum: number;
-          msrpSum: number;
-          differenceSum: number;
-          count: number;
-          month: string;
-          isSumOrAverage: boolean;
-        };
-      },
-    ),
-  );
-
-  const count = result.filter((r) => !r.isSumOrAverage).length;
-
-  // add sum row
-  const sumRow = {
-    orders: result.map((r) => r.orders).flat(),
-    offerSum: result.reduce((acc, r) => acc + r.offerSum, 0),
-    msrpSum: result.reduce((acc, r) => acc + r.msrpSum, 0),
-    differenceSum: result.reduce((acc, r) => acc + r.differenceSum, 0),
-    count: result.reduce((acc, r) => acc + r.count, 0) / count,
-    month: "Summe",
-    isSumOrAverage: true,
-  };
-
-  // add average row
-  const averageRow = {
-    orders: sumRow.orders,
-    offerSum: sumRow.offerSum / count,
-    msrpSum: sumRow.msrpSum / count,
-    differenceSum: sumRow.differenceSum / count,
-    count: sumRow.count,
-    month: "Durchschnitt",
-    isSumOrAverage: true,
-  };
-
-  return [...result, sumRow, averageRow];
-});
-
-const relevantOrders = computed(() => {
-  return orders.value.filter((o) => o.offer > 0);
-});
 
 const categoriesDistribution = computed((): DistributionData => {
   const items = relevantOrders.value.reduce(
@@ -384,13 +220,6 @@ const updatedAtDistribution = computed(
     <p class="mb-4">
       {{ t.ordersCard.text }}
     </p>
-    <v-progress-linear
-      height="12"
-      :max="userStore.userOptions.length"
-      :model-value="processedOrders"
-      v-if="isProcessing"
-      color="primary"
-    ></v-progress-linear>
 
     <template v-if="!isProcessing">
       <v-text-field
