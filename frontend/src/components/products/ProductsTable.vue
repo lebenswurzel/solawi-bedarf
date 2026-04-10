@@ -34,6 +34,8 @@ import {
   convertToBigUnit,
   getLangUnit,
 } from "@lebenswurzel/solawi-bedarf-shared/src/util/unitHelper.ts";
+import { sanitizeFileName } from "@lebenswurzel/solawi-bedarf-shared/src/util/fileHelper.ts";
+import { objectToCsv } from "@lebenswurzel/solawi-bedarf-shared/src/pdf/overviewPdfs.ts";
 const t = language.pages.product.dialog;
 
 const props = defineProps<{
@@ -119,6 +121,29 @@ const onCloseProduct = async () => {
   openProduct.value = false;
   await productStore.update(activeConfigId.value);
 };
+
+const onExportProducts = async () => {
+  try {
+    const rows = props.productCategoryWithProducts.products.map((p) => ({
+      ...p,
+      sold: convertToBigUnit(soldByProductId.value[p.id]?.sold || 0, p.unit)
+        .value,
+    }));
+    const csv = objectToCsv(rows);
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = sanitizeFileName(props.productCategoryWithProducts.name);
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  } catch (e) {
+    uiFeedback.setError("" + e);
+    throw e;
+  }
+};
 </script>
 <template>
   <v-card variant="tonal">
@@ -136,8 +161,13 @@ const onCloseProduct = async () => {
           />
         </v-col>
         <v-spacer></v-spacer>
-        <v-col cols="12" sm="2" class="d-flex">
-          <v-spacer></v-spacer>
+        <v-col cols="12" sm="auto" class="d-flex flex-wrap justify-end ga-2">
+          <v-btn
+            @click="onExportProducts"
+            prepend-icon="mdi-file-delimited-outline"
+            variant="plain"
+            >CSV-Export</v-btn
+          >
           <v-btn
             @click="onCreateProduct"
             prepend-icon="mdi-plus"
