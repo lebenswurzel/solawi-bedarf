@@ -509,6 +509,7 @@ export const language = {
     },
     statistics: {
       title: "Statistiken",
+      loadingMessage: "Statistiken werden geladen...",
       tabs: {
         products: "Produkte",
         orders: "Bedarfsanmeldungen",
