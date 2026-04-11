@@ -616,7 +616,7 @@ const filterDeleted = (tableItem: { deleted?: boolean }): boolean => {
           </v-col>
         </v-row>
         <span class="text-h6">Anzeigefilter für die Tabelle</span>
-        <v-row dense>
+        <v-row density="compact">
           <v-col cols="12" md="6">
             <div class="text-body-small">Bedarf gültig ab Datum</div>
             <v-chip-group

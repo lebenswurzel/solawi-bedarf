@@ -319,10 +319,10 @@ const updateEndBiddingRound = (val: string) => {
     <v-card-title>Live-Vorschau</v-card-title>
     <v-card-text>
       <v-container fluid>
-        <v-row dense>
+        <v-row density="compact">
           <v-col cols="12">Anzeige für aktive Benutzer:</v-col>
         </v-row>
-        <v-row dense>
+        <v-row density="compact">
           <v-col cols="12" md="6">
             <SeasonStatusElement
               :phase="
@@ -343,7 +343,7 @@ const updateEndBiddingRound = (val: string) => {
         <v-row>
           <v-col cols="12">Anzeige für inaktive Benutzer:</v-col>
         </v-row>
-        <v-row dense>
+        <v-row density="compact">
           <v-col cols="12" md="6">
             <SeasonStatusElement
               :phase="

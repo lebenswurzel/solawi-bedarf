@@ -196,7 +196,7 @@ const isSelected = (id: number) => !!selectedShippingItems.value[id];
     <v-card-title>{{ t.cards.list.title }} <SeasonText /></v-card-title>
     <v-card-text v-if="dateOptionsMonths.length > 0" class="pb-0">
       <v-container fluid style="max-width: 800px">
-        <v-row dense justify="center">
+        <v-row density="compact" justify="center">
           <v-col cols="8" sm="4" md="3" class="d-flex justify-center">
             <v-select
               density="compact"

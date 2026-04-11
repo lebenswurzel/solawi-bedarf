@@ -183,7 +183,7 @@ const onUserPdfClick = async () => {
     <v-card-title>Allgemeine Einstellungen</v-card-title>
     <v-card-text>
       <v-container fluid class="pa-0">
-        <v-row dense>
+        <v-row density="compact">
           <v-col cols="12">
             <v-alert type="info" variant="tonal">
               Durch Anpassungen der Bedarfsanmeldungen während der Saison hängen
@@ -193,7 +193,7 @@ const onUserPdfClick = async () => {
             </v-alert>
           </v-col>
         </v-row>
-        <v-row dense>
+        <v-row density="compact">
           <v-col cols="12" md="4">
             <DateOnlyPicker
               v-model="dateOfInterest"

@@ -216,7 +216,7 @@ const disableSaveButton = computed(() => {
   <v-card class="ma-2">
     <v-card-title>{{ t.cards.products.title }} für <SeasonText /></v-card-title>
     <v-container fluid class="py-0">
-      <v-row dense>
+      <v-row density="compact">
         <v-col
           cols="12"
           md="4"

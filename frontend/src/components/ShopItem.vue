@@ -227,7 +227,7 @@ onMounted(() => {
 
 <template>
   <v-container class="pa-0" fluid>
-    <v-row dense align="center" justify="center">
+    <v-row density="compact" align="center" justify="center">
       <v-col cols="12" :md="visiblePredecessorOrder ? 6 : 8">
         {{ product.name }}
         <v-tooltip

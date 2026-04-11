@@ -265,7 +265,7 @@ const tableItems = computed(() =>
           {{ item.createdAt && prettyDate(item.createdAt) }}
         </template>
         <template v-slot:item.action="{ item }">
-          <v-btn-group dense>
+          <v-btn-group density="compact">
             <v-tooltip :text="language.app.actions.delete" open-on-click>
               <template v-slot:activator="{ props }">
                 <v-btn
