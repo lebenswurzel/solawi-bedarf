@@ -24,11 +24,12 @@ import type {
 } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { useBIStore } from "../../store/biStore";
 import { useProductStore } from "../../store/productStore.ts";
-import { convertToBigUnit } from "@lebenswurzel/solawi-bedarf-shared/src/util/unitHelper.ts";
+import { useStatisticsStore } from "../../store/statisticsStore.ts";
 
 const t = language.pages.statistics;
 const biStore = useBIStore();
 const productStore = useProductStore();
+const statisticsStore = useStatisticsStore();
 
 function iconForCategoryType(typ: ProductCategoryType) {
   return typ === ProductCategoryType.COOPERATION
@@ -58,21 +59,12 @@ function statsForProductCategoryId(
         : 0,
       name: value.product.name,
       money: Math.ceil(
-        ((convertToBigUnit(value.sold.sold, value.product.unit).value || 0) *
-          value.product.msrp) /
-          1200,
+        (statisticsStore.totalMsrpByProductId[value.product.id] ?? 0) / 12,
       ),
     }))
     .sort((a, b) => b.money - a.money);
 
-  const sum = entries.reduce(
-    (acc, value) =>
-      acc +
-      ((convertToBigUnit(value.sold.sold, value.product.unit).value || 0) *
-        value.product.msrp) /
-        1200,
-    0,
-  );
+  const sum = topProducts.reduce((acc, value) => acc + value.money, 0);
 
   return { topProducts, sum };
 }
@@ -104,14 +96,11 @@ const categoryPanels = computed(() => {
           <span>{{ panel.title }}</span>
           <v-spacer />
           <span class="text-body-2 text-medium-emphasis">
-            {{ Math.ceil(panel.sum) }}€
+            {{ Math.ceil(panel.sum) }}€ pro Monat
           </span>
         </v-expansion-panel-title>
         <v-expansion-panel-text>
-          <p
-            v-if="panel.topProducts.length === 0"
-            class="text-medium-emphasis"
-          >
+          <p v-if="panel.topProducts.length === 0" class="text-medium-emphasis">
             {{ t.productsCard.emptyCategory }}
           </p>
           <v-row v-else>
