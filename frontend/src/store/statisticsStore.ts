@@ -89,6 +89,10 @@ export const useStatisticsStore = defineStore("statistics", () => {
     [key: DateString]: { [key: ProductId]: number };
   }>({});
 
+  const totalMsrpByProductId = ref<{
+    [key: ProductId]: number;
+  }>({});
+
   /**
    * Group orders by month. Uses all months between validFrom and validTo of the current config.
    */
@@ -241,6 +245,7 @@ export const useStatisticsStore = defineStore("statistics", () => {
 
     productAvailabilityMapByValidFromString.value = {};
     productMsrpWeightsByValidFromString.value = {};
+    totalMsrpByProductId.value = {};
     await Promise.all(
       Array.from(validFromDateStrings).map(async (dateString) => {
         const date = new Date(dateString);
@@ -283,12 +288,29 @@ export const useStatisticsStore = defineStore("statistics", () => {
         {} as { [key: OrderId]: Msrp },
       );
 
-      const { msrps: effectiveMsrpChain } = calculateEffectiveMsrpChain(
+      const {
+        msrps: effectiveMsrpChain,
+        effectiveMsrpByProductId: effectiveMsrpByProductIdChain,
+      } = calculateEffectiveMsrpChain(
         userOrders,
         rawMsrpByOrderId,
         productMsrpWeightsByOrderId,
         biStore.productsById,
       );
+
+      // aggregate effective msrp by product id
+      effectiveMsrpByProductIdChain.forEach((effectiveMsrpByProduct) => {
+        const productIds = Object.keys(
+          effectiveMsrpByProduct,
+        ) as unknown as ProductId[];
+        productIds.forEach((productId) => {
+          totalMsrpByProductId.value[productId] =
+            effectiveMsrpByProduct[productId].value *
+              effectiveMsrpByProduct[productId].effectiveMonths +
+            (totalMsrpByProductId.value[productId] ?? 0);
+        });
+      });
+
       userOrders.forEach((o, index) => {
         // this also modifies the same object in allOrderExts
         o.effectiveMsrp = effectiveMsrpChain[index];
@@ -314,6 +336,7 @@ export const useStatisticsStore = defineStore("statistics", () => {
     isProcessing,
     relevantOrders,
     ordersGroupedByMonth,
+    totalMsrpByProductId,
     update,
   };
 });
