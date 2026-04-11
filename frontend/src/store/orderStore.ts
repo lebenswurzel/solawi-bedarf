@@ -232,7 +232,9 @@ export const useOrderStore = defineStore("orderStore", () => {
   watch(
     [allOrders, visibleOrderId],
     () => {
-      console.log("watchEffect visibleOrderId", visibleOrderId.value);
+      if (isDebugEnabled()) {
+        console.log("watchEffect visibleOrderId", visibleOrderId.value);
+      }
       const order = allOrders.value.find((o) => o.id === visibleOrderId.value);
       offer.value = order?.offer || 0;
       offerReason.value = order?.offerReason || null;
