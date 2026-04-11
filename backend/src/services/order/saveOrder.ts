@@ -358,7 +358,7 @@ const determineEffectiveMsrp = async (
     };
   }
 
-  const result = calculateEffectiveMsrpChain(
+  const { msrps: result } = calculateEffectiveMsrpChain(
     actualOrders,
     rawMsrpsByOrderId,
     productMsrpWeightsByOrderId,

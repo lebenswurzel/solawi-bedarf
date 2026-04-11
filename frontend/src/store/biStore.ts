@@ -217,7 +217,7 @@ export const useBIStore = defineStore("bi", () => {
       return;
     }
     await uiFeedbackStore.withBusy(async () => {
-      const result = calculateEffectiveMsrpChain(
+      const { msrps: result } = calculateEffectiveMsrpChain(
         ordersWithActualOrderItems.value,
         rawMsrpByOrderId.value,
         productMsrpWeightsByOrderId.value,
