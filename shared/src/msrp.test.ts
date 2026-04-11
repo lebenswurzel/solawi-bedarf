@@ -222,6 +222,10 @@ describe("calculateEffectiveMsrpChain", () => {
     expect(effectiveMsrpByProductId[1][productId].value).toBe(40);
     expect(effectiveMsrpByProductId[2][productId].value).toBe(232);
     expect(effectiveMsrpByProductId[3][productId].value).toBe(97);
+    expect(effectiveMsrpByProductId[0][productId].effectiveMonths).toBe(5);
+    expect(effectiveMsrpByProductId[1][productId].effectiveMonths).toBe(2);
+    expect(effectiveMsrpByProductId[2][productId].effectiveMonths).toBe(1);
+    expect(effectiveMsrpByProductId[3][productId].effectiveMonths).toBe(4);
 
     const totalPaid = results.reduce(
       (acc, result) => acc + result.monthly.total * result.effectiveMonths!,
@@ -412,12 +416,12 @@ describe("calculateEffectiveMsrpChain", () => {
     }, 0);
     expect(totalSelfgrownCompensation).toBe(494); // 6282 - 5788
 
-    const totalEffectiveMsrpByProductId = results.reduce(
-      (acc, msrp, index) => {
-        const effectiveMsrp = effectiveMsrpByProductId[index];
+    const totalEffectiveMsrpByProductId = effectiveMsrpByProductId.reduce(
+      (acc, effectiveMsrp) => {
         for (const productId in effectiveMsrp) {
           acc[productId] =
-            effectiveMsrp[productId].value * msrp.effectiveMonths! +
+            effectiveMsrp[productId].value *
+              effectiveMsrp[productId].effectiveMonths +
             (acc[productId] ?? 0);
         }
         return acc;

@@ -235,6 +235,7 @@ export interface EffectiveMsrpByProductId {
   [key: ProductId]: {
     value: number;
     category: ProductCategoryType;
+    effectiveMonths: number;
   };
 }
 
@@ -341,6 +342,7 @@ export const calculateEffectiveMsrpChain = (
       effectiveMsrpByProduct[productId] = {
         value: monthlyDueEffective,
         category: product.productCategoryType,
+        effectiveMonths,
       };
     }
 
