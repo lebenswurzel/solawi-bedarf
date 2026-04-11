@@ -22,6 +22,7 @@ import {
   ProductWithProductCategoryTyp,
   Msrp,
   OrderItem,
+  ProductId,
 } from "./types";
 import { Unit, ProductCategoryType, UserCategory } from "./enum";
 
@@ -142,6 +143,7 @@ describe("calculateEffectiveMsrpChain", () => {
     // Order 2: amount=0.5, months=7, weight=0.7
     // Order 3: amount=4.5, months=5, weight=0.2
     // Order 4: amount=0, months=4, weight=0.1
+    // the values are selected in a way that effectively the product is delivered 12x
     const orders: SavedOrder[] = [
       createOrder(1, [{ productId, value: 1 }], 12),
       createOrder(2, [{ productId, value: 0.5 }], 7),
@@ -174,14 +176,16 @@ describe("calculateEffectiveMsrpChain", () => {
       productWeightsByOrderId
     );
 
-    const { msrps: results } = calculateEffectiveMsrpChain(
-      orders,
-      rawMsrpByOrderId,
-      productMsrpWeightsByOrderId,
-      productsById
-    );
+    const { msrps: results, effectiveMsrpByProductId } =
+      calculateEffectiveMsrpChain(
+        orders,
+        rawMsrpByOrderId,
+        productMsrpWeightsByOrderId,
+        productsById
+      );
 
     expect(results).toHaveLength(4);
+    expect(effectiveMsrpByProductId).toHaveLength(4);
 
     // Verify that results correspond 1:1 to orders
     results.forEach((result, index) => {
@@ -212,6 +216,18 @@ describe("calculateEffectiveMsrpChain", () => {
     expect(results[1].monthly.total).toBe(40);
     expect(results[2].monthly.total).toBe(232);
     expect(results[3].monthly.total).toBe(97);
+
+    // individual effective MSRP per month by product
+    expect(effectiveMsrpByProductId[0][productId].value).toBe(100);
+    expect(effectiveMsrpByProductId[1][productId].value).toBe(40);
+    expect(effectiveMsrpByProductId[2][productId].value).toBe(232);
+    expect(effectiveMsrpByProductId[3][productId].value).toBe(97);
+
+    const totalPaid = results.reduce(
+      (acc, result) => acc + result.monthly.total * result.effectiveMonths!,
+      0
+    );
+    expect(totalPaid).toBe(100 * 5 + 40 * 2 + 232 * 1 + 97 * 4);
   });
 
   it("should calculate effective MSRP chain for multiple products", () => {
@@ -320,12 +336,13 @@ describe("calculateEffectiveMsrpChain", () => {
       productWeightsByOrderId
     );
 
-    const { msrps: results } = calculateEffectiveMsrpChain(
-      orders,
-      rawMsrpByOrderId,
-      productMsrpWeightsByOrderId,
-      productsById
-    );
+    const { msrps: results, effectiveMsrpByProductId } =
+      calculateEffectiveMsrpChain(
+        orders,
+        rawMsrpByOrderId,
+        productMsrpWeightsByOrderId,
+        productsById
+      );
 
     expect(results).toHaveLength(3);
 
@@ -370,6 +387,60 @@ describe("calculateEffectiveMsrpChain", () => {
     // Third order should have all products again
     expect(results[2].monthly.selfgrown).toBeGreaterThan(0);
     expect(results[2].monthly.cooperation).toBeGreaterThan(0);
+
+    console.log("results", results);
+    const totalPaid = results.reduce(
+      (acc, result) => acc + result.monthly.total * result.effectiveMonths!,
+      0
+    );
+    expect(totalPaid).toBe(6282); // includes selfgrown compensation
+
+    const totalPaidByProductCategoryType = results.reduce((acc, result) => {
+      return (
+        acc +
+        result.monthly.selfgrown * result.effectiveMonths! +
+        result.monthly.cooperation * result.effectiveMonths!
+      );
+    }, 0);
+    expect(totalPaidByProductCategoryType).toBe(5788); // excludes selfgrown compensation
+
+    const totalSelfgrownCompensation = results.reduce((acc, result) => {
+      return (
+        acc +
+        (result.monthly.selfgrownCompensation ?? 0) * result.effectiveMonths!
+      );
+    }, 0);
+    expect(totalSelfgrownCompensation).toBe(494); // 6282 - 5788
+
+    const totalEffectiveMsrpByProductId = results.reduce(
+      (acc, msrp, index) => {
+        const effectiveMsrp = effectiveMsrpByProductId[index];
+        for (const productId in effectiveMsrp) {
+          acc[productId] =
+            effectiveMsrp[productId].value * msrp.effectiveMonths! +
+            (acc[productId] ?? 0);
+        }
+        return acc;
+      },
+      {} as { [key: ProductId]: number }
+    );
+
+    console.log("totalEffectiveMsrpByProductId", totalEffectiveMsrpByProductId);
+
+    effectiveMsrpByProductId.forEach((effectiveMsrp) => {
+      console.log("effectiveMsrp", effectiveMsrp);
+    });
+
+    expect(totalEffectiveMsrpByProductId[productCoopId]).toBe(1224);
+    expect(totalEffectiveMsrpByProductId[productSelfgrown1Id]).toBe(3600);
+    expect(totalEffectiveMsrpByProductId[productSelfgrown2Id]).toBe(960);
+
+    const effectiveMsrpSums = Object.values(
+      totalEffectiveMsrpByProductId
+    ).reduce((acc, effectiveMsrp) => {
+      return acc + effectiveMsrp;
+    }, 0);
+    expect(effectiveMsrpSums).toBe(5784); // not 5788 because of rounding errors
   });
 
   it("should handle empty orders array", () => {
