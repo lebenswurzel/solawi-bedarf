@@ -49,7 +49,10 @@ const headers = [
     title: "Orientierungswert",
     key: "msrp",
     sortRaw(a: OrderExt, b: OrderExt) {
-      return a.offer / a.msrp.monthly.total - b.offer / b.msrp.monthly.total;
+      return (
+        a.offer / a.effectiveMsrp.monthly.total -
+        b.offer / b.effectiveMsrp.monthly.total
+      );
     },
   },
   { title: "Angelegt", key: "createdAt" },
@@ -256,30 +259,21 @@ const updatedAtDistribution = computed(
           </v-tooltip>
         </template>
         <template v-slot:item.msrp="{ item }">
-          {{ item.msrp.monthly.total }} € =
+          {{ item.effectiveMsrp.monthly.total }} € =
           <span class="opacity-70">
             <v-icon style="font-size: 0.7rem">mdi-sprout-outline</v-icon
-            >{{ item.msrp.monthly.selfgrown }} € +
+            >{{ item.effectiveMsrp.monthly.selfgrown }} € +
 
             <v-icon style="font-size: 0.7rem">mdi-truck-delivery-outline</v-icon
-            >{{ item.msrp.monthly.cooperation }} €
+            >{{ item.effectiveMsrp.monthly.cooperation }} €
           </span>
           <br />
-          <v-tooltip
-            text="Der Orientierungswert kann hier nicht korrekt berechnet werden, wenn der Ernteteiler nicht die vollen 12 Monate teilnimmt. Der genaue Orientierungswert kann auf der Bedarfsanmeldung des Ernteteilers eingesehen werden (Button in der Benutzer-Spalte)"
-            open-on-click
-            v-if="item.validMonths != 12"
-          >
-            <template v-slot:activator="{ props }">
-              <v-icon v-bind="props" color="orange">mdi-alert</v-icon>
-            </template>
-          </v-tooltip>
-          <span class="text-bold" v-else>
-            {{ item.offer >= item.msrp.monthly.total ? "+" : "-" }}
+          <span class="text-bold">
+            {{ item.offer >= item.effectiveMsrp.monthly.total ? "+" : "-" }}
             {{
               Math.abs(
                 Math.round(
-                  (1000 * item.offer) / item.msrp.monthly.total - 1000,
+                  (1000 * item.offer) / item.effectiveMsrp.monthly.total - 1000,
                 ) / 10,
               )
             }}%

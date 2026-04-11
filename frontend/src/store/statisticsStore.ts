@@ -18,7 +18,7 @@ import { defineStore, storeToRefs } from "pinia";
 import { computed, ref } from "vue";
 import { format } from "date-fns";
 import {
-  // calculateEffectiveMsrpChain,
+  calculateEffectiveMsrpChain,
   calculateEffectiveOrderValidMonths,
   calculateOrderValidMonths,
   getMsrp,
@@ -27,8 +27,10 @@ import type {
   AvailabilityWeights,
   DateString,
   Msrp,
+  OrderId,
   ProductId,
   SavedOrder,
+  UserId,
 } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { getAllOrders } from "../requests/shop.ts";
 import { useBIStore } from "./biStore.ts";
@@ -183,12 +185,14 @@ export const useStatisticsStore = defineStore("statistics", () => {
     isProcessing.value = true;
 
     const allOrderExts: OrderExt[] = [];
+    const userOrdersById: { [key: UserId]: OrderExt[] } = {};
     const validFromDateStrings = new Set<DateString>();
 
     // retrieve all orders
     await Promise.all(
       userStore.userOptions.map(async (u) => {
         const userOrders = await getAllOrders(u.value, id);
+        userOrdersById[u.value] = [];
         processedOrders.value++;
         for (const order of userOrders) {
           if (isEmpty(order) || !order.orderItems) {
@@ -212,7 +216,7 @@ export const useStatisticsStore = defineStore("statistics", () => {
             validMonths,
           );
 
-          allOrderExts.push({
+          const extOrder = {
             ...order,
             msrp,
             effectiveMsrp: msrp,
@@ -220,7 +224,10 @@ export const useStatisticsStore = defineStore("statistics", () => {
             validMonths,
             userName: u.title,
             depotName: depot.length ? depot[0].name : "unbekannt",
-          });
+          };
+
+          allOrderExts.push(extOrder);
+          userOrdersById[u.value].push(extOrder);
         }
       }),
     );
@@ -254,14 +261,46 @@ export const useStatisticsStore = defineStore("statistics", () => {
     }
 
     // calculate effective msrp for all orders
-    // allOrderExts.forEach((o) => {
-    //   const effectiveMsrpChain = calculateEffectiveMsrpChain(
-    //     allOrderExts,
-    //     { [o.id]: o.msrp },
-    //     productMsrpWeightsByValidFromString.value[o.validFrom.toISOString()],
-    //     biStore.productsById,
-    //   );
-    // });
+    Object.values(userOrdersById).forEach((userOrders) => {
+      const productMsrpWeightsByOrderId = userOrders.reduce(
+        (acc, o) => {
+          acc[o.id] =
+            productMsrpWeightsByValidFromString.value[
+              o.validFrom.toISOString()
+            ];
+          return acc;
+        },
+        {} as { [key: OrderId]: { [key: ProductId]: number } },
+      );
+
+      const rawMsrpByOrderId = userOrders.reduce(
+        (acc, o) => {
+          acc[o.id] = o.msrp;
+          return acc;
+        },
+        {} as { [key: OrderId]: Msrp },
+      );
+
+      const effectiveMsrpChain = calculateEffectiveMsrpChain(
+        userOrders,
+        rawMsrpByOrderId,
+        productMsrpWeightsByOrderId,
+        biStore.productsById,
+      );
+      userOrders.forEach((o, index) => {
+        // this also modifies the same object in allOrderExts
+        o.effectiveMsrp = effectiveMsrpChain[index];
+      });
+
+      if (
+        isDebugEnabled() &&
+        userOrders.length > 0 &&
+        userOrders[0].userId === 333
+      ) {
+        console.log("effectiveMsrpChain", effectiveMsrpChain);
+        console.log("userOrders", userOrders);
+      }
+    });
 
     orders.value = allOrderExts.filter((o) => !!o);
     isProcessing.value = false;
