@@ -322,8 +322,8 @@ const updatedAtDistribution = computed(
               <thead>
                 <tr>
                   <th>Monat</th>
-                  <th>Beiträge (Durchschnitt)</th>
-                  <th>Orientierungswerte (Durchschnitt)</th>
+                  <th>Beiträge</th>
+                  <th>Orientierungswerte</th>
                   <th>Differenz</th>
                   <th>Anzahl</th>
                 </tr>
