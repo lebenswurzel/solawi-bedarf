@@ -392,7 +392,6 @@ describe("calculateEffectiveMsrpChain", () => {
     expect(results[2].monthly.selfgrown).toBeGreaterThan(0);
     expect(results[2].monthly.cooperation).toBeGreaterThan(0);
 
-    console.log("results", results);
     const totalPaid = results.reduce(
       (acc, result) => acc + result.monthly.total * result.effectiveMonths!,
       0
@@ -428,12 +427,6 @@ describe("calculateEffectiveMsrpChain", () => {
       },
       {} as { [key: ProductId]: number }
     );
-
-    console.log("totalEffectiveMsrpByProductId", totalEffectiveMsrpByProductId);
-
-    effectiveMsrpByProductId.forEach((effectiveMsrp) => {
-      console.log("effectiveMsrp", effectiveMsrp);
-    });
 
     expect(totalEffectiveMsrpByProductId[productCoopId]).toBe(1224);
     expect(totalEffectiveMsrpByProductId[productSelfgrown1Id]).toBe(3600);

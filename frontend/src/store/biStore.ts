@@ -195,7 +195,9 @@ export const useBIStore = defineStore("bi", () => {
         o.id === modificationOrder.value?.id && isModifyingOrder.value
           ? category.value
           : o.category;
-      console.log("relevantCategory", o.id, relevantCategory);
+      if (isDebugEnabled()) {
+        console.log("relevantCategory", o.id, relevantCategory);
+      }
       const msrp = getMsrp(
         relevantCategory,
         actualOrderItems,
@@ -206,12 +208,16 @@ export const useBIStore = defineStore("bi", () => {
       msrpsMap[o.id] = msrp;
     });
 
-    console.log("msrpsMap", msrpsMap);
+    if (isDebugEnabled()) {
+      console.log("msrpsMap", msrpsMap);
+    }
     return msrpsMap;
   });
 
   watchEffect(async () => {
-    console.log("--> rawMsrpByOrderId", rawMsrpByOrderId.value);
+    if (isDebugEnabled()) {
+      console.log("--> rawMsrpByOrderId", rawMsrpByOrderId.value);
+    }
     if (Object.keys(rawMsrpByOrderId.value).length === 0) {
       effectiveMsrpByOrderId.value = {};
       return;
@@ -228,7 +234,9 @@ export const useBIStore = defineStore("bi", () => {
       ) as {
         [key: OrderId]: Msrp;
       };
-      console.log("effectiveMsrpByOrderId", result2);
+      if (isDebugEnabled()) {
+        console.log("effectiveMsrpByOrderId", result2);
+      }
       effectiveMsrpByOrderId.value = result2;
     });
   });
