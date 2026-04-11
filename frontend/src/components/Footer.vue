@@ -44,7 +44,7 @@ const privacyNotice = ref(false);
           </v-btn>
         </v-col>
       </v-row>
-      <v-row justify="center" dense>
+      <v-row justify="center" density="compact">
         <v-col class="text-center smaller" sm="6" cols="12">
           Version:
           <a

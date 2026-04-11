@@ -108,7 +108,7 @@ const msrpValidation = computed(() => {
   >
     <v-card-text class="pb-1 pt-3">
       <v-container fluid class="pa-0">
-        <v-row dense>
+        <v-row density="compact">
           <v-col cols="2" sm="1" v-if="props.showSelector">
             <v-icon size="x-large" v-if="isVisibleOrder"
               >mdi-radiobox-marked</v-icon

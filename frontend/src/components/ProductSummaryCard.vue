@@ -99,7 +99,7 @@ const getContributionLabel = (category: UserCategory) => {
       </v-row>
 
       <!-- Orientierungswerte -->
-      <v-row class="mb-1" dense>
+      <v-row class="mb-1" density="compact">
         <v-col cols="12">
           <div class="text-body-large font-weight-medium mb-2">
             Orientierungswerte (je {{ baseUnit }})

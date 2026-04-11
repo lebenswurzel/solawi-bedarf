@@ -127,7 +127,7 @@ const onClose = async () => {
               </v-col>
 
               <v-col cols="12" sm="4">
-                <v-btn-group dense>
+                <v-btn-group density="compact">
                   <v-btn
                     icon="mdi-pencil"
                     color="blue"

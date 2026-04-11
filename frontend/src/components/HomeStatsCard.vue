@@ -71,9 +71,9 @@ const percentageSold = computed(() => {
       Budget und Stand der Bedarfsanmeldung für <SeasonText plain />
     </v-card-title>
     <v-card-text>
-      <v-row dense>
+      <v-row density="compact">
         <v-col cols="12" sm="6">
-          <v-row dense align="center">
+          <v-row density="compact" align="center">
             <v-col cols="4" sm="12" md="auto" class="d-flex justify-center">
               <v-progress-circular
                 :model-value="percentageBudget"
@@ -108,7 +108,7 @@ const percentageSold = computed(() => {
           </v-row>
         </v-col>
         <v-col cols="12" sm="6">
-          <v-row dense align="center">
+          <v-row density="compact" align="center">
             <v-col cols="4" sm="12" md="auto" class="d-flex justify-center">
               <v-progress-circular
                 :model-value="percentageSold"

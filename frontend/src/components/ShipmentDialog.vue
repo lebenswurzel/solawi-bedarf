@@ -459,7 +459,7 @@ watchEffect(async () => {
       >
       <v-card-text>
         <v-container fluid class="pa-0">
-          <v-row align="start" dense>
+          <v-row align="start" density="compact">
             <v-col cols="6" md="3">
               <v-text-field
                 :label="

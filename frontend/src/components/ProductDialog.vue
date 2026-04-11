@@ -116,7 +116,7 @@ const onSave = () => {
                   : 'Inaktiv: Vorhandene Produktbestellungen bleiben erhalten und können nicht verändert werden'
               "
               persistent-hint
-              dense
+              density="compact"
             ></v-switch>
           </v-col>
           <v-col cols="12" sm="4">
@@ -197,7 +197,7 @@ const onSave = () => {
             ></v-text-field>
           </v-col>
         </v-row>
-        <v-row dense>
+        <v-row density="compact">
           <v-col cols="12"
             >ID:
             {{

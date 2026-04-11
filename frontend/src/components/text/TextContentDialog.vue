@@ -93,7 +93,7 @@ const onDelete = () => {
   <v-dialog :model-value="open" @update:model-value="onClose">
     <v-card>
       <v-container fluid class="pa-2">
-        <v-row dense>
+        <v-row density="compact">
           <v-col cols="6">
             <v-card-title> Text Editor </v-card-title>
           </v-col>
