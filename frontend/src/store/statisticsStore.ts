@@ -18,21 +18,33 @@ import { defineStore, storeToRefs } from "pinia";
 import { computed, ref } from "vue";
 import { format } from "date-fns";
 import {
+  // calculateEffectiveMsrpChain,
   calculateEffectiveOrderValidMonths,
+  calculateOrderValidMonths,
   getMsrp,
 } from "@lebenswurzel/solawi-bedarf-shared/src/msrp.ts";
-import type { Msrp, SavedOrder } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
+import type {
+  AvailabilityWeights,
+  DateString,
+  Msrp,
+  ProductId,
+  SavedOrder,
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { getAllOrders } from "../requests/shop.ts";
 import { useBIStore } from "./biStore.ts";
 import { useConfigStore } from "./configStore.ts";
 import { useUserStore } from "./userStore.ts";
 import { useVersionInfoStore } from "./versionInfoStore.ts";
+import { getAvailabilityWeights } from "../requests/bi.ts";
+import { isDebugEnabled } from "../lib/debug.ts";
 
 export interface OrderExt extends SavedOrder {
   userName: string;
   depotName: string;
   msrp: Msrp;
+  effectiveMsrp: Msrp;
   validMonths: number;
+  effectiveValidMonths: number;
 }
 
 export interface OrdersGroupedByMonth {
@@ -63,6 +75,17 @@ export const useStatisticsStore = defineStore("statistics", () => {
   const relevantOrders = computed(() =>
     orders.value.filter((o) => o.offer > 0),
   );
+
+  const productAvailabilityMapByValidFromString = ref<{
+    [key: DateString]: {
+      [
+        key: ProductId
+      ]: AvailabilityWeights["availabilityByProductId"][ProductId];
+    };
+  }>({});
+  const productMsrpWeightsByValidFromString = ref<{
+    [key: DateString]: { [key: ProductId]: number };
+  }>({});
 
   /**
    * Group orders by month. Uses all months between validFrom and validTo of the current config.
@@ -154,10 +177,15 @@ export const useStatisticsStore = defineStore("statistics", () => {
 
   const update = async (configId?: number) => {
     const id = configId ?? configStore.activeConfigId;
+    const config = configStore.config!;
+    const timezone = versionInfoStore.versionInfo?.serverTimeZone;
     processedOrders.value = 0;
     isProcessing.value = true;
 
     const allOrderExts: OrderExt[] = [];
+    const validFromDateStrings = new Set<DateString>();
+
+    // retrieve all orders
     await Promise.all(
       userStore.userOptions.map(async (u) => {
         const userOrders = await getAllOrders(u.value, id);
@@ -167,19 +195,28 @@ export const useStatisticsStore = defineStore("statistics", () => {
             return undefined;
           }
           const depot = depots.value.filter((d) => d.id == order.depotId);
-          const validMonths = calculateEffectiveOrderValidMonths(
-            configStore.config!,
+          const effectiveValidMonths = calculateEffectiveOrderValidMonths(
+            config,
             order,
-            versionInfoStore.versionInfo?.serverTimeZone,
+            timezone,
           );
+          const validMonths = calculateOrderValidMonths(
+            order.validFrom,
+            config.validTo,
+            timezone,
+          );
+          const msrp = getMsrp(
+            order.category,
+            order.orderItems,
+            biStore.productsById,
+            validMonths,
+          );
+
           allOrderExts.push({
             ...order,
-            msrp: getMsrp(
-              order.category,
-              order.orderItems,
-              biStore.productsById,
-              12,
-            ),
+            msrp,
+            effectiveMsrp: msrp,
+            effectiveValidMonths,
             validMonths,
             userName: u.title,
             depotName: depot.length ? depot[0].name : "unbekannt",
@@ -187,6 +224,44 @@ export const useStatisticsStore = defineStore("statistics", () => {
         }
       }),
     );
+
+    // retrieve availability weights for all validFrom dates
+    allOrderExts.forEach((o) => {
+      validFromDateStrings.add(o.validFrom.toISOString());
+    });
+
+    productAvailabilityMapByValidFromString.value = {};
+    productMsrpWeightsByValidFromString.value = {};
+    await Promise.all(
+      Array.from(validFromDateStrings).map(async (dateString) => {
+        const date = new Date(dateString);
+        const { availabilityByProductId, msrpWeightsByProductId } =
+          await getAvailabilityWeights(config.id, date, true);
+        productAvailabilityMapByValidFromString.value[dateString] =
+          availabilityByProductId;
+        productMsrpWeightsByValidFromString.value[dateString] =
+          msrpWeightsByProductId;
+      }),
+    );
+
+    if (isDebugEnabled()) {
+      console.log("productAvailabilityMapByValidFromString", {
+        ...productAvailabilityMapByValidFromString.value,
+      });
+      console.log("productMsrpWeightsByValidFromString", {
+        ...productMsrpWeightsByValidFromString.value,
+      });
+    }
+
+    // calculate effective msrp for all orders
+    // allOrderExts.forEach((o) => {
+    //   const effectiveMsrpChain = calculateEffectiveMsrpChain(
+    //     allOrderExts,
+    //     { [o.id]: o.msrp },
+    //     productMsrpWeightsByValidFromString.value[o.validFrom.toISOString()],
+    //     biStore.productsById,
+    //   );
+    // });
 
     orders.value = allOrderExts.filter((o) => !!o);
     isProcessing.value = false;
