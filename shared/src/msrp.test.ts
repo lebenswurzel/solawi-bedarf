@@ -174,7 +174,7 @@ describe("calculateEffectiveMsrpChain", () => {
       productWeightsByOrderId
     );
 
-    const results = calculateEffectiveMsrpChain(
+    const { msrps: results } = calculateEffectiveMsrpChain(
       orders,
       rawMsrpByOrderId,
       productMsrpWeightsByOrderId,
@@ -320,7 +320,7 @@ describe("calculateEffectiveMsrpChain", () => {
       productWeightsByOrderId
     );
 
-    const results = calculateEffectiveMsrpChain(
+    const { msrps: results } = calculateEffectiveMsrpChain(
       orders,
       rawMsrpByOrderId,
       productMsrpWeightsByOrderId,

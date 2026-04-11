@@ -283,7 +283,7 @@ export const useStatisticsStore = defineStore("statistics", () => {
         {} as { [key: OrderId]: Msrp },
       );
 
-      const effectiveMsrpChain = calculateEffectiveMsrpChain(
+      const { msrps: effectiveMsrpChain } = calculateEffectiveMsrpChain(
         userOrders,
         rawMsrpByOrderId,
         productMsrpWeightsByOrderId,
