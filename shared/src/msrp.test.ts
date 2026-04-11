@@ -386,7 +386,12 @@ describe("calculateEffectiveMsrpChain", () => {
       [productId]: product,
     };
 
-    const results = calculateEffectiveMsrpChain([], {}, {}, productsById);
+    const { msrps: results } = calculateEffectiveMsrpChain(
+      [],
+      {},
+      {},
+      productsById
+    );
 
     expect(results).toHaveLength(0);
   });
