@@ -128,9 +128,11 @@ export const useStatisticsStore = defineStore("statistics", () => {
             acc[month.name] = {
               orders: [...acc[month.name].orders, o],
               offerSum: o.offer + acc[month.name].offerSum,
-              msrpSum: o.msrp.monthly.total + acc[month.name].msrpSum,
+              msrpSum: o.effectiveMsrp.monthly.total + acc[month.name].msrpSum,
               differenceSum:
-                o.offer - o.msrp.monthly.total + acc[month.name].differenceSum,
+                o.offer -
+                o.effectiveMsrp.monthly.total +
+                acc[month.name].differenceSum,
               count: 1 + acc[month.name].count,
               month: month.name,
               isSumOrAverage: false,
