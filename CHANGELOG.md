@@ -334,8 +334,10 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #371 Verteilungs-Dialog: Standardmäßig wird als "geliefert" der selbe Wert wie "benötigt" eingetragen
 #373 Problem "no offer reason" beim Speichern des Bedarfs behoben
 
-# NEW
+# v0.15.7 - 2026-05-01 - Produktmenge und -preise
 
 #375 Produkte: CSV-Export enthält jetzt auch die verkaufte Menge
 #380 Fehler behoben der dafür gesorgt hat, dass die verfügbare Produktmenge überschritten werden konnte wenn während der Saison Bedarfsanmeldungen oder -änderungen erfolgten
 #377 Korrigierte Berechnung der Beträge und Orientierungswerte in der Statistik
+
+# NEW
