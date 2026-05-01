@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { computed, onMounted, watch } from "vue";
+import { computed, watch } from "vue";
 import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
 import { OrderPaymentType } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import {
@@ -128,17 +128,6 @@ const requirePaymentInformation = computed(() => {
   return isModificationOrder.value;
 });
 
-const initializePaymentInformation = () => {
-  const initial: Partial<OrderPayment> = {
-    paymentRequired: requirePaymentInformation.value,
-  };
-  updatePayment(initial);
-};
-
-onMounted(() => {
-  initializePaymentInformation();
-});
-
 watch(
   [
     enableConfirmSepaUpdate,
@@ -186,6 +175,7 @@ watch(
       updatePayment(updates);
     }
   },
+  { immediate: true },
 );
 
 const onSepaUpdate = (checked: boolean | null) => {
@@ -220,21 +210,32 @@ const isSepaSelected = computed(() => {
   return props.paymentInfo.paymentType === OrderPaymentType.SEPA;
 });
 
+/** Amount fields can lag one tick behind offer/message until the sync watch runs; validation must match what we enforce after sync. */
+const paymentForValidation = computed((): OrderPayment => {
+  const p = props.paymentInfo;
+  if (p.paymentType === OrderPaymentType.SEPA) {
+    return { ...p, amount: props.offer };
+  }
+  if (p.paymentType === OrderPaymentType.BANK_TRANSFER) {
+    return { ...p, amount: bankTransferMessage.value.amount };
+  }
+  return p;
+});
+
 const validationResult = computed(() => {
-  const result = validatePayment(
-    props.paymentInfo,
+  return validatePayment(
+    paymentForValidation.value,
     props.offer,
     bankTransferMessage.value.amount,
   );
-  return result;
 });
 
 watch(
-  () => validationResult.value,
-  (newValidationResult) => {
-    emit("update:validationValid", newValidationResult.valid);
+  () => validationResult.value.valid,
+  (valid) => {
+    emit("update:validationValid", valid);
   },
-  { immediate: true },
+  { immediate: true, flush: "post" },
 );
 
 const onAccountHolderUpdate = (value: string) => {
