@@ -211,7 +211,7 @@ const alternateDepotHint = computed(() => {
 const disableSubmit = computed(() => {
   return (
     !confirmGTC.value ||
-    !depotId.value ||
+    depotId.value.actual == null ||
     offerHint.value ||
     categoryReasonHint.value ||
     (requireConfirmContribution.value && !confirmContribution.value) ||
@@ -233,6 +233,14 @@ const onDepotChanged = (val: number) => {
 
 const onAlternateDepotChanged = (val: number) => {
   alternateDepotId.value = val;
+};
+
+const onPaymentInfoUpdate = (p: OrderPayment) => {
+  paymentInfo.value = p;
+};
+
+const onPaymentValidationValidUpdate = (v: boolean) => {
+  paymentValidationValid.value = v;
 };
 
 const clearAlternateDepot = () => {
@@ -429,8 +437,8 @@ const onSave = () => {
           "
           :organization-info-flat="textContentStore.organizationInfoFlat"
           :request-user="props.requestUser"
-          @update:paymentInfo="(p: OrderPayment) => (paymentInfo = p)"
-          @update:validationValid="(v: boolean) => (paymentValidationValid = v)"
+          @update:paymentInfo="onPaymentInfoUpdate"
+          @update:validationValid="onPaymentValidationValidUpdate"
         />
 
         <v-switch

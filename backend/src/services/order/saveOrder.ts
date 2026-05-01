@@ -225,8 +225,6 @@ export const saveOrder = async (
 
   // todo: should also validate payment amount against the effective MSRP change
   if (body.paymentInfo) {
-    body.paymentInfo.paymentRequired = !!predecessorOrder;
-
     const { amount: requiredBankTransferAmount } =
       getRequiredBankTransferAmount(
         body.offer,
@@ -237,6 +235,8 @@ export const saveOrder = async (
         requisitionConfig.validTo,
         config.timezone,
       );
+
+    body.paymentInfo.paymentRequired = requiredBankTransferAmount > 0;
 
     const validationResult = validatePayment(
       body.paymentInfo,
