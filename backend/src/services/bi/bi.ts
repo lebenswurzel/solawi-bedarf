@@ -16,10 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import Koa from "koa";
 import Router from "koa-router";
-import {
-  ShipmentType,
-  Unit,
-} from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import { Unit } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import {
   BIData,
   CapacityByDepotId,
@@ -30,7 +27,6 @@ import {
 import { Depot } from "../../database/Depot";
 import { Order } from "../../database/Order";
 import { ProductCategory } from "../../database/ProductCategory";
-import { Shipment } from "../../database/Shipment";
 import { AppDataSource } from "../../database/database";
 import { getUserFromContext } from "../getUserFromContext";
 import {
@@ -39,7 +35,6 @@ import {
   getDateQueryParameter,
   getNumericQueryParameter,
 } from "../../util/requestUtil";
-import { LessThan, MoreThan } from "typeorm";
 import { RequisitionConfig } from "../../database/RequisitionConfig";
 import {
   getSameOrNextThursday,
@@ -96,6 +91,9 @@ export const biHandler = async (
 
 /**
  * Calculates the target date for the BI in case no explicit date of interest is provided.
+ *
+ * The resulting date is the same as 'now' or the first/last Thursday of the season
+ * if the current date is before/after the season start/end.
  */
 export const determineTargetDate = async (configId: number): Promise<Date> => {
   const config = await AppDataSource.getRepository(RequisitionConfig).findOne({
@@ -121,7 +119,8 @@ export const bi = async (
   includeForecast: boolean = false,
   dateOfInterest?: Date,
 ): Promise<BIData> => {
-  const targetDate = dateOfInterest || (await determineTargetDate(configId));
+  const targetDate =
+    dateOfInterest || orderValidFrom || (await determineTargetDate(configId));
   const depots = await AppDataSource.getRepository(Depot).find();
 
   const orders = await AppDataSource.getRepository(Order).find({

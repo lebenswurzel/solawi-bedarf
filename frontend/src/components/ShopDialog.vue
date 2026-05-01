@@ -263,7 +263,11 @@ const onSave = () => {
     props.requestUser.id,
   )
     .then(async () => {
-      await biStore.update(activeConfigId.value, modificationOrderId.value);
+      await biStore.update(
+        activeConfigId.value,
+        modificationOrderId.value,
+        true,
+      );
       props.requestUser?.id &&
         (await orderStore.update(props.requestUser.id, activeConfigId.value));
       loading.value = false;

@@ -27,6 +27,7 @@ import { useConfigStore } from "../store/configStore.ts";
 import { storeToRefs } from "pinia";
 import ProductCategoryConfig from "../components/products/ProductCategoryConfig.vue";
 import { ProductCategoryType } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
+import { formatDate } from "date-fns";
 const t = language.pages.product;
 
 const defaultProductCategory: NewProductCategory = {
@@ -34,6 +35,9 @@ const defaultProductCategory: NewProductCategory = {
   requisitionConfigId: -1,
   typ: ProductCategoryType.SELFGROWN,
 };
+
+const dateOfInterest = ref<Date>(new Date());
+const datePickerOpen = ref(false);
 
 const configStore = useConfigStore();
 const productStore = useProductStore();
@@ -74,6 +78,15 @@ const onCreateProductCategory = () => {
 const onCloseProductCategory = async () => {
   openProductCategory.value = false;
 };
+
+watch(dateOfInterest, () => {
+  biStore.update(
+    configStore.activeConfigId,
+    undefined,
+    undefined,
+    dateOfInterest.value,
+  );
+});
 </script>
 
 <template>
@@ -87,6 +100,37 @@ const onCloseProductCategory = async () => {
       }}
     </v-card-subtitle>
     <v-card-text>
+      <v-container fluid>
+        <v-row>
+          <v-col cols="12" sm="5">
+            <v-menu
+              v-model="datePickerOpen"
+              :close-on-content-click="false"
+              location="bottom"
+            >
+              <template #activator="{ props: menuActivatorProps }">
+                <v-btn
+                  v-bind="menuActivatorProps"
+                  variant="outlined"
+                  prepend-icon="mdi-calendar"
+                  block
+                >
+                  {{ formatDate(dateOfInterest, "dd.MM.yyyy") }}
+                </v-btn>
+              </template>
+              <v-date-picker
+                v-model="dateOfInterest"
+                locale="de-DE"
+                @update:model-value="datePickerOpen = false"
+              />
+            </v-menu>
+            <div class="text-body-small text-medium-emphasis mt-2">
+              Stand der verkauften Einheiten für dieses Datum anzeigen
+            </div>
+          </v-col>
+        </v-row>
+      </v-container>
+
       <v-expansion-panels multiple>
         <v-expansion-panel
           v-for="productCategory in productStore.productCategories"
