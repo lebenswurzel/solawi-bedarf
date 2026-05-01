@@ -30,7 +30,7 @@
     "neverthrow": "^8.2.0",
     "nodemailer": "^7.0.12",
     "pg": "^8.20.0",
-    "qs": "^6.15.0",
+    "qs": "^6.15.1",
     "reflect-metadata": "^0.2.1",
     "ts-node": "^10.9.1",
     "typeorm": "^0.3.27"
