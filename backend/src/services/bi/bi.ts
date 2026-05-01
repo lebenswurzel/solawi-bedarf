@@ -61,11 +61,6 @@ export const biHandler = async (
   await getUserFromContext(ctx);
   const configId = getConfigIdFromQuery(ctx);
   const orderId = getNumericQueryParameter(ctx.request.query, "orderId", 0);
-  const includeForecast = getBooleanQueryParameter(
-    ctx.request.query,
-    "includeForecast",
-    false,
-  );
   const dateOfInterest = getDateQueryParameter(
     ctx.request.query,
     "dateOfInterest",
@@ -81,12 +76,7 @@ export const biHandler = async (
     }
     orderValidFrom = userOrder.validFrom;
   }
-  ctx.body = await bi(
-    configId,
-    orderValidFrom,
-    includeForecast,
-    dateOfInterest,
-  );
+  ctx.body = await bi(configId, orderValidFrom, dateOfInterest);
 };
 
 /**
@@ -116,7 +106,6 @@ export const determineTargetDate = async (configId: number): Promise<Date> => {
 export const bi = async (
   configId: number,
   orderValidFrom?: Date,
-  includeForecast: boolean = false,
   dateOfInterest?: Date,
 ): Promise<BIData> => {
   const targetDate =

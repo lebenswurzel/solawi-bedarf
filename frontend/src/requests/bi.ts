@@ -23,15 +23,11 @@ import { getUrl, verifyResponse } from "./requests.ts";
 export const getBI = async (
   configId: number,
   orderId?: number,
-  includeForecast?: boolean,
   dateOfInterest?: Date,
 ): Promise<BIData> => {
   let parameters = "";
   if (orderId) {
     parameters = `&orderId=${orderId}`;
-  }
-  if (includeForecast) {
-    parameters += "&includeForecast=true";
   }
   if (dateOfInterest) {
     parameters += `&dateOfInterest=${dateOfInterest.toISOString()}`;
