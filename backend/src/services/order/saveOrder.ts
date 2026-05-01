@@ -161,7 +161,6 @@ export const saveOrder = async (
   const { soldByProductId, capacityByDepotId, productsById } = await bi(
     requisitionConfig.id,
     selectedOrder.validFrom,
-    true,
     dateOfInterest,
   );
   const remainingDepotCapacity = getRemainingDepotCapacity(
