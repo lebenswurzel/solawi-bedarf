@@ -313,7 +313,7 @@ testAsUser1(
     });
 
     // Call bi function
-    const result = await bi(configId, undefined, false, now);
+    const result = await bi(configId, undefined, now);
 
     // Verify soldByProductId
     expect(result.soldByProductId[product.id]).toBeDefined();
@@ -545,7 +545,7 @@ testAsAdminAndUser(
     });
 
     // Call bi function
-    const result = await bi(configId, undefined, false, now);
+    const result = await bi(configId, undefined, now);
 
     const { deliveredByProductIdDepotId } = await availabilityWeights(
       configId,

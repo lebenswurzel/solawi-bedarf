@@ -191,7 +191,6 @@ testAsUser1("save order with products", async ({ userData }: TestUserData) => {
     const { soldByProductId, capacityByDepotId, productsById } = await bi(
       configId,
       undefined,
-      false,
       addMonths(new Date(), 2),
     );
     expect(soldByProductId[product1.id].sold).toBe(60);
