@@ -338,3 +338,4 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 
 #375 Produkte: CSV-Export enthält jetzt auch die verkaufte Menge
 #380 Fehler behoben der dafür gesorgt hat, dass die verfügbare Produktmenge überschritten werden konnte wenn während der Saison Bedarfsanmeldungen oder -änderungen erfolgten
+#377 Korrigierte Berechnung der Beträge und Orientierungswerte in der Statistik
