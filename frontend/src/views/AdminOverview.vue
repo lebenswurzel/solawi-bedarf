@@ -32,7 +32,7 @@ import { useTextContentStore } from "../store/textContentStore.ts";
 import { storeToRefs } from "pinia";
 import { formatDateForFilename } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper.ts";
 import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
-import { dateToString, stringToDate } from "../lib/convert.ts";
+import DateOnlyPicker from "../components/DateOnlyPicker.vue";
 
 const loading = ref({
   csv: false,
@@ -195,15 +195,10 @@ const onUserPdfClick = async () => {
         </v-row>
         <v-row dense>
           <v-col cols="12" md="4">
-            <v-text-field
+            <DateOnlyPicker
+              v-model="dateOfInterest"
               label="Stichtag für Erstellung der Übersichten"
-              type="datetime-local"
-              :model-value="dateToString(dateOfInterest)"
-              @update:model-value="
-                (val: string) =>
-                  (dateOfInterest = stringToDate(val) || new Date())
-              "
-            ></v-text-field>
+            />
           </v-col>
         </v-row>
       </v-container>

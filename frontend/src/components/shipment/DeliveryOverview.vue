@@ -17,24 +17,28 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <script setup lang="ts">
 import { useProductStore } from "../../store/productStore";
 import DeliveryOverviewTable from "./DeliveryOverviewTable.vue";
-import { dateToString, stringToDate } from "../../lib/convert";
 import { useBIStore } from "../../store/biStore";
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import { useConfigStore } from "../../store/configStore";
+import DateOnlyPicker from "../DateOnlyPicker.vue";
 
 const productStore = useProductStore();
 const dateOfInterest = ref<Date>(new Date());
 const biStore = useBIStore();
 const configStore = useConfigStore();
 
-const onDateChange = () => {
-  biStore.update(
-    configStore.activeConfigId,
-    undefined,
-    undefined,
-    dateOfInterest.value,
-  );
-};
+watch(
+  dateOfInterest,
+  () => {
+    biStore.update(
+      configStore.activeConfigId,
+      undefined,
+      undefined,
+      dateOfInterest.value,
+    );
+  },
+  { immediate: true },
+);
 </script>
 <template>
   <v-alert class="mb-2" type="info" variant="tonal">
@@ -81,20 +85,12 @@ const onDateChange = () => {
 
   <v-container fluid>
     <v-row>
-      <v-col cols="12" sm="8">
-        <v-text-field
-          label="Datum"
-          type="datetime-local"
-          :model-value="dateToString(dateOfInterest)"
-          @update:model-value="
-            (val: string) => (dateOfInterest = stringToDate(val) || new Date())
-          "
+      <v-col cols="12" sm="5">
+        <DateOnlyPicker
+          v-model="dateOfInterest"
+          block
           hint="Übersicht für dieses Datum anzeigen"
-          persistent-hint
-        ></v-text-field>
-      </v-col>
-      <v-col cols="12" sm="4">
-        <v-btn block @click="onDateChange">Aktualisieren</v-btn>
+        />
       </v-col>
     </v-row>
   </v-container>
