@@ -340,6 +340,8 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #380 Fehler behoben der dafür gesorgt hat, dass die verfügbare Produktmenge überschritten werden konnte wenn während der Saison Bedarfsanmeldungen oder -änderungen erfolgten
 #377 Korrigierte Berechnung der Beträge und Orientierungswerte in der Statistik
 
-# NEW
+# v0.15.8 - 2026-05-28 - Splitte Tabelle in Verteilungsübersicht
 
 #386 Verteilungsübersicht-PDF: Tabelle auf mehreren Seiten wenn diese durch zu viele Depots sehr breit wird
+
+# NEW
