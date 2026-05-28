@@ -341,3 +341,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #377 Korrigierte Berechnung der Beträge und Orientierungswerte in der Statistik
 
 # NEW
+
+#386 Verteilungsübersicht-PDF: Tabelle auf mehreren Seiten wenn diese durch zu viele Depots sehr breit wird
