@@ -214,13 +214,67 @@ export function createDefaultPdf(
   });
 }
 
+export const LANDSCAPE_A4_WIDTH_PT = 741.89;
+export const OVERVIEW_HORIZONTAL_MARGINS_PT = 90 + 40;
+export const OVERVIEW_LABEL_WIDTH_PT = 100;
+export const OVERVIEW_NUM_COL_WIDTH_PT = 40;
+export const OVERVIEW_FIXED_HEADERS = ["Bezeichnung", "Summe"] as const;
+export const OVERVIEW_CONTINUATION_LABEL_HEADER =
+  "Bezeichnung\n(fortsetzung)";
+
+export function getMaxDepotsPerPage(
+  availableWidth: number = LANDSCAPE_A4_WIDTH_PT -
+    OVERVIEW_HORIZONTAL_MARGINS_PT,
+  labelWidth: number = OVERVIEW_LABEL_WIDTH_PT,
+  numColWidth: number = OVERVIEW_NUM_COL_WIDTH_PT
+): number {
+  return Math.max(
+    1,
+    Math.floor((availableWidth - labelWidth) / numColWidth) - 1
+  );
+}
+
+export function chunkOverviewHeaders(
+  headers: string[],
+  maxDepotsPerPage: number
+): string[][] {
+  const depotHeaders = headers.filter(
+    (h) =>
+      !OVERVIEW_FIXED_HEADERS.includes(
+        h as (typeof OVERVIEW_FIXED_HEADERS)[number]
+      )
+  );
+  if (depotHeaders.length === 0) {
+    return [headers];
+  }
+  const chunks: string[][] = [];
+  for (let i = 0; i < depotHeaders.length; i += maxDepotsPerPage) {
+    const isFirstChunk = i === 0;
+    chunks.push([
+      ...(headers.includes("Bezeichnung") ? ["Bezeichnung"] : []),
+      ...(isFirstChunk && headers.includes("Summe") ? ["Summe"] : []),
+      ...depotHeaders.slice(i, i + maxDepotsPerPage),
+    ]);
+  }
+  return chunks;
+}
+
+export function sliceTableByHeaders(
+  fullTable: (string | number)[][],
+  chunkHeaders: string[]
+): (string | number)[][] {
+  const headers = fullTable[0].map(String);
+  const indices = chunkHeaders.map((h) => headers.indexOf(h));
+  return fullTable.map((row) => indices.map((i) => (i >= 0 ? row[i] : "")));
+}
+
 const createOverviewPdf = (
   data: { [key: string]: { [key: string]: number } },
   description: string,
   footerLeftText: string,
   headerSortKeys?: HeaderSortKeys
 ): TDocumentDefinitions => {
-  const content: Content = [
+  const content: Content[] = [
     {
       text: description,
       margin: [0, 0, 0, 10],
@@ -243,9 +297,10 @@ const createOverviewPdf = (
   const cellTransformer = (
     cell: string | number,
     rowIndex: number,
-    columnIndex: number
+    columnIndex: number,
+    hasSummeColumn: boolean
   ) => {
-    if (rowIndex > 0 && columnIndex === 1) {
+    if (rowIndex > 0 && columnIndex === 1 && hasSummeColumn) {
       return {
         text: cell,
         margin: [0, 0, 0, 10],
@@ -256,24 +311,41 @@ const createOverviewPdf = (
     };
   };
 
-  const tableData = jsonToTableData(
+  const buildStyledTableBody = (rawTable: (string | number)[][]) => {
+    const hasSummeColumn = rawTable[0]?.[1] === "Summe";
+    return rawTable.map((row, rowIndex) =>
+      row.map((cell, columnIndex) => ({
+        ...cellTransformer(cell, rowIndex, columnIndex, hasSummeColumn),
+        ...cellStyle(rowIndex, columnIndex),
+      }))
+    );
+  };
+
+  const rawTableData = jsonToTableData(
     Object.entries(data).map(([k, v]) => ({ Bezeichnung: k, ...v })),
     headerSortKeys
-  ).map((row, rowIndex) =>
-    row.map((cell, columnIndex) => ({
-      ...cellTransformer(cell, rowIndex, columnIndex),
-      ...cellStyle(rowIndex, columnIndex),
-    }))
   );
+  const headers = rawTableData[0].map(String);
+  const headerChunks = chunkOverviewHeaders(headers, getMaxDepotsPerPage());
 
-  content.push({
-    table: {
-      widths: ["*", ...new Array(tableData[0].length - 1).fill(40)],
-      body: tableData,
-      headerRows: 1,
-      dontBreakRows: true,
-    },
-    layout: "light-horizontal-lines",
+  headerChunks.forEach((chunkHeaders, chunkIndex) => {
+    const slicedRaw = sliceTableByHeaders(rawTableData, chunkHeaders);
+    if (chunkIndex > 0) {
+      slicedRaw[0][0] = OVERVIEW_CONTINUATION_LABEL_HEADER;
+    }
+    content.push({
+      table: {
+        widths: [
+          OVERVIEW_LABEL_WIDTH_PT,
+          ...new Array(chunkHeaders.length - 1).fill(OVERVIEW_NUM_COL_WIDTH_PT),
+        ],
+        body: buildStyledTableBody(slicedRaw),
+        headerRows: 1,
+        dontBreakRows: true,
+      },
+      layout: "light-horizontal-lines",
+      ...(chunkIndex > 0 ? { pageBreak: "before" as const } : {}),
+    });
   });
 
   const footer: DynamicContent = (currentPage, pageCount): Content => {
