@@ -3,13 +3,39 @@
 DATABASE=solawi
 BASE_NAME=$(basename $(builtin cd $(dirname $(readlink -f "$0"))/../..; pwd))
 CONTAINER=$BASE_NAME-db-1
-BACKUP_PATH=/backups/$1
 
-if [ -z "$1" ]; then
+AUTO_CONFIRM=false
+BACKUP_FILENAME=""
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --yes|-y)
+      AUTO_CONFIRM=true
+      shift
+      ;;
+    -h|--help)
+      echo "Usage: $0 [--yes] <backup_filename>"
+      exit 0
+      ;;
+    *)
+      if [ -n "$BACKUP_FILENAME" ]; then
+        echo "Error: Unexpected argument '$1'."
+        echo "Usage: $0 [--yes] <backup_filename>"
+        exit 1
+      fi
+      BACKUP_FILENAME=$1
+      shift
+      ;;
+  esac
+done
+
+if [ -z "$BACKUP_FILENAME" ]; then
   echo "Error: No backup file specified. The file must exist in the /backups folder in the container"
-  echo "Usage: $0 <backup_filename>"
+  echo "Usage: $0 [--yes] <backup_filename>"
   exit 1
 fi
+
+BACKUP_PATH=/backups/$BACKUP_FILENAME
 
 echo "Restoring database $DATABASE from file $BACKUP_PATH in the container $CONTAINER"
 
@@ -20,19 +46,25 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-echo "The existing database will be DELETED!"
-echo -n "Are you sure you want to continue? (y/N): "
-read -r confirmation
+if [ "$AUTO_CONFIRM" != true ]; then
+  echo "The existing database will be DELETED!"
+  echo -n "Are you sure you want to continue? (y/N): "
+  read -r confirmation
 
-# Proceed only if the user types 'y' or 'Y'
-if [[ "$confirmation" != "y" && "$confirmation" != "Y" ]]; then
-  echo "Operation canceled."
-  exit 0
+  # Proceed only if the user types 'y' or 'Y'
+  if [[ "$confirmation" != "y" && "$confirmation" != "Y" ]]; then
+    echo "Operation canceled."
+    exit 0
+  fi
 fi
 
 # Dropping the existing database
 echo "Dropping the existing database..."
-docker exec --user postgres -t $CONTAINER bash -c "dropdb $DATABASE"
+dropdb_flags=""
+if [ "$AUTO_CONFIRM" = true ]; then
+  dropdb_flags="--force"
+fi
+docker exec --user postgres -t $CONTAINER bash -c "dropdb $dropdb_flags $DATABASE"
 if [ $? -ne 0 ]; then
   echo "Error: Failed to drop the database."
   exit 1
