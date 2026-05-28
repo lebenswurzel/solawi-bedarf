@@ -61,15 +61,23 @@ run_infrastructure() {
     exit 1
   fi
 
-  local php_container php_hash verify_response
+  local php_container php_hash verify_payload verify_response
   php_container=$(docker compose ps -q php)
   php_hash=$(docker exec "$php_container" php -r 'echo password_hash("smoke-test", PASSWORD_DEFAULT);')
+  verify_payload=$(
+    jq -nc --arg password "smoke-test" --arg hash "$php_hash" \
+      '{password: $password, hash: $hash}'
+  )
   verify_response=$(
     curl -sf "$PHP_URL/" \
+      -X POST \
       -H 'Content-Type: application/json' \
-      -d "{\"password\":\"smoke-test\",\"hash\":\"$php_hash\"}"
+      -d "$verify_payload"
   )
-  echo "$verify_response" | jq -e '.verify == true' > /dev/null
+  if ! echo "$verify_response" | jq -e '.verify == true' > /dev/null; then
+    echo "Unexpected PHP verify response: $verify_response" >&2
+    exit 1
+  fi
   pass "PHP password sidecar"
 }
 
