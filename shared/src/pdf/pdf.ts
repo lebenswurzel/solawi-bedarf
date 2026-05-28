@@ -214,13 +214,12 @@ export function createDefaultPdf(
   });
 }
 
-export const LANDSCAPE_A4_WIDTH_PT = 741.89;
-export const OVERVIEW_HORIZONTAL_MARGINS_PT = 90 + 40;
+export const LANDSCAPE_A4_WIDTH_PT = 781.89;
+export const OVERVIEW_HORIZONTAL_MARGINS_PT = 90 + 30;
 export const OVERVIEW_LABEL_WIDTH_PT = 100;
-export const OVERVIEW_NUM_COL_WIDTH_PT = 40;
+export const OVERVIEW_NUM_COL_WIDTH_PT = 35;
 export const OVERVIEW_FIXED_HEADERS = ["Bezeichnung", "Summe"] as const;
-export const OVERVIEW_CONTINUATION_LABEL_HEADER =
-  "Bezeichnung\n(fortsetzung)";
+export const OVERVIEW_CONTINUATION_LABEL_HEADER = "Bezeichnung\n(fortsetzung)";
 
 export function getMaxDepotsPerPage(
   availableWidth: number = LANDSCAPE_A4_WIDTH_PT -
