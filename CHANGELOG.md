@@ -344,6 +344,8 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 
 #386 Verteilungsübersicht-PDF: Tabelle auf mehreren Seiten wenn diese durch zu viele Depots sehr breit wird
 
-# NEW
+# v0.15.9 - 2026-05-28 - Finetuning Spaltenbreite
 
 #386 Verteilungsübersicht-PDF: Finetuning der Spaltenbreiten um Platz möglichst gut zu nutzen
+
+# NEW
