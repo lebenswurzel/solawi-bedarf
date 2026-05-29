@@ -102,7 +102,21 @@ export async function apiFetch<T = unknown>(
     );
   }
 
+  return parseSuccessBody<T>(text, response.headers.get("content-type"));
+}
+
+function parseSuccessBody<T>(text: string, contentType: string | null): T {
   if (!text) {
+    return undefined as T;
+  }
+
+  const trimmed = text.trim();
+  const looksLikeJson =
+    trimmed.startsWith("{") ||
+    trimmed.startsWith("[") ||
+    contentType?.includes("application/json");
+
+  if (!looksLikeJson) {
     return undefined as T;
   }
 
