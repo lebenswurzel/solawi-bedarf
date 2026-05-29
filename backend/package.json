@@ -11,7 +11,8 @@
     "typeorm": "typeorm-ts-node-commonjs",
     "create-migrations": "typeorm-ts-node-commonjs migration:generate -d src/database/database.ts",
     "test": "vitest",
-    "test-cov": "vitest --coverage.enabled true"
+    "test-cov": "vitest --coverage.enabled true",
+    "smoke-test": "vitest run --config ../dev/ci/vitest.smoke.config.mts"
   },
   "author": "",
   "license": "AGPL-3.0-only",
