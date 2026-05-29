@@ -17,24 +17,45 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { randomUUID } from "node:crypto";
 import {
   ProductCategoryType,
+  TextContentCategory,
+  TextContentTyp,
   Unit,
 } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import type {
   Depot,
+  Product,
   ProductCategory,
   ProductCategoryWithProducts,
+  TextContent,
 } from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import { beforeAll, describe, expect, test } from "vitest";
-import { apiFetch, loginAsAdmin } from "./apiClient";
+import { apiFetch, loginAsAdmin, publicApiFetch } from "./apiClient";
 
 const CONFIG_ID = 1;
 
 const suffix = randomUUID().slice(0, 8);
 const depotName = `smoke-depot-${suffix}`;
+const depotNameUpdated = `${depotName}-updated`;
 const categoryName = `smoke-category-${suffix}`;
+const categoryNameUpdated = `${categoryName}-updated`;
 const productName = `smoke-product-${suffix}`;
+const productNameUpdated = `${productName}-updated`;
+const faqTitle = `smoke-faq-${suffix}`;
+const faqTitleUpdated = `${faqTitle}-updated`;
+const applicantEmail = `smoke-applicant-${suffix}@example.test`;
 
+let depotId: number;
 let categoryId: number;
+let productId: number;
+let faqId: number;
+let applicantId: number;
+
+function findCategory(
+  categories: ProductCategoryWithProducts[] | undefined,
+  id: number,
+): ProductCategoryWithProducts | undefined {
+  return categories?.find((c) => c.id === id);
+}
 
 describe.sequential("mutation smoke test", () => {
   beforeAll(async () => {
@@ -59,11 +80,36 @@ describe.sequential("mutation smoke test", () => {
     const countAfter = after.depots?.length ?? 0;
 
     expect(countAfter).toBeGreaterThan(countBefore);
-    expect(after.depots).toEqual(
+    const depot = after.depots?.find((d) => d.name === depotName);
+    expect(depot).toMatchObject({ name: depotName, active: true });
+    depotId = depot!.id;
+  });
+
+  test("depot update + list", async () => {
+    await apiFetch("POST", "/depot", {
+      body: {
+        id: depotId,
+        name: depotNameUpdated,
+        address: "Smoke Test St 2",
+        openingHours: "10-6",
+        capacity: 14,
+        active: true,
+        comment: "smoke test",
+      },
+    });
+
+    const listed = await apiFetch<{ depots: Depot[] }>("GET", "/depot");
+    expect(listed.depots).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ name: depotName, active: true }),
+        expect.objectContaining({
+          id: depotId,
+          name: depotNameUpdated,
+          address: "Smoke Test St 2",
+          active: true,
+        }),
       ]),
     );
+    expect(listed.depots?.find((d) => d.name === depotName)).toBeUndefined();
   });
 
   test("product category create + list", async () => {
@@ -90,8 +136,34 @@ describe.sequential("mutation smoke test", () => {
     );
   });
 
+  test("product category update + list", async () => {
+    await apiFetch<ProductCategory>("POST", "/productCategory", {
+      body: {
+        id: categoryId,
+        name: categoryNameUpdated,
+        active: true,
+        requisitionConfigId: CONFIG_ID,
+        typ: ProductCategoryType.SELFGROWN,
+      },
+    });
+
+    const listed = await apiFetch<{
+      productCategories: ProductCategory[];
+    }>("GET", `/productCategory?configId=${CONFIG_ID}`);
+
+    expect(listed.productCategories).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: categoryId,
+          name: categoryNameUpdated,
+          active: true,
+        }),
+      ]),
+    );
+  });
+
   test("product create + list", async () => {
-    await apiFetch("POST", "/productCategory/product", {
+    const created = await apiFetch<Product>("POST", "/productCategory/product", {
       body: {
         name: productName,
         active: true,
@@ -107,16 +179,174 @@ describe.sequential("mutation smoke test", () => {
       },
     });
 
+    expect(created.id).toBeDefined();
+    productId = created.id;
+
     const listed = await apiFetch<{
       productCategories: ProductCategoryWithProducts[];
     }>("GET", `/productCategory?configId=${CONFIG_ID}`);
 
-    const category = listed.productCategories?.find((c) => c.id === categoryId);
-    expect(category).toBeDefined();
-    expect(category!.products).toEqual(
+    const category = findCategory(listed.productCategories, categoryId);
+    expect(category?.products).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ name: productName, active: true }),
+        expect.objectContaining({ id: productId, name: productName, active: true }),
       ]),
     );
+  });
+
+  test("product update + list", async () => {
+    await apiFetch<Product>("POST", "/productCategory/product", {
+      body: {
+        id: productId,
+        name: productNameUpdated,
+        active: true,
+        msrp: 2,
+        frequency: 30,
+        quantity: 20,
+        quantityMin: 10,
+        quantityMax: 30,
+        quantityStep: 5,
+        unit: Unit.WEIGHT,
+        vatRate: 19,
+        productCategoryId: categoryId,
+      },
+    });
+
+    const listed = await apiFetch<{
+      productCategories: ProductCategoryWithProducts[];
+    }>("GET", `/productCategory?configId=${CONFIG_ID}`);
+
+    const category = findCategory(listed.productCategories, categoryId);
+    expect(category?.products).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: productId,
+          name: productNameUpdated,
+          msrp: 2,
+          vatRate: 19,
+          active: true,
+        }),
+      ]),
+    );
+  });
+
+  test("faq text content create + update + list", async () => {
+    await apiFetch("POST", "/content/text", {
+      body: {
+        title: faqTitle,
+        category: TextContentCategory.FAQ,
+        content: "Smoke FAQ content",
+        typ: TextContentTyp.MD,
+      },
+    });
+
+    let listed = await apiFetch<{ textContent: TextContent[] }>(
+      "GET",
+      "/content/text",
+    );
+    const created = listed.textContent?.find((t) => t.title === faqTitle);
+    expect(created).toMatchObject({
+      title: faqTitle,
+      category: TextContentCategory.FAQ,
+      content: "Smoke FAQ content",
+    });
+    faqId = created!.id;
+
+    await apiFetch("POST", "/content/text", {
+      body: {
+        id: faqId,
+        title: faqTitleUpdated,
+        category: TextContentCategory.FAQ,
+        content: "Smoke FAQ content updated",
+        typ: TextContentTyp.MD,
+      },
+    });
+
+    listed = await apiFetch<{ textContent: TextContent[] }>(
+      "GET",
+      "/content/text",
+    );
+    expect(listed.textContent).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: faqId,
+          title: faqTitleUpdated,
+          content: "Smoke FAQ content updated",
+        }),
+      ]),
+    );
+    expect(listed.textContent?.find((t) => t.title === faqTitle)).toBeUndefined();
+  });
+
+  test("faq text content delete", async () => {
+    await apiFetch("DELETE", `/content/text?id=${faqId}`);
+
+    const listed = await apiFetch<{ textContent: TextContent[] }>(
+      "GET",
+      "/content/text",
+    );
+    expect(listed.textContent?.find((t) => t.id === faqId)).toBeUndefined();
+  });
+
+  test("applicant create + list + delete", async () => {
+    await publicApiFetch("POST", "/applicant", {
+      body: {
+        confirmGDPR: true,
+        comment: "Smoke test applicant",
+        password: "smoke-test-pw",
+        address: {
+          firstname: "Smoke",
+          lastname: "Applicant",
+          email: applicantEmail,
+          phone: "0123456789",
+          street: "Testweg 1",
+          postalcode: "12345",
+          city: "Teststadt",
+        },
+      },
+    });
+
+    const listed = await apiFetch<{
+      applicants: { id: number; address: { email: string } }[];
+    }>("GET", "/applicant?state=NEW");
+
+    const applicant = listed.applicants?.find(
+      (a) => a.address.email === applicantEmail,
+    );
+    expect(applicant).toBeDefined();
+    applicantId = applicant!.id;
+
+    await apiFetch("DELETE", `/applicant?id=${applicantId}`);
+
+    const afterDelete = await apiFetch<{
+      applicants: { id: number; address: { email: string } }[];
+    }>("GET", "/applicant?state=NEW");
+
+    expect(
+      afterDelete.applicants?.find((a) => a.id === applicantId),
+    ).toBeUndefined();
+  });
+
+  test("cleanup product and product category", async () => {
+    await apiFetch("DELETE", "/productCategory/product", {
+      body: { id: productId },
+    });
+
+    let listed = await apiFetch<{
+      productCategories: ProductCategoryWithProducts[];
+    }>("GET", `/productCategory?configId=${CONFIG_ID}`);
+
+    const category = findCategory(listed.productCategories, categoryId);
+    expect(category?.products?.find((p) => p.id === productId)).toBeUndefined();
+
+    await apiFetch("DELETE", "/productCategory", {
+      body: { id: categoryId },
+    });
+
+    listed = await apiFetch<{
+      productCategories: ProductCategoryWithProducts[];
+    }>("GET", `/productCategory?configId=${CONFIG_ID}`);
+
+    expect(findCategory(listed.productCategories, categoryId)).toBeUndefined();
   });
 });

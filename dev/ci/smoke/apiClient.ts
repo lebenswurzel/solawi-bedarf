@@ -69,6 +69,40 @@ export async function loginAsAdmin(): Promise<void> {
   authCookie = parseTokenCookie(response);
 }
 
+async function smokeFetch(
+  method: string,
+  path: string,
+  options?: { body?: unknown; cookie?: string },
+): Promise<Response> {
+  const headers: Record<string, string> = { ...defaultHeaders };
+  if (options?.cookie) {
+    headers.Cookie = options.cookie;
+  }
+
+  let body: string | undefined;
+  if (options?.body !== undefined) {
+    headers["Content-Type"] = "application/json";
+    body = JSON.stringify(options.body);
+  }
+
+  return fetch(`${smokeBaseUrl}${path}`, { method, headers, body });
+}
+
+export async function publicApiFetch<T = unknown>(
+  method: string,
+  path: string,
+  options?: { body?: unknown },
+): Promise<T> {
+  const response = await smokeFetch(method, path, options);
+  const text = await response.text();
+  if (response.status < 200 || response.status >= 300) {
+    throw new Error(
+      `${method} ${path} — HTTP ${response.status}\n${text || "(empty body)"}`,
+    );
+  }
+  return parseSuccessBody<T>(text, response.headers.get("content-type"));
+}
+
 export async function apiFetch<T = unknown>(
   method: string,
   path: string,
@@ -78,21 +112,9 @@ export async function apiFetch<T = unknown>(
     throw new Error("Not logged in — call loginAsAdmin() first");
   }
 
-  const headers: Record<string, string> = {
-    ...defaultHeaders,
-    Cookie: authCookie,
-  };
-
-  let body: string | undefined;
-  if (options?.body !== undefined) {
-    headers["Content-Type"] = "application/json";
-    body = JSON.stringify(options.body);
-  }
-
-  const response = await fetch(`${smokeBaseUrl}${path}`, {
-    method,
-    headers,
-    body,
+  const response = await smokeFetch(method, path, {
+    ...options,
+    cookie: authCookie,
   });
 
   const text = await response.text();
