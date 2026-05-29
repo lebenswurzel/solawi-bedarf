@@ -10,7 +10,8 @@ trap 'rm -f "$COOKIE_JAR"' EXIT
 
 CURL_HEADERS=(
   --insecure
-  -s
+  -sS
+  -b "$COOKIE_JAR"
   -H 'Accept: */*'
   -H 'Accept-Language: en-US,en'
   -H 'Cache-Control: no-cache'
@@ -20,8 +21,6 @@ CURL_HEADERS=(
   -H 'Sec-GPC: 1'
   -H 'User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36'
 )
-
-AUTH=(-b "$COOKIE_JAR")
 
 expect_2xx() {
   local method="$1"
@@ -45,22 +44,29 @@ request_json() {
   local path="$2"
   local body="${3:-}"
   shift 3
-  local out http_code http_code_raw
-  local -a curl_args=(
-    -sS
-    --insecure
-    -X "$method"
-    "${AUTH[@]}"
-    "${CURL_HEADERS[@]:2}"
-  )
+  local out http_code_raw http_code
+  local url="${SMOKE_BASE_URL}${path}"
   out="$(mktemp)"
-  if [[ -n "$body" ]]; then
-    curl_args+=(-H 'Content-Type: application/json' -d "$body")
-  fi
-  curl_args+=("$@" -o "$out" -w '%{http_code}' "${SMOKE_BASE_URL}${path}")
 
-  # Avoid curl inside a nested $() when this function is piped to jq.
-  http_code_raw="$(curl "${curl_args[@]}")"
+  if [[ -n "$body" ]]; then
+    http_code_raw="$(
+      curl -X "$method" "${CURL_HEADERS[@]}" \
+        -H 'Content-Type: application/json' \
+        "$@" \
+        -d "$body" \
+        -o "$out" \
+        -w '%{http_code}' \
+        "$url"
+    )"
+  else
+    http_code_raw="$(
+      curl -X "$method" "${CURL_HEADERS[@]}" \
+        "$@" \
+        -o "$out" \
+        -w '%{http_code}' \
+        "$url"
+    )"
+  fi
   http_code="$(printf '%s' "$http_code_raw" | grep -oE '[0-9]{3}$' | tail -1)"
 
   if [[ ! "$http_code" =~ ^2[0-9][0-9]$ ]]; then
@@ -77,7 +83,7 @@ request_json() {
 post_json() {
   local path="$1"
   local json="$2"
-  request_json POST "$path" "$json"
+  request_json "POST" "$path" "$json"
 }
 
 assert_jq_json() {
@@ -116,8 +122,8 @@ category_name="smoke-category-${suffix}"
 product_name="smoke-product-${suffix}"
 
 echo "Mutation smoke test: depot create + list"
-depots_json_before="$(request_json GET /depot)"
-depot_count_before="$(echo "$depots_json_before" | jq '.depots | length')"
+depots_json_before="$(request_json "GET" "/depot")"
+depot_count_before="$(echo "$depots_json_before" | jq '(.depots // []) | length')"
 
 post_json /depot "$(jq -n \
   --arg name "$depot_name" \
@@ -129,8 +135,8 @@ post_json /depot "$(jq -n \
     active: true
   }')" >/dev/null
 
-depots_json="$(request_json GET /depot)"
-depot_count_after="$(echo "$depots_json" | jq '.depots | length')"
+depots_json="$(request_json "GET" "/depot")"
+depot_count_after="$(echo "$depots_json" | jq '(.depots // []) | length')"
 if [[ "$depot_count_after" -le "$depot_count_before" ]]; then
   echo "FAIL: depot count did not increase ($depot_count_before -> $depot_count_after)" >&2
   echo "$depots_json" | jq . >&2 2>/dev/null || echo "$depots_json" >&2
@@ -160,7 +166,7 @@ if [[ -z "$category_id" || "$category_id" == "null" ]]; then
 fi
 echo "OK   created product category id=$category_id"
 
-categories_json="$(request_json GET "/productCategory?configId=${CONFIG_ID}")"
+categories_json="$(request_json "GET" "/productCategory?configId=${CONFIG_ID}")"
 assert_jq_json "$categories_json" --arg n "$category_name" \
   'any(.productCategories[]?; .name == $n and .active)' \
   "product category $category_name listed"
@@ -183,7 +189,7 @@ post_json /productCategory/product "$(jq -n \
     productCategoryId: $categoryId
   }')" >/dev/null
 
-categories_json="$(request_json GET "/productCategory?configId=${CONFIG_ID}")"
+categories_json="$(request_json "GET" "/productCategory?configId=${CONFIG_ID}")"
 assert_jq_json "$categories_json" \
   --arg n "$product_name" \
   --argjson cid "$category_id" \
