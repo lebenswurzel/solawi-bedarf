@@ -252,6 +252,9 @@ const onDeliveryNotePdf = async () => {
 };
 
 const onInvoicePdf = async () => {
+  if (!invoiceLocked.value && !confirm(t.dialog.invoiceConfirm)) {
+    return;
+  }
   const delivery = await ensureSaved();
   if (!delivery?.id) {
     return;
