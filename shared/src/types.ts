@@ -50,6 +50,7 @@ export type SaveUserRequest = Required<NewUser> & {
   password?: string;
   orderValidFrom: Date | null;
   requisitionConfigId: number;
+  commercialProfile?: CommercialProfile | null;
 };
 
 export type BankDetails = {
@@ -115,6 +116,7 @@ export interface NewProduct {
   quantityStep?: number;
   unit?: Unit;
   productCategoryId?: number;
+  vatRate?: number;
 }
 
 export type Product = Required<NewProduct> & { id: ProductId };
@@ -494,6 +496,7 @@ export interface OrganizationInfo {
     forumContact: string;
   };
   bankAccount: string;
+  bioControlNumber: string;
 }
 
 type FlattenKeys<T, Prefix extends string = ""> = T extends object
@@ -515,7 +518,8 @@ export type OrganizationInfoFlatKeys =
   | "organization.address.city"
   | "organization.address.email"
   | "organization.address.forumContact"
-  | "organization.bankAccount";
+  | "organization.bankAccount"
+  | "organization.bioControlNumber";
 
 export type OrganizationInfoFlat = Record<OrganizationInfoFlatKeys, string>;
 
@@ -523,6 +527,9 @@ export interface PdfTexts {
   packagingListFooter: string;
   packagingListHeader: string;
   packagingListDetailText: string;
+  deliveryNoteHeader: string;
+  deliveryNoteFooter: string;
+  invoiceFooter: string;
 }
 export type PdfTextsKeys = FlattenKeys<PdfTexts>;
 
@@ -594,4 +601,83 @@ export interface AvailabilityWeights {
     [productId: number]: number; // 0..1, 1 means fully available, 0 means fully delivered
   };
   deliveredByProductIdDepotId: DeliveredByProductIdDepotId;
+}
+
+export interface CommercialProfile {
+  companyName: string;
+  street: string;
+  postalcode: string;
+  city: string;
+}
+
+export type CommercialUser = User & {
+  commercialProfile: CommercialProfile | null;
+};
+
+export interface CommercialDeliveryItem {
+  productId: ProductId;
+  quantity: number;
+  unit: Unit;
+  conversionFrom: number;
+  conversionTo: number;
+  unitPriceCents: number;
+  vatRate: number;
+  isBio: boolean;
+  description: string | null;
+}
+
+export interface EditCommercialDeliveryItem extends Omit<
+  CommercialDeliveryItem,
+  "productId" | "unit"
+> {
+  productId?: ProductId;
+  unit?: Unit;
+  showItem: boolean;
+  isNew?: boolean;
+}
+
+export interface CommercialDelivery {
+  deliveryDate: Date | string;
+  customerUserId: UserId;
+  description: string | null;
+  active: boolean;
+  items: CommercialDeliveryItem[];
+}
+
+export interface CommercialDeliveryRequest extends CommercialDelivery {
+  updatedAt?: Date | string;
+}
+
+export interface CommercialDeliveryFullInformation extends CommercialDelivery {
+  id: number;
+  updatedAt: Date | string;
+  customerName?: string;
+  companyName?: string;
+  invoice?: Invoice | null;
+}
+
+export interface EditCommercialDelivery extends Omit<
+  CommercialDelivery,
+  "items"
+> {
+  items: EditCommercialDeliveryItem[];
+  updatedAt?: Date | string;
+}
+
+export interface Invoice {
+  invoiceNumber: string;
+  bioControlNumber: string;
+  createdAt: Date | string;
+}
+
+export interface CreateInvoiceResponse {
+  invoice: Invoice;
+  delivery: CommercialDeliveryFullInformation;
+}
+
+export interface CommercialDeliveryTotals {
+  netCents: number;
+  vatCents: number;
+  grossCents: number;
+  vatByRate: { [rate: number]: { netCents: number; vatCents: number } };
 }

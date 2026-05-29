@@ -118,3 +118,11 @@ export const resetPassword = async (req: PasswordResetRequest) => {
 
   await verifyResponse(response);
 };
+
+export const getCommercialProfile = async (userId: number) => {
+  const response = await fetch(
+    getUrl(`/user/commercialProfile?userId=${userId}`),
+  );
+  await verifyResponse(response);
+  return response.json();
+};

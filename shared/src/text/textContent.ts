@@ -46,6 +46,7 @@ export const makeOrganizationInfo = (
       forumContact: getField("address.forumContact"),
     },
     bankAccount: getField("bankAccount"),
+    bioControlNumber: getField("bioControlNumber"),
   };
 };
 
@@ -62,6 +63,7 @@ export const makeFlatOrganizationInfo = (
     "organization.address.email": organizationInfo.address.email,
     "organization.address.forumContact": organizationInfo.address.forumContact,
     "organization.bankAccount": organizationInfo.bankAccount,
+    "organization.bioControlNumber": organizationInfo.bioControlNumber,
   };
 };
 
@@ -88,6 +90,8 @@ export const getOrganizationInfoValueByKey = (
       return organizationInfo.address.forumContact;
     case "bankAccount":
       return organizationInfo.bankAccount;
+    case "bioControlNumber":
+      return organizationInfo.bioControlNumber;
     default:
       return "";
   }
@@ -105,5 +109,8 @@ export const makePdfTexts = (textContents: SimpleTextContent[]): PdfTexts => {
     packagingListFooter: getField("packagingListFooter"),
     packagingListHeader: getField("packagingListHeader"),
     packagingListDetailText: getField("packagingListDetailText"),
+    deliveryNoteHeader: getField("deliveryNoteHeader"),
+    deliveryNoteFooter: getField("deliveryNoteFooter"),
+    invoiceFooter: getField("invoiceFooter"),
   };
 };

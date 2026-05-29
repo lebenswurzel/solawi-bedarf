@@ -39,6 +39,11 @@ import { AdditionalShipmentItem } from "./src/database/AdditionalShipmentItem";
 import { Shipment } from "./src/database/Shipment";
 import { ShipmentItem } from "./src/database/ShipmentItem";
 import { PasswordReset } from "./src/database/PasswordReset";
+import { CommercialProfile } from "./src/database/CommercialProfile";
+import { CommercialDelivery } from "./src/database/CommercialDelivery";
+import { CommercialDeliveryItem } from "./src/database/CommercialDeliveryItem";
+import { Invoice } from "./src/database/Invoice";
+import { InvoiceSequence } from "./src/database/InvoiceSequence";
 
 const clearAllTables = async () => {
   const entities = AppDataSource.entityMetadatas;
@@ -46,6 +51,9 @@ const clearAllTables = async () => {
   // must delete in specific order to prevent foreign key violations
   await AppDataSource.getRepository(OrderItem).deleteAll();
   await AppDataSource.getRepository(ShipmentItem).deleteAll();
+  await AppDataSource.getRepository(CommercialDeliveryItem).deleteAll();
+  await AppDataSource.getRepository(Invoice).deleteAll();
+  await AppDataSource.getRepository(CommercialDelivery).deleteAll();
   await AppDataSource.getRepository(Product).deleteAll();
   await AppDataSource.getRepository(ProductCategory).deleteAll();
   await AppDataSource.getRepository(Order).deleteAll();
@@ -55,6 +63,8 @@ const clearAllTables = async () => {
   await AppDataSource.getRepository(Token).deleteAll();
   await AppDataSource.getRepository(Applicant).deleteAll();
   await AppDataSource.getRepository(UserAddress).deleteAll();
+  await AppDataSource.getRepository(InvoiceSequence).deleteAll();
+  await AppDataSource.getRepository(CommercialProfile).deleteAll();
   await AppDataSource.getRepository(PasswordReset).deleteAll();
   await AppDataSource.getRepository(User).deleteAll();
 

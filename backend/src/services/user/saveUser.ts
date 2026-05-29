@@ -31,6 +31,10 @@ import {
   UserId,
 } from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import { getUserOrders } from "../order/getAllOrders";
+import {
+  saveCommercialProfileForUser,
+  validateCommercialProfile,
+} from "./commercialProfile";
 
 export const saveUser = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
@@ -41,10 +45,32 @@ export const saveUser = async (
   }
   const requestUser = ctx.request.body as SaveUserRequest;
   if (
-    !requestUser.requisitionConfigId ||
-    !(await AppDataSource.getRepository(RequisitionConfig).find({
-      where: { id: requestUser.requisitionConfigId },
-    }))
+    requestUser.role === UserRole.COMMERCIAL &&
+    !validateCommercialProfile(requestUser.commercialProfile)
+  ) {
+    ctx.throw(
+      http.bad_request,
+      "commercial profile required for commercial users",
+    );
+  }
+  if (
+    requestUser.role === UserRole.COMMERCIAL &&
+    !requestUser.requisitionConfigId
+  ) {
+    const configs = await AppDataSource.getRepository(RequisitionConfig).find({
+      order: { id: "ASC" },
+      take: 1,
+    });
+    if (configs.length > 0) {
+      requestUser.requisitionConfigId = configs[0].id;
+    }
+  }
+  if (
+    requestUser.role !== UserRole.COMMERCIAL &&
+    (!requestUser.requisitionConfigId ||
+      !(await AppDataSource.getRepository(RequisitionConfig).find({
+        where: { id: requestUser.requisitionConfigId },
+      })))
   ) {
     ctx.throw(
       http.bad_request,
@@ -67,7 +93,11 @@ export const saveUser = async (
           await invalidateTokenForUser(user.id);
         }
         await AppDataSource.getRepository(User).save(user);
-        if (requestUser.orderValidFrom) {
+        await saveCommercialProfileForUser(user, requestUser.commercialProfile);
+        if (
+          requestUser.orderValidFrom &&
+          requestUser.role !== UserRole.COMMERCIAL
+        ) {
           await updateOrderValidFrom(
             user.id,
             requestUser.orderValidFrom,
@@ -84,7 +114,11 @@ export const saveUser = async (
         requestUser.active,
       );
       await AppDataSource.getRepository(User).save(user);
-      if (requestUser.orderValidFrom) {
+      await saveCommercialProfileForUser(user, requestUser.commercialProfile);
+      if (
+        requestUser.orderValidFrom &&
+        requestUser.role !== UserRole.COMMERCIAL
+      ) {
         await updateOrderValidFrom(
           user.id,
           requestUser.orderValidFrom,

@@ -36,6 +36,7 @@ export const organizationInfoKeys: OrganizationInfoKeys[] = [
   "address.email",
   "address.forumContact",
   "bankAccount",
+  "bioControlNumber",
 ];
 
 export const basicOrganizationInfo: OrganizationInfo = {
@@ -50,6 +51,7 @@ export const basicOrganizationInfo: OrganizationInfo = {
     forumContact: "@rike",
   },
   bankAccount: "Kontoinhaber: ...\nIBAN: ...\nKreditinstitut: ...",
+  bioControlNumber: "",
 };
 
 export const appConfig = {
@@ -102,6 +104,9 @@ export const pdfTextsKeys: PdfTextsKeys[] = [
   "packagingListFooter",
   "packagingListHeader",
   "packagingListDetailText",
+  "deliveryNoteHeader",
+  "deliveryNoteFooter",
+  "invoiceFooter",
 ];
 
 export const pdfTextsDefaults: PdfTexts = {
@@ -109,6 +114,9 @@ export const pdfTextsDefaults: PdfTexts = {
   packagingListHeader: "",
   packagingListDetailText:
     "Die hier angegebenen Mengen werden auf alle Ernteteiler des Depots aufgeteilt. Bitte nimm nur die Mengen mit, die mit deiner Bedarfsanmeldung übereinstimmen. Deine genauen Mitnahmemengen kannst du auch der Bedarfsanmeldungs-App entnehmen. Dort sind die Mengen bereits korrekt berechnet.",
+  deliveryNoteHeader: "",
+  deliveryNoteFooter: "",
+  invoiceFooter: "",
 };
 
 export const emailTextsKeys: EmailTextsKeys[] = [

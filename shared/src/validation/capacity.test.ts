@@ -45,6 +45,7 @@ describe("checkOrderItemValid", () => {
     quantity: 100,
     productCategoryId: 1,
     productCategoryType: ProductCategoryType.SELFGROWN,
+    vatRate: 7,
   };
 
   const mockSoldByProductId = {
@@ -281,6 +282,7 @@ describe("getMaxAvailable", () => {
     quantity: 100,
     productCategoryId: 1,
     productCategoryType: ProductCategoryType.SELFGROWN,
+    vatRate: 7,
   };
 
   const mockSoldByProductId = {
@@ -339,6 +341,7 @@ describe("getMinAvailable", () => {
     quantity: 100,
     productCategoryId: 1,
     productCategoryType: ProductCategoryType.SELFGROWN,
+    vatRate: 7,
   };
 
   const mockProductsById = {
