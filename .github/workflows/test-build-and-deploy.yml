@@ -8,6 +8,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - run: npm ci
+
       - name: Run Build and deploy script
         run: ./dev/build/build-and-deploy.bash init
 
@@ -25,7 +32,9 @@ jobs:
         run: ./dev/ci/backend-smoke-test.bash
 
       - name: Smoke test backend mutations
-        run: ./dev/ci/backend-smoke-test-mutations.bash
+        run: npm run smoke-test --workspace=@lebenswurzel/solawi-bedarf-backend
+        env:
+          SMOKE_BASE_URL: http://0.0.0.0:8184/api
 
       - name: Database backup
         run: ./dev/backup/database-backup.bash
