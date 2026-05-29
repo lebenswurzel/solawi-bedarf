@@ -28,6 +28,7 @@ import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import { Applicant } from "./Applicant";
 import { hashPassword } from "../security";
 import { PasswordReset } from "./PasswordReset";
+import { CommercialProfile } from "./CommercialProfile";
 
 @Entity()
 export class User extends BaseEntity {
@@ -66,6 +67,11 @@ export class User extends BaseEntity {
 
   @OneToOne(() => Applicant, (applicant) => applicant.user, { nullable: true })
   applicant: Applicant;
+
+  @OneToOne(() => CommercialProfile, (profile) => profile.user, {
+    nullable: true,
+  })
+  commercialProfile: CommercialProfile | null;
 
   /**
    * Create a new user.

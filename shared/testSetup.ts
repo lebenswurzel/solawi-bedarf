@@ -130,6 +130,7 @@ export function genProduct(overwrite: Partial<NewProduct> = {}): Product {
     quantityStep: 5,
     unit: Unit.WEIGHT,
     productCategoryId: 0,
+    vatRate: 7,
   };
   return { ...base, ...overwrite };
 }
@@ -196,9 +197,9 @@ export function genOrder(
     offerReason: "The Offer Reason",
     category: UserCategory.CAT100,
     categoryReason: "The Category Reason",
-    validFrom: new Date(),
     requisitionConfigId,
     confirmGTC: true,
+    paymentInfo: null,
   };
   return { ...base, ...overwrite };
 }

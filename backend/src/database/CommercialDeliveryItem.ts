@@ -14,79 +14,62 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn,
-  ManyToOne,
-  OneToMany,
-} from "typeorm";
-import { ProductCategory } from "./ProductCategory";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from "typeorm";
+import { Product } from "./Product";
 import { BaseEntity } from "./BaseEntity";
-import { OrderItem } from "./OrderItem";
+import { CommercialDelivery } from "./CommercialDelivery";
 import { Unit } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 
 @Entity()
-export class Product extends BaseEntity {
+export class CommercialDeliveryItem extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column()
-  name: string;
+  commercialDeliveryId: number;
 
-  @Column({ nullable: true })
-  description: string;
+  @ManyToOne(() => CommercialDelivery, (delivery) => delivery.items, {
+    nullable: false,
+  })
+  commercialDelivery: CommercialDelivery;
 
   @Column()
-  active: boolean;
+  productId: number;
 
-  @Column({
-    nullable: false,
-  })
-  msrp: number;
+  @ManyToOne(() => Product, { nullable: false })
+  product: Product;
 
-  @Column({ nullable: false, default: 1 })
-  frequency: number;
-
-  @Column({
-    nullable: false,
-  })
+  @Column()
   quantity: number;
-
-  @Column({
-    nullable: false,
-  })
-  quantityMin: number;
-
-  @Column({
-    nullable: false,
-  })
-  quantityMax: number;
-
-  @Column({
-    nullable: false,
-  })
-  quantityStep: number;
 
   @Column({
     type: "enum",
     enum: Unit,
+    enumName: "commercial_delivery_item_unit_enum",
   })
   unit: Unit;
 
-  @Column({ nullable: false, default: 7 })
+  @Column({
+    nullable: false,
+    default: 1,
+  })
+  conversionFrom: number;
+
+  @Column({
+    nullable: false,
+    default: 1,
+  })
+  conversionTo: number;
+
+  @Column()
+  unitPriceCents: number;
+
+  @Column()
   vatRate: number;
 
   @Column()
-  productCategoryId: number;
+  isBio: boolean;
 
-  @ManyToOne(
-    () => ProductCategory,
-    (productCategory) => productCategory.products,
-    { nullable: false },
-  )
-  productCategory: ProductCategory;
-
-  @OneToMany(() => OrderItem, (orderItem) => orderItem.product)
-  orderItems: OrderItem[];
+  @Column({ type: "varchar", nullable: true })
+  description: string | null;
 }
