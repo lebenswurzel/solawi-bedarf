@@ -385,6 +385,8 @@ export const language = {
           "Für diese Lieferung existiert bereits eine Rechnung. Positionen können nicht mehr geändert werden.",
         deliveryNote: "Lieferschein",
         invoice: "Rechnung",
+        invoiceConfirm:
+          "Nach Erstellung der Rechnung kann die Lieferung nicht mehr geändert werden. Rechnung jetzt erstellen?",
         totals: "Gesamtsumme (brutto)",
       },
       item: {
