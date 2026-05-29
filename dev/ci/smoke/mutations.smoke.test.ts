@@ -288,7 +288,7 @@ describe.sequential("mutation smoke test", () => {
     expect(listed.textContent?.find((t) => t.id === faqId)).toBeUndefined();
   });
 
-  test("applicant create + list + delete", async () => {
+  test("applicant create + deactivate + delete", async () => {
     await publicApiFetch("POST", "/applicant", {
       body: {
         confirmGDPR: true,
@@ -306,21 +306,39 @@ describe.sequential("mutation smoke test", () => {
       },
     });
 
-    const listed = await apiFetch<{
+    const listedNew = await apiFetch<{
       applicants: { id: number; address: { email: string } }[];
     }>("GET", "/applicant?state=NEW");
 
-    const applicant = listed.applicants?.find(
+    const applicant = listedNew.applicants?.find(
       (a) => a.address.email === applicantEmail,
     );
     expect(applicant).toBeDefined();
     applicantId = applicant!.id;
 
+    await apiFetch("POST", `/applicant/${applicantId}/deactivate`);
+
+    const afterDeactivate = await apiFetch<{
+      applicants: { id: number; address: { email: string } }[];
+    }>("GET", "/applicant?state=NEW");
+
+    expect(
+      afterDeactivate.applicants?.find((a) => a.id === applicantId),
+    ).toBeUndefined();
+
+    const listedDeleted = await apiFetch<{
+      applicants: { id: number; address: { email: string } }[];
+    }>("GET", "/applicant?state=DELETED");
+
+    expect(
+      listedDeleted.applicants?.find((a) => a.id === applicantId),
+    ).toBeDefined();
+
     await apiFetch("DELETE", `/applicant?id=${applicantId}`);
 
     const afterDelete = await apiFetch<{
       applicants: { id: number; address: { email: string } }[];
-    }>("GET", "/applicant?state=NEW");
+    }>("GET", "/applicant?state=DELETED");
 
     expect(
       afterDelete.applicants?.find((a) => a.id === applicantId),
