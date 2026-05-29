@@ -24,6 +24,9 @@ jobs:
       - name: Smoke test backend connection
         run: ./dev/ci/backend-smoke-test.bash
 
+      - name: Smoke test backend mutations
+        run: ./dev/ci/backend-smoke-test-mutations.bash
+
       - name: Database backup
         run: ./dev/backup/database-backup.bash
 
