@@ -98,6 +98,7 @@ export const language = {
         [UserRole.USER]: "Ernteteiler",
         [UserRole.EMPLOYEE]: "Mitarbeiter",
         [UserRole.ADMIN]: "Admin",
+        [UserRole.COMMERCIAL]: "Gewerblich",
       },
       orderUserCategories: {
         [UserCategory.CAT130]: {
@@ -347,6 +348,51 @@ export const language = {
         password: "Passwort",
         role: "Role",
         orderValidFrom: "Fr. vor 1. Liefertag",
+        companyName: "Firma / Kunde",
+        street: "Straße",
+        postalcode: "PLZ",
+        city: "Stadt",
+      },
+    },
+    commercial: {
+      title: "Vertrieb",
+      action: {
+        createDelivery: "Lieferung",
+      },
+      info: {
+        title: "Voraussetzungen für eine Vertrieb-Lieferung",
+        customer:
+          "Ein aktiver Nutzer mit der Rolle „Gewerblich“ (COMMERCIAL), angelegt unter Admin → Benutzer, inklusive vollständigem Firmenprofil (Firma, Straße, PLZ, Ort).",
+        products:
+          "Mindestens eine Position mit aktivem Produkt aus der Nahrungsmittel-Konfiguration; Menge, Verkaufseinheit (Stück oder Gewicht) und Einzelpreis (brutto) sind erforderlich.",
+        pricing:
+          "Der Einzelpreis wird standardmäßig aus dem Orientierungswert für engagierte Mitglieder übernommen und kann pro Position angepasst werden; der MwSt.-Satz kommt aus der Produktkonfiguration (7 % oder 19 %).",
+        invoice:
+          "Nach Erstellung einer Rechnung sind die Positionen gesperrt; Lieferungen mit Rechnung können nicht gelöscht werden.",
+      },
+      dialog: {
+        title: "Vertrieb-Lieferung",
+        deliveryDate: "Lieferdatum",
+        customer: "Kunde",
+        description: "Bemerkung",
+        active: "Aktiv",
+        invoiceLocked:
+          "Für diese Lieferung existiert bereits eine Rechnung. Positionen können nicht mehr geändert werden.",
+        deliveryNote: "Lieferschein",
+        invoice: "Rechnung",
+        invoiceConfirm:
+          "Nach Erstellung der Rechnung kann die Lieferung nicht mehr geändert werden. Rechnung jetzt erstellen?",
+        totals: "Gesamtsumme (brutto)",
+      },
+      item: {
+        product: "Produkt",
+        quantity: "Menge",
+        unit: "Einheit",
+        unitPrice: "Einzelpreis (brutto) [ct/{unit}]",
+        vatRate: "MwSt. [%]",
+        total: "Gesamt (brutto)",
+        bio: "Bio",
+        description: "Bemerkung",
       },
     },
     shipment: {
@@ -400,6 +446,7 @@ export const language = {
         quantityMin: "Menge (min) [{unit}]",
         quantityMax: "Menge (max) [{unit}]",
         quantityStep: "Menge (Stückelung) [{unit}]",
+        vatRate: "MwSt.-Satz [%]",
       },
     },
     applicants: {
@@ -679,12 +726,16 @@ export const langOrganizationInfo: Record<OrganizationInfoKeys, string> = {
   "address.city": "Stadt",
   "address.forumContact": "Forum-Kontakt",
   bankAccount: "Kontoverbindung",
+  bioControlNumber: "Bio-Kontrollnummer",
 };
 
 export const langPdfTexts: Record<PdfTextsKeys, string> = {
   packagingListFooter: "Fußzeile im Lieferschein",
   packagingListHeader: "Kopfzeile im Lieferschein",
   packagingListDetailText: "Detailtext im Lieferschein",
+  deliveryNoteHeader: "Kopfzeile im Vertrieb-Lieferschein",
+  deliveryNoteFooter: "Fußzeile im Vertrieb-Lieferschein",
+  invoiceFooter: "Fußzeile in der Rechnung",
 };
 
 export const langEmailTextLabels: Record<EmailTextsKeys, string> = {
