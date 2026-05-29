@@ -359,6 +359,17 @@ export const language = {
       action: {
         createDelivery: "Lieferung",
       },
+      info: {
+        title: "Voraussetzungen für eine Vertrieb-Lieferung",
+        customer:
+          "Ein aktiver Nutzer mit der Rolle „Gewerblich“ (COMMERCIAL), angelegt unter Admin → Benutzer, inklusive vollständigem Firmenprofil (Firma, Straße, PLZ, Ort).",
+        products:
+          "Mindestens eine Position mit aktivem Produkt aus der Nahrungsmittel-Konfiguration; Menge, Verkaufseinheit (Stück oder Gewicht) und Einzelpreis (brutto) sind erforderlich.",
+        pricing:
+          "Der Einzelpreis wird standardmäßig aus dem Orientierungswert für engagierte Mitglieder übernommen und kann pro Position angepasst werden; der MwSt.-Satz kommt aus der Produktkonfiguration (7 % oder 19 %).",
+        invoice:
+          "Nach Erstellung einer Rechnung sind die Positionen gesperrt; Lieferungen mit Rechnung können nicht gelöscht werden.",
+      },
       dialog: {
         title: "Vertrieb-Lieferung",
         deliveryDate: "Lieferdatum",
