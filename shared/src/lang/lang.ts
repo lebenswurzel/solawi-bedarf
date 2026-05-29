@@ -98,6 +98,7 @@ export const language = {
         [UserRole.USER]: "Ernteteiler",
         [UserRole.EMPLOYEE]: "Mitarbeiter",
         [UserRole.ADMIN]: "Admin",
+        [UserRole.COMMERCIAL]: "Gewerblich",
       },
       orderUserCategories: {
         [UserCategory.CAT130]: {
@@ -347,6 +348,38 @@ export const language = {
         password: "Passwort",
         role: "Role",
         orderValidFrom: "Fr. vor 1. Liefertag",
+        companyName: "Firma / Kunde",
+        street: "Straße",
+        postalcode: "PLZ",
+        city: "Stadt",
+      },
+    },
+    commercial: {
+      title: "Vertrieb",
+      action: {
+        createDelivery: "Lieferung",
+      },
+      dialog: {
+        title: "Vertrieb-Lieferung",
+        deliveryDate: "Lieferdatum",
+        customer: "Kunde",
+        description: "Bemerkung",
+        active: "Aktiv",
+        invoiceLocked:
+          "Für diese Lieferung existiert bereits eine Rechnung. Positionen können nicht mehr geändert werden.",
+        deliveryNote: "Lieferschein",
+        invoice: "Rechnung",
+        totals: "Gesamtsumme (brutto)",
+      },
+      item: {
+        product: "Produkt",
+        quantity: "Menge",
+        unit: "Einheit",
+        unitPrice: "Einzelpreis (brutto) [ct/{unit}]",
+        vatRate: "MwSt. [%]",
+        total: "Gesamt (brutto)",
+        bio: "Bio",
+        description: "Bemerkung",
       },
     },
     shipment: {
@@ -400,6 +433,7 @@ export const language = {
         quantityMin: "Menge (min) [{unit}]",
         quantityMax: "Menge (max) [{unit}]",
         quantityStep: "Menge (Stückelung) [{unit}]",
+        vatRate: "MwSt.-Satz [%]",
       },
     },
     applicants: {
@@ -679,12 +713,16 @@ export const langOrganizationInfo: Record<OrganizationInfoKeys, string> = {
   "address.city": "Stadt",
   "address.forumContact": "Forum-Kontakt",
   bankAccount: "Kontoverbindung",
+  bioControlNumber: "Bio-Kontrollnummer",
 };
 
 export const langPdfTexts: Record<PdfTextsKeys, string> = {
   packagingListFooter: "Fußzeile im Lieferschein",
   packagingListHeader: "Kopfzeile im Lieferschein",
   packagingListDetailText: "Detailtext im Lieferschein",
+  deliveryNoteHeader: "Kopfzeile im Vertrieb-Lieferschein",
+  deliveryNoteFooter: "Fußzeile im Vertrieb-Lieferschein",
+  invoiceFooter: "Fußzeile in der Rechnung",
 };
 
 export const langEmailTextLabels: Record<EmailTextsKeys, string> = {

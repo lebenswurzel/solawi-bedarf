@@ -107,6 +107,13 @@ const mainNavEntries: NavEntry[] = [
   },
 ];
 
+const visibleMainNavEntries = computed(() => {
+  if (currentUser.value?.role === UserRole.COMMERCIAL) {
+    return mainNavEntries.filter((entry) => entry.to !== "/shop");
+  }
+  return mainNavEntries;
+});
+
 const adminNavEntries: NavEntry[] = [
   {
     title: language.pages.user.title,
@@ -210,7 +217,7 @@ const adminNavEntries: NavEntry[] = [
       </v-list-item>
       <v-divider></v-divider>
       <v-list-item
-        v-for="entry in mainNavEntries"
+        v-for="entry in visibleMainNavEntries"
         :to="entry.to"
         :prepend-icon="entry.icon"
       >
