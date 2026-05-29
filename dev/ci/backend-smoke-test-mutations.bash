@@ -81,13 +81,23 @@ post_json() {
   request_json POST "$path" "$json"
 }
 
-assert_jq() {
+assert_jq_json() {
+  local json="$1"
   local label="${@: -1}"
-  set -- "${@:1:$#-1}"
-  if ! jq -e "$@" >/dev/null; then
+  set -- "${@:2:$#-2}"
+  local jq_err
+  jq_err="$(mktemp)"
+  if ! echo "$json" | jq -e "$@" > /dev/null 2>"$jq_err"; then
     echo "FAIL jq assertion: $label" >&2
+    if [[ -s "$jq_err" ]]; then
+      echo "jq error: $(cat "$jq_err")" >&2
+    fi
+    echo "Response body:" >&2
+    echo "$json" | jq . >&2 2>/dev/null || echo "$json" >&2
+    rm -f "$jq_err"
     exit 1
   fi
+  rm -f "$jq_err"
   echo "OK   jq: $label"
 }
 
@@ -107,6 +117,8 @@ category_name="smoke-category-${suffix}"
 product_name="smoke-product-${suffix}"
 
 echo "Mutation smoke test: depot create + list"
+depot_count_before="$(request_json GET /depot | jq '.depots | length')"
+
 post_json /depot "$(jq -n \
   --arg name "$depot_name" \
   '{
@@ -117,8 +129,17 @@ post_json /depot "$(jq -n \
     active: true
   }')" >/dev/null
 
-request_json GET /depot | assert_jq --arg n "$depot_name" \
-  '.depots[] | select(.name == $n) | .active == true' \
+depots_json="$(request_json GET /depot)"
+depot_count_after="$(echo "$depots_json" | jq '.depots | length')"
+if [[ "$depot_count_after" -le "$depot_count_before" ]]; then
+  echo "FAIL: depot count did not increase ($depot_count_before -> $depot_count_after)" >&2
+  echo "$depots_json" | jq . >&2 2>/dev/null || echo "$depots_json" >&2
+  exit 1
+fi
+echo "OK   depot count increased ($depot_count_before -> $depot_count_after)"
+
+assert_jq_json "$depots_json" --arg n "$depot_name" \
+  'any(.depots[]?; .name == $n and .active)' \
   "depot $depot_name listed and active"
 
 echo "Mutation smoke test: product category create + list"
@@ -134,12 +155,14 @@ category_body="$(post_json /productCategory "$(jq -n \
 category_id="$(echo "$category_body" | jq -r '.id')"
 if [[ -z "$category_id" || "$category_id" == "null" ]]; then
   echo "FAIL: product category POST did not return id" >&2
+  echo "$category_body" >&2
   exit 1
 fi
 echo "OK   created product category id=$category_id"
 
-request_json GET "/productCategory?configId=${CONFIG_ID}" | assert_jq --arg n "$category_name" \
-  '.productCategories[] | select(.name == $n)' \
+categories_json="$(request_json GET "/productCategory?configId=${CONFIG_ID}")"
+assert_jq_json "$categories_json" --arg n "$category_name" \
+  'any(.productCategories[]?; .name == $n and .active)' \
   "product category $category_name listed"
 
 echo "Mutation smoke test: product create + list"
@@ -160,10 +183,11 @@ post_json /productCategory/product "$(jq -n \
     productCategoryId: $categoryId
   }')" >/dev/null
 
-request_json GET "/productCategory?configId=${CONFIG_ID}" | assert_jq \
+categories_json="$(request_json GET "/productCategory?configId=${CONFIG_ID}")"
+assert_jq_json "$categories_json" \
   --arg n "$product_name" \
   --argjson cid "$category_id" \
-  '.productCategories[] | select(.id == $cid) | .products[] | select(.name == $n)' \
+  'any(.productCategories[]?; .id == $cid and any(.products[]?; .name == $n and .active))' \
   "product $product_name listed under category $category_id"
 
 echo "Mutation smoke test: all checks passed"
