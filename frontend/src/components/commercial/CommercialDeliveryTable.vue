@@ -32,7 +32,9 @@ const editDeliveryId = ref<number | undefined>();
 
 const refresh = async () => {
   busy.value = true;
-  deliveries.value = (await getCommercialDeliveries(undefined, false)).deliveries;
+  deliveries.value = (
+    await getCommercialDeliveries(undefined, false)
+  ).deliveries;
   busy.value = false;
 };
 
@@ -68,6 +70,15 @@ const onClose = async () => {
 <template>
   <BusyIndicator :busy="busy" />
   <v-card-text v-if="!busy">
+    <v-alert class="mb-4" type="info" variant="tonal">
+      <h4>{{ t.info.title }}</h4>
+      <ul class="mt-2 pl-4">
+        <li>{{ t.info.customer }}</li>
+        <li>{{ t.info.products }}</li>
+        <li>{{ t.info.pricing }}</li>
+        <li>{{ t.info.invoice }}</li>
+      </ul>
+    </v-alert>
     <v-btn class="mb-4" @click="onCreate">
       {{ t.action.createDelivery }}
     </v-btn>

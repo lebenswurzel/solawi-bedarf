@@ -89,19 +89,10 @@ export function createCommercialInvoicePdf(
   const additionalContent: Content[] = [
     {
       text: [
-        { text: "Rechnungsnummer: ", bold: true },
-        invoice.invoiceNumber,
-        "\n",
-        { text: "Rechnungsdatum: ", bold: true },
-        invoiceDate,
-        "\n",
-        { text: "Leistungsdatum: ", bold: true },
-        deliveryDate,
-        "\n",
         { text: "Bio-Kontrollnummer: ", bold: true },
         invoice.bioControlNumber || organizationInfo.bioControlNumber || "—",
       ],
-      margin: [0, 0, 0, 16],
+      margin: [0, 16, 0, 0],
     },
     {
       text: [
@@ -113,12 +104,13 @@ export function createCommercialInvoicePdf(
         "\n",
         { text: "Brutto gesamt: ", bold: true },
         formatCentsAsEuro(totals.grossCents),
-        "\n\n",
-        vatSummaryLines,
-        "\n\n",
-        organizationInfo.bankAccount,
       ],
-      margin: [0, 16, 0, 0],
+      alignment: "right",
+      margin: [0, 8, 0, 0],
+    },
+    {
+      text: [vatSummaryLines, "\n\n", organizationInfo.bankAccount],
+      margin: [0, 8, 0, 0],
     },
   ];
 
@@ -133,6 +125,20 @@ export function createCommercialInvoicePdf(
   const pdfSpec: PdfSpec = {
     receiver: formatReceiver(customerProfile),
     description: "Rechnung",
+    headerTextRight: {
+      text: [
+        { text: "Rechnungsnummer: ", bold: true },
+        invoice.invoiceNumber,
+        "\n",
+        { text: "Rechnungsdatum: ", bold: true },
+        invoiceDate,
+        "\n",
+        { text: "Leistungsdatum: ", bold: true },
+        deliveryDate,
+      ],
+      alignment: "right",
+      margin: [0, 12, 0, 0],
+    },
     footerTextRight: `Rechnung ${invoice.invoiceNumber}`,
     tables: [
       {
@@ -145,7 +151,7 @@ export function createCommercialInvoicePdf(
           "MwSt.",
           "Gesamt",
         ],
-        widths: ["8%", "32%", "20%", "14%", "10%", "16%"],
+        widths: ["8%", "30%", "18%", "16%", "12%", "16%"],
         rows,
       },
     ],

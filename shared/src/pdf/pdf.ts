@@ -75,11 +75,17 @@ export interface PdfSpec {
   footerTextLeft?: string;
   footerTextRight?: string;
   headerTextLeft?: string;
+  headerTextRight?: Content;
   tables: PdfTable[];
   additionalContent?: Content[];
   additionalTopMessage?: Content;
   timezone?: string;
 }
+
+const DEFAULT_PDF_MARGIN_HORIZONTAL = 55;
+const DEFAULT_PDF_MARGIN_TOP = 40;
+const DEFAULT_PDF_MARGIN_TOP_WITH_HEADER = 75;
+const DEFAULT_PDF_MARGIN_BOTTOM = 60;
 
 export function createDefaultPdf(
   pdf: PdfSpec,
@@ -104,8 +110,13 @@ export function createDefaultPdf(
             bold: true,
           },
           {
-            text: `${organizationInfo.address.name}\n${organizationInfo.address.street}\n${organizationInfo.address.postalcode} ${organizationInfo.address.city}`,
-            bold: true,
+            stack: [
+              {
+                text: `${organizationInfo.address.name}\n${organizationInfo.address.street}\n${organizationInfo.address.postalcode} ${organizationInfo.address.city}`,
+                bold: true,
+              },
+              ...(pdf.headerTextRight ? [pdf.headerTextRight] : []),
+            ],
           },
         ],
       ],
@@ -183,7 +194,7 @@ export function createDefaultPdf(
           fontSize: 10,
         },
       ],
-      margin: [40, 5, 40, -20],
+      margin: [DEFAULT_PDF_MARGIN_HORIZONTAL, 5, DEFAULT_PDF_MARGIN_HORIZONTAL, -20],
     };
   };
 
@@ -194,7 +205,12 @@ export function createDefaultPdf(
         {
           text: pdf.headerTextLeft ?? "",
           fontSize: 10,
-          margin: [40, 30, 40, 5],
+          margin: [
+            DEFAULT_PDF_MARGIN_HORIZONTAL,
+            30,
+            DEFAULT_PDF_MARGIN_HORIZONTAL,
+            5,
+          ],
         },
       ];
     };
@@ -210,7 +226,12 @@ export function createDefaultPdf(
     },
     header,
     footer,
-    pageMargins: [40, pdf.headerTextLeft ? 60 : 30, 40, 60],
+    pageMargins: [
+      DEFAULT_PDF_MARGIN_HORIZONTAL,
+      pdf.headerTextLeft ? DEFAULT_PDF_MARGIN_TOP_WITH_HEADER : DEFAULT_PDF_MARGIN_TOP,
+      DEFAULT_PDF_MARGIN_HORIZONTAL,
+      DEFAULT_PDF_MARGIN_BOTTOM,
+    ],
   });
 }
 
