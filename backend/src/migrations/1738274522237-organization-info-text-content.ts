@@ -15,11 +15,22 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { MigrationInterface, QueryRunner } from "typeorm";
-import {
-  basicOrganizationInfo,
-  organizationInfoKeys,
-} from "@lebenswurzel/solawi-bedarf-shared/src/config";
+import { basicOrganizationInfo } from "@lebenswurzel/solawi-bedarf-shared/src/config";
 import { getOrganizationInfoValueByKey } from "@lebenswurzel/solawi-bedarf-shared/src/text/textContent";
+import { OrganizationInfoKeys } from "@lebenswurzel/solawi-bedarf-shared/src/types";
+
+/** Keys at migration time; do not use live {@link organizationInfoKeys} (later keys have their own migrations). */
+const organizationInfoKeysAt1738274522237: OrganizationInfoKeys[] = [
+  "appUrl",
+  "name",
+  "address.name",
+  "address.street",
+  "address.postalcode",
+  "address.city",
+  "address.email",
+  "address.forumContact",
+  "bankAccount",
+];
 
 export class OrganizationInfoTextContent1738274522237 implements MigrationInterface {
   name = "OrganizationInfoTextContent1738274522237";
@@ -47,11 +58,12 @@ export class OrganizationInfoTextContent1738274522237 implements MigrationInterf
       `ALTER TABLE "text_content" ALTER COLUMN "typ" TYPE "public"."text_content_typ_enum" USING "typ"::"text"::"public"."text_content_typ_enum"`,
     );
     await queryRunner.query(`DROP TYPE "public"."text_content_typ_enum_old"`);
-    // Insert default values from basicOrganizationInfo
-    const organizationInfoDefaults = organizationInfoKeys.map((key) => ({
-      key,
-      value: getOrganizationInfoValueByKey(basicOrganizationInfo, key),
-    }));
+    const organizationInfoDefaults = organizationInfoKeysAt1738274522237.map(
+      (key) => ({
+        key,
+        value: getOrganizationInfoValueByKey(basicOrganizationInfo, key),
+      }),
+    );
 
     for (const entry of organizationInfoDefaults) {
       await queryRunner.query(
