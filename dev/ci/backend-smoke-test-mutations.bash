@@ -45,27 +45,26 @@ request_json() {
   local path="$2"
   local body="${3:-}"
   shift 3
-  local out http_code
+  local out http_code http_code_raw
+  local -a curl_args=(
+    -sS
+    --insecure
+    -X "$method"
+    "${AUTH[@]}"
+    "${CURL_HEADERS[@]:2}"
+  )
   out="$(mktemp)"
   if [[ -n "$body" ]]; then
-    http_code="$(
-      curl -X "$method" "${CURL_HEADERS[@]}" -w "%{http_code}" -o "$out" \
-        -H 'Content-Type: application/json' \
-        "${AUTH[@]}" \
-        "$@" \
-        -d "$body" \
-        "${SMOKE_BASE_URL}${path}"
-    )"
-  else
-    http_code="$(
-      curl -X "$method" "${CURL_HEADERS[@]}" -w "%{http_code}" -o "$out" \
-        "${AUTH[@]}" \
-        "$@" \
-        "${SMOKE_BASE_URL}${path}"
-    )"
+    curl_args+=(-H 'Content-Type: application/json' -d "$body")
   fi
+  curl_args+=("$@" -o "$out" -w '%{http_code}' "${SMOKE_BASE_URL}${path}")
+
+  # Avoid curl inside a nested $() when this function is piped to jq.
+  http_code_raw="$(curl "${curl_args[@]}")"
+  http_code="$(printf '%s' "$http_code_raw" | grep -oE '[0-9]{3}$' | tail -1)"
+
   if [[ ! "$http_code" =~ ^2[0-9][0-9]$ ]]; then
-    echo "FAIL $method $path — HTTP $http_code (expected 2xx)" >&2
+    echo "FAIL $method $path — HTTP $http_code_raw (expected 2xx)" >&2
     cat "$out" >&2
     rm -f "$out"
     exit 1
@@ -117,7 +116,8 @@ category_name="smoke-category-${suffix}"
 product_name="smoke-product-${suffix}"
 
 echo "Mutation smoke test: depot create + list"
-depot_count_before="$(request_json GET /depot | jq '.depots | length')"
+depots_json_before="$(request_json GET /depot)"
+depot_count_before="$(echo "$depots_json_before" | jq '.depots | length')"
 
 post_json /depot "$(jq -n \
   --arg name "$depot_name" \
