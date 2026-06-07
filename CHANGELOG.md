@@ -348,6 +348,8 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 
 #386 Verteilungsübersicht-PDF: Finetuning der Spaltenbreiten um Platz möglichst gut zu nutzen
 
-# NEW
+# v0.15.10 - 2026-06-07 - Bedarfsänderung löschen
 
 #398 Admin: Löschen von unbestätigten Bedarfsänderungen während der Saison wenn Ernteteiler ausscheiden
+
+# NEW
