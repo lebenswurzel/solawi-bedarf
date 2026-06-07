@@ -153,10 +153,16 @@ export const saveOrder = async (
   ) {
     ctx.throw(http.bad_request, "not valid in bidding round");
   }
-  let dateOfInterest = getSameOrNextThursday(selectedOrder.validFrom);
+  let dateOfInterest = getSameOrNextThursday(
+    selectedOrder.validFrom,
+    config.timezone,
+  );
   if (dateOfInterest.getTime() < requisitionConfig.validFrom.getTime()) {
     // make sure the date of interest is at least the season start
-    dateOfInterest = getSameOrNextThursday(requisitionConfig.validFrom);
+    dateOfInterest = getSameOrNextThursday(
+      requisitionConfig.validFrom,
+      config.timezone,
+    );
   }
   const { soldByProductId, capacityByDepotId, productsById } = await bi(
     requisitionConfig.id,
