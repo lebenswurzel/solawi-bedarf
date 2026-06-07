@@ -269,6 +269,19 @@ export const determinePredecessorOrder = <T extends SavedOrder>(
   );
 };
 
+export const determineSuccessorOrder = <T extends SavedOrder>(
+  allOrders: T[],
+  orderId: OrderId
+): T | undefined => {
+  const thisOrder = allOrders.find((order) => order.id === orderId);
+  if (!thisOrder) {
+    return undefined;
+  }
+  return allOrders.find(
+    (order) => order.validFrom?.getTime() === thisOrder.validTo?.getTime()
+  );
+};
+
 export const getSepaUpdateMessage = (
   validFrom: Date,
   validTo: Date,

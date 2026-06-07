@@ -16,7 +16,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { defineStore, storeToRefs } from "pinia";
 import { computed, ref, watch } from "vue";
-import { getAllOrders } from "../requests/shop.ts";
+import {
+  deleteUnconfirmedOrder as deleteUnconfirmedOrderRequest,
+  getAllOrders,
+} from "../requests/shop.ts";
 import {
   OrderPaymentType,
   UserCategory,
@@ -29,7 +32,11 @@ import {
   SavedOrderWithPredecessor,
 } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { isDateInRange } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper.ts";
-import { determineModificationOrderId } from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition.ts";
+import {
+  determineModificationOrderId,
+  determineSuccessorOrder,
+} from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition.ts";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
 import { useUserStore } from "./userStore.ts";
 import { isDebugEnabled } from "../lib/debug";
 import { useUiFeedback } from "./uiFeedbackStore.ts";
@@ -79,6 +86,8 @@ export const useOrderStore = defineStore("orderStore", () => {
 
   // New fields for multiple orders support
   const allOrders = ref<SavedOrderWithPredecessor[]>([]);
+  const requestUserId = ref<number | undefined>(undefined);
+  const requestConfigId = ref<number | undefined>(undefined);
 
   const modificationOrderItems = computed(() =>
     Object.entries(actualOrderItemsByProductId.value).map(
@@ -174,9 +183,15 @@ export const useOrderStore = defineStore("orderStore", () => {
     return {};
   };
 
-  const update = async (requestUserId: number, configId: number) => {
+  const hasFollowingOrder = (orderId: number): boolean => {
+    return determineSuccessorOrder(allOrders.value, orderId) !== undefined;
+  };
+
+  const update = async (userId: number, configId: number) => {
+    requestUserId.value = userId;
+    requestConfigId.value = configId;
     await uiFeedbackStore.withBusy(async () => {
-      const orders = await getAllOrders(requestUserId, configId);
+      const orders = await getAllOrders(userId, configId);
       allOrders.value = orders.map((order) => {
         return {
           ...order,
@@ -268,7 +283,24 @@ export const useOrderStore = defineStore("orderStore", () => {
     visibleOrderId.value = orderId;
   };
 
+  const deleteUnconfirmedOrder = async (orderId: number) => {
+    if (!requestUserId.value || !requestConfigId.value) {
+      throw new Error("Order store not initialized");
+    }
+    await uiFeedbackStore.withBusy(async () => {
+      await deleteUnconfirmedOrderRequest(
+        requestUserId.value!,
+        requestConfigId.value!,
+        orderId,
+      );
+      await update(requestUserId.value!, requestConfigId.value!);
+      uiFeedbackStore.setSuccess(language.app.uiFeedback.saving.success);
+    });
+  };
+
   const clear = async () => {
+    requestUserId.value = undefined;
+    requestConfigId.value = undefined;
     offer.value = 0;
     offerReason.value = null;
     paymentInfo.value = getDefaultPaymentInfo();
@@ -308,5 +340,9 @@ export const useOrderStore = defineStore("orderStore", () => {
     setVisibleOrderId,
     findOrderById,
     getPredecessorOrder,
+    hasFollowingOrder,
+    deleteUnconfirmedOrder,
+    requestUserId,
+    requestConfigId,
   };
 });

@@ -22,12 +22,16 @@ import { Order } from "../../database/Order";
 import { OrderItem } from "../../database/OrderItem";
 import { RequisitionConfig } from "../../database/RequisitionConfig";
 import { getRequestUserId, getUserFromContext } from "../getUserFromContext";
-import { getConfigIdFromQuery } from "../../util/requestUtil";
+import {
+  getConfigIdFromQuery,
+  getNumericQueryParameter,
+} from "../../util/requestUtil";
 import { calculateNewOrderValidFromDate } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper";
 import {
   isRequisitionActive,
   isIncreaseOnly,
 } from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition";
+import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import { config } from "../../config";
 
 /**
@@ -180,18 +184,26 @@ export const createAdditionalOrder = async (
   return result;
 };
 
+export type DeleteUnconfirmedOrdersOptions = {
+  restorePredecessorValidTo?: boolean;
+  orderId?: number;
+};
+
 /**
  * Opposite of createAdditionalOrder:
  *
  * If the latest order of the user in the given season is unconfirmed,
  * this function deletes it and all order items.
- * Sets the previous order validTo to the current order validTo.
- * Throws an error if the latest order is confirmed.
+ * By default sets the previous order validTo to the current order validTo.
+ * Throws an error if the order is confirmed or has no predecessor or a successor.
  */
 export const deleteUnconfirmedOrders = async (
   requestUserId: number,
   requisitionConfig: RequisitionConfig,
+  options?: DeleteUnconfirmedOrdersOptions,
 ) => {
+  const restorePredecessorValidTo = options?.restorePredecessorValidTo ?? true;
+
   const allOrders = await AppDataSource.getRepository(Order).find({
     where: {
       userId: requestUserId,
@@ -201,32 +213,90 @@ export const deleteUnconfirmedOrders = async (
     order: { validFrom: "DESC" },
   });
 
-  if (allOrders.length < 2) {
+  const orderToDelete = options?.orderId
+    ? allOrders.find((o) => o.id === options.orderId)
+    : allOrders[0];
+
+  if (!orderToDelete) {
+    throw new Error("Order not found.");
+  }
+
+  if (orderToDelete.confirmGTC) {
+    throw new Error("The order is already confirmed.");
+  }
+
+  const predecessor = allOrders.find(
+    (o) => o.validTo.getTime() === orderToDelete.validFrom.getTime(),
+  );
+  if (!predecessor) {
     throw new Error(
-      "At least one order is required to delete unconfirmed orders.",
+      "At least one predecessor order is required to delete unconfirmed orders.",
     );
   }
 
-  if (allOrders[0].confirmGTC) {
-    throw new Error("The latest order is already confirmed.");
+  const successor = allOrders.find(
+    (o) => o.validFrom.getTime() === orderToDelete.validTo.getTime(),
+  );
+  if (successor) {
+    throw new Error("Cannot delete an order that has a following order.");
   }
 
   await AppDataSource.transaction(async (manager) => {
-    // set previous order validTo to the current order validTo
-    await manager.update(
-      Order,
-      { id: allOrders[1].id },
-      {
-        validTo: allOrders[0].validTo,
-        updatedAt: allOrders[1].updatedAt, // prevent modification of updatedAt as we use it to indicate whether a user changed his order
-      },
-    );
-    // delete unconfirmed order and all order items
+    if (restorePredecessorValidTo) {
+      await manager.update(
+        Order,
+        { id: predecessor.id },
+        {
+          validTo: orderToDelete.validTo,
+          updatedAt: predecessor.updatedAt,
+        },
+      );
+    }
     await manager.delete(OrderItem, {
-      orderId: allOrders[0].id,
+      orderId: orderToDelete.id,
     });
     await manager.delete(Order, {
-      id: allOrders[0].id,
+      id: orderToDelete.id,
     });
   });
+};
+
+export const deleteUnconfirmedOrder = async (
+  ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
+) => {
+  const { role } = await getUserFromContext(ctx);
+  if (role !== UserRole.ADMIN) {
+    ctx.throw(http.forbidden);
+  }
+
+  const requestUserId = await getRequestUserId(ctx);
+  const configId = getConfigIdFromQuery(ctx);
+  const orderId = getNumericQueryParameter(ctx.request.query, "orderId");
+
+  if (configId < 1) {
+    ctx.throw(http.bad_request, `missing or bad config id (${configId})`);
+  }
+  if (orderId < 1) {
+    ctx.throw(http.bad_request, `missing or bad order id (${orderId})`);
+  }
+
+  const requisitionConfig = await AppDataSource.getRepository(
+    RequisitionConfig,
+  ).findOne({
+    where: { id: configId },
+  });
+
+  if (!requisitionConfig) {
+    ctx.throw(http.bad_request, `no valid config (id=${configId})`);
+  }
+
+  try {
+    await deleteUnconfirmedOrders(requestUserId, requisitionConfig, {
+      orderId,
+      restorePredecessorValidTo: false,
+    });
+    ctx.status = http.no_content;
+  } catch (error: any) {
+    ctx.throw(http.bad_request, error.message);
+  }
 };

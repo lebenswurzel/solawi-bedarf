@@ -102,6 +102,24 @@ export const getAllOrders = async (
   }));
 };
 
+export const deleteUnconfirmedOrder = async (
+  userId: number,
+  configId: number,
+  orderId: number,
+) => {
+  const params = new URLSearchParams({
+    id: userId.toString(),
+    configId: configId.toString(),
+    orderId: orderId.toString(),
+  });
+
+  const response = await fetch(getUrl(`/shop/order?${params.toString()}`), {
+    method: "DELETE",
+  });
+
+  await verifyResponse(response);
+};
+
 export const modifyOrder = async (userId: number, configId: number) => {
   const response = await fetch(
     getUrl(`/shop/order/modify?id=${userId}&configId=${configId}`),
