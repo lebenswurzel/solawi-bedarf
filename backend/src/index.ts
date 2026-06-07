@@ -32,7 +32,10 @@ import { getConfig } from "./services/config/getConfig";
 import { getOrder } from "./services/order/getOrder";
 import { getAllOrders } from "./services/order/getAllOrders";
 import { saveOrder } from "./services/order/saveOrder";
-import { modifyOrder } from "./services/order/modifyOrder";
+import {
+  deleteUnconfirmedOrder,
+  modifyOrder,
+} from "./services/order/modifyOrder";
 import { saveConfig } from "./services/config/saveConfig";
 import { saveApplicant } from "./services/applicant/saveApplicant";
 import { getApplicant } from "./services/applicant/getApplicant";
@@ -165,6 +168,7 @@ export async function startServer(): Promise<Server> {
   router.get("/shop/orders", getAllOrders);
   router.post("/shop/order", saveOrder);
   router.post("/shop/order/modify", modifyOrder);
+  router.delete("/shop/order", deleteUnconfirmedOrder);
 
   router.get("/shipment", getUserShipments);
   router.get("/shipments", getShipments);

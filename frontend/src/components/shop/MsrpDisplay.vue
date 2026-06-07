@@ -25,6 +25,9 @@ import {
 } from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import { computed } from "vue";
 import { useOrderStore } from "../../store/orderStore";
+import { useUserStore } from "../../store/userStore";
+import { useConfigStore } from "../../store/configStore";
+import { useUiFeedback } from "../../store/uiFeedbackStore";
 import OrderRangeDisplay from "./OrderRangeDisplay.vue";
 import ContributionSelect from "./ContributionSelect.vue";
 import {
@@ -36,7 +39,12 @@ import { interpolate } from "@lebenswurzel/solawi-bedarf-shared/src/lang/templat
 
 const biStore = useBIStore();
 const orderStore = useOrderStore();
+const userStore = useUserStore();
+const configStore = useConfigStore();
+const uiFeedback = useUiFeedback();
 const { visibleOrderId, offer, modificationOrderId } = storeToRefs(orderStore);
+const { isAdmin } = storeToRefs(userStore);
+const { activeConfigId } = storeToRefs(configStore);
 
 const t = language.pages.shop;
 const props = defineProps<{
@@ -100,6 +108,24 @@ const msrpValidation = computed(() => {
     offer: relevantOffer.value,
   });
 });
+
+const canAdminDeleteOrder = computed(() => {
+  return (
+    isAdmin.value &&
+    !props.order.confirmGTC &&
+    props.order.predecessorId !== null &&
+    !orderStore.hasFollowingOrder(props.order.id)
+  );
+});
+
+const onDeleteUnconfirmedOrder = async () => {
+  try {
+    await orderStore.deleteUnconfirmedOrder(props.order.id);
+    await biStore.update(activeConfigId.value, visibleOrderId.value, true);
+  } catch (e) {
+    uiFeedback.setError(language.app.uiFeedback.saving.failed, e as Error);
+  }
+};
 </script>
 <template>
   <v-card
@@ -230,12 +256,20 @@ const msrpValidation = computed(() => {
           icon="mdi-lightbulb-alert"
           variant="outlined"
         >
-          Diese Bedarfsanmeldung ist noch nicht bestätigt und wird erst aktiv,
-          wenn sie gespeichert wurde.
-          <template v-if="props.order.predecessorId !== null"
-            >Bis dahin bleibt die bisherige Bedarfsanmeldung bis zum Ende der
-            Saison gültig.</template
+          {{ t.cards.products.unconfirmedAlert }}
+          <template v-if="props.order.predecessorId !== null">
+            {{ t.cards.products.unconfirmedAlertWithPredecessor }}
+          </template>
+          <v-btn
+            v-if="canAdminDeleteOrder"
+            class="mt-2"
+            color="error"
+            size="small"
+            prepend-icon="mdi-delete"
+            @click="onDeleteUnconfirmedOrder"
           >
+            {{ t.cards.products.deleteUnconfirmedOrder }}
+          </v-btn>
         </v-alert>
       </template>
     </v-card-text>

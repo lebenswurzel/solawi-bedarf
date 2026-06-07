@@ -219,6 +219,11 @@ export const language = {
           msrpCompensationTooltip:
             "Ausgleichsbeitrag, da die Verringerung des Gemüses aus Eigenanbau nicht auf eine Erhöhung der Kooperationsprodukte angerechnet werden kann",
           offer: "Dein gewählter Solawi-Beitrag:",
+          unconfirmedAlert:
+            "Diese Bedarfsanmeldung ist noch nicht bestätigt und wird erst aktiv, wenn sie gespeichert wurde.",
+          unconfirmedAlertWithPredecessor:
+            "Bis dahin bleibt die bisherige Bedarfsanmeldung bis zum Ende der Saison gültig.",
+          deleteUnconfirmedOrder: "Unbestätigte Bedarfsänderung löschen",
           item: {
             freq: "{freq} vorraussichtliche Häufigkeit (in Wochen)",
             deliveryPercentage:
