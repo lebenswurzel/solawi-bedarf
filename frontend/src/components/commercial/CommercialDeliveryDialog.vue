@@ -21,6 +21,7 @@ import { computed, ref, watchEffect } from "vue";
 import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
 import {
   CommercialDeliveryFullInformation,
+  CommercialDeliveryItem as CommercialDeliveryItemData,
   CommercialUser,
   EditCommercialDelivery,
   EditCommercialDeliveryItem,
@@ -102,6 +103,86 @@ const customerOptions = computed(() =>
 
 const invoiceLocked = computed(() => !!savedDelivery.value?.invoice);
 
+const toSaveableItems = (
+  items: EditCommercialDeliveryItem[],
+): CommercialDeliveryItemData[] =>
+  items
+    .filter((item) => item.productId && item.unit)
+    .map((item) => ({
+      productId: item.productId!,
+      quantity: item.quantity,
+      unit: item.unit!,
+      conversionFrom: item.conversionFrom,
+      conversionTo: item.conversionTo,
+      unitPriceCents: item.unitPriceCents,
+      vatRate: item.vatRate,
+      isBio: item.isBio,
+      description: item.description,
+    }));
+
+const normalizeDescription = (description: string | null | undefined) =>
+  description ?? null;
+
+const deliveryDatesEqual = (
+  a: Date | string,
+  b: Date | string,
+): boolean => dateToString(a) === dateToString(b);
+
+const deliveryItemsEqual = (
+  a: CommercialDeliveryItemData[],
+  b: CommercialDeliveryItemData[],
+): boolean =>
+  a.length === b.length &&
+  a.every((item, index) => {
+    const other = b[index];
+    return (
+      item.productId === other.productId &&
+      item.quantity === other.quantity &&
+      item.unit === other.unit &&
+      item.conversionFrom === other.conversionFrom &&
+      item.conversionTo === other.conversionTo &&
+      item.unitPriceCents === other.unitPriceCents &&
+      item.vatRate === other.vatRate &&
+      item.isBio === other.isBio &&
+      normalizeDescription(item.description) ===
+        normalizeDescription(other.description)
+    );
+  });
+
+const applySavedDelivery = (delivery: CommercialDeliveryFullInformation) => {
+  savedDelivery.value = delivery;
+  editDelivery.value = {
+    id: delivery.id,
+    deliveryDate: new Date(delivery.deliveryDate),
+    customerUserId: delivery.customerUserId,
+    description: delivery.description,
+    active: delivery.active,
+    updatedAt: delivery.updatedAt,
+    items: delivery.items.map((item) => ({
+      ...item,
+      showItem: true,
+    })),
+  };
+};
+
+const hasUnsavedChanges = computed(() => {
+  const saved = savedDelivery.value;
+  if (!saved?.id) {
+    return true;
+  }
+  const edit = editDelivery.value;
+  if (
+    !deliveryDatesEqual(edit.deliveryDate, saved.deliveryDate) ||
+    edit.customerUserId !== saved.customerUserId ||
+    normalizeDescription(edit.description) !==
+      normalizeDescription(saved.description) ||
+    edit.active !== saved.active
+  ) {
+    return true;
+  }
+  return !deliveryItemsEqual(toSaveableItems(edit.items), saved.items);
+});
+
 const totals = computed(() =>
   getDeliveryTotals(
     editDelivery.value.items.filter(
@@ -122,19 +203,7 @@ const loadDelivery = async () => {
     const result = await getCommercialDeliveries(editDeliveryId, true);
     const delivery = result.deliveries[0];
     if (delivery) {
-      savedDelivery.value = delivery;
-      editDelivery.value = {
-        id: delivery.id,
-        deliveryDate: new Date(delivery.deliveryDate),
-        customerUserId: delivery.customerUserId,
-        description: delivery.description,
-        active: delivery.active,
-        updatedAt: delivery.updatedAt,
-        items: delivery.items.map((item) => ({
-          ...item,
-          showItem: true,
-        })),
-      };
+      applySavedDelivery(delivery);
     }
   } else {
     savedDelivery.value = undefined;
@@ -172,19 +241,7 @@ const onAddItem = () => {
 const onSave = async () => {
   loading.value = true;
   try {
-    const items = editDelivery.value.items
-      .filter((item) => item.productId && item.unit)
-      .map((item) => ({
-        productId: item.productId!,
-        quantity: item.quantity,
-        unit: item.unit!,
-        conversionFrom: item.conversionFrom,
-        conversionTo: item.conversionTo,
-        unitPriceCents: item.unitPriceCents,
-        vatRate: item.vatRate,
-        isBio: item.isBio,
-        description: item.description,
-      }));
+    const items = toSaveableItems(editDelivery.value.items);
     const saved = await saveCommercialDelivery({
       id: editDelivery.value.id,
       deliveryDate: editDelivery.value.deliveryDate,
@@ -194,9 +251,7 @@ const onSave = async () => {
       updatedAt: editDelivery.value.updatedAt,
       items,
     });
-    savedDelivery.value = saved;
-    editDelivery.value.id = saved.id;
-    editDelivery.value.updatedAt = saved.updatedAt;
+    applySavedDelivery(saved);
     setSuccess("Lieferung gespeichert");
   } catch (error) {
     setError("Speichern fehlgeschlagen", error as Error);
@@ -224,15 +279,18 @@ const onDelete = async () => {
 const getCustomer = () =>
   commercialUsers.value.find((u) => u.id === editDelivery.value.customerUserId);
 
-const ensureSaved = async (): Promise<CommercialDeliveryFullInformation | undefined> => {
-  if (!savedDelivery.value?.id) {
-    await onSave();
+const requireSavedDelivery = ():
+  | CommercialDeliveryFullInformation
+  | undefined => {
+  if (hasUnsavedChanges.value) {
+    setError(t.dialog.saveBeforeDocuments, new Error("unsaved changes"));
+    return undefined;
   }
   return savedDelivery.value;
 };
 
 const onDeliveryNotePdf = async () => {
-  const delivery = await ensureSaved();
+  const delivery = requireSavedDelivery();
   if (!delivery) {
     return;
   }
@@ -255,14 +313,14 @@ const onInvoicePdf = async () => {
   if (!invoiceLocked.value && !confirm(t.dialog.invoiceConfirm)) {
     return;
   }
-  const delivery = await ensureSaved();
+  const delivery = requireSavedDelivery();
   if (!delivery?.id) {
     return;
   }
   loading.value = true;
   try {
     const result = await createCommercialInvoice(delivery.id);
-    savedDelivery.value = result.delivery;
+    applySavedDelivery(result.delivery);
     const customer = getCustomer();
     if (!customer?.commercialProfile) {
       throw new Error("Kundenprofil fehlt");
@@ -282,7 +340,12 @@ const onInvoicePdf = async () => {
   }
 };
 
-const onClose = () => emit("close");
+const onClose = () => {
+  if (hasUnsavedChanges.value && !confirm(t.dialog.closeConfirm)) {
+    return;
+  }
+  emit("close");
+};
 </script>
 
 <template>
@@ -368,13 +431,25 @@ const onClose = () => emit("close");
           {{ language.app.actions.delete }}
         </v-btn>
         <v-spacer />
-        <v-btn variant="outlined" @click="onDeliveryNotePdf">
+        <v-btn
+          variant="outlined"
+          :disabled="hasUnsavedChanges"
+          @click="onDeliveryNotePdf"
+        >
           {{ t.dialog.deliveryNote }}
         </v-btn>
-        <v-btn variant="outlined" @click="onInvoicePdf">
+        <v-btn
+          variant="outlined"
+          :disabled="hasUnsavedChanges"
+          @click="onInvoicePdf"
+        >
           {{ t.dialog.invoice }}
         </v-btn>
-        <v-btn :loading="loading" @click="onSave">
+        <v-btn
+          :loading="loading"
+          :disabled="!hasUnsavedChanges"
+          @click="onSave"
+        >
           {{ language.app.actions.save }}
         </v-btn>
       </v-card-actions>

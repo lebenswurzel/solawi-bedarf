@@ -387,6 +387,10 @@ export const language = {
         invoice: "Rechnung",
         invoiceConfirm:
           "Nach Erstellung der Rechnung kann die Lieferung nicht mehr geändert werden. Rechnung jetzt erstellen?",
+        saveBeforeDocuments:
+          "Lieferschein und Rechnung sind erst nach dem Speichern verfügbar.",
+        closeConfirm:
+          "Es gibt ungespeicherte Änderungen. Dialog wirklich schließen?",
         totals: "Gesamtsumme (brutto)",
       },
       item: {

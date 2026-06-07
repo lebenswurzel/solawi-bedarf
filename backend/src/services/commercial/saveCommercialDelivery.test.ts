@@ -95,6 +95,60 @@ testAsAdmin(
 );
 
 testAsAdmin(
+  "update commercial delivery without duplicating items",
+  async ({ userData }: TestUserData) => {
+    const customer = await createCommercialCustomer();
+    const product = await getProductByName("p1");
+    const item = {
+      productId: product.id,
+      quantity: 1500,
+      unit: Unit.WEIGHT,
+      conversionFrom: 1,
+      conversionTo: 1,
+      unitPriceCents: product.msrp,
+      vatRate: 7,
+      isBio: true,
+      description: null,
+    };
+
+    const createCtx = createBasicTestCtx(
+      {
+        deliveryDate: new Date(),
+        customerUserId: customer.id,
+        description: "Marktstand update",
+        active: true,
+        items: [item],
+      },
+      userData.token,
+    );
+    await saveCommercialDelivery(createCtx);
+
+    const updateCtx = createBasicTestCtx(
+      {
+        id: createCtx.body.id,
+        deliveryDate: createCtx.body.deliveryDate,
+        customerUserId: customer.id,
+        description: "Marktstand update",
+        active: true,
+        updatedAt: createCtx.body.updatedAt,
+        items: [item],
+      },
+      userData.token,
+    );
+    await saveCommercialDelivery(updateCtx);
+
+    const saved = await AppDataSource.getRepository(
+      CommercialDelivery,
+    ).findOneOrFail({
+      where: { id: createCtx.body.id },
+      relations: { items: true },
+    });
+    expect(saved.items).toHaveLength(1);
+    expect(updateCtx.body.items).toHaveLength(1);
+  },
+);
+
+testAsAdmin(
   "reject delivery for non-commercial customer",
   async ({ userData }: TestUserData) => {
     const regularUser = await AppDataSource.getRepository(User).findOneByOrFail(
