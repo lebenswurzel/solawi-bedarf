@@ -139,6 +139,7 @@ export const saveCommercialDelivery = async (
         await transactionalEntityManager
           .getRepository(CommercialDeliveryItem)
           .delete({ commercialDeliveryId: delivery.id });
+        delivery.items = [];
       } else {
         delivery = new CommercialDelivery();
       }
