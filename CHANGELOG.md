@@ -352,6 +352,8 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 
 #398 Admin: Löschen von unbestätigten Bedarfsänderungen während der Saison wenn Ernteteiler ausscheiden
 
-# NEW
+# v0.15.11 - 2026-06-07 - Fix Produktverfügbarkeit
 
 #400 Fix: Zeitzone beim Bestimmen der Verfügbarkeit von Produkten berücksichtigen
+
+# NEW
