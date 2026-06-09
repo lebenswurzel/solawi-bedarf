@@ -357,3 +357,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #400 Fix: Zeitzone beim Bestimmen der Verfügbarkeit von Produkten berücksichtigen
 
 # NEW
+
+#386 Verteilungsübersicht-PDF: Weiteres Finetuning der Spaltenbreiten
