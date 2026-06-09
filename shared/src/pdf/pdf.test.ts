@@ -37,7 +37,7 @@ describe("getMaxDepotsPerPage", () => {
         ) - 1
       )
     );
-    expect(getMaxDepotsPerPage()).toBe(15);
+    expect(getMaxDepotsPerPage()).toBe(13);
   });
 });
 
