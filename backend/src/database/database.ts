@@ -61,6 +61,12 @@ import { PasswordReset } from "./PasswordReset";
 import { PasswortReset1765491964000 } from "../migrations/1765491964000-passwort-reset";
 import { PaymentInfo } from "./PaymentInfo";
 import { AddPaymentInfo1765710381587 } from "../migrations/1765710381587-add-payment-info";
+import { CommercialVertrieb1777500000000 } from "../migrations/1777500000000-commercial-vertrieb";
+import { CommercialProfile } from "./CommercialProfile";
+import { CommercialDelivery } from "./CommercialDelivery";
+import { CommercialDeliveryItem } from "./CommercialDeliveryItem";
+import { Invoice } from "./Invoice";
+import { InvoiceSequence } from "./InvoiceSequence";
 
 const entities = [
   User,
@@ -80,6 +86,11 @@ const entities = [
   AdditionalShipmentItem,
   ErrorLog,
   PaymentInfo,
+  CommercialProfile,
+  CommercialDelivery,
+  CommercialDeliveryItem,
+  Invoice,
+  InvoiceSequence,
 ];
 
 // Run the following SQL once if the InitialSetup migration is not in the migrations table
@@ -113,6 +124,7 @@ const migrations = [
   DropOrderProductConfiguration1764020937539,
   PasswortReset1765491964000,
   AddPaymentInfo1765710381587,
+  CommercialVertrieb1777500000000,
 ];
 
 const configuredPort = config.testing.isTesting

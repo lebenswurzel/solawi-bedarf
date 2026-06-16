@@ -18,6 +18,7 @@ export enum UserRole {
   ADMIN = "ADMIN",
   USER = "USER",
   EMPLOYEE = "EMPLOYEE",
+  COMMERCIAL = "COMMERCIAL",
 }
 
 export enum Unit {

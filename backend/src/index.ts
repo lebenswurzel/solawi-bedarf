@@ -22,6 +22,7 @@ import bodyParser from "koa-bodyparser";
 import { config } from "./config";
 import { AppDataSource } from "./database/database";
 import { saveUser } from "./services/user/saveUser";
+import { getCommercialProfile } from "./services/user/getCommercialProfile";
 import { getUser } from "./services/user/getUser";
 import { login, logout } from "./services/user/login";
 import { getProductCategory } from "./services/product/getProductCategory";
@@ -66,6 +67,11 @@ import { getErrorLog } from "./services/getErrorLog";
 import { getUserShipments } from "./services/shipment/getUserShipments";
 import { deleteShipment } from "./services/shipment/deleteShipment";
 import { availabilityWeightsHandler } from "./services/bi/availabilityWeights";
+import { getCommercialDeliveries } from "./services/commercial/getCommercialDeliveries";
+import { saveCommercialDelivery } from "./services/commercial/saveCommercialDelivery";
+import { deleteCommercialDelivery } from "./services/commercial/deleteCommercialDelivery";
+import { getCommercialUsers } from "./services/commercial/getCommercialUsers";
+import { createCommercialInvoice } from "./services/commercial/createCommercialInvoice";
 import { Server } from "http";
 import { IAppContext } from "./controllers/ctx";
 import { useDependencies } from "./middleware/dependencies";
@@ -154,6 +160,7 @@ export async function startServer(): Promise<Server> {
   router.delete("/user/token", logout);
   router.get("/user/data", getOrder);
   router.post("/user", saveUser);
+  router.get("/user/commercialProfile", getCommercialProfile);
   router.put("/user", updateUser);
 
   router.post("/applicant", saveApplicant);
@@ -174,6 +181,12 @@ export async function startServer(): Promise<Server> {
   router.get("/shipments", getShipments);
   router.post("/shipment", saveShipment);
   router.delete("/shipment", deleteShipment);
+
+  router.get("/commercialDeliveries", getCommercialDeliveries);
+  router.post("/commercialDelivery", saveCommercialDelivery);
+  router.delete("/commercialDelivery", deleteCommercialDelivery);
+  router.post("/commercialDelivery/invoice", createCommercialInvoice);
+  router.get("/users/commercial", getCommercialUsers);
 
   router.get("/productCategory", getProductCategory);
   router.post("/productCategory", saveProductCategory);
