@@ -24,15 +24,18 @@ import {
   OrderPayment,
 } from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import {
+  TestAdminAndUserData,
   TestUserData,
   createBasicTestCtx,
   setupDatabaseCleanup,
+  testAsAdminAndUser,
   testAsUser1,
 } from "../../../testSetup";
 import { Depot } from "../../database/Depot";
+import { Order } from "../../database/Order";
+import { OrderItem } from "../../database/OrderItem";
 import { AppDataSource } from "../../database/database";
 import {
-  dateDeltaDays,
   findOrdersByUser,
   getDepotByName,
   getProductByName,
@@ -48,7 +51,7 @@ setupDatabaseCleanup();
 
 test("prevent unauthorized access", async () => {
   const ctx = createBasicTestCtx();
-  await expect(() => saveOrder(ctx)).rejects.toThrowError("Error 401");
+  await expect(() => saveOrder(ctx)).rejects.toThrow("Error 401");
 });
 
 testAsUser1(
@@ -57,7 +60,7 @@ testAsUser1(
     const ctx = createBasicTestCtx(undefined, userData.token, undefined, {
       id: userData.userId + 100,
     });
-    await expect(() => saveOrder(ctx)).rejects.toThrowError("Error 403");
+    await expect(() => saveOrder(ctx)).rejects.toThrow("Error 403");
   },
 );
 
@@ -230,7 +233,7 @@ testAsUser1("save order with products", async ({ userData }: TestUserData) => {
     },
   );
 
-  await expect(() => saveOrder(ctxChanged)).rejects.toThrowError(
+  await expect(() => saveOrder(ctxChanged)).rejects.toThrow(
     "Error 400: Änderung von p1 auf 4 nicht möglich",
   );
 });
@@ -247,26 +250,26 @@ testAsUser1("bad requests", async ({ userData }: TestUserData) => {
 
   // requisition is not active
   let ctx = await _createCtx({}, { userData }, configId);
-  await expect(() => saveOrder(ctx)).rejects.toThrowError(
+  await expect(() => saveOrder(ctx)).rejects.toThrow(
     "Error 400: requisition not active",
   );
 
   // confirmGTC=false
   ctx = await _createCtx({ confirmGTC: false }, { userData }, configId);
-  await expect(() => saveOrder(ctx)).rejects.toThrowError(
+  await expect(() => saveOrder(ctx)).rejects.toThrow(
     "Error 400: commitment not confirmed",
   );
   configId = await updateRequisition(true);
 
   // no depot id
   ctx = await _createCtx({ depotId: undefined }, { userData }, configId);
-  await expect(() => saveOrder(ctx)).rejects.toThrowError(
+  await expect(() => saveOrder(ctx)).rejects.toThrow(
     "Error 400: no valid depot",
   );
 
   // invalid depot id
   ctx = await _createCtx({ depotId: -12 }, { userData }, configId);
-  await expect(() => saveOrder(ctx)).rejects.toThrowError(
+  await expect(() => saveOrder(ctx)).rejects.toThrow(
     "Error 400: no valid depot",
   );
 
@@ -276,44 +279,42 @@ testAsUser1("bad requests", async ({ userData }: TestUserData) => {
     { userData },
     configId,
   );
-  await expect(() => saveOrder(ctx)).rejects.toThrowError(
+  await expect(() => saveOrder(ctx)).rejects.toThrow(
     "Error 400: no category reason",
   );
 
   // invalid category
   // @ts-ignore just for testing
   ctx = await _createCtx({ category: "CAT1000" }, { userData }, configId);
-  await expect(() => saveOrder(ctx)).rejects.toThrowError(
+  await expect(() => saveOrder(ctx)).rejects.toThrow(
     "Error 400: no valid category",
   );
 
   // order item invalid
   ctx = await _createCtx({}, { userData }, configId, 100);
-  await expect(() => saveOrder(ctx)).rejects.toThrowError(
+  await expect(() => saveOrder(ctx)).rejects.toThrow(
     "Error 400: Maximal verfügbare Menge 5 Stk. von p1 überschritten",
   );
 
   // order item invalid 2
   ctx = await _createCtx({}, { userData }, configId, -10);
-  await expect(() => saveOrder(ctx)).rejects.toThrowError(
+  await expect(() => saveOrder(ctx)).rejects.toThrow(
     "Error 400: Wert für p1 darf nicht negativ sein",
   );
 
   // bid too low
   ctx = await _createCtx({ offer: 1 }, { userData }, configId);
-  await expect(() => saveOrder(ctx)).rejects.toThrowError(
-    "Error 400: bid too low",
-  );
+  await expect(() => saveOrder(ctx)).rejects.toThrow("Error 400: bid too low");
 
   // invalid offer reason
   ctx = await _createCtx({ offer: 18 }, { userData }, configId);
-  await expect(() => saveOrder(ctx)).rejects.toThrowError(
+  await expect(() => saveOrder(ctx)).rejects.toThrow(
     "Error 400: no offer reason",
   );
 
   // full depot
   ctx = await _createCtx({}, { userData }, configId, undefined, true);
-  await expect(() => saveOrder(ctx)).rejects.toThrowError(
+  await expect(() => saveOrder(ctx)).rejects.toThrow(
     "Error 400: no depot capacity left",
   );
 
@@ -326,16 +327,162 @@ testAsUser1("bad requests", async ({ userData }: TestUserData) => {
   // for selfgrown productsis not decreased
   //
   // ctx = await _createCtx({}, { userData }, configId, 3); // try decrease -> error
-  // await expect(() => saveOrder(ctx)).rejects.toThrowError(
+  // await expect(() => saveOrder(ctx)).rejects.toThrow(
   //   "Error 400: not valid in bidding round",
   // );
 
   // requisition not found
   ctx = await _createCtx({}, { userData }, configId + 1);
-  await expect(() => saveOrder(ctx)).rejects.toThrowError(
+  await expect(() => saveOrder(ctx)).rejects.toThrow(
     "Error 400: no valid config",
   );
 });
+
+testAsAdminAndUser(
+  "reject confirming unconfirmed order when depot is full",
+  async ({ userData }: TestAdminAndUserData) => {
+    const configId = await updateRequisition(true);
+    const depot = await getDepotByName("d1");
+    depot.capacity = 1;
+    await AppDataSource.getRepository(Depot).save(depot);
+
+    const orderValidFrom = addMonths(new Date(), 1);
+    await updateOrderValidFrom(userData.userId, orderValidFrom, configId);
+    await updateOrderValidFrom(userData.adminId, orderValidFrom, configId);
+
+    const product1 = await getProductByName("p1");
+    const product2 = await getProductByName("p2");
+    const orderItems = [
+      { productId: product1.id, value: 3 },
+      { productId: product2.id, value: 2 },
+    ];
+    const paymentInfo: OrderPayment = {
+      paymentType: OrderPaymentType.SEPA,
+      paymentRequired: true,
+      amount: 100,
+      bankDetails: {
+        accountHolder: "John Doe",
+        iban: "DE73916490657576621284",
+        bankName: "Bank of America",
+      },
+    };
+    const baseRequest: ConfirmedOrder = {
+      confirmGTC: true,
+      category: UserCategory.CAT100,
+      categoryReason: "nothing special",
+      depotId: depot.id,
+      orderItems,
+      offer: 100,
+      alternateDepotId: null,
+      offerReason: null,
+      requisitionConfigId: configId,
+      paymentInfo,
+    };
+
+    const user1Orders = await findOrdersByUser(userData.userId);
+    const user1Ctx = createBasicTestCtx(
+      { ...baseRequest, id: user1Orders[0].id },
+      userData.userToken,
+      undefined,
+      { id: userData.userId, configId },
+    );
+    await saveOrder(user1Ctx);
+    expect(user1Ctx.status).toBe(204);
+
+    const { capacityByDepotId } = await bi(configId, orderValidFrom);
+    expect(capacityByDepotId[depot.id].reserved).toBe(1);
+
+    const adminOrders = await findOrdersByUser(userData.adminId);
+    const adminOrder = adminOrders[0];
+    adminOrder.depotId = depot.id;
+    adminOrder.confirmGTC = false;
+    await AppDataSource.getRepository(Order).save(adminOrder);
+    for (const orderItem of orderItems) {
+      const item = new OrderItem();
+      item.orderId = adminOrder.id;
+      item.productId = orderItem.productId;
+      item.value = orderItem.value;
+      await AppDataSource.getRepository(OrderItem).save(item);
+    }
+
+    const adminCtx = createBasicTestCtx(
+      { ...baseRequest, id: adminOrder.id },
+      userData.adminToken,
+      undefined,
+      { id: userData.adminId, configId },
+    );
+    await expect(() => saveOrder(adminCtx)).rejects.toThrow(
+      "Error 400: no depot capacity left",
+    );
+  },
+);
+
+testAsUser1(
+  "allow re-saving confirmed order when depot is full",
+  async ({ userData }: TestUserData) => {
+    const configId = await updateRequisition(true);
+    const depot = await getDepotByName("d1");
+    depot.capacity = 1;
+    await AppDataSource.getRepository(Depot).save(depot);
+
+    await updateOrderValidFrom(
+      userData.userId,
+      addMonths(new Date(), 1),
+      configId,
+    );
+
+    const product1 = await getProductByName("p1");
+    const product2 = await getProductByName("p2");
+    const orderItems = [
+      { productId: product1.id, value: 3 },
+      { productId: product2.id, value: 2 },
+    ];
+    const paymentInfo: OrderPayment = {
+      paymentType: OrderPaymentType.SEPA,
+      paymentRequired: true,
+      amount: 100,
+      bankDetails: {
+        accountHolder: "John Doe",
+        iban: "DE73916490657576621284",
+        bankName: "Bank of America",
+      },
+    };
+    const request: ConfirmedOrder = {
+      confirmGTC: true,
+      category: UserCategory.CAT100,
+      categoryReason: "nothing special",
+      depotId: depot.id,
+      orderItems,
+      offer: 100,
+      alternateDepotId: null,
+      offerReason: null,
+      requisitionConfigId: configId,
+      paymentInfo,
+    };
+
+    const orders = await findOrdersByUser(userData.userId);
+    const ctx = createBasicTestCtx(
+      { ...request, id: orders[0].id },
+      userData.token,
+      undefined,
+      { id: userData.userId, configId },
+    );
+    await saveOrder(ctx);
+    expect(ctx.status).toBe(204);
+
+    const { capacityByDepotId } = await bi(configId, addMonths(new Date(), 1));
+    expect(capacityByDepotId[depot.id].reserved).toBe(1);
+
+    const ctx2 = createBasicTestCtx(
+      { ...request, categoryReason: "updated after depot full" },
+      userData.token,
+      undefined,
+      { id: userData.userId, configId },
+    );
+    await saveOrder(ctx2);
+    expect(ctx2.status).toBe(204);
+  },
+);
 
 /** Helper function to create specific saveOrder context */
 const _createCtx = async (
