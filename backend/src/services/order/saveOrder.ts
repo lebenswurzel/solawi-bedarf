@@ -172,9 +172,9 @@ export const saveOrder = async (
   const remainingDepotCapacity = getRemainingDepotCapacity(
     depot,
     capacityByDepotId[body.depotId].reserved,
-    selectedOrder?.depotId || 0,
+    selectedOrder.confirmGTC ? selectedOrder.depotId || 0 : 0,
   );
-  if (remainingDepotCapacity != null && remainingDepotCapacity == 0) {
+  if (remainingDepotCapacity != null && remainingDepotCapacity <= 0) {
     ctx.throw(http.bad_request, "no depot capacity left");
   }
   const orderItemErrors = body.orderItems
