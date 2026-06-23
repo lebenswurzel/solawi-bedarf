@@ -363,3 +363,4 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 # NEW
 
 #402 Fix: Depot-Überbuchung bei Bedarfsänderungen während der Saison behoben
+#404 Verteilungsübersicht-PDF: Zeilenhöhen auf allen Seiten gleich hoch
