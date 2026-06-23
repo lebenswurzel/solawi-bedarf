@@ -360,7 +360,9 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 
 #386 Verteilungsübersicht-PDF: Weiteres Finetuning der Spaltenbreiten
 
-# NEW
+# v0.15.13 - 2026-06-23 - Überbuchung und Zeilenhöhe
 
 #402 Fix: Depot-Überbuchung bei Bedarfsänderungen während der Saison behoben
 #404 Verteilungsübersicht-PDF: Zeilenhöhen auf allen Seiten gleich hoch
+
+# NEW
