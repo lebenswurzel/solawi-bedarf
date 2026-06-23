@@ -35,16 +35,19 @@ import { Depot } from "../../database/Depot";
 import { Order } from "../../database/Order";
 import { OrderItem } from "../../database/OrderItem";
 import { AppDataSource } from "../../database/database";
+import { RequisitionConfig } from "../../database/RequisitionConfig";
 import {
   findOrdersByUser,
   getDepotByName,
   getProductByName,
   updateRequisition,
 } from "../../../test/testHelpers";
+import { config } from "../../config";
 import { bi } from "../bi/bi";
 import { saveOrder } from "./saveOrder";
 import { Product } from "../../database/Product";
 import { addMonths } from "date-fns";
+import { getSameOrNextThursday } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper";
 import { updateOrderValidFrom } from "../user/saveUser";
 
 setupDatabaseCleanup();
@@ -342,11 +345,29 @@ testAsAdminAndUser(
   "reject confirming unconfirmed order when depot is full",
   async ({ userData }: TestAdminAndUserData) => {
     const configId = await updateRequisition(true);
+    const requisitionConfig = await AppDataSource.getRepository(
+      RequisitionConfig,
+    ).findOneByOrFail({
+      id: configId,
+    });
     const depot = await getDepotByName("d1");
     depot.capacity = 1;
     await AppDataSource.getRepository(Depot).save(depot);
 
-    const orderValidFrom = addMonths(new Date(), 1);
+    // Align validFrom with saveOrder's dateOfInterest (Thursday 00:00), otherwise
+    // an order starting later on the same Thursday is counted by bi(orderValidFrom)
+    // but not when saveOrder uses getSameOrNextThursday as target date.
+    const orderValidFrom = getSameOrNextThursday(
+      addMonths(new Date(), 1),
+      config.timezone,
+    );
+    let dateOfInterest = getSameOrNextThursday(orderValidFrom, config.timezone);
+    if (dateOfInterest.getTime() < requisitionConfig.validFrom.getTime()) {
+      dateOfInterest = getSameOrNextThursday(
+        requisitionConfig.validFrom,
+        config.timezone,
+      );
+    }
     await updateOrderValidFrom(userData.userId, orderValidFrom, configId);
     await updateOrderValidFrom(userData.adminId, orderValidFrom, configId);
 
@@ -389,7 +410,11 @@ testAsAdminAndUser(
     await saveOrder(user1Ctx);
     expect(user1Ctx.status).toBe(204);
 
-    const { capacityByDepotId } = await bi(configId, orderValidFrom);
+    const { capacityByDepotId } = await bi(
+      configId,
+      orderValidFrom,
+      dateOfInterest,
+    );
     expect(capacityByDepotId[depot.id].reserved).toBe(1);
 
     const adminOrders = await findOrdersByUser(userData.adminId);
