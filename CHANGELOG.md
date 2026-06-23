@@ -361,3 +361,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #386 Verteilungsübersicht-PDF: Weiteres Finetuning der Spaltenbreiten
 
 # NEW
+
+#402 Fix: Depot-Überbuchung bei Bedarfsänderungen während der Saison behoben
