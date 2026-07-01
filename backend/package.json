@@ -30,7 +30,7 @@
     "neverthrow": "^8.2.0",
     "nodemailer": "^7.0.12",
     "pg": "^8.20.0",
-    "qs": "^6.15.0",
+    "qs": "^6.15.3",
     "reflect-metadata": "^0.2.1",
     "ts-node": "^10.9.1",
     "typeorm": "^0.3.27"
@@ -39,7 +39,7 @@
     "@types/basic-auth": "^1.1.4",
     "@types/bcrypt": "^6.0.0",
     "@types/body-parser": "^1.19.6",
-    "@types/estree": "^1.0.6",
+    "@types/estree": "^1.0.9",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/koa": "^3.0.3",
     "@types/koa-bodyparser": "^4.3.13",
@@ -48,7 +48,7 @@
     "@types/ldapjs": "^3.0.6",
     "@types/node": "^25.0.3",
     "@types/nodemailer": "^7.0.4",
-    "@vitest/coverage-v8": "^4.0.18",
+    "@vitest/coverage-v8": "^4.1.9",
     "prettier": "^3.8.3",
     "unplugin-swc": "^1.5.8",
     "vitest": "^4.1.8"
