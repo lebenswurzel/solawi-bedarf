@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { onMounted, ref, computed } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { getErrorLog } from "../../requests/errorLog";
 import { GetErrorLogResponse } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { useUiFeedback } from "../../store/uiFeedbackStore";
@@ -340,8 +340,8 @@ onMounted(async () => {
                       class="ms-2"
                       @click="
                         safeCopyToClipboard(
-                          selectedError.error.stack
-                            ? '\n' + selectedError.error.stack.join('\n')
+                          selectedError?.error?.stack
+                            ? '\n' + selectedError?.error?.stack?.join('\n')
                             : '',
                         )
                       "
@@ -378,7 +378,7 @@ onMounted(async () => {
                         class="ms-2"
                         @click="
                           safeCopyToClipboard(
-                            JSON.stringify(selectedError.requestBody, null, 2),
+                            JSON.stringify(selectedError?.requestBody, null, 2),
                           )
                         "
                       />
@@ -411,7 +411,7 @@ onMounted(async () => {
                         @click="
                           safeCopyToClipboard(
                             JSON.stringify(
-                              selectedError.requestHeaders,
+                              selectedError?.requestHeaders,
                               null,
                               2,
                             ),

@@ -118,6 +118,11 @@ const onFaqClose = async () => {
 const onSave = () => {
   open.value = true;
 };
+const onRestore = () => {
+  if (requestUserId.value && activeConfigId.value != -1) {
+    orderStore.update(requestUserId.value, activeConfigId.value);
+  }
+};
 
 const parseUserIdParam = (): number | undefined => {
   const value = route.params.userId;
@@ -277,13 +282,7 @@ const disableSaveButton = computed(() => {
     </v-card-text>
     <v-card-actions class="justify-center">
       <v-card-actions>
-        <v-btn
-          @click="
-            requestUserId && orderStore.update(requestUserId, activeConfigId)
-          "
-          class="text-error"
-          variant="outlined"
-        >
+        <v-btn @click="onRestore" class="text-error" variant="outlined">
           {{ language.app.actions.restore }}
         </v-btn>
         <v-btn
