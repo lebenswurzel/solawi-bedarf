@@ -11,7 +11,7 @@ jobs:
     container: node:22
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install frontend dependencies
         run: npm ci
       - name: Check TypeScript consistency

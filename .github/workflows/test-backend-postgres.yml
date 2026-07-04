@@ -21,7 +21,7 @@ jobs:
           - "5530:5432"
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install dependencies
         run: npm ci
       - name: Check TypeScript consistency
