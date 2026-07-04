@@ -41,3 +41,8 @@ updates:
       everything-else:
         patterns:
           - "*" # captures everything that wasn't included in any of the above groups
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
