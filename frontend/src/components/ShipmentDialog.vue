@@ -24,7 +24,7 @@ import {
 } from "date-fns";
 import { storeToRefs } from "pinia";
 import { computed, ref, watchEffect } from "vue";
-import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.js";
 import {
   EditAdditionalShipmentItem,
   EditShipment,
@@ -33,13 +33,13 @@ import {
   OptionalId,
   Shipment,
   ShipmentFullInformation,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
 import {
   prettyDate,
   prettyDateWithDayName,
   isDateEqual,
-} from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper.ts";
-import { getLangUnit } from "@lebenswurzel/solawi-bedarf-shared/src/util/unitHelper.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper.js";
+import { getLangUnit } from "@lebenswurzel/solawi-bedarf-shared/src/util/unitHelper.js";
 import { dateToString, stringToDate } from "../lib/convert.ts";
 import { prepareShipment } from "../lib/shipment/prepareShipment.ts";
 import { createShipmentOverviewPdf } from "../lib/shipment/shipmentOverviewPdf.ts";
@@ -57,8 +57,8 @@ import {
   ProductCategoryType,
   ShipmentType,
   Unit,
-} from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
-import { isShipmentDifferent } from "@lebenswurzel/solawi-bedarf-shared/src/shipment/shipmentUtil.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
+import { isShipmentDifferent } from "@lebenswurzel/solawi-bedarf-shared/src/shipment/shipmentUtil.js";
 import { useUserStore } from "../store/userStore.ts";
 
 const t = language.pages.shipment;

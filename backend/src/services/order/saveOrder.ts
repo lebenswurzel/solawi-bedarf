@@ -17,13 +17,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import Koa from "koa";
 import Router from "koa-router";
 import { LessThan } from "typeorm";
-import { appConfig } from "@lebenswurzel/solawi-bedarf-shared/src/config";
-import { validatePayment } from "@lebenswurzel/solawi-bedarf-shared/src/util/ibanHelper";
+import { appConfig } from "@lebenswurzel/solawi-bedarf-shared/src/config.js";
+import { validatePayment } from "@lebenswurzel/solawi-bedarf-shared/src/util/ibanHelper.js";
 import {
   calculateEffectiveMsrpChain,
   calculateOrderValidMonths,
   getMsrp,
-} from "@lebenswurzel/solawi-bedarf-shared/src/msrp";
+} from "@lebenswurzel/solawi-bedarf-shared/src/msrp.js";
 import {
   ConfirmedOrder,
   Msrp,
@@ -33,16 +33,16 @@ import {
   ProductsById,
   SavedOrder,
   OrderItem as SharedOrderItem,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
 import {
   getRemainingDepotCapacity,
   checkOrderItemValid,
-} from "@lebenswurzel/solawi-bedarf-shared/src/validation/capacity";
+} from "@lebenswurzel/solawi-bedarf-shared/src/validation/capacity.js";
 import {
   isCategoryReasonValid,
   isOfferReasonValid,
   isOfferValid,
-} from "@lebenswurzel/solawi-bedarf-shared/src/validation/reason";
+} from "@lebenswurzel/solawi-bedarf-shared/src/validation/reason.js";
 import {
   canEditOrder,
   determineModificationOrderId,
@@ -51,23 +51,23 @@ import {
   isOfferChangeValid,
   isRequisitionActive,
   isValidBiddingOrder,
-} from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition";
-import { config } from "../../config";
-import { http } from "../../consts/http";
-import { AppDataSource } from "../../database/database";
-import { Depot } from "../../database/Depot";
-import { Order } from "../../database/Order";
-import { OrderItem } from "../../database/OrderItem";
-import { RequisitionConfig } from "../../database/RequisitionConfig";
-import { bi } from "../bi/bi";
-import { getRequestUserId, getUserFromContext } from "../getUserFromContext";
-import { getSameOrNextThursday } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper";
-import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
-import { sendOrderConfirmationMail } from "../email/orderConfirmationMail";
-import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang";
-import { availabilityWeights } from "../bi/availabilityWeights";
-import { PaymentInfo } from "../../database/PaymentInfo";
-import { unpackOrderPayment } from "./getOrder";
+} from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition.js";
+import { config } from "../../config.js";
+import { http } from "../../consts/http.js";
+import { AppDataSource } from "../../database/database.js";
+import { Depot } from "../../database/Depot.js";
+import { Order } from "../../database/Order.js";
+import { OrderItem } from "../../database/OrderItem.js";
+import { RequisitionConfig } from "../../database/RequisitionConfig.js";
+import { bi } from "../bi/bi.js";
+import { getRequestUserId, getUserFromContext } from "../getUserFromContext.js";
+import { getSameOrNextThursday } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper.js";
+import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
+import { sendOrderConfirmationMail } from "../email/orderConfirmationMail.js";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.js";
+import { availabilityWeights } from "../bi/availabilityWeights.js";
+import { PaymentInfo } from "../../database/PaymentInfo.js";
+import { unpackOrderPayment } from "./getOrder.js";
 
 export const saveOrder = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,

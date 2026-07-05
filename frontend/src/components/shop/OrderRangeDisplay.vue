@@ -25,9 +25,9 @@ import {
   dayDifference,
   getSameOrNextThursday,
 } from "../../../../shared/src/util/dateHelper";
-import { SavedOrder } from "@lebenswurzel/solawi-bedarf-shared/src/types";
+import { SavedOrder } from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
 import DebugOnly from "../debug/DebugOnly.vue";
-import { deliveryPauseRange } from "@lebenswurzel/solawi-bedarf-shared/src/config";
+import { deliveryPauseRange } from "@lebenswurzel/solawi-bedarf-shared/src/config.js";
 
 const configStore = useConfigStore();
 const { config } = storeToRefs(configStore);

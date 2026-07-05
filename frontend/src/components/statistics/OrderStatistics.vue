@@ -16,10 +16,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
-import { SavedOrder } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.js";
+import { SavedOrder } from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
 import { useConfigStore } from "../../store/configStore.ts";
-import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
+import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
 import { storeToRefs } from "pinia";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
@@ -205,15 +205,13 @@ function computeDistribution(
 }
 
 // For createdAt distribution
-const createdAtDistribution = computed(
-  (): DistributionData =>
-    computeDistribution(relevantOrders.value, (order) => order.createdAt),
+const createdAtDistribution = computed((): DistributionData =>
+  computeDistribution(relevantOrders.value, (order) => order.createdAt),
 );
 
 // For updatedAt distribution
-const updatedAtDistribution = computed(
-  (): DistributionData =>
-    computeDistribution(relevantOrders.value, (order) => order.updatedAt),
+const updatedAtDistribution = computed((): DistributionData =>
+  computeDistribution(relevantOrders.value, (order) => order.updatedAt),
 );
 </script>
 

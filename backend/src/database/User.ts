@@ -21,13 +21,13 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from "typeorm";
-import { Token } from "./Token";
-import { Order } from "./Order";
-import { BaseEntity } from "./BaseEntity";
-import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
-import { Applicant } from "./Applicant";
-import { hashPassword } from "../security";
-import { PasswordReset } from "./PasswordReset";
+import { Token } from "./Token.js";
+import { Order } from "./Order.js";
+import { BaseEntity } from "./BaseEntity.js";
+import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
+import { Applicant } from "./Applicant.js";
+import { hashPassword } from "../security.js";
+import { PasswordReset } from "./PasswordReset.js";
 
 @Entity()
 export class User extends BaseEntity {

@@ -18,13 +18,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * Dependency injection middleware.
  */
 import Koa from "koa";
-import { EmailService } from "../ports/email";
-import { NodemailerEmailService } from "../services/email/email";
-import { UserRepo } from "../services/user/repo";
-import { TypeormTextContentRepo, TypeormUserRepo } from "../adapter/typeorm";
-import { AppDataSource } from "../database/database";
-import { TextContentRepo } from "../services/text/repo";
-import { mergeMethods } from "../util/mergeMethods";
+import { EmailService } from "../ports/email.js";
+import { NodemailerEmailService } from "../services/email/email.js";
+import { UserRepo } from "../services/user/repo.js";
+import { TypeormTextContentRepo, TypeormUserRepo } from "../adapter/typeorm.js";
+import { AppDataSource } from "../database/database.js";
+import { TextContentRepo } from "../services/text/repo.js";
+import { mergeMethods } from "../util/mergeMethods.js";
 
 export type AppDependencies = EmailService & UserRepo & TextContentRepo;
 

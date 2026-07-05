@@ -18,7 +18,7 @@ import { expect, test } from "vitest";
 import { http } from "../../consts/http";
 import { AppDataSource } from "../../database/database";
 import { User } from "../../database/User";
-import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
 import { convertApplicantToUser } from "./convertApplicantToUser";
 import {
   createBasicTestCtx,

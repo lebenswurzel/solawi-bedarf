@@ -14,14 +14,14 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { KoaAppContext } from "../ctx";
-import { PasswordResetService } from "../../services/user/passwordReset";
-import { handleError, handleResult } from "../error";
+import { KoaAppContext } from "../ctx.js";
+import { PasswordResetService } from "../../services/user/passwordReset.js";
+import { handleError, handleResult } from "../error.js";
 import {
   PasswordResetRequest,
   RequestPasswordResetRequest,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types";
-import { SolawiError } from "../../error";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
+import { SolawiError } from "../../error.js";
 
 export async function passwordResetRequest(ctx: KoaAppContext) {
   const request = ctx.request.body as Partial<RequestPasswordResetRequest>;

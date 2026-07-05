@@ -14,8 +14,8 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { SeasonPhase } from "../enum";
-import { ExistingConfig, RequisitionConfig } from "../types";
+import { SeasonPhase } from "../enum.js";
+import { ExistingConfig, RequisitionConfig } from "../types.js";
 
 export const getSeasonPhase = (
   config: RequisitionConfig | ExistingConfig | undefined,

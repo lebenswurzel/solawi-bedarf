@@ -14,16 +14,16 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
 import Koa from "koa";
 import Router from "koa-router";
-import { http } from "../../consts/http";
-import { AppDataSource } from "../../database/database";
-import { Shipment } from "../../database/Shipment";
-import { getUserFromContext } from "../getUserFromContext";
-import { getNumericQueryParameter } from "../../util/requestUtil";
-import { ShipmentItem } from "../../database/ShipmentItem";
-import { AdditionalShipmentItem } from "../../database/AdditionalShipmentItem";
+import { http } from "../../consts/http.js";
+import { AppDataSource } from "../../database/database.js";
+import { Shipment } from "../../database/Shipment.js";
+import { getUserFromContext } from "../getUserFromContext.js";
+import { getNumericQueryParameter } from "../../util/requestUtil.js";
+import { ShipmentItem } from "../../database/ShipmentItem.js";
+import { AdditionalShipmentItem } from "../../database/AdditionalShipmentItem.js";
 
 export const deleteShipment = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,

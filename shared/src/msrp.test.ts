@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { describe, it, expect } from "vitest";
-import { calculateEffectiveMsrpChain, getMsrp } from "./msrp";
+import { calculateEffectiveMsrpChain, getMsrp } from "./msrp.js";
 import {
   SavedOrder,
   ProductsById,
@@ -23,8 +23,8 @@ import {
   Msrp,
   OrderItem,
   ProductId,
-} from "./types";
-import { Unit, ProductCategoryType, UserCategory } from "./enum";
+} from "./types.js";
+import { Unit, ProductCategoryType, UserCategory } from "./enum.js";
 
 describe("calculateEffectiveMsrpChain", () => {
   const depotId = 1;

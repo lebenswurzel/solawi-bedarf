@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { format } from "date-fns";
 import { fromZonedTime, toZonedTime } from "date-fns-tz";
 import { de } from "date-fns/locale";
-import { DeliveryPauseRange } from "../types";
+import { DeliveryPauseRange } from "../types.js";
 
 export const addYears = (date: Date, yearsDiff: number): Date => {
   const result = new Date(date);

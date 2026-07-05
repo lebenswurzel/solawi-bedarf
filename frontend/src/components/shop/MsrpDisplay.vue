@@ -22,7 +22,7 @@ import Markdown from "../design/Markdown.vue";
 import {
   Msrp,
   SavedOrderWithPredecessor,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
 import { computed } from "vue";
 import { useOrderStore } from "../../store/orderStore";
 import { useUserStore } from "../../store/userStore";
@@ -33,9 +33,9 @@ import ContributionSelect from "./ContributionSelect.vue";
 import {
   OrderPaymentType,
   UserCategory,
-} from "@lebenswurzel/solawi-bedarf-shared/src/enum";
-import { validateModificationMsrp } from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition";
-import { interpolate } from "@lebenswurzel/solawi-bedarf-shared/src/lang/template";
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
+import { validateModificationMsrp } from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition.js";
+import { interpolate } from "@lebenswurzel/solawi-bedarf-shared/src/lang/template.js";
 
 const biStore = useBIStore();
 const orderStore = useOrderStore();

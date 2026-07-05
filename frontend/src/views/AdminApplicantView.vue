@@ -16,17 +16,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
-import { ApplicantState } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
+import { ApplicantState } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
 import ApplicantTable from "../components/applicant/ApplicantTable.vue";
 import {
   Address,
   ApplicantExport,
   ImportApplicantRequest,
   ImportApplicantsResponse,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
 import CsvImportPanel from "../components/import/CsvImportPanel.vue";
 import { importApplicantsData } from "../requests/applicant";
-import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.js";
 import BusyIndicator from "../components/BusyIndicator.vue";
 import { useUiFeedback } from "../store/uiFeedbackStore";
 import { useRoute } from "vue-router";

@@ -17,10 +17,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <script setup lang="ts">
 import { format } from "date-fns/format";
 import { computed } from "vue";
-import { SeasonPhase } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
+import { SeasonPhase } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
 import { useConfigStore } from "../../store/configStore";
-import { interpolate } from "@lebenswurzel/solawi-bedarf-shared/src/lang/template.ts";
-import { RequisitionConfig } from "@lebenswurzel/solawi-bedarf-shared/src/types";
+import { interpolate } from "@lebenswurzel/solawi-bedarf-shared/src/lang/template.js";
+import { RequisitionConfig } from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
 import { useOrderStore } from "../../store/orderStore";
 
 const props = defineProps<{

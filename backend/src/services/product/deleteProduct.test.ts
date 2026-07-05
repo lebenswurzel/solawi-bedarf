@@ -15,13 +15,13 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { expect, test } from "vitest";
-import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
 import {
   ConfirmedOrder,
   NewDepot,
   NewProduct,
   OptionalId,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
 import {
   TestUserData,
   createBasicTestCtx,
@@ -57,7 +57,7 @@ import {
   MILK_PRODUCTS,
   TOMATO,
   VEGETABLES,
-} from "@lebenswurzel/solawi-bedarf-shared/testSetup";
+} from "@lebenswurzel/solawi-bedarf-shared/testSetup.js";
 import { http } from "../../consts/http";
 import { Order } from "../../database/Order";
 import { saveOrder } from "../order/saveOrder";

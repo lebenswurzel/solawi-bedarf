@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { ParsedUrlQuery } from "querystring";
 import Koa from "koa";
 import Router from "koa-router";
-import { http } from "../consts/http";
+import { http } from "../consts/http.js";
 
 export const getNumericQueryParameter = (
   requestQuery: ParsedUrlQuery,

@@ -14,23 +14,23 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { User } from "../../database/User";
-import { AppDataSource } from "../../database/database";
-import { hashPassword } from "../../security";
-import { getUserFromContext } from "../getUserFromContext";
-import { http } from "../../consts/http";
+import { User } from "../../database/User.js";
+import { AppDataSource } from "../../database/database.js";
+import { hashPassword } from "../../security.js";
+import { getUserFromContext } from "../getUserFromContext.js";
+import { http } from "../../consts/http.js";
 import Koa from "koa";
 import Router from "koa-router";
-import { invalidateTokenForUser } from "../../token";
-import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
-import { Order } from "../../database/Order";
-import { appConfig } from "@lebenswurzel/solawi-bedarf-shared/src/config";
-import { RequisitionConfig } from "../../database/RequisitionConfig";
+import { invalidateTokenForUser } from "../../token.js";
+import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
+import { Order } from "../../database/Order.js";
+import { appConfig } from "@lebenswurzel/solawi-bedarf-shared/src/config.js";
+import { RequisitionConfig } from "../../database/RequisitionConfig.js";
 import {
   SaveUserRequest,
   UserId,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types";
-import { getUserOrders } from "../order/getAllOrders";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
+import { getUserOrders } from "../order/getAllOrders.js";
 
 export const saveUser = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,

@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <script setup lang="ts">
 import { onMounted, provide, ref, watch } from "vue";
 import UserDialog from "../components/UserDialog.vue";
-import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.js";
 import { useUserStore } from "../store/userStore.ts";
 import { storeToRefs } from "pinia";
 import { useConfigStore } from "../store/configStore";
@@ -26,8 +26,8 @@ import {
   UpdateUserRequest,
   UserOrder,
   UserWithOrders,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
-import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
+import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
 import { computed } from "@vue/reactivity";
 import { updateUser } from "../requests/user.ts";
 import { useUiFeedback } from "../store/uiFeedbackStore.ts";
@@ -35,7 +35,7 @@ import {
   getDateTimestampWithoutTime,
   prettyDate,
   prettyDateNoTime,
-} from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper.js";
 import { useRoute } from "vue-router";
 
 const t = language.pages.user;

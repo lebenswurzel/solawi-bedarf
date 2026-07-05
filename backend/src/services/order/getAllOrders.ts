@@ -14,17 +14,17 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { getRequestUserId } from "../getUserFromContext";
+import { getRequestUserId } from "../getUserFromContext.js";
 import Koa from "koa";
 import Router from "koa-router";
-import { AppDataSource } from "../../database/database";
-import { Order } from "../../database/Order";
+import { AppDataSource } from "../../database/database.js";
+import { Order } from "../../database/Order.js";
 import {
   getConfigIdFromQuery,
   getStringQueryParameter,
-} from "../../util/requestUtil";
-import { SavedOrder } from "@lebenswurzel/solawi-bedarf-shared/src/types";
-import { unpackOrderPayment } from "./getOrder";
+} from "../../util/requestUtil.js";
+import { SavedOrder } from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
+import { unpackOrderPayment } from "./getOrder.js";
 
 export const getAllOrders = async (
   ctx: Koa.ParameterizedContext<

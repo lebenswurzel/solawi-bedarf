@@ -15,10 +15,10 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.js";
 import { ref } from "vue";
 import ShipmentTable from "../components/shipment/ShipmentTable.vue";
-import { ShipmentType } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
+import { ShipmentType } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
 import DeliveryOverview from "../components/shipment/DeliveryOverview.vue";
 
 const t = language.pages.shipment;

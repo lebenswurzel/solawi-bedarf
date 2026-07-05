@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import {
   AvailabilityWeights,
   BIData,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
 import { getUrl, verifyResponse } from "./requests.ts";
 
 export const getBI = async (

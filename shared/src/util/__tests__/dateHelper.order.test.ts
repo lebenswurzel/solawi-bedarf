@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { describe, expect, it } from "vitest";
-import { calculateNewOrderValidFromDate } from "../dateHelper";
+import { calculateNewOrderValidFromDate } from "../dateHelper.js";
 
 describe("Order date calculations", () => {
   it("should calculate new order validFrom date correctly", () => {

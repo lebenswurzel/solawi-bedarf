@@ -26,7 +26,7 @@ import {
   OVERVIEW_LABEL_WIDTH_PT,
   OVERVIEW_NUM_COL_WIDTH_PT,
   sliceTableByHeaders,
-} from "./pdf";
+} from "./pdf.js";
 
 const buildStyledBody = (rawTable: (string | number)[][]) => {
   const hasSummeColumn = rawTable[0]?.[1] === "Summe";

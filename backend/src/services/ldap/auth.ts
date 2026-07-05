@@ -15,8 +15,8 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import ldap from "ldapjs";
-import { config } from "../../config";
-import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import { config } from "../../config.js";
+import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
 
 export async function authenticateUser(
   username: string,

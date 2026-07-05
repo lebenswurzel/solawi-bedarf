@@ -16,9 +16,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { defineStore } from "pinia";
 import { computed, onUnmounted, ref } from "vue";
-import type { UserWithOrders } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
+import type { UserWithOrders } from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
 import { getUser } from "../requests/user.ts";
-import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
+import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
 import { useUiFeedback } from "./uiFeedbackStore.ts";
 
 export enum LoginState {

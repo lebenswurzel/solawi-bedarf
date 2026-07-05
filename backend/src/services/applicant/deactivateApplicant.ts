@@ -14,13 +14,13 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { AppDataSource } from "../../database/database";
-import { http } from "../../consts/http";
+import { AppDataSource } from "../../database/database.js";
+import { http } from "../../consts/http.js";
 import Koa from "koa";
 import Router from "koa-router";
-import { Applicant } from "../../database/Applicant";
-import { getUserFromContext } from "../getUserFromContext";
-import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import { Applicant } from "../../database/Applicant.js";
+import { getUserFromContext } from "../getUserFromContext.js";
+import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
 
 export const deactivateApplicant = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,

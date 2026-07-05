@@ -15,9 +15,9 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { format } from "date-fns";
-import { UserRole } from "../enum";
-import { language } from "../lang/lang";
-import { interpolate } from "../lang/template";
+import { UserRole } from "../enum.js";
+import { language } from "../lang/lang.js";
+import { interpolate } from "../lang/template.js";
 import {
   ConfirmedOrder,
   ExistingConfig,
@@ -25,14 +25,14 @@ import {
   OrderId,
   OrganizationInfoFlat,
   SavedOrder,
-} from "../types";
+} from "../types.js";
 import {
   countCalendarMonths,
   getSameOrNextThursday,
   getValidFromMonth,
   getValidToMonth,
   prettyDateWithMonthAndYear,
-} from "../util/dateHelper";
+} from "../util/dateHelper.js";
 
 export const isRequisitionActive = (
   userRole: UserRole,

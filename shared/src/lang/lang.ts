@@ -20,13 +20,13 @@ import {
   ShipmentType,
   UserCategory,
   UserRole,
-} from "../enum";
+} from "../enum.js";
 import {
   EmailTextsKeys,
   OrganizationInfoKeys,
   PageElementKeys,
   PdfTextsKeys,
-} from "../types";
+} from "../types.js";
 
 // info i: 24D8
 // black truck: 26DF

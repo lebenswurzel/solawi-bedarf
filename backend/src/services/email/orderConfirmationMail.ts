@@ -15,31 +15,34 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { toZonedTime } from "date-fns-tz";
-import { AppDataSource } from "../../database/database";
-import { RequisitionConfig } from "../../database/RequisitionConfig";
-import { User } from "../../database/User";
-import { sendEmail } from "./email";
-import { buildOrderEmail } from "./emailHelper";
-import { getUserOrderOverview } from "../getOverview";
-import { getProductCategories } from "../product/getProductCategory";
-import { getOrganizationInfo } from "../text/getOrganizationInfo";
-import { formatDateForFilename } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper";
-import { createDefaultPdf } from "@lebenswurzel/solawi-bedarf-shared/src/pdf/pdf";
-import { generateUserData } from "@lebenswurzel/solawi-bedarf-shared/src/pdf/overviewPdfs";
-import { config } from "../../config";
-import { Order } from "../../database/Order";
+import { AppDataSource } from "../../database/database.js";
+import { RequisitionConfig } from "../../database/RequisitionConfig.js";
+import { User } from "../../database/User.js";
+import { sendEmail } from "./email.js";
+import { buildOrderEmail } from "./emailHelper.js";
+import { getUserOrderOverview } from "../getOverview.js";
+import { getProductCategories } from "../product/getProductCategory.js";
+import { getOrganizationInfo } from "../text/getOrganizationInfo.js";
+import { formatDateForFilename } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper.js";
+import { createDefaultPdf } from "@lebenswurzel/solawi-bedarf-shared/src/pdf/pdf.js";
+import { generateUserData } from "@lebenswurzel/solawi-bedarf-shared/src/pdf/overviewPdfs.js";
+import { config } from "../../config.js";
+import { Order } from "../../database/Order.js";
 import {
   getBankTransferMessage,
   getSepaUpdateMessage,
-} from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition";
+} from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition.js";
 import {
   OrderPaymentType,
   TextContentCategory,
-} from "@lebenswurzel/solawi-bedarf-shared/src/enum";
-import { TextContent } from "../../database/TextContent";
-import { makeFlatOrganizationInfo } from "@lebenswurzel/solawi-bedarf-shared/src/text/textContent";
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
+import { TextContent } from "../../database/TextContent.js";
+import { makeFlatOrganizationInfo } from "@lebenswurzel/solawi-bedarf-shared/src/text/textContent.js";
 import { FindOptionsWhere } from "typeorm";
-import { Msrp, SavedOrder } from "@lebenswurzel/solawi-bedarf-shared/src/types";
+import {
+  Msrp,
+  SavedOrder,
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
 
 interface SendOrderConfirmationMailParams {
   order: SavedOrder;

@@ -21,7 +21,7 @@ import {
   SavedOrder,
   ApplicantWithOrders,
   UserId,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
 import { LMap, LTileLayer, LMarker, LPopup } from "@vue-leaflet/vue-leaflet";
 import "leaflet/dist/leaflet.css";
 import { icon, LatLngTuple } from "leaflet";
@@ -30,9 +30,9 @@ import { getAllOrders } from "../../requests/shop";
 import { storeToRefs } from "pinia";
 import { useUserStore } from "../../store/userStore";
 import { getApplicants } from "../../requests/applicant";
-import { ApplicantState } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
+import { ApplicantState } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
 import { getAddressCoordinates } from "../../lib/addressUtils";
-import { prettyDateWithMonthAndYear } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper";
+import { prettyDateWithMonthAndYear } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper.js";
 import CompactUserTable from "./CompactUserTable.vue";
 
 const mapCenter = ref([51.0504, 13.7373] as [number, number]); // Center of Dresden

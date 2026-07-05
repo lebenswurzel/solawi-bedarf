@@ -15,9 +15,9 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { Column, Entity, ManyToOne, PrimaryColumn } from "typeorm";
-import { generateRandomString } from "../security";
+import { generateRandomString } from "../security.js";
 import { addHours } from "date-fns";
-import { User } from "./User";
+import { User } from "./User.js";
 
 @Entity()
 export class PasswordReset {

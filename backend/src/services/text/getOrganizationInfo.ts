@@ -14,11 +14,11 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { TextContentCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
-import { makeOrganizationInfo } from "@lebenswurzel/solawi-bedarf-shared/src/text/textContent";
-import { OrganizationInfo } from "@lebenswurzel/solawi-bedarf-shared/src/types";
-import { AppDataSource } from "../../database/database";
-import { TextContent } from "../../database/TextContent";
+import { TextContentCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
+import { makeOrganizationInfo } from "@lebenswurzel/solawi-bedarf-shared/src/text/textContent.js";
+import { OrganizationInfo } from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
+import { AppDataSource } from "../../database/database.js";
+import { TextContent } from "../../database/TextContent.js";
 
 export const getOrganizationInfo = async (): Promise<OrganizationInfo> => {
   const textContent = await AppDataSource.getRepository(TextContent).find({

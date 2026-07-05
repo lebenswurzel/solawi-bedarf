@@ -18,11 +18,11 @@ import { expect, test } from "vitest";
 import {
   OrderPaymentType,
   UserCategory,
-} from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
 import {
   ConfirmedOrder,
   OrderPayment,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
 import {
   TestAdminAndUserData,
   TestUserData,
@@ -47,7 +47,7 @@ import { bi } from "../bi/bi";
 import { saveOrder } from "./saveOrder";
 import { Product } from "../../database/Product";
 import { addMonths } from "date-fns";
-import { getSameOrNextThursday } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper";
+import { getSameOrNextThursday } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper.js";
 import { updateOrderValidFrom } from "../user/saveUser";
 
 setupDatabaseCleanup();

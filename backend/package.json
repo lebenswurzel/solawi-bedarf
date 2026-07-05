@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.ts",
+  "type": "module",
   "scripts": {
     "start": "ts-node src/index.ts",
     "format": "prettier .  --write",

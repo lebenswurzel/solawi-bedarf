@@ -14,15 +14,15 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { AppDataSource } from "../../database/database";
-import { getUserFromContext } from "../getUserFromContext";
-import { http } from "../../consts/http";
+import { AppDataSource } from "../../database/database.js";
+import { getUserFromContext } from "../getUserFromContext.js";
+import { http } from "../../consts/http.js";
 import Koa from "koa";
 import Router from "koa-router";
-import { Depot } from "../../database/Depot";
-import { Order } from "../../database/Order";
-import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
-import { DepotInfo } from "./depotTypes";
+import { Depot } from "../../database/Depot.js";
+import { Order } from "../../database/Order.js";
+import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
+import { DepotInfo } from "./depotTypes.js";
 
 export const saveDepot = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,

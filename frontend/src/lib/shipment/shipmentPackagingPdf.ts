@@ -23,23 +23,23 @@ import {
   ProductsById,
   Shipment,
   ShipmentItem,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
-import { multiplicatorOptions } from "../options";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
+import { multiplicatorOptions } from "../options.js";
 import { format } from "date-fns";
-import { sanitizeFileName } from "@lebenswurzel/solawi-bedarf-shared/src/util/fileHelper.ts";
+import { sanitizeFileName } from "@lebenswurzel/solawi-bedarf-shared/src/util/fileHelper.js";
 import {
   byKey,
   findDepotNameById,
   getOrCompute,
   inLocaleOrder,
-} from "@lebenswurzel/solawi-bedarf-shared/src/util/utils.ts";
-import { getLangUnit } from "@lebenswurzel/solawi-bedarf-shared/src/util/unitHelper.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/util/utils.js";
+import { getLangUnit } from "@lebenswurzel/solawi-bedarf-shared/src/util/unitHelper.js";
 import {
   createDefaultPdf,
   PdfSpec,
   PdfTable,
-} from "@lebenswurzel/solawi-bedarf-shared/src/pdf/pdf.ts";
-import { Zip } from "@lebenswurzel/solawi-bedarf-shared/src/pdf/zip.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/pdf/pdf.js";
+import { Zip } from "@lebenswurzel/solawi-bedarf-shared/src/pdf/zip.js";
 import { TCreatedPdf } from "pdfmake/build/pdfmake";
 import { Content } from "pdfmake/interfaces";
 

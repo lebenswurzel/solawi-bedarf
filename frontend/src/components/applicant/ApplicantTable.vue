@@ -19,7 +19,7 @@ import { computed, onMounted, ref } from "vue";
 import {
   Applicant,
   ApplicantExport,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
 import {
   convertApplicantToUser,
   activateApplicant,
@@ -27,17 +27,17 @@ import {
   deleteApplicant,
   getApplicants,
 } from "../../requests/applicant";
-import { ApplicantState } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
+import { ApplicantState } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
 import BusyIndicator from "../BusyIndicator.vue";
 import { useUiFeedback } from "../../store/uiFeedbackStore";
 import Papa from "papaparse";
-import { sanitizeFileName } from "@lebenswurzel/solawi-bedarf-shared/src/util/fileHelper.ts";
-import { pick } from "@lebenswurzel/solawi-bedarf-shared/src/util/utils.ts";
-import { prettyDate } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper.ts";
-import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
-import { escapeHtmlEntities } from "@lebenswurzel/solawi-bedarf-shared/src/util/stringHelper.ts";
+import { sanitizeFileName } from "@lebenswurzel/solawi-bedarf-shared/src/util/fileHelper.js";
+import { pick } from "@lebenswurzel/solawi-bedarf-shared/src/util/utils.js";
+import { prettyDate } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper.js";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.js";
+import { escapeHtmlEntities } from "@lebenswurzel/solawi-bedarf-shared/src/util/stringHelper.js";
 import { useRoute } from "vue-router";
-import { interpolate } from "@lebenswurzel/solawi-bedarf-shared/src/lang/template";
+import { interpolate } from "@lebenswurzel/solawi-bedarf-shared/src/lang/template.js";
 
 const props = defineProps<{
   state: ApplicantState;

@@ -15,11 +15,11 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { Entity, Column, PrimaryGeneratedColumn } from "typeorm";
-import { BaseEntity } from "./BaseEntity";
+import { BaseEntity } from "./BaseEntity.js";
 import {
   TextContentCategory,
   TextContentTyp,
-} from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
 
 @Entity()
 export class TextContent extends BaseEntity {

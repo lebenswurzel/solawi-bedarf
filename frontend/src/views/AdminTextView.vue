@@ -25,19 +25,19 @@ import {
   OrganizationInfoKeys,
   PdfTextsKeys,
   TextContent,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
 import {
   TextContentCategory,
   TextContentTyp,
-} from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
 import {
   langEmailTextLabels,
   langPageElementLabels,
   langOrganizationInfo,
   langPdfTexts,
   language,
-} from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
-import { PageElementKeys } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.js";
+import { PageElementKeys } from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
 
 const defaultTextContent: NewTextContent = {
   title: "Beispieltitel",

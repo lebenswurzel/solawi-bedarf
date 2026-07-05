@@ -16,8 +16,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script lang="ts" setup>
 import { computed, onMounted, ref, watch } from "vue";
-import { buildInfo } from "@lebenswurzel/solawi-bedarf-shared/src/buildInfo.ts";
-import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
+import { buildInfo } from "@lebenswurzel/solawi-bedarf-shared/src/buildInfo.js";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.js";
 import { marked } from "marked";
 import { useVersionInfoStore } from "../store/versionInfoStore";
 import { storeToRefs } from "pinia";

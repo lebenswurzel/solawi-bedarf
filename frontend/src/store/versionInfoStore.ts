@@ -16,9 +16,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { defineStore } from "pinia";
 import { ref } from "vue";
-import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
-import { interpolate } from "@lebenswurzel/solawi-bedarf-shared/src/lang/template.ts";
-import { VersionInfo } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.js";
+import { interpolate } from "@lebenswurzel/solawi-bedarf-shared/src/lang/template.js";
+import { VersionInfo } from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
 import { getVersionInfo } from "../requests/versionInfo.ts";
 import { useUiFeedback } from "./uiFeedbackStore.ts";
 import { useUserStore } from "./userStore.ts";

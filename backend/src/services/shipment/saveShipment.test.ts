@@ -18,11 +18,11 @@ import { expect, test } from "vitest";
 import {
   ShipmentType,
   Unit,
-} from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
 import {
   Id,
   ShipmentRequest,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
 import {
   getDepotByName,
   getProductByName,
@@ -38,7 +38,7 @@ import {
 import {
   genShipment,
   genShipmentItem,
-} from "@lebenswurzel/solawi-bedarf-shared/testSetup";
+} from "@lebenswurzel/solawi-bedarf-shared/testSetup.js";
 import { AppDataSource } from "../../database/database";
 import { Shipment as ShipmentEntity } from "../../database/Shipment";
 import { saveShipment } from "./saveShipment";

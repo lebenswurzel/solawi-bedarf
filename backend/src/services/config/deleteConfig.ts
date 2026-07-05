@@ -16,12 +16,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import Koa from "koa";
 import Router from "koa-router";
-import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
-import { http } from "../../consts/http";
-import { RequisitionConfig } from "../../database/RequisitionConfig";
-import { AppDataSource } from "../../database/database";
-import { getUserFromContext } from "../getUserFromContext";
-import { getConfigIdFromQuery } from "../../util/requestUtil";
+import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
+import { http } from "../../consts/http.js";
+import { RequisitionConfig } from "../../database/RequisitionConfig.js";
+import { AppDataSource } from "../../database/database.js";
+import { getUserFromContext } from "../getUserFromContext.js";
+import { getConfigIdFromQuery } from "../../util/requestUtil.js";
 
 export const deleteConfig = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,

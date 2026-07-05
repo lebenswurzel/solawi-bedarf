@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { describe, it, expect } from "vitest";
-import { interpolate } from "./template";
+import { interpolate } from "./template.js";
 
 describe("interpolate", () => {
   describe("basic interpolation", () => {

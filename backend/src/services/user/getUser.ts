@@ -15,14 +15,14 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { FindManyOptions } from "typeorm";
-import { User } from "../../database/User";
-import { AppDataSource } from "../../database/database";
-import { getTokenValidity, getUserFromContext } from "../getUserFromContext";
+import { User } from "../../database/User.js";
+import { AppDataSource } from "../../database/database.js";
+import { getTokenValidity, getUserFromContext } from "../getUserFromContext.js";
 import Koa from "koa";
 import Router from "koa-router";
-import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
-import { GetUserResponse } from "@lebenswurzel/solawi-bedarf-shared/src/types";
-import { Applicant } from "../../database/Applicant";
+import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
+import { GetUserResponse } from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
+import { Applicant } from "../../database/Applicant.js";
 
 export const getUser = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,

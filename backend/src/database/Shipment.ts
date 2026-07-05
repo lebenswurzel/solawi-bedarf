@@ -21,12 +21,12 @@ import {
   OneToMany,
   ManyToOne,
 } from "typeorm";
-import { BaseEntity } from "./BaseEntity";
-import { ShipmentItem } from "./ShipmentItem";
-import { AdditionalShipmentItem } from "./AdditionalShipmentItem";
-import { RequisitionConfig } from "./RequisitionConfig";
-import { RevisionMessageJson } from "@lebenswurzel/solawi-bedarf-shared/src/types";
-import { ShipmentType } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import { BaseEntity } from "./BaseEntity.js";
+import { ShipmentItem } from "./ShipmentItem.js";
+import { AdditionalShipmentItem } from "./AdditionalShipmentItem.js";
+import { RequisitionConfig } from "./RequisitionConfig.js";
+import { RevisionMessageJson } from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
+import { ShipmentType } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
 
 @Entity()
 export class Shipment extends BaseEntity {

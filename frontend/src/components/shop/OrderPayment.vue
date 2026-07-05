@@ -16,19 +16,19 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
 import { computed, watch } from "vue";
-import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
-import { OrderPaymentType } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.js";
+import { OrderPaymentType } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
 import {
   OrderPayment,
   OrganizationInfoFlat,
   SavedOrder,
   UserWithOrders,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
 import {
   getBankTransferMessage,
   getSepaUpdateMessage,
-} from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition.ts";
-import { validatePayment } from "@lebenswurzel/solawi-bedarf-shared/src/util/ibanHelper.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition.js";
+import { validatePayment } from "@lebenswurzel/solawi-bedarf-shared/src/util/ibanHelper.js";
 import { useConfigStore } from "../../store/configStore";
 import { storeToRefs } from "pinia";
 

@@ -26,7 +26,7 @@ import {
   MILK_PRODUCTS,
   TOMATO,
   VEGETABLES,
-} from "@lebenswurzel/solawi-bedarf-shared/testSetup";
+} from "@lebenswurzel/solawi-bedarf-shared/testSetup.js";
 import {
   createShipmentPackagingPdfSpecs,
   formatQuantityChange,
@@ -34,9 +34,9 @@ import {
 import {
   ProductCategoryWithProducts,
   ProductsById,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types";
-import { Unit } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
-import { grouping } from "@lebenswurzel/solawi-bedarf-shared/src/util/utils";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
+import { Unit } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
+import { grouping } from "@lebenswurzel/solawi-bedarf-shared/src/util/utils.js";
 
 function getProductsById(
   productCategories: ProductCategoryWithProducts[],

@@ -22,7 +22,7 @@ import {
   SaveUserRequest,
   UpdateUserRequest,
   UserWithOrders,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
 import { getUrl, verifyResponse } from "./requests.ts";
 
 // auxiliary types that allow receiving the date as string for later conversion to a Date object

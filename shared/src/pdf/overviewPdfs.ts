@@ -14,16 +14,16 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { Unit } from "../enum";
+import { Unit } from "../enum.js";
 import {
   OrderOverviewApplicant,
   OrderOverviewItem,
   OrderOverviewWithApplicantItem,
   OrderPayment,
   ProductCategoryWithProducts,
-} from "../types";
-import { interpolate } from "../lang/template";
-import { PdfSpec, PdfTable } from "./pdf";
+} from "../types.js";
+import { interpolate } from "../lang/template.js";
+import { PdfSpec, PdfTable } from "./pdf.js";
 import {
   byKey,
   collect,
@@ -32,10 +32,10 @@ import {
   grouping,
   groupingBy,
   inLocaleOrder,
-} from "../util/utils";
-import { language } from "../lang/lang";
-import { getLangUnit } from "../util/unitHelper";
-import { prettyCompactDate } from "../util/dateHelper";
+} from "../util/utils.js";
+import { language } from "../lang/lang.js";
+import { getLangUnit } from "../util/unitHelper.js";
+import { prettyCompactDate } from "../util/dateHelper.js";
 
 const t = language.pages.overview;
 

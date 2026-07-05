@@ -20,12 +20,12 @@ import {
   TextContentCategory,
   TextContentTyp,
   UserRole,
-} from "@lebenswurzel/solawi-bedarf-shared/src/enum";
-import { SaveTextContentRequest } from "@lebenswurzel/solawi-bedarf-shared/src/types";
-import { http } from "../../consts/http";
-import { AppDataSource } from "../../database/database";
-import { TextContent } from "../../database/TextContent";
-import { getUserFromContext } from "../getUserFromContext";
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
+import { SaveTextContentRequest } from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
+import { http } from "../../consts/http.js";
+import { AppDataSource } from "../../database/database.js";
+import { TextContent } from "../../database/TextContent.js";
+import { getUserFromContext } from "../getUserFromContext.js";
 
 export const saveTextContent = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,

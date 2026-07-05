@@ -14,21 +14,21 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { http } from "../../consts/http";
+import { http } from "../../consts/http.js";
 import Koa from "koa";
 import Router from "koa-router";
-import { getUserFromContext } from "../getUserFromContext";
-import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import { getUserFromContext } from "../getUserFromContext.js";
+import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
 import {
   Address,
   ImportApplicantRequest,
   ImportApplicantsResponse,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types";
-import { AppDataSource } from "../../database/database";
-import { Applicant } from "../../database/Applicant";
-import { User } from "../../database/User";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
+import { AppDataSource } from "../../database/database.js";
+import { Applicant } from "../../database/Applicant.js";
+import { User } from "../../database/User.js";
 import { EntityManager } from "typeorm";
-import { UserAddress } from "../../database/UserAddress";
+import { UserAddress } from "../../database/UserAddress.js";
 
 export const importApplicant = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,

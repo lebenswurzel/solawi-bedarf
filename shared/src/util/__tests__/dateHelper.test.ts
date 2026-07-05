@@ -28,8 +28,8 @@ import {
   countCalendarMonths,
   calculateNewOrderValidFromDate,
   isDateInRange,
-} from "../dateHelper";
-import { DeliveryPauseRange } from "../../types";
+} from "../dateHelper.js";
+import { DeliveryPauseRange } from "../../types.js";
 
 describe("dateHelper", () => {
   describe("addYears", () => {

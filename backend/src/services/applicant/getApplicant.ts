@@ -14,19 +14,19 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { AppDataSource } from "../../database/database";
-import { getUserFromContext } from "../getUserFromContext";
+import { AppDataSource } from "../../database/database.js";
+import { getUserFromContext } from "../getUserFromContext.js";
 import Koa from "koa";
 import Router from "koa-router";
-import { http } from "../../consts/http";
-import { Applicant } from "../../database/Applicant";
-import { User } from "../../database/User";
+import { http } from "../../consts/http.js";
+import { Applicant } from "../../database/Applicant.js";
+import { User } from "../../database/User.js";
 import { FindOptionsWhere, IsNull, Not } from "typeorm";
 import {
   ApplicantState,
   UserRole,
-} from "@lebenswurzel/solawi-bedarf-shared/src/enum";
-import { Address } from "@lebenswurzel/solawi-bedarf-shared/src/types";
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
+import { Address } from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
 
 const getWhere = (
   applicantState: ApplicantState,

@@ -19,7 +19,7 @@ import {
   isMultiContentCategory,
   TextContentCategory,
   TextContentTyp,
-} from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
 import {
   Id,
   OrganizationInfoKeys,
@@ -27,7 +27,7 @@ import {
   SimpleTextContent,
   TextContent as TextContentType,
   VersionInfo,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
 import {
   TestUserData,
   createBasicTestCtx,
@@ -45,8 +45,8 @@ import { saveTextContent } from "./saveTextContent";
 import {
   basicOrganizationInfo,
   organizationInfoKeys,
-} from "@lebenswurzel/solawi-bedarf-shared/src/config";
-import { getOrganizationInfoValueByKey } from "@lebenswurzel/solawi-bedarf-shared/src/text/textContent";
+} from "@lebenswurzel/solawi-bedarf-shared/src/config.js";
+import { getOrganizationInfoValueByKey } from "@lebenswurzel/solawi-bedarf-shared/src/text/textContent.js";
 
 setupDatabaseCleanup();
 

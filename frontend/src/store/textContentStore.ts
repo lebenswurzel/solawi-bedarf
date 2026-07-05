@@ -22,17 +22,17 @@ import {
   PageElementKeys,
   PdfTexts,
   TextContent,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
 import { getTextContent } from "../requests/textcontent.ts";
 import { marked } from "marked";
-import { TextContentCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
+import { TextContentCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
 import { faqAlphabeticalDown } from "../lib/compare.ts";
 import {
   makeFlatOrganizationInfo,
   makeOrganizationInfo,
   makePdfTexts,
-} from "@lebenswurzel/solawi-bedarf-shared/src/text/textContent.ts";
-import { pageElementDefaults } from "@lebenswurzel/solawi-bedarf-shared/src/config.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/text/textContent.js";
+import { pageElementDefaults } from "@lebenswurzel/solawi-bedarf-shared/src/config.js";
 
 export const useTextContentStore = defineStore("textContent", () => {
   const textContent = ref<TextContent[]>([]);

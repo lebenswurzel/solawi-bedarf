@@ -21,7 +21,7 @@ import {
   ShipmentType,
   Unit,
   UserCategory,
-} from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
 import { AppDataSource } from "../../database/database";
 import { Depot } from "../../database/Depot";
 import { Order } from "../../database/Order";

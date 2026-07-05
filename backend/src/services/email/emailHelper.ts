@@ -14,21 +14,21 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { Order } from "../../database/Order";
-import { User } from "../../database/User";
-import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang";
-import { interpolate } from "@lebenswurzel/solawi-bedarf-shared/src/lang/template";
+import { Order } from "../../database/Order.js";
+import { User } from "../../database/User.js";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.js";
+import { interpolate } from "@lebenswurzel/solawi-bedarf-shared/src/lang/template.js";
 import { format } from "date-fns";
-import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
 import {
   Msrp,
   OrganizationInfo,
   SavedOrder,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
 import {
   getSameOrNextThursday,
   prettyDateWithMonthAndYear,
-} from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper";
+} from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper.js";
 
 const emailHtmlTemplate = `<html>
   <head>

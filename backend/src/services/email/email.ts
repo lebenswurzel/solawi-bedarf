@@ -15,13 +15,13 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import nodemailer from "nodemailer";
-import { config } from "../../config";
-import { escapeHtmlEntities } from "@lebenswurzel/solawi-bedarf-shared/src/util/stringHelper";
-import { Attachment } from "nodemailer/lib/mailer";
-import { getOrganizationInfo } from "../text/getOrganizationInfo";
-import { EmailService, SendEmailRequest } from "../../ports/email";
+import { config } from "../../config.js";
+import { escapeHtmlEntities } from "@lebenswurzel/solawi-bedarf-shared/src/util/stringHelper.js";
+import { Attachment } from "nodemailer/lib/mailer/index.js";
+import { getOrganizationInfo } from "../text/getOrganizationInfo.js";
+import { EmailService, SendEmailRequest } from "../../ports/email.js";
 import { ResultAsync } from "neverthrow";
-import { InfrastructureError } from "../../error";
+import { InfrastructureError } from "../../error.js";
 
 let emailEnabled = false;
 

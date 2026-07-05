@@ -14,39 +14,39 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { http } from "../consts/http";
+import { http } from "../consts/http.js";
 import Koa from "koa";
 import Router from "koa-router";
-import { Order } from "../database/Order";
-import { getUserFromContext } from "./getUserFromContext";
-import { AppDataSource } from "../database/database";
+import { Order } from "../database/Order.js";
+import { getUserFromContext } from "./getUserFromContext.js";
+import { AppDataSource } from "../database/database.js";
 import { FindOptionsWhere, LessThan, MoreThan } from "typeorm";
 import {
   OrderPaymentType,
   UserRole,
-} from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
 import {
   calculateOrderValidMonths,
   getMsrp,
-} from "@lebenswurzel/solawi-bedarf-shared/src/msrp";
-import { bi } from "./bi/bi";
+} from "@lebenswurzel/solawi-bedarf-shared/src/msrp.js";
+import { bi } from "./bi/bi.js";
 import {
   getConfigIdFromQuery,
   getDateQueryParameter,
   getStringQueryParameter,
-} from "../util/requestUtil";
+} from "../util/requestUtil.js";
 import {
   Address,
   BankDetails,
   OrderOverviewApplicant,
   OrderOverviewWithApplicantItem,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types";
-import { Applicant } from "../database/Applicant";
-import { config } from "../config";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
+import { Applicant } from "../database/Applicant.js";
+import { config } from "../config.js";
 import {
   getSameOrNextThursday,
   prettyDateWithMonthAndYear,
-} from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper";
+} from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper.js";
 
 export const getOverview = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,

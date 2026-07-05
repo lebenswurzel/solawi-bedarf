@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { Entity, Column, PrimaryColumn, ManyToOne } from "typeorm";
-import { User } from "./User";
+import { User } from "./User.js";
 
 @Entity()
 export class Token {

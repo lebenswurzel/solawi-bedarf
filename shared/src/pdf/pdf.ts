@@ -14,16 +14,16 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import pdfMake, { createPdf, TCreatedPdf } from "pdfmake/build/pdfmake";
-import { pdfFonts } from "../assets/vfs_fonts";
+import pdfMake, { createPdf, TCreatedPdf } from "pdfmake/build/pdfmake.js";
+import { pdfFonts } from "../assets/vfs_fonts.js";
 import {
   Content,
   DynamicContent,
   TDocumentDefinitions,
-} from "pdfmake/interfaces";
-import { logo } from "../logo";
-import { OrganizationInfo } from "../types";
-import { prettyCompactDate } from "../util/dateHelper";
+} from "pdfmake/interfaces.js";
+import { logo } from "../logo.js";
+import { OrganizationInfo } from "../types.js";
+import { prettyCompactDate } from "../util/dateHelper.js";
 
 (<any>pdfMake).vfs = pdfFonts.vfs;
 
@@ -31,7 +31,7 @@ export type HeaderSortKeys = { [key: string]: number };
 
 const jsonToTableData = (
   data: { [key: string]: string | number }[],
-  headerSortKeys?: HeaderSortKeys
+  headerSortKeys?: HeaderSortKeys,
 ) => {
   let headers: string[] = [];
   for (let item of data) {
@@ -83,7 +83,7 @@ export interface PdfSpec {
 
 export function createDefaultPdf(
   pdf: PdfSpec,
-  organizationInfo: OrganizationInfo
+  organizationInfo: OrganizationInfo,
 ): TCreatedPdf {
   const content: Content[] = [];
   if (logo != null) {
@@ -225,23 +225,23 @@ export function getMaxDepotsPerPage(
   availableWidth: number = LANDSCAPE_A4_WIDTH_PT -
     OVERVIEW_HORIZONTAL_MARGINS_PT,
   labelWidth: number = OVERVIEW_LABEL_WIDTH_PT,
-  numColWidth: number = OVERVIEW_NUM_COL_WIDTH_PT
+  numColWidth: number = OVERVIEW_NUM_COL_WIDTH_PT,
 ): number {
   return Math.max(
     1,
-    Math.floor((availableWidth - labelWidth) / numColWidth) - 1
+    Math.floor((availableWidth - labelWidth) / numColWidth) - 1,
   );
 }
 
 export function chunkOverviewHeaders(
   headers: string[],
-  maxDepotsPerPage: number
+  maxDepotsPerPage: number,
 ): string[][] {
   const depotHeaders = headers.filter(
     (h) =>
       !OVERVIEW_FIXED_HEADERS.includes(
-        h as (typeof OVERVIEW_FIXED_HEADERS)[number]
-      )
+        h as (typeof OVERVIEW_FIXED_HEADERS)[number],
+      ),
   );
   if (depotHeaders.length === 0) {
     return [headers];
@@ -260,7 +260,7 @@ export function chunkOverviewHeaders(
 
 export function sliceTableByHeaders(
   fullTable: (string | number)[][],
-  chunkHeaders: string[]
+  chunkHeaders: string[],
 ): (string | number)[][] {
   const headers = fullTable[0].map(String);
   const indices = chunkHeaders.map((h) => headers.indexOf(h));
@@ -279,13 +279,15 @@ type OverviewStyledCell = {
   positions?: { top: number; height?: number }[];
 };
 
-const cloneStyledBody = (body: OverviewStyledCell[][]): OverviewStyledCell[][] =>
+const cloneStyledBody = (
+  body: OverviewStyledCell[][],
+): OverviewStyledCell[][] =>
   JSON.parse(JSON.stringify(body)) as OverviewStyledCell[][];
 
 const overviewHLineWidth = (
   lineIndex: number,
   rowCount: number,
-  headerRows = 1
+  headerRows = 1,
 ): number => {
   if (lineIndex === 0 || lineIndex === rowCount) {
     return 0;
@@ -295,7 +297,7 @@ const overviewHLineWidth = (
 
 const overviewRowLayoutOverhead = (
   rowIndex: number,
-  rowCount: number
+  rowCount: number,
 ): number =>
   OVERVIEW_CELL_PADDING_TOP_PT +
   OVERVIEW_CELL_PADDING_BOTTOM_PT +
@@ -303,12 +305,12 @@ const overviewRowLayoutOverhead = (
 
 const measureOverviewRowStridesWithPdfmake = (
   styledBody: OverviewStyledCell[][],
-  columnWidthsPt: number[]
+  columnWidthsPt: number[],
 ): number[] => {
   const body: OverviewStyledCell[][] = cloneStyledBody(styledBody);
   const spacerRow: OverviewStyledCell[] = Array.from(
     { length: columnWidthsPt.length },
-    () => ({ text: " " })
+    () => ({ text: " " }),
   );
   body.push(spacerRow);
 
@@ -360,11 +362,12 @@ const measureOverviewRowStridesWithPdfmake = (
  */
 export function measureOverviewRowHeights(
   styledBody: OverviewStyledCell[][],
-  columnWidthsPt: number[]
+  columnWidthsPt: number[],
 ): number[] {
   const rowCount = styledBody.length;
   return measureOverviewRowStridesWithPdfmake(styledBody, columnWidthsPt).map(
-    (stride, rowIndex) => stride - overviewRowLayoutOverhead(rowIndex, rowCount)
+    (stride, rowIndex) =>
+      stride - overviewRowLayoutOverhead(rowIndex, rowCount),
   );
 }
 
@@ -384,8 +387,8 @@ export function measureOverviewHeaderRowHeight(
   rawTableData: (string | number)[][],
   headerChunks: string[][],
   buildStyledTableBody: (
-    rawTable: (string | number)[][]
-  ) => OverviewStyledCell[][]
+    rawTable: (string | number)[][],
+  ) => OverviewStyledCell[][],
 ): number {
   let headerHeight = 0;
 
@@ -398,7 +401,7 @@ export function measureOverviewHeaderRowHeight(
     const headerBody = buildStyledTableBody([chunkRaw[0]]);
     const chunkHeight = measureOverviewRowHeights(
       headerBody,
-      overviewChunkWidths(chunkHeaders)
+      overviewChunkWidths(chunkHeaders),
     )[0];
     headerHeight = Math.max(headerHeight, chunkHeight);
   }
@@ -413,7 +416,7 @@ const createOverviewPdf = (
   data: { [key: string]: { [key: string]: number } },
   description: string,
   footerLeftText: string,
-  headerSortKeys?: HeaderSortKeys
+  headerSortKeys?: HeaderSortKeys,
 ): TDocumentDefinitions => {
   const content: Content[] = [
     {
@@ -439,7 +442,7 @@ const createOverviewPdf = (
     cell: string | number,
     rowIndex: number,
     columnIndex: number,
-    hasSummeColumn: boolean
+    hasSummeColumn: boolean,
   ) => {
     if (rowIndex > 0 && columnIndex === 1 && hasSummeColumn) {
       return {
@@ -458,13 +461,13 @@ const createOverviewPdf = (
       row.map((cell, columnIndex) => ({
         ...cellTransformer(cell, rowIndex, columnIndex, hasSummeColumn),
         ...cellStyle(rowIndex, columnIndex),
-      }))
+      })),
     );
   };
 
   const rawTableData = jsonToTableData(
     Object.entries(data).map(([k, v]) => ({ Bezeichnung: k, ...v })),
-    headerSortKeys
+    headerSortKeys,
   );
   const headers = rawTableData[0].map(String);
   const headerChunks = chunkOverviewHeaders(headers, getMaxDepotsPerPage());
@@ -475,12 +478,12 @@ const createOverviewPdf = (
   const firstChunkWidths = overviewChunkWidths(firstChunkHeaders);
   const rowHeights = measureOverviewRowHeights(
     firstChunkBody,
-    firstChunkWidths
+    firstChunkWidths,
   );
   rowHeights[0] = measureOverviewHeaderRowHeight(
     rawTableData,
     headerChunks,
-    buildStyledTableBody
+    buildStyledTableBody,
   );
 
   headerChunks.forEach((chunkHeaders, chunkIndex) => {
@@ -545,13 +548,13 @@ export const generateOverviewPdf = (
   data: { [key: string]: { [key: string]: number } },
   description: string,
   footerLeftText: string,
-  headerSortKeys?: HeaderSortKeys
+  headerSortKeys?: HeaderSortKeys,
 ) => {
   const pdfDefinition = createOverviewPdf(
     data,
     description,
     footerLeftText,
-    headerSortKeys
+    headerSortKeys,
   );
   return pdfMake.createPdf(pdfDefinition);
 };

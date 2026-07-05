@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { DependenciesContext } from "../middleware/dependencies";
+import { DependenciesContext } from "../middleware/dependencies.js";
 import Router from "koa-router";
 import Koa from "koa";
 

@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { OrganizationInfo } from "@lebenswurzel/solawi-bedarf-shared/src/types";
+import { OrganizationInfo } from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
 
 export interface TextContentRepo {
   getOrganizationInfo(): Promise<OrganizationInfo>;

@@ -15,8 +15,8 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { Result } from "neverthrow";
-import { KoaAppContext } from "./ctx";
-import { SolawiError } from "../error";
+import { KoaAppContext } from "./ctx.js";
+import { SolawiError } from "../error.js";
 
 export function handleResult<T>(
   ctx: KoaAppContext,

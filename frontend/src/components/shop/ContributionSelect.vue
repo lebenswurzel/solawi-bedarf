@@ -18,8 +18,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { storeToRefs } from "pinia";
 import { useOrderStore } from "../../store/orderStore.ts";
 import { computed } from "vue";
-import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
-import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.js";
+import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
 
 const orderStore = useOrderStore();
 const { category } = storeToRefs(orderStore);

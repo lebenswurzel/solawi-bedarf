@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { useUiFeedback } from "../store/uiFeedbackStore";
+import { useUiFeedback } from "../store/uiFeedbackStore.js";
 
 export const safeCopyToClipboard = async (text: string): Promise<void> => {
   const { setError, setSuccess } = useUiFeedback();

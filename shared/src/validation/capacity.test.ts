@@ -21,14 +21,14 @@ import {
   getMaxAvailable,
   getMinAvailable,
   sanitizeOrderItem,
-} from "./capacity";
+} from "./capacity.js";
 import {
   OrderItem,
   ProductWithProductCategoryTyp,
   Depot,
   ExistingConfig,
-} from "../types";
-import { Unit, ProductCategoryType, UserRole } from "../enum";
+} from "../types.js";
+import { Unit, ProductCategoryType, UserRole } from "../enum.js";
 
 describe("checkOrderItemValid", () => {
   const mockProduct: ProductWithProductCategoryTyp = {

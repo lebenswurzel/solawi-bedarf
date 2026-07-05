@@ -16,16 +16,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
 import { computed, ComputedRef, onMounted, watch } from "vue";
-import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.js";
 import { useConfigStore } from "../store/configStore.ts";
 import { ref } from "vue";
 import { deleteConfig, saveConfig } from "../requests/config.ts";
 import { stringToDate, dateToString } from "../lib/convert.ts";
-import { ExistingConfig } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
+import { ExistingConfig } from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
 import { useUiFeedback } from "../store/uiFeedbackStore.ts";
 import NewSeasonDialog from "../components/NewSeasonDialog.vue";
 import SeasonStatusElement from "../components/season/SeasonStatusElement.vue";
-import { getSeasonPhase } from "@lebenswurzel/solawi-bedarf-shared/src/util/configHelper.ts";
+import { getSeasonPhase } from "@lebenswurzel/solawi-bedarf-shared/src/util/configHelper.js";
 const t = language.pages.config;
 
 const loading = ref(false);

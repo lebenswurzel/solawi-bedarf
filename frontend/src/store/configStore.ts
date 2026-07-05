@@ -21,8 +21,8 @@ import {
   AvailableConfig,
   Depot,
   ExistingConfig,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
-import { appConfig } from "@lebenswurzel/solawi-bedarf-shared/src/config.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
+import { appConfig } from "@lebenswurzel/solawi-bedarf-shared/src/config.js";
 
 const seasonColorClasses = [
   "bg-primary",

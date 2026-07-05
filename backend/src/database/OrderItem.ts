@@ -15,9 +15,9 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from "typeorm";
-import { Product } from "./Product";
-import { Order } from "./Order";
-import { BaseEntity } from "./BaseEntity";
+import { Product } from "./Product.js";
+import { Order } from "./Order.js";
+import { BaseEntity } from "./BaseEntity.js";
 
 @Entity()
 export class OrderItem extends BaseEntity {

@@ -16,8 +16,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import Koa from "koa";
 import Router from "koa-router";
-import { AppDataSource } from "../../database/database";
-import { TextContent } from "../../database/TextContent";
+import { AppDataSource } from "../../database/database.js";
+import { TextContent } from "../../database/TextContent.js";
 
 export const getTextContent = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,

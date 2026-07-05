@@ -18,12 +18,12 @@ import { expect, test } from "vitest";
 import {
   TextContentCategory,
   TextContentTyp,
-} from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
 import {
   Id,
   SaveTextContentRequest,
   TextContent as TextContentType,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
 import {
   TestUserData,
   createBasicTestCtx,
@@ -40,7 +40,7 @@ import { saveTextContent } from "./saveTextContent";
 import {
   pageElementDefaults,
   pdfTextsDefaults,
-} from "@lebenswurzel/solawi-bedarf-shared/src/config";
+} from "@lebenswurzel/solawi-bedarf-shared/src/config.js";
 
 setupDatabaseCleanup();
 

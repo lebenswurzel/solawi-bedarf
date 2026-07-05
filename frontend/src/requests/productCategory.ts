@@ -19,7 +19,7 @@ import {
   NewProductCategory,
   OptionalId,
   ProductCategoryWithProducts,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
 import { getUrl, verifyResponse } from "./requests.ts";
 
 export const getProductCategory = async (

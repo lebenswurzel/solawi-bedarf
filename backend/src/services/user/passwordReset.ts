@@ -14,17 +14,17 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { User } from "../../database/User";
-import { Address } from "@lebenswurzel/solawi-bedarf-shared/src/types";
-import { SolawiError } from "../../error";
-import { EmailService } from "../../ports/email";
-import { config } from "../../config";
-import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang";
-import { interpolate } from "@lebenswurzel/solawi-bedarf-shared/src/lang/template";
+import { User } from "../../database/User.js";
+import { Address } from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
+import { SolawiError } from "../../error.js";
+import { EmailService } from "../../ports/email.js";
+import { config } from "../../config.js";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.js";
+import { interpolate } from "@lebenswurzel/solawi-bedarf-shared/src/lang/template.js";
 import { err, ok, Result } from "neverthrow";
-import { TextContentRepo } from "../text/repo";
-import { UserRepo } from "./repo";
-import { sleep } from "@lebenswurzel/solawi-bedarf-shared/src/util/awaitHelper";
+import { TextContentRepo } from "../text/repo.js";
+import { UserRepo } from "./repo.js";
+import { sleep } from "@lebenswurzel/solawi-bedarf-shared/src/util/awaitHelper.js";
 
 export type Dependencies = EmailService & TextContentRepo & UserRepo;
 

@@ -16,23 +16,23 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import Koa from "koa";
 import Router from "koa-router";
-import { http } from "../../consts/http";
-import { AppDataSource } from "../../database/database";
-import { Order } from "../../database/Order";
-import { OrderItem } from "../../database/OrderItem";
-import { RequisitionConfig } from "../../database/RequisitionConfig";
-import { getRequestUserId, getUserFromContext } from "../getUserFromContext";
+import { http } from "../../consts/http.js";
+import { AppDataSource } from "../../database/database.js";
+import { Order } from "../../database/Order.js";
+import { OrderItem } from "../../database/OrderItem.js";
+import { RequisitionConfig } from "../../database/RequisitionConfig.js";
+import { getRequestUserId, getUserFromContext } from "../getUserFromContext.js";
 import {
   getConfigIdFromQuery,
   getNumericQueryParameter,
-} from "../../util/requestUtil";
-import { calculateNewOrderValidFromDate } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper";
+} from "../../util/requestUtil.js";
+import { calculateNewOrderValidFromDate } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper.js";
 import {
   isRequisitionActive,
   isIncreaseOnly,
-} from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition";
-import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
-import { config } from "../../config";
+} from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition.js";
+import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
+import { config } from "../../config.js";
 
 /**
  * Creates a new order modification during the bidding round.

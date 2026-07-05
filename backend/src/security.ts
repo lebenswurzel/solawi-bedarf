@@ -16,8 +16,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { config } from "./config";
-import { Token } from "./database/Token";
+import { config } from "./config.js";
+import { Token } from "./database/Token.js";
 import { randomBytes } from "crypto";
 
 export function hashPassword(plaintextPassword: string) {

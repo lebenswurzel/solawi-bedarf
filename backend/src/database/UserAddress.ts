@@ -15,8 +15,8 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { Entity, Column, PrimaryGeneratedColumn } from "typeorm";
-import { BaseEntity } from "./BaseEntity";
-import { EncryptTransformer } from "./EncryptTransformer";
+import { BaseEntity } from "./BaseEntity.js";
+import { EncryptTransformer } from "./EncryptTransformer.js";
 
 @Entity()
 export class UserAddress extends BaseEntity {

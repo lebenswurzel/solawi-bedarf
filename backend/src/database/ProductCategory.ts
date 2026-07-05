@@ -21,10 +21,10 @@ import {
   OneToMany,
   ManyToOne,
 } from "typeorm";
-import { Product } from "./Product";
-import { BaseEntity } from "./BaseEntity";
-import { RequisitionConfig } from "./RequisitionConfig";
-import { ProductCategoryType } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import { Product } from "./Product.js";
+import { BaseEntity } from "./BaseEntity.js";
+import { RequisitionConfig } from "./RequisitionConfig.js";
+import { ProductCategoryType } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
 
 @Entity()
 export class ProductCategory extends BaseEntity {
