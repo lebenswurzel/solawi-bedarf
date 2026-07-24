@@ -97,7 +97,8 @@ export const initDb = async () => {
       category: TextContentCategory.PDF,
       title: key,
       content,
-      typ: TextContentTyp.PLAIN,
+      typ:
+        key === "pdfLogo" ? TextContentTyp.BASE64_IMAGE : TextContentTyp.PLAIN,
     });
   }
 

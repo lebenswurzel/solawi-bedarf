@@ -21,6 +21,10 @@ import {
   TextContentTyp,
   UserRole,
 } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import {
+  BASE64_IMAGE_DATA_URL_PATTERN,
+  PDF_LOGO_MAX_BYTES,
+} from "@lebenswurzel/solawi-bedarf-shared/src/config";
 import { SaveTextContentRequest } from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import { http } from "../../consts/http";
 import { AppDataSource } from "../../database/database";
@@ -58,6 +62,21 @@ export const saveTextContent = async (
   }
 };
 
+const isValidBase64ImageContent = (content: string): boolean => {
+  if (content === "") {
+    return true;
+  }
+  if (!BASE64_IMAGE_DATA_URL_PATTERN.test(content)) {
+    return false;
+  }
+  const base64Part = content.split(",")[1] ?? "";
+  // Approximate decoded size from base64 length (4 chars ≈ 3 bytes).
+  const approxBytes = Math.floor(
+    (base64Part.replace(/\s/g, "").length * 3) / 4,
+  );
+  return approxBytes <= PDF_LOGO_MAX_BYTES;
+};
+
 const updateTextContent = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
   category: TextContentCategory,
@@ -83,6 +102,15 @@ const updateTextContent = async (
     textContent = await repository.findOneBy(query);
     if (!textContent) {
       ctx.throw(http.bad_request);
+    }
+  }
+
+  if (textContent.typ === TextContentTyp.BASE64_IMAGE) {
+    if (!isValidBase64ImageContent(content)) {
+      ctx.throw(
+        http.bad_request,
+        "invalid BASE64_IMAGE content (expected empty or data:image/...;base64,... within size limit)",
+      );
     }
   }
 

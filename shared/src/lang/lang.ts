@@ -745,6 +745,7 @@ export const langPdfTexts: Record<PdfTextsKeys, string> = {
   deliveryNoteHeader: "Kopfzeile im Vertrieb-Lieferschein",
   deliveryNoteFooter: "Fußzeile im Vertrieb-Lieferschein",
   invoiceFooter: "Fußzeile in der Rechnung",
+  pdfLogo: "Logo in PDF-Dokumenten",
 };
 
 export const langEmailTextLabels: Record<EmailTextsKeys, string> = {

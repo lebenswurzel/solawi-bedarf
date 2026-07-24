@@ -30,12 +30,14 @@ import {
   TextContentTyp,
 } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import { escapeHtmlEntities } from "@lebenswurzel/solawi-bedarf-shared/src/util/stringHelper.ts";
+import { PDF_LOGO_MAX_BYTES } from "@lebenswurzel/solawi-bedarf-shared/src/config.ts";
 
 defineProps(["open"]);
 const emit = defineEmits(["close"]);
 
 const loading = ref(false);
 const error = ref<string>();
+const imageFile = ref<File[]>([]);
 
 const dialogTextContent = inject<Ref<NewTextContent | TextContent>>(
   "dialogTextContent",
@@ -43,6 +45,10 @@ const dialogTextContent = inject<Ref<NewTextContent | TextContent>>(
 
 const isMD = computed(() => {
   return dialogTextContent.value.typ == TextContentTyp.MD;
+});
+
+const isBase64Image = computed(() => {
+  return dialogTextContent.value.typ == TextContentTyp.BASE64_IMAGE;
 });
 
 const html = computed(() => {
@@ -57,6 +63,7 @@ const titleDisabled = computed(() => {
 });
 
 const onClose = () => {
+  imageFile.value = [];
   emit("close");
 };
 
@@ -67,6 +74,7 @@ const onSave = () => {
   )
     .then(() => {
       loading.value = false;
+      imageFile.value = [];
       emit("close");
     })
     .catch((e: Error) => {
@@ -87,6 +95,37 @@ const onDelete = () => {
       loading.value = false;
     });
 };
+
+const onClearImage = () => {
+  dialogTextContent.value.content = "";
+  imageFile.value = [];
+};
+
+const onImageSelected = (files: File | File[] | null) => {
+  const file = Array.isArray(files) ? files[0] : files;
+  if (!file) {
+    return;
+  }
+  if (file.size > PDF_LOGO_MAX_BYTES) {
+    error.value = `Bild ist zu groß (max. ${Math.round(PDF_LOGO_MAX_BYTES / 1024)} KB)`;
+    imageFile.value = [];
+    return;
+  }
+  const allowed = ["image/png", "image/jpeg", "image/jpg", "image/svg+xml"];
+  if (!allowed.includes(file.type)) {
+    error.value = "Nur PNG, JPEG oder SVG erlaubt";
+    imageFile.value = [];
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = () => {
+    dialogTextContent.value.content = String(reader.result ?? "");
+  };
+  reader.onerror = () => {
+    error.value = "Bild konnte nicht gelesen werden";
+  };
+  reader.readAsDataURL(file);
+};
 </script>
 
 <template>
@@ -97,7 +136,7 @@ const onDelete = () => {
           <v-col cols="6">
             <v-card-title> Text Editor </v-card-title>
           </v-col>
-          <v-col cols="6">
+          <v-col cols="6" v-if="!isBase64Image">
             Modus:
             <v-chip :color="isMD ? 'primary' : 'grey'">
               <v-icon v-if="isMD">mdi-check</v-icon> Markdown
@@ -115,9 +154,36 @@ const onDelete = () => {
           label="Titel"
           :disabled="titleDisabled"
         ></v-text-field>
-        <v-textarea v-model="dialogTextContent!.content"></v-textarea>
-        <div class="text-h6">Vorschau:</div>
-        <div class="text-body-medium preview" v-html="html"></div>
+        <template v-if="isBase64Image">
+          <v-file-input
+            v-model="imageFile"
+            label="Bild hochladen"
+            accept="image/png,image/jpeg,image/svg+xml"
+            prepend-icon="mdi-image"
+            show-size
+            clearable
+            @update:model-value="onImageSelected"
+          ></v-file-input>
+          <div v-if="dialogTextContent.content" class="mb-2">
+            <div class="text-h6 mb-2">Vorschau:</div>
+            <img
+              :src="dialogTextContent.content"
+              alt="PDF-Logo"
+              class="pdf-logo-preview"
+            />
+            <div class="mt-2">
+              <v-btn size="small" variant="outlined" @click="onClearImage">
+                Bild entfernen
+              </v-btn>
+            </div>
+          </div>
+          <div v-else class="text-medium-emphasis">Kein Bild gesetzt</div>
+        </template>
+        <template v-else>
+          <v-textarea v-model="dialogTextContent!.content"></v-textarea>
+          <div class="text-h6">Vorschau:</div>
+          <div class="text-body-medium preview" v-html="html"></div>
+        </template>
       </v-card-text>
       <v-card-actions>
         <v-btn @click="onClose"> {{ language.app.actions.close }} </v-btn>
@@ -156,5 +222,12 @@ ol {
 .preview p {
   margin-bottom: 0.5rem;
   margin-top: 0.5rem;
+}
+
+.pdf-logo-preview {
+  width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+  display: block;
 }
 </style>

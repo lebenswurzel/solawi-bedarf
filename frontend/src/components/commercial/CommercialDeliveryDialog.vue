@@ -319,6 +319,7 @@ const onDeliveryNotePdf = async () => {
     organizationInfo.value,
     pdfTexts.value.deliveryNoteHeader,
     pdfTexts.value.deliveryNoteFooter,
+    pdfTexts.value.pdfLogo,
   );
 };
 
@@ -345,6 +346,7 @@ const onInvoicePdf = async () => {
       productsById.value,
       organizationInfo.value,
       pdfTexts.value.invoiceFooter,
+      pdfTexts.value.pdfLogo,
     );
   } catch (error) {
     setError("Rechnung fehlgeschlagen", error as Error);

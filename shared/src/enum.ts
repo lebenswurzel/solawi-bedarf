@@ -70,6 +70,7 @@ export const isMultiContentCategory = (
 export enum TextContentTyp {
   MD = "MD",
   PLAIN = "PLAIN",
+  BASE64_IMAGE = "BASE64_IMAGE",
 }
 
 export enum ProductCategoryType {

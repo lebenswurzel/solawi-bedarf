@@ -112,5 +112,6 @@ export const makePdfTexts = (textContents: SimpleTextContent[]): PdfTexts => {
     deliveryNoteHeader: getField("deliveryNoteHeader"),
     deliveryNoteFooter: getField("deliveryNoteFooter"),
     invoiceFooter: getField("invoiceFooter"),
+    pdfLogo: getField("pdfLogo"),
   };
 };

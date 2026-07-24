@@ -206,7 +206,12 @@ const onClose = async () => {
             >
               {{ langPdfTexts[text.title as PdfTextsKeys] ?? text.title }}
               <code class="opacity-50">{pdf.{{ text.title }}}</code>
-              <v-list-item-subtitle>{{ text.content }}</v-list-item-subtitle>
+              <v-list-item-subtitle>
+                <template v-if="text.typ === TextContentTyp.BASE64_IMAGE">
+                  {{ text.content ? "Bild gesetzt" : "Kein Bild" }}
+                </template>
+                <template v-else>{{ text.content }}</template>
+              </v-list-item-subtitle>
             </v-list-item>
           </v-list>
         </v-card-text>

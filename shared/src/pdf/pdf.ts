@@ -97,15 +97,22 @@ const DEFAULT_PDF_MARGIN_BOTTOM = 60;
 const DEFAULT_PDF_FONT_SIZE = 12;
 /** Enough for "Erstellt am DD.MM.YYYY, HH:MM:SS" at footer font size. */
 const DEFAULT_PDF_FOOTER_RIGHT_WIDTH_PT = 170;
+/** A4 portrait width minus left/right margins. */
+const DEFAULT_PDF_CONTENT_WIDTH_PT = 595.28 - 2 * DEFAULT_PDF_MARGIN_HORIZONTAL;
 
 export function createDefaultPdf(
   pdf: PdfSpec,
-  organizationInfo: OrganizationInfo
+  organizationInfo: OrganizationInfo,
+  logoOverride?: string | null,
 ): TCreatedPdf {
   const baseFontSize = pdf.fontSize ?? DEFAULT_PDF_FONT_SIZE;
   const smallFontSize = pdf.footerFontSize ?? baseFontSize - 2;
   const tableHeaderFontSize = pdf.tableHeaderFontSize ?? baseFontSize - 1;
   const pageMarginBottom = pdf.pageMarginBottom ?? DEFAULT_PDF_MARGIN_BOTTOM;
+  const effectiveLogo =
+    logoOverride !== undefined
+      ? logoOverride?.trim() || null
+      : logo;
 
   const toTableHeaderCell = (h: Content): Content => {
     if (typeof h === "string") {
@@ -127,11 +134,11 @@ export function createDefaultPdf(
   };
 
   const content: Content[] = [];
-  if (logo != null) {
+  if (effectiveLogo != null) {
     content.push({
-      image: `${logo}`,
-      fit: [200, 60],
-      alignment: "center",
+      image: `${effectiveLogo}`,
+      width: DEFAULT_PDF_CONTENT_WIDTH_PT,
+      margin: [0, 0, 0, 12],
     });
   }
 

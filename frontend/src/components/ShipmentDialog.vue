@@ -369,6 +369,7 @@ const onShipmentPdfClick = async () => {
     pdfTexts.value.packagingListHeader,
     pdfTexts.value.packagingListFooter,
     pdfTexts.value.packagingListDetailText,
+    pdfTexts.value.pdfLogo,
   ).then(() => {
     loading.value = false;
   });

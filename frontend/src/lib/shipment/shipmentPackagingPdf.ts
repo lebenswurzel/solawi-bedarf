@@ -204,6 +204,7 @@ export async function createShipmentPackagingPdfs(
   headerText: string,
   footerText: string,
   detailText: string,
+  logo?: string | null,
 ) {
   const pdfSpecs = createShipmentPackagingPdfSpecs(
     shipment,
@@ -221,7 +222,7 @@ export async function createShipmentPackagingPdfs(
   // Create individual PDFs for each depot
   const pdfs: TCreatedPdf[] = [];
   for (const pdfSpec of pdfSpecs) {
-    const pdf = createDefaultPdf(pdfSpec, organizationInfo);
+    const pdf = createDefaultPdf(pdfSpec, organizationInfo, logo);
     pdfs.push(pdf);
     await zip.addPdf(pdf, `${sanitizeFileName(pdfSpec.receiver)}.pdf`);
   }

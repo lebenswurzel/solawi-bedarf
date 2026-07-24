@@ -37,7 +37,10 @@ import {
   TextContentCategory,
 } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import { TextContent } from "../../database/TextContent";
-import { makeFlatOrganizationInfo } from "@lebenswurzel/solawi-bedarf-shared/src/text/textContent";
+import {
+  makeFlatOrganizationInfo,
+  makePdfTexts,
+} from "@lebenswurzel/solawi-bedarf-shared/src/text/textContent";
 import { FindOptionsWhere } from "typeorm";
 import { Msrp, SavedOrder } from "@lebenswurzel/solawi-bedarf-shared/src/types";
 
@@ -184,9 +187,16 @@ export const sendOrderConfirmationMail = async ({
 
   let pdfBlob: Blob | null = null;
   if (dataByUserAndProductCategory.length > 0) {
+    const pdfTextContents = await AppDataSource.getRepository(TextContent).find(
+      {
+        where: { category: TextContentCategory.PDF },
+      },
+    );
+    const pdfTexts = makePdfTexts(pdfTextContents);
     const pdf = createDefaultPdf(
       { ...dataByUserAndProductCategory[0], timezone: config.timezone },
       organizationInfo,
+      pdfTexts.pdfLogo,
     );
     pdfBlob = await new Promise((resolve, _) => {
       pdf.getBlob((blob: Blob) => resolve(blob));

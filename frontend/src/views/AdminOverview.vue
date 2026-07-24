@@ -43,7 +43,7 @@ const loading = ref({
 const configStore = useConfigStore();
 const uiFeedbackStore = useUiFeedback();
 const textContentStore = useTextContentStore();
-const { organizationInfo } = storeToRefs(textContentStore);
+const { organizationInfo, pdfTexts } = storeToRefs(textContentStore);
 
 const orderOveriewWithApplicant = ref(false);
 const orderOveriewWithPaymentInfo = ref(false);
@@ -128,7 +128,7 @@ const onDepotPdfClick = async () => {
     const zip = new Zip();
     for (const pdfSpec of dataByDepotAndProductCategory) {
       await zip.addPdf(
-        createDefaultPdf(pdfSpec, organizationInfo.value),
+        createDefaultPdf(pdfSpec, organizationInfo.value, pdfTexts.value.pdfLogo),
         `${sanitizeFileName(pdfSpec.receiver)}.pdf`,
       );
     }
@@ -163,7 +163,7 @@ const onUserPdfClick = async () => {
     const zip = new Zip();
     for (const pdf of dataByUserAndProductCategory) {
       await zip.addPdf(
-        createDefaultPdf(pdf, organizationInfo.value),
+        createDefaultPdf(pdf, organizationInfo.value, pdfTexts.value.pdfLogo),
         `${sanitizeFileName(pdf.receiver)}.pdf`,
       );
     }

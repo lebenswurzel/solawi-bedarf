@@ -107,6 +107,7 @@ export const pdfTextsKeys: PdfTextsKeys[] = [
   "deliveryNoteHeader",
   "deliveryNoteFooter",
   "invoiceFooter",
+  "pdfLogo",
 ];
 
 export const pdfTextsDefaults: PdfTexts = {
@@ -117,7 +118,14 @@ export const pdfTextsDefaults: PdfTexts = {
   deliveryNoteHeader: "",
   deliveryNoteFooter: "",
   invoiceFooter: "",
+  pdfLogo: "",
 };
+
+/** Max raw image file size for BASE64_IMAGE text content uploads (bytes). */
+export const PDF_LOGO_MAX_BYTES = 500 * 1024;
+
+export const BASE64_IMAGE_DATA_URL_PATTERN =
+  /^data:image\/(png|jpeg|jpg|svg\+xml);base64,[A-Za-z0-9+/=\s]+$/;
 
 export const emailTextsKeys: EmailTextsKeys[] = [
   "orderConfirmationFullSeason",

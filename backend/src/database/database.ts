@@ -63,6 +63,7 @@ import { PaymentInfo } from "./PaymentInfo";
 import { AddPaymentInfo1765710381587 } from "../migrations/1765710381587-add-payment-info";
 import { CommercialVertrieb1777500000000 } from "../migrations/1777500000000-commercial-vertrieb";
 import { CommercialFreeProduct1784898069000 } from "../migrations/1784898069000-commercial-free-product";
+import { PdfLogoBase64Image1784903127000 } from "../migrations/1784903127000-pdf-logo-base64-image";
 import { CommercialProfile } from "./CommercialProfile";
 import { CommercialDelivery } from "./CommercialDelivery";
 import { CommercialDeliveryItem } from "./CommercialDeliveryItem";
@@ -127,6 +128,7 @@ const migrations = [
   AddPaymentInfo1765710381587,
   CommercialVertrieb1777500000000,
   CommercialFreeProduct1784898069000,
+  PdfLogoBase64Image1784903127000,
 ];
 
 const configuredPort = config.testing.isTesting

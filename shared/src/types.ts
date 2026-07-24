@@ -530,6 +530,7 @@ export interface PdfTexts {
   deliveryNoteHeader: string;
   deliveryNoteFooter: string;
   invoiceFooter: string;
+  pdfLogo: string;
 }
 export type PdfTextsKeys = FlattenKeys<PdfTexts>;
 

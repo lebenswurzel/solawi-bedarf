@@ -46,6 +46,7 @@ export function createCommercialDeliveryNotePdf(
   organizationInfo: OrganizationInfo,
   headerText?: string,
   footerText?: string,
+  logo?: string | null,
 ) {
   const prettyDate = format(new Date(delivery.deliveryDate), "dd.MM.yyyy");
   const rows = delivery.items.map((item, index) => {
@@ -104,7 +105,7 @@ export function createCommercialDeliveryNotePdf(
     additionalContent,
   };
 
-  const pdf = createDefaultPdf(pdfSpec, organizationInfo);
+  const pdf = createDefaultPdf(pdfSpec, organizationInfo, logo);
   pdf.download(
     `lieferschein-${sanitizeFileName(customerProfile.companyName)}-${format(new Date(delivery.deliveryDate), "yyyy-MM-dd")}.pdf`,
   );

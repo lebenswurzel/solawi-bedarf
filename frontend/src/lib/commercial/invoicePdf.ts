@@ -72,6 +72,7 @@ export function createCommercialInvoicePdf(
   productsById: ProductsById,
   organizationInfo: OrganizationInfo,
   footerText?: string,
+  logo?: string | null,
 ) {
   const deliveryDate = format(new Date(delivery.deliveryDate), "dd.MM.yyyy");
   const invoiceDate = format(new Date(invoice.createdAt), "dd.MM.yyyy");
@@ -213,7 +214,7 @@ export function createCommercialInvoicePdf(
     additionalContent,
   };
 
-  const pdf = createDefaultPdf(pdfSpec, organizationInfo);
+  const pdf = createDefaultPdf(pdfSpec, organizationInfo, logo);
   pdf.download(
     `rechnung-${sanitizeFileName(invoice.invoiceNumber)}-${sanitizeFileName(customerProfile.companyName)}.pdf`,
   );

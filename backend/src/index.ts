@@ -206,7 +206,7 @@ export async function startServer(): Promise<Server> {
 
   router.get("/error-log", getErrorLog);
 
-  app.use(bodyParser());
+  app.use(bodyParser({ jsonLimit: "1.5mb" }));
   app.use(router.routes()).use(router.allowedMethods());
 
   return app.listen(port, () => {
