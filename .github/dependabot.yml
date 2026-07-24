@@ -1,5 +1,8 @@
 version: 2
 updates:
+  # Single root entry is correct for npm workspaces (one package-lock.json).
+  # Do not add separate backend/frontend/shared directories — that splits PRs
+  # and makes lockfile updates worse.
   - package-ecosystem: "npm"
     directory: "/"
     versioning-strategy: increase
@@ -7,40 +10,71 @@ updates:
     schedule:
       interval: "monthly"
     groups:
+      # Must be listed before vue-and-vite-deps: pattern "vite*" also matches
+      # "vitest", which previously split vitest from @vitest/coverage-v8
+      # (exact peer deps) across vue-and-vite-deps vs everything-else PRs.
+      vitest:
+        patterns:
+          - "vitest"
+          - "@vitest/*"
+
       vue-and-vite-deps:
         patterns:
-          - "vue*"
+          - "vue"
+          - "vue-*"
+          - "vuetify"
+          - "@vue/*"
           - "@vue-leaflet/*"
-          - "vite*"
+          - "vite"
+          - "vite-*"
+          - "@vitejs/*"
           - "pinia"
+        exclude-patterns:
+          - "vitest"
+          - "@vitest/*"
+
       coding-and-language:
         patterns:
           - "typescript"
           - "prettier"
-          - "eslint*"
+          - "eslint"
+          - "eslint-*"
+          - "@types/*"
           - "ts-node"
           - "reflect-metadata"
+
       tools:
         patterns:
+          - "pdfmake"
           - "*pdfmake*"
           - "date-fns"
+          - "date-fns-tz"
           - "jszip"
           - "marked"
           - "basic-auth"
           - "jsonwebtoken"
-          - "*ldapjs"
-          - "*nodemailer"
-          - "*node*"
+          - "ldapjs"
+          - "@ldapjs/*"
+          - "@types/ldapjs"
+          - "nodemailer"
+          - "@types/nodemailer"
+          - "@types/node"
+
       database:
         patterns:
           - "typeorm"
           - "pg"
+
       koa:
         patterns:
-          - "*koa*"
+          - "koa"
+          - "koa-*"
+          - "@koa/*"
+          - "@types/koa*"
+
       everything-else:
         patterns:
-          - "*" # captures everything that wasn't included in any of the above groups
+          - "*"
 
   - package-ecosystem: "github-actions"
     directory: "/"
