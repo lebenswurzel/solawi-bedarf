@@ -62,6 +62,7 @@ import { PasswortReset1765491964000 } from "../migrations/1765491964000-passwort
 import { PaymentInfo } from "./PaymentInfo";
 import { AddPaymentInfo1765710381587 } from "../migrations/1765710381587-add-payment-info";
 import { CommercialVertrieb1777500000000 } from "../migrations/1777500000000-commercial-vertrieb";
+import { CommercialFreeProduct1784898069000 } from "../migrations/1784898069000-commercial-free-product";
 import { CommercialProfile } from "./CommercialProfile";
 import { CommercialDelivery } from "./CommercialDelivery";
 import { CommercialDeliveryItem } from "./CommercialDeliveryItem";
@@ -125,6 +126,7 @@ const migrations = [
   PasswortReset1765491964000,
   AddPaymentInfo1765710381587,
   CommercialVertrieb1777500000000,
+  CommercialFreeProduct1784898069000,
 ];
 
 const configuredPort = config.testing.isTesting

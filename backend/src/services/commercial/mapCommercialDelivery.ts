@@ -31,6 +31,7 @@ export const mapCommercialDelivery = (
     companyName: delivery.customer?.commercialProfile?.companyName,
     items: (delivery.items || []).map((item) => ({
       productId: item.productId,
+      productName: item.productName,
       quantity: item.quantity,
       unit: item.unit,
       conversionFrom: item.conversionFrom,

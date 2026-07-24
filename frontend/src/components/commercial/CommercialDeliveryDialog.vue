@@ -47,7 +47,6 @@ import {
 } from "@lebenswurzel/solawi-bedarf-shared/src/commercial/pricing.ts";
 import { createCommercialDeliveryNotePdf } from "../../lib/commercial/deliveryNotePdf.ts";
 import { createCommercialInvoicePdf } from "../../lib/commercial/invoicePdf.ts";
-import { Unit } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 
 const t = language.pages.commercial;
 
@@ -103,22 +102,25 @@ const customerOptions = computed(() =>
 
 const invoiceLocked = computed(() => !!savedDelivery.value?.invoice);
 
+const hasSavableProduct = (item: EditCommercialDeliveryItem): boolean =>
+  !!item.unit &&
+  (item.productId != null || !!item.productName?.trim());
+
 const toSaveableItems = (
   items: EditCommercialDeliveryItem[],
 ): CommercialDeliveryItemData[] =>
-  items
-    .filter((item) => item.productId && item.unit)
-    .map((item) => ({
-      productId: item.productId!,
-      quantity: item.quantity,
-      unit: item.unit!,
-      conversionFrom: item.conversionFrom,
-      conversionTo: item.conversionTo,
-      unitPriceCents: item.unitPriceCents,
-      vatRate: item.vatRate,
-      isBio: item.isBio,
-      description: item.description,
-    }));
+  items.filter(hasSavableProduct).map((item) => ({
+    productId: item.productId ?? null,
+    productName: item.productId != null ? null : item.productName?.trim() || null,
+    quantity: item.quantity,
+    unit: item.unit!,
+    conversionFrom: item.conversionFrom,
+    conversionTo: item.conversionTo,
+    unitPriceCents: item.unitPriceCents,
+    vatRate: item.vatRate,
+    isBio: item.isBio,
+    description: item.description,
+  }));
 
 const normalizeDescription = (description: string | null | undefined) =>
   description ?? null;
@@ -137,6 +139,8 @@ const deliveryItemsEqual = (
     const other = b[index];
     return (
       item.productId === other.productId &&
+      normalizeDescription(item.productName) ===
+        normalizeDescription(other.productName) &&
       item.quantity === other.quantity &&
       item.unit === other.unit &&
       item.conversionFrom === other.conversionFrom &&
@@ -183,13 +187,20 @@ const hasUnsavedChanges = computed(() => {
   return !deliveryItemsEqual(toSaveableItems(edit.items), saved.items);
 });
 
+const usedProductIdsForItem = (index: number): number[] =>
+  editDelivery.value.items
+    .filter((_, i) => i !== index)
+    .map((item) => item.productId)
+    .filter((id): id is number => id != null);
+
+const usedProductNamesForItem = (index: number): string[] =>
+  editDelivery.value.items
+    .filter((_, i) => i !== index)
+    .map((item) => item.productName?.trim().toLowerCase())
+    .filter((name): name is string => !!name);
+
 const totals = computed(() =>
-  getDeliveryTotals(
-    editDelivery.value.items.filter(
-      (i): i is EditCommercialDeliveryItem & { productId: number; unit: Unit } =>
-        !!i.productId && !!i.unit,
-    ),
-  ),
+  getDeliveryTotals(toSaveableItems(editDelivery.value.items)),
 );
 
 const loadDelivery = async () => {
@@ -228,6 +239,8 @@ const onAddItem = () => {
   editDelivery.value.items.push({
     showItem: true,
     isNew: true,
+    productId: null,
+    productName: null,
     quantity: 1,
     conversionFrom: 1,
     conversionTo: 1,
@@ -400,6 +413,8 @@ const onClose = () => {
           :key="index"
           :item="item"
           :products="products"
+          :used-product-ids="usedProductIdsForItem(index)"
+          :used-product-names="usedProductNamesForItem(index)"
           :locked="invoiceLocked"
         />
         <v-btn

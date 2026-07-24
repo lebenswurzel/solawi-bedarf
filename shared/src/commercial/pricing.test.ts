@@ -48,6 +48,7 @@ const item = (
   overrides: Partial<CommercialDeliveryItem> = {},
 ): CommercialDeliveryItem => ({
   productId: 1,
+  productName: null,
   quantity: 2000,
   unit: Unit.WEIGHT,
   conversionFrom: 1,

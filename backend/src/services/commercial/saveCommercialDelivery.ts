@@ -32,22 +32,47 @@ import { getUserFromContext } from "../getUserFromContext";
 import { mapCommercialDelivery } from "./mapCommercialDelivery";
 import { validateCommercialProfile } from "../user/commercialProfile";
 
+const normalizeProductName = (name: string): string =>
+  name.trim().toLowerCase();
+
 const validateItems = async (
   items: CommercialDeliveryRequest["items"],
 ): Promise<void> => {
   if (!items || items.length === 0) {
     throw new Error("At least one delivery item is required");
   }
+
+  const seenProductIds = new Set<number>();
+  const seenProductNames = new Set<string>();
+
   for (const item of items) {
-    if (!item.productId) {
-      throw new Error("productId is required");
+    const hasProductId = item.productId != null;
+    const productName = item.productName?.trim() || null;
+    const hasProductName = !!productName;
+
+    if (hasProductId === hasProductName) {
+      throw new Error("exactly one of productId or productName is required");
     }
-    const product = await AppDataSource.getRepository(Product).findOneBy({
-      id: item.productId,
-    });
-    if (!product) {
-      throw new Error(`product ${item.productId} not found`);
+
+    if (hasProductId) {
+      if (seenProductIds.has(item.productId!)) {
+        throw new Error(`duplicate product ${item.productId}`);
+      }
+      seenProductIds.add(item.productId!);
+      const product = await AppDataSource.getRepository(Product).findOneBy({
+        id: item.productId!,
+      });
+      if (!product) {
+        throw new Error(`product ${item.productId} not found`);
+      }
+    } else {
+      const normalized = normalizeProductName(productName!);
+      if (seenProductNames.has(normalized)) {
+        throw new Error(`duplicate product name ${productName}`);
+      }
+      seenProductNames.add(normalized);
     }
+
     if (item.quantity <= 0) {
       throw new Error("quantity must be positive");
     }
@@ -156,7 +181,10 @@ export const saveCommercialDelivery = async (
       const items = request.items.map((item) => {
         const entity = new CommercialDeliveryItem();
         entity.commercialDeliveryId = saved.id;
-        entity.productId = item.productId;
+        entity.productId = item.productId ?? null;
+        entity.productName = item.productId
+          ? null
+          : item.productName?.trim() || null;
         entity.quantity = item.quantity;
         entity.unit = item.unit;
         entity.conversionFrom = item.conversionFrom ?? 1;

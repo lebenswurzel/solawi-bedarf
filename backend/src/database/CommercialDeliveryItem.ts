@@ -33,11 +33,14 @@ export class CommercialDeliveryItem extends BaseEntity {
   })
   commercialDelivery: CommercialDelivery;
 
-  @Column()
-  productId: number;
+  @Column({ nullable: true })
+  productId: number | null;
 
-  @ManyToOne(() => Product, { nullable: false })
-  product: Product;
+  @ManyToOne(() => Product, { nullable: true })
+  product: Product | null;
+
+  @Column({ type: "varchar", nullable: true })
+  productName: string | null;
 
   @Column()
   quantity: number;

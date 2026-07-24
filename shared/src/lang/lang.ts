@@ -369,9 +369,9 @@ export const language = {
         customer:
           "Ein aktiver Nutzer mit der Rolle „Gewerblich“ (COMMERCIAL), angelegt unter Admin → Benutzer, inklusive vollständigem Firmenprofil (Firma, Straße, PLZ, Ort).",
         products:
-          "Mindestens eine Position mit aktivem Produkt aus der Nahrungsmittel-Konfiguration; Menge, Verkaufseinheit (Stück oder Gewicht) und Einzelpreis (brutto) sind erforderlich.",
+          "Mindestens eine Position: bestehendes Produkt aus der Nahrungsmittel-Konfiguration oder freier Produktname (z. B. Topfkräuter); Menge, Verkaufseinheit und Einzelpreis (brutto) sind erforderlich. Jedes Produkt darf nur einmal vorkommen.",
         pricing:
-          "Der Einzelpreis wird standardmäßig aus dem Orientierungswert für engagierte Mitglieder übernommen und kann pro Position angepasst werden; der MwSt.-Satz kommt aus der Produktkonfiguration (7 % oder 19 %).",
+          "Der Einzelpreis wird bei Katalogprodukten standardmäßig aus dem Orientierungswert für engagierte Mitglieder übernommen und kann pro Position angepasst werden; der MwSt.-Satz kommt aus der Produktkonfiguration (7 % oder 19 %) bzw. ist frei wählbar.",
         invoice:
           "Nach Erstellung einer Rechnung sind die Positionen gesperrt; Lieferungen mit Rechnung können nicht gelöscht werden.",
       },

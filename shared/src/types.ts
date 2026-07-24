@@ -615,7 +615,8 @@ export type CommercialUser = User & {
 };
 
 export interface CommercialDeliveryItem {
-  productId: ProductId;
+  productId: ProductId | null;
+  productName: string | null;
   quantity: number;
   unit: Unit;
   conversionFrom: number;
@@ -630,7 +631,7 @@ export interface EditCommercialDeliveryItem extends Omit<
   CommercialDeliveryItem,
   "productId" | "unit"
 > {
-  productId?: ProductId;
+  productId?: ProductId | null;
   unit?: Unit;
   showItem: boolean;
   isNew?: boolean;

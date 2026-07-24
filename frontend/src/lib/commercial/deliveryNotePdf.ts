@@ -27,6 +27,7 @@ import {
   createDefaultPdf,
   PdfSpec,
 } from "@lebenswurzel/solawi-bedarf-shared/src/pdf/pdf.ts";
+import { formatCommercialItemBezeichnung } from "@lebenswurzel/solawi-bedarf-shared/src/commercial/itemDisplay.ts";
 
 const formatReceiver = (profile: CommercialProfile): string => {
   return `${profile.companyName}\n${profile.street}\n${profile.postalcode} ${profile.city}`;
@@ -42,11 +43,12 @@ export function createCommercialDeliveryNotePdf(
 ) {
   const prettyDate = format(new Date(delivery.deliveryDate), "dd.MM.yyyy");
   const rows = delivery.items.map((item) => {
-    const product = productsById[item.productId];
     const description = item.description || "";
     return [
       `${item.quantity} ${getLangUnit(item.unit)}`,
-      `${product?.name || "Unbekannt"}${item.isBio ? " [BIO]" : ""}`,
+      formatCommercialItemBezeichnung(item, productsById, {
+        includeBioSuffix: true,
+      }),
       description,
     ];
   });

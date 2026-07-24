@@ -34,6 +34,7 @@ import {
   getLineGrossCents,
   getSaleQuantityInBigUnits,
 } from "@lebenswurzel/solawi-bedarf-shared/src/commercial/pricing.ts";
+import { formatCommercialItemBezeichnung } from "@lebenswurzel/solawi-bedarf-shared/src/commercial/itemDisplay.ts";
 import { Unit } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import { Content } from "pdfmake/interfaces";
 
@@ -67,11 +68,12 @@ export function createCommercialInvoicePdf(
   const totals = getDeliveryTotals(delivery.items);
 
   const rows = delivery.items.map((item) => {
-    const product = productsById[item.productId];
     const qtyLabel = `${getSaleQuantityInBigUnits(item).toLocaleString("de-DE")} ${unitPriceLabel(item.unit).replace("€/", "")}`;
     return [
       item.isBio ? "Ja" : "Nein",
-      product?.name || "Unbekannt",
+      formatCommercialItemBezeichnung(item, productsById, {
+        includeDescription: true,
+      }),
       `${item.quantity} ${getLangUnit(item.unit)} (${qtyLabel})`,
       formatCentsAsEuro(item.unitPriceCents),
       `${item.vatRate} %`,

@@ -66,6 +66,7 @@ testAsAdmin(
         items: [
           {
             productId: product.id,
+            productName: null,
             quantity: 1500,
             unit: Unit.WEIGHT,
             conversionFrom: 1,
@@ -101,6 +102,7 @@ testAsAdmin(
     const product = await getProductByName("p1");
     const item = {
       productId: product.id,
+      productName: null,
       quantity: 1500,
       unit: Unit.WEIGHT,
       conversionFrom: 1,
@@ -167,6 +169,7 @@ testAsAdmin(
         items: [
           {
             productId: product.id,
+            productName: null,
             quantity: 1,
             unit: Unit.PIECE,
             conversionFrom: 1,
@@ -183,6 +186,162 @@ testAsAdmin(
 
     await expect(() => saveCommercialDelivery(ctx)).rejects.toThrow(
       "invalid commercial customer",
+    );
+  },
+);
+
+testAsAdmin(
+  "create commercial delivery with free-text product",
+  async ({ userData }: TestUserData) => {
+    const customer = await createCommercialCustomer();
+
+    const ctx = createBasicTestCtx(
+      {
+        deliveryDate: new Date(),
+        customerUserId: customer.id,
+        description: "Topfkräuter Lieferung",
+        active: true,
+        items: [
+          {
+            productId: null,
+            productName: "Topfkräuter",
+            quantity: 10,
+            unit: Unit.PIECE,
+            conversionFrom: 1,
+            conversionTo: 1,
+            unitPriceCents: 250,
+            vatRate: 7,
+            isBio: true,
+            description: "Basilikum",
+          },
+        ],
+      },
+      userData.token,
+    );
+
+    await saveCommercialDelivery(ctx);
+    expect(ctx.body.items).toHaveLength(1);
+    expect(ctx.body.items[0].productId).toBeNull();
+    expect(ctx.body.items[0].productName).toBe("Topfkräuter");
+    expect(ctx.body.items[0].description).toBe("Basilikum");
+  },
+);
+
+testAsAdmin(
+  "create commercial delivery with catalog and free-text products",
+  async ({ userData }: TestUserData) => {
+    const customer = await createCommercialCustomer();
+    const product = await getProductByName("p1");
+
+    const ctx = createBasicTestCtx(
+      {
+        deliveryDate: new Date(),
+        customerUserId: customer.id,
+        description: "mixed",
+        active: true,
+        items: [
+          {
+            productId: product.id,
+            productName: null,
+            quantity: 1000,
+            unit: Unit.WEIGHT,
+            conversionFrom: 1,
+            conversionTo: 1,
+            unitPriceCents: product.msrp,
+            vatRate: 7,
+            isBio: true,
+            description: "Bund",
+          },
+          {
+            productId: null,
+            productName: "Topfkräuter",
+            quantity: 5,
+            unit: Unit.PIECE,
+            conversionFrom: 1,
+            conversionTo: 1,
+            unitPriceCents: 200,
+            vatRate: 19,
+            isBio: false,
+            description: null,
+          },
+        ],
+      },
+      userData.token,
+    );
+
+    await saveCommercialDelivery(ctx);
+    expect(ctx.body.items).toHaveLength(2);
+    expect(
+      ctx.body.items.map((i: { productName: string | null }) => i.productName),
+    ).toEqual([null, "Topfkräuter"]);
+  },
+);
+
+testAsAdmin(
+  "reject duplicate catalog products on one delivery",
+  async ({ userData }: TestUserData) => {
+    const customer = await createCommercialCustomer();
+    const product = await getProductByName("p1");
+    const item = {
+      productId: product.id,
+      productName: null,
+      quantity: 1,
+      unit: Unit.PIECE,
+      conversionFrom: 1,
+      conversionTo: 1,
+      unitPriceCents: 100,
+      vatRate: 7,
+      isBio: true,
+      description: null,
+    };
+
+    const ctx = createBasicTestCtx(
+      {
+        deliveryDate: new Date(),
+        customerUserId: customer.id,
+        description: "dup catalog",
+        active: true,
+        items: [item, { ...item, quantity: 2 }],
+      },
+      userData.token,
+    );
+
+    await expect(() => saveCommercialDelivery(ctx)).rejects.toThrow(
+      `duplicate product ${product.id}`,
+    );
+  },
+);
+
+testAsAdmin(
+  "reject duplicate free-text product names on one delivery",
+  async ({ userData }: TestUserData) => {
+    const customer = await createCommercialCustomer();
+    const item = {
+      productId: null,
+      productName: "Topfkräuter",
+      quantity: 1,
+      unit: Unit.PIECE,
+      conversionFrom: 1,
+      conversionTo: 1,
+      unitPriceCents: 100,
+      vatRate: 7,
+      isBio: true,
+      description: null,
+    };
+
+    const ctx = createBasicTestCtx(
+      {
+        deliveryDate: new Date(),
+        customerUserId: customer.id,
+        description: "dup free",
+        active: true,
+        items: [item, { ...item, productName: " topfkräuter " }],
+      },
+      userData.token,
+    );
+
+    await expect(() => saveCommercialDelivery(ctx)).rejects.toThrow(
+      "duplicate product name",
     );
   },
 );
