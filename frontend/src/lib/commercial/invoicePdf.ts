@@ -136,12 +136,19 @@ export function createCommercialInvoicePdf(
         "\n",
         { text: "MwSt. gesamt: ", bold: true },
         formatCentsAsEuro(totals.vatCents),
-        "\n",
-        { text: "Brutto gesamt: ", bold: true },
-        formatCentsAsEuro(totals.grossCents),
       ],
       alignment: "right",
       margin: [0, 8, 0, 0],
+    },
+    {
+      text: [
+        { text: "Rechnungsbetrag: ", bold: true },
+        { text: formatCentsAsEuro(totals.grossCents), bold: true },
+      ],
+      alignment: "right",
+      bold: true,
+      fontSize: 12,
+      margin: [0, 10, 0, 0],
     },
     {
       text: vatSummaryLines,
@@ -149,22 +156,21 @@ export function createCommercialInvoicePdf(
     },
   );
 
-  if (footerText) {
-    additionalContent.push({
-      text: footerText,
-      margin: [0, 16, 0, 0],
-      fontSize: 8,
-    });
-  }
-
   const bioControlNumber =
     invoice.bioControlNumber || organizationInfo.bioControlNumber || "—";
-  const footerLeft = [
+  const accountInfo = [
     `Bio-Kontrollnummer: ${bioControlNumber}`,
     organizationInfo.bankAccount?.trim(),
   ]
     .filter(Boolean)
     .join("\n");
+
+  if (accountInfo) {
+    additionalContent.push({
+      text: accountInfo,
+      margin: [0, 16, 0, 0],
+    });
+  }
 
   const pdfSpec: PdfSpec = {
     receiver: formatReceiver(customerProfile),
@@ -173,7 +179,7 @@ export function createCommercialInvoicePdf(
     tableHeaderFontSize: 9,
     footerFontSize: 8,
     pageMarginBottom: 90,
-    footerTextLeft: footerLeft,
+    footerTextLeft: footerText?.trim() || "",
     headerTextRight: {
       text: [
         { text: "Rechnungsnummer: ", bold: true },

@@ -95,6 +95,8 @@ const DEFAULT_PDF_MARGIN_TOP = 40;
 const DEFAULT_PDF_MARGIN_TOP_WITH_HEADER = 75;
 const DEFAULT_PDF_MARGIN_BOTTOM = 60;
 const DEFAULT_PDF_FONT_SIZE = 12;
+/** Enough for "Erstellt am DD.MM.YYYY, HH:MM:SS" at footer font size. */
+const DEFAULT_PDF_FOOTER_RIGHT_WIDTH_PT = 170;
 
 export function createDefaultPdf(
   pdf: PdfSpec,
@@ -163,7 +165,7 @@ export function createDefaultPdf(
   content.push(
     typeof pdf.description === "string"
       ? { text: pdf.description }
-      : pdf.description,
+      : pdf.description
   );
   if (pdf.description2) {
     content.push({
@@ -183,10 +185,7 @@ export function createDefaultPdf(
       table: {
         widths: table.widths ?? new Array(table.headers.length).fill("*"),
         headerRows: 1,
-        body: [
-          table.headers.map(toTableHeaderCell),
-          ...table.rows,
-        ],
+        body: [table.headers.map(toTableHeaderCell), ...table.rows],
       },
       layout: "lightHorizontalLines",
     });
@@ -201,30 +200,33 @@ export function createDefaultPdf(
   const footerTextLeft = pdf.footerTextLeft || "";
 
   const footer: DynamicContent = (currentPage, pageCount): Content => {
+    const rightLines = [
+      pdf.footerTextRight || "",
+      `Erstellt am ${creationDate}`,
+      `Seite ${currentPage} / ${pageCount}`,
+    ].filter((line, index) => index > 0 || line.length > 0);
+
     return {
       columns: [
         {
-          text: footerTextLeft.includes("\n")
-            ? footerTextLeft
-            : `\n${footerTextLeft}`,
+          text: footerTextLeft,
           width: "*",
           fontSize: smallFontSize,
         },
         {
-          text: `\nSeite ${currentPage} / ${pageCount}`,
-          alignment: "center",
-          width: "auto",
-          fontSize: smallFontSize,
-        },
-        {
-          text: (pdf.footerTextRight || "") + `\nErstellt am ${creationDate}`,
+          text: rightLines.join("\n"),
           alignment: "right",
-          width: "*",
-          margin: [10, 0],
+          width: DEFAULT_PDF_FOOTER_RIGHT_WIDTH_PT,
+          margin: [16, 0, 0, 0],
           fontSize: smallFontSize,
         },
       ],
-      margin: [DEFAULT_PDF_MARGIN_HORIZONTAL, 5, DEFAULT_PDF_MARGIN_HORIZONTAL, -20],
+      margin: [
+        DEFAULT_PDF_MARGIN_HORIZONTAL,
+        5,
+        DEFAULT_PDF_MARGIN_HORIZONTAL,
+        -20,
+      ],
     };
   };
 
@@ -261,7 +263,9 @@ export function createDefaultPdf(
     footer,
     pageMargins: [
       DEFAULT_PDF_MARGIN_HORIZONTAL,
-      pdf.headerTextLeft ? DEFAULT_PDF_MARGIN_TOP_WITH_HEADER : DEFAULT_PDF_MARGIN_TOP,
+      pdf.headerTextLeft
+        ? DEFAULT_PDF_MARGIN_TOP_WITH_HEADER
+        : DEFAULT_PDF_MARGIN_TOP,
       DEFAULT_PDF_MARGIN_HORIZONTAL,
       pageMarginBottom,
     ],
@@ -333,7 +337,9 @@ type OverviewStyledCell = {
   positions?: { top: number; height?: number }[];
 };
 
-const cloneStyledBody = (body: OverviewStyledCell[][]): OverviewStyledCell[][] =>
+const cloneStyledBody = (
+  body: OverviewStyledCell[][]
+): OverviewStyledCell[][] =>
   JSON.parse(JSON.stringify(body)) as OverviewStyledCell[][];
 
 const overviewHLineWidth = (
