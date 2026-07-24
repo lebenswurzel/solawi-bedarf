@@ -80,17 +80,29 @@ export interface PdfSpec {
   additionalContent?: Content[];
   additionalTopMessage?: Content;
   timezone?: string;
+  /** Document body font size in pt. Defaults to 12. */
+  fontSize?: number;
+  /** Footer/header font size in pt. Defaults to fontSize - 2. */
+  footerFontSize?: number;
+  /** Bottom page margin in pt. Defaults to 60. */
+  pageMarginBottom?: number;
 }
 
 const DEFAULT_PDF_MARGIN_HORIZONTAL = 55;
 const DEFAULT_PDF_MARGIN_TOP = 40;
 const DEFAULT_PDF_MARGIN_TOP_WITH_HEADER = 75;
 const DEFAULT_PDF_MARGIN_BOTTOM = 60;
+const DEFAULT_PDF_FONT_SIZE = 12;
 
 export function createDefaultPdf(
   pdf: PdfSpec,
   organizationInfo: OrganizationInfo
 ): TCreatedPdf {
+  const baseFontSize = pdf.fontSize ?? DEFAULT_PDF_FONT_SIZE;
+  const smallFontSize = pdf.footerFontSize ?? baseFontSize - 2;
+  const tableHeaderFontSize = baseFontSize - 1;
+  const pageMarginBottom = pdf.pageMarginBottom ?? DEFAULT_PDF_MARGIN_BOTTOM;
+
   const content: Content[] = [];
   if (logo != null) {
     content.push({
@@ -178,20 +190,20 @@ export function createDefaultPdf(
             ? footerTextLeft
             : `\n${footerTextLeft}`,
           width: "*",
-          fontSize: 10,
+          fontSize: smallFontSize,
         },
         {
           text: `\nSeite ${currentPage} / ${pageCount}`,
           alignment: "center",
           width: "auto",
-          fontSize: 10,
+          fontSize: smallFontSize,
         },
         {
           text: (pdf.footerTextRight || "") + `\nErstellt am ${creationDate}`,
           alignment: "right",
           width: "*",
           margin: [10, 0],
-          fontSize: 10,
+          fontSize: smallFontSize,
         },
       ],
       margin: [DEFAULT_PDF_MARGIN_HORIZONTAL, 5, DEFAULT_PDF_MARGIN_HORIZONTAL, -20],
@@ -204,7 +216,7 @@ export function createDefaultPdf(
       return [
         {
           text: pdf.headerTextLeft ?? "",
-          fontSize: 10,
+          fontSize: smallFontSize,
           margin: [
             DEFAULT_PDF_MARGIN_HORIZONTAL,
             30,
@@ -218,10 +230,13 @@ export function createDefaultPdf(
 
   return createPdf({
     content,
+    defaultStyle: {
+      fontSize: baseFontSize,
+    },
     styles: {
       tableHeader: {
         bold: true,
-        fontSize: 11,
+        fontSize: tableHeaderFontSize,
       },
     },
     header,
@@ -230,7 +245,7 @@ export function createDefaultPdf(
       DEFAULT_PDF_MARGIN_HORIZONTAL,
       pdf.headerTextLeft ? DEFAULT_PDF_MARGIN_TOP_WITH_HEADER : DEFAULT_PDF_MARGIN_TOP,
       DEFAULT_PDF_MARGIN_HORIZONTAL,
-      DEFAULT_PDF_MARGIN_BOTTOM,
+      pageMarginBottom,
     ],
   });
 }

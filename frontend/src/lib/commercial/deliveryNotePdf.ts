@@ -58,6 +58,8 @@ export function createCommercialDeliveryNotePdf(
     description: `Lieferschein für ${prettyDate}${
       delivery.description ? `\n\n${delivery.description}` : ""
     }`,
+    fontSize: 11,
+    footerFontSize: 8,
     headerTextLeft: headerText,
     footerTextLeft: footerText || "",
     footerTextRight: `Lieferschein ${prettyDate}`,

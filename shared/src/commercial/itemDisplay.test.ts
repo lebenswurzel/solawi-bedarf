@@ -87,5 +87,15 @@ test("delivery note bezeichnung includes bio suffix", () => {
     formatCommercialItemBezeichnung(catalogItem(), productsById, {
       includeBioSuffix: true,
     }),
-  ).toBe("Radieschen [BIO]");
+  ).toBe("Radieschen [Bio]");
+});
+
+test("bio suffix comes after bemerkung", () => {
+  expect(
+    formatCommercialItemBezeichnung(
+      catalogItem({ description: "Bund" }),
+      productsById,
+      { includeDescription: true, includeBioSuffix: true },
+    ),
+  ).toBe("Radieschen (Bund) [Bio]");
 });

@@ -35,12 +35,15 @@ export const formatCommercialItemBezeichnung = (
   productsById: ProductsById,
   options?: { includeBioSuffix?: boolean; includeDescription?: boolean },
 ): string => {
-  const name = getCommercialItemDisplayName(item, productsById);
-  const withBio =
-    options?.includeBioSuffix && item.isBio ? `${name} [BIO]` : name;
-  if (!options?.includeDescription) {
-    return withBio;
+  let label = getCommercialItemDisplayName(item, productsById);
+  if (options?.includeDescription) {
+    const remark = item.description?.trim();
+    if (remark) {
+      label = `${label} (${remark})`;
+    }
   }
-  const remark = item.description?.trim();
-  return remark ? `${withBio} (${remark})` : withBio;
+  if (options?.includeBioSuffix && item.isBio) {
+    label = `${label} [Bio]`;
+  }
+  return label;
 };

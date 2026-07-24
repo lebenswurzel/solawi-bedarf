@@ -35,24 +35,10 @@ import {
   getSaleQuantityInBigUnits,
 } from "@lebenswurzel/solawi-bedarf-shared/src/commercial/pricing.ts";
 import { formatCommercialItemBezeichnung } from "@lebenswurzel/solawi-bedarf-shared/src/commercial/itemDisplay.ts";
-import { Unit } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import { Content } from "pdfmake/interfaces";
 
 const formatReceiver = (profile: CommercialProfile): string => {
   return `${profile.companyName}\n${profile.street}\n${profile.postalcode} ${profile.city}`;
-};
-
-const unitPriceLabel = (unit: Unit): string => {
-  switch (unit) {
-    case Unit.WEIGHT:
-      return "€/kg";
-    case Unit.PIECE:
-      return "€/Stk";
-    case Unit.VOLUME:
-      return "€/l";
-    default:
-      return "€";
-  }
 };
 
 export function createCommercialInvoicePdf(
@@ -68,13 +54,13 @@ export function createCommercialInvoicePdf(
   const totals = getDeliveryTotals(delivery.items);
 
   const rows = delivery.items.map((item) => {
-    const qtyLabel = `${getSaleQuantityInBigUnits(item).toLocaleString("de-DE")} ${unitPriceLabel(item.unit).replace("€/", "")}`;
+    const menge = `${getSaleQuantityInBigUnits(item).toLocaleString("de-DE")} ${getLangUnit(item.unit, true)}`;
     return [
-      item.isBio ? "Ja" : "Nein",
       formatCommercialItemBezeichnung(item, productsById, {
         includeDescription: true,
+        includeBioSuffix: true,
       }),
-      `${item.quantity} ${getLangUnit(item.unit)} (${qtyLabel})`,
+      menge,
       formatCentsAsEuro(item.unitPriceCents),
       `${item.vatRate} %`,
       formatCentsAsEuro(getLineGrossCents(item)),
@@ -88,14 +74,16 @@ export function createCommercialInvoicePdf(
     )
     .join("\n");
 
-  const additionalContent: Content[] = [
-    {
-      text: [
-        { text: "Bio-Kontrollnummer: ", bold: true },
-        invoice.bioControlNumber || organizationInfo.bioControlNumber || "—",
-      ],
+  const additionalContent: Content[] = [];
+
+  if (delivery.description?.trim()) {
+    additionalContent.push({
+      text: delivery.description.trim(),
       margin: [0, 16, 0, 0],
-    },
+    });
+  }
+
+  additionalContent.push(
     {
       text: [
         { text: "Netto gesamt: ", bold: true },
@@ -111,22 +99,35 @@ export function createCommercialInvoicePdf(
       margin: [0, 8, 0, 0],
     },
     {
-      text: [vatSummaryLines, "\n\n", organizationInfo.bankAccount],
+      text: vatSummaryLines,
       margin: [0, 8, 0, 0],
     },
-  ];
+  );
 
   if (footerText) {
     additionalContent.push({
       text: footerText,
       margin: [0, 16, 0, 0],
-      fontSize: 10,
+      fontSize: 8,
     });
   }
+
+  const bioControlNumber =
+    invoice.bioControlNumber || organizationInfo.bioControlNumber || "—";
+  const footerLeft = [
+    `Bio-Kontrollnummer: ${bioControlNumber}`,
+    organizationInfo.bankAccount?.trim(),
+  ]
+    .filter(Boolean)
+    .join("\n");
 
   const pdfSpec: PdfSpec = {
     receiver: formatReceiver(customerProfile),
     description: "Rechnung",
+    fontSize: 11,
+    footerFontSize: 8,
+    pageMarginBottom: 90,
+    footerTextLeft: footerLeft,
     headerTextRight: {
       text: [
         { text: "Rechnungsnummer: ", bold: true },
@@ -146,14 +147,13 @@ export function createCommercialInvoicePdf(
       {
         name: "Positionen",
         headers: [
-          "Bio",
           "Bezeichnung",
           "Menge",
           "Einzelpreis",
           "MwSt.",
           "Gesamt",
         ],
-        widths: ["8%", "30%", "18%", "16%", "12%", "16%"],
+        widths: ["38%", "18%", "16%", "12%", "16%"],
         rows,
       },
     ],
