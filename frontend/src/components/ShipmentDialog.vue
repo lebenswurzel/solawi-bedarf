@@ -360,19 +360,22 @@ const onShipmentPdfClick = async () => {
     return;
   }
   loading.value = true;
-  createShipmentPackagingPdfs(
-    savedShipment.value,
-    depots.value,
-    productsById.value,
-    productCategories.value,
-    organizationInfo.value,
-    pdfTexts.value.packagingListHeader,
-    pdfTexts.value.packagingListFooter,
-    pdfTexts.value.packagingListDetailText,
-    pdfTexts.value.pdfLogo,
-  ).then(() => {
+  try {
+    const pdfLogo = await textContentStore.getPdfLogo();
+    await createShipmentPackagingPdfs(
+      savedShipment.value,
+      depots.value,
+      productsById.value,
+      productCategories.value,
+      organizationInfo.value,
+      pdfTexts.value.packagingListHeader,
+      pdfTexts.value.packagingListFooter,
+      pdfTexts.value.packagingListDetailText,
+      pdfLogo,
+    );
+  } finally {
     loading.value = false;
-  });
+  }
 };
 
 const onShipmentOverviewPdfClick = async (productWeightMultiplier?: number) => {

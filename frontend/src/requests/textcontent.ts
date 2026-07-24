@@ -28,6 +28,20 @@ export const getTextContent = async (): Promise<{
   return await response.json();
 };
 
+export const getTextContentById = async (
+  id: number,
+): Promise<TextContent> => {
+  const response = await fetch(getUrl(`/content/text?id=${id}`));
+
+  await verifyResponse(response);
+
+  const body = (await response.json()) as { textContent: TextContent[] };
+  if (!body.textContent?.[0]) {
+    throw new Error(`Text content ${id} not found`);
+  }
+  return body.textContent[0];
+};
+
 export const saveTextContent = async (textContent: {
   id?: number;
   title: string;

@@ -249,7 +249,11 @@ export interface NewTextContent extends SimpleTextContent {
   typ: TextContentTyp;
 }
 
-export type TextContent = NewTextContent & Id;
+export type TextContent = NewTextContent &
+  Id & {
+    /** Present for BASE64_IMAGE rows in list responses when content is omitted. */
+    hasContent?: boolean;
+  };
 export type SaveTextContentRequest = NewTextContent & OptionalId;
 
 export function isIdType(entity: any): entity is Id {

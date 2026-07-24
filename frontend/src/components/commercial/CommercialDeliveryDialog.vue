@@ -312,6 +312,7 @@ const onDeliveryNotePdf = async () => {
     setError("Kundenprofil fehlt", new Error("missing profile"));
     return;
   }
+  const pdfLogo = await textContentStore.getPdfLogo();
   createCommercialDeliveryNotePdf(
     delivery,
     customer.commercialProfile,
@@ -319,7 +320,7 @@ const onDeliveryNotePdf = async () => {
     organizationInfo.value,
     pdfTexts.value.deliveryNoteHeader,
     pdfTexts.value.deliveryNoteFooter,
-    pdfTexts.value.pdfLogo,
+    pdfLogo,
   );
 };
 
@@ -339,6 +340,7 @@ const onInvoicePdf = async () => {
     if (!customer?.commercialProfile) {
       throw new Error("Kundenprofil fehlt");
     }
+    const pdfLogo = await textContentStore.getPdfLogo();
     createCommercialInvoicePdf(
       result.delivery,
       result.invoice,
@@ -346,7 +348,7 @@ const onInvoicePdf = async () => {
       productsById.value,
       organizationInfo.value,
       pdfTexts.value.invoiceFooter,
-      pdfTexts.value.pdfLogo,
+      pdfLogo,
     );
   } catch (error) {
     setError("Rechnung fehlgeschlagen", error as Error);
