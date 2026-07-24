@@ -99,3 +99,12 @@ test("bio suffix comes after bemerkung", () => {
     ),
   ).toBe("Radieschen (Bund) [Bio]");
 });
+
+test("custom bio suffix for invoice style", () => {
+  expect(
+    formatCommercialItemBezeichnung(catalogItem(), productsById, {
+      includeBioSuffix: true,
+      bioSuffix: ", bio",
+    }),
+  ).toBe("Radieschen, bio");
+});

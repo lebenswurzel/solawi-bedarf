@@ -70,7 +70,7 @@ export interface PdfTable {
 
 export interface PdfSpec {
   receiver: string;
-  description: string;
+  description: string | Content;
   description2?: string;
   footerTextLeft?: string;
   footerTextRight?: string;
@@ -84,6 +84,8 @@ export interface PdfSpec {
   fontSize?: number;
   /** Footer/header font size in pt. Defaults to fontSize - 2. */
   footerFontSize?: number;
+  /** Table header row font size in pt. Defaults to fontSize - 1. */
+  tableHeaderFontSize?: number;
   /** Bottom page margin in pt. Defaults to 60. */
   pageMarginBottom?: number;
 }
@@ -100,8 +102,27 @@ export function createDefaultPdf(
 ): TCreatedPdf {
   const baseFontSize = pdf.fontSize ?? DEFAULT_PDF_FONT_SIZE;
   const smallFontSize = pdf.footerFontSize ?? baseFontSize - 2;
-  const tableHeaderFontSize = baseFontSize - 1;
+  const tableHeaderFontSize = pdf.tableHeaderFontSize ?? baseFontSize - 1;
   const pageMarginBottom = pdf.pageMarginBottom ?? DEFAULT_PDF_MARGIN_BOTTOM;
+
+  const toTableHeaderCell = (h: Content): Content => {
+    if (typeof h === "string") {
+      return {
+        text: h,
+        bold: true,
+        fontSize: tableHeaderFontSize,
+      };
+    }
+    if (h && typeof h === "object" && !Array.isArray(h) && "text" in h) {
+      const cell = h as { text: Content; bold?: boolean; fontSize?: number };
+      return {
+        ...cell,
+        bold: cell.bold ?? true,
+        fontSize: cell.fontSize ?? tableHeaderFontSize,
+      };
+    }
+    return h;
+  };
 
   const content: Content[] = [];
   if (logo != null) {
@@ -139,9 +160,11 @@ export function createDefaultPdf(
   if (pdf.additionalTopMessage) {
     content.push(pdf.additionalTopMessage);
   }
-  content.push({
-    text: pdf.description,
-  });
+  content.push(
+    typeof pdf.description === "string"
+      ? { text: pdf.description }
+      : pdf.description,
+  );
   if (pdf.description2) {
     content.push({
       text: pdf.description2,
@@ -161,12 +184,7 @@ export function createDefaultPdf(
         widths: table.widths ?? new Array(table.headers.length).fill("*"),
         headerRows: 1,
         body: [
-          table.headers.map((h) => {
-            if (typeof h === "string") {
-              return { text: h, bold: true, verticalAlignment: "bottom" };
-            }
-            return h;
-          }),
+          table.headers.map(toTableHeaderCell),
           ...table.rows,
         ],
       },

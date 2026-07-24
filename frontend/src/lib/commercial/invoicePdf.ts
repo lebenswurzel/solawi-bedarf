@@ -23,7 +23,6 @@ import {
 } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { format } from "date-fns";
 import { sanitizeFileName } from "@lebenswurzel/solawi-bedarf-shared/src/util/fileHelper.ts";
-import { getLangUnit } from "@lebenswurzel/solawi-bedarf-shared/src/util/unitHelper.ts";
 import {
   createDefaultPdf,
   PdfSpec,
@@ -36,9 +35,34 @@ import {
 } from "@lebenswurzel/solawi-bedarf-shared/src/commercial/pricing.ts";
 import { formatCommercialItemBezeichnung } from "@lebenswurzel/solawi-bedarf-shared/src/commercial/itemDisplay.ts";
 import { Content } from "pdfmake/interfaces";
+import {
+  commercialDocumentTitle,
+  formatCommercialDocumentUnit,
+  rightAlignedCell,
+} from "./pdfHelpers.ts";
+
+const VAT_FOOTNOTE_MARKER: Record<number, string> = {
+  7: "A",
+  19: "B",
+};
+
+const VAT_FOOTNOTE_LEGEND: Record<number, string> = {
+  7: "A) 7 % MwSt",
+  19: "B) 19 % MwSt",
+};
 
 const formatReceiver = (profile: CommercialProfile): string => {
   return `${profile.companyName}\n${profile.street}\n${profile.postalcode} ${profile.city}`;
+};
+
+const appendVatFootnote = (label: string, vatRate: number): Content => {
+  const marker = VAT_FOOTNOTE_MARKER[vatRate];
+  if (!marker) {
+    return label;
+  }
+  return {
+    text: [{ text: label }, { text: marker, sup: true }],
+  };
 };
 
 export function createCommercialInvoicePdf(
@@ -53,17 +77,25 @@ export function createCommercialInvoicePdf(
   const invoiceDate = format(new Date(invoice.createdAt), "dd.MM.yyyy");
   const totals = getDeliveryTotals(delivery.items);
 
-  const rows = delivery.items.map((item) => {
-    const menge = `${getSaleQuantityInBigUnits(item).toLocaleString("de-DE")} ${getLangUnit(item.unit, true)}`;
+  const usedVatRates = [
+    ...new Set(delivery.items.map((item) => item.vatRate)),
+  ].sort((a, b) => a - b);
+
+  const rows = delivery.items.map((item, index) => {
     return [
-      formatCommercialItemBezeichnung(item, productsById, {
-        includeDescription: true,
-        includeBioSuffix: true,
-      }),
-      menge,
-      formatCentsAsEuro(item.unitPriceCents),
-      `${item.vatRate} %`,
-      formatCentsAsEuro(getLineGrossCents(item)),
+      String(index + 1),
+      appendVatFootnote(
+        formatCommercialItemBezeichnung(item, productsById, {
+          includeDescription: true,
+          includeBioSuffix: true,
+          bioSuffix: ", bio",
+        }),
+        item.vatRate,
+      ),
+      rightAlignedCell(formatCentsAsEuro(item.unitPriceCents)),
+      formatCommercialDocumentUnit(item.unit),
+      rightAlignedCell(getSaleQuantityInBigUnits(item).toLocaleString("de-DE")),
+      rightAlignedCell(formatCentsAsEuro(getLineGrossCents(item))),
     ];
   });
 
@@ -74,7 +106,20 @@ export function createCommercialInvoicePdf(
     )
     .join("\n");
 
+  const vatFootnoteLegend = usedVatRates
+    .map((rate) => VAT_FOOTNOTE_LEGEND[rate])
+    .filter(Boolean)
+    .join("\n");
+
   const additionalContent: Content[] = [];
+
+  if (vatFootnoteLegend) {
+    additionalContent.push({
+      text: vatFootnoteLegend,
+      fontSize: 9,
+      margin: [0, 8, 0, 0],
+    });
+  }
 
   if (delivery.description?.trim()) {
     additionalContent.push({
@@ -123,8 +168,9 @@ export function createCommercialInvoicePdf(
 
   const pdfSpec: PdfSpec = {
     receiver: formatReceiver(customerProfile),
-    description: "Rechnung",
+    description: commercialDocumentTitle("Rechnung"),
     fontSize: 11,
+    tableHeaderFontSize: 9,
     footerFontSize: 8,
     pageMarginBottom: 90,
     footerTextLeft: footerLeft,
@@ -147,13 +193,14 @@ export function createCommercialInvoicePdf(
       {
         name: "Positionen",
         headers: [
+          "Pos.",
           "Bezeichnung",
-          "Menge",
-          "Einzelpreis",
-          "MwSt.",
-          "Gesamt",
+          rightAlignedCell("Betrag", { bold: true }),
+          "Einheit",
+          rightAlignedCell("Menge", { bold: true }),
+          rightAlignedCell("Gesamtbetrag", { bold: true }),
         ],
-        widths: ["38%", "18%", "16%", "12%", "16%"],
+        widths: ["6%", "45%", "14%", "12%", "9%", "14%"],
         rows,
       },
     ],

@@ -33,7 +33,12 @@ export const formatCommercialItemBezeichnung = (
     "productId" | "productName" | "description" | "isBio"
   >,
   productsById: ProductsById,
-  options?: { includeBioSuffix?: boolean; includeDescription?: boolean },
+  options?: {
+    includeBioSuffix?: boolean;
+    includeDescription?: boolean;
+    /** Defaults to " [Bio]". */
+    bioSuffix?: string;
+  },
 ): string => {
   let label = getCommercialItemDisplayName(item, productsById);
   if (options?.includeDescription) {
@@ -43,7 +48,7 @@ export const formatCommercialItemBezeichnung = (
     }
   }
   if (options?.includeBioSuffix && item.isBio) {
-    label = `${label} [Bio]`;
+    label = `${label}${options.bioSuffix ?? " [Bio]"}`;
   }
   return label;
 };

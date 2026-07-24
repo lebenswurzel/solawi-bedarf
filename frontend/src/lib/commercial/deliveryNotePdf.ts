@@ -22,12 +22,18 @@ import {
 } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { format } from "date-fns";
 import { sanitizeFileName } from "@lebenswurzel/solawi-bedarf-shared/src/util/fileHelper.ts";
-import { getLangUnit } from "@lebenswurzel/solawi-bedarf-shared/src/util/unitHelper.ts";
 import {
   createDefaultPdf,
   PdfSpec,
 } from "@lebenswurzel/solawi-bedarf-shared/src/pdf/pdf.ts";
+import { getSaleQuantityInBigUnits } from "@lebenswurzel/solawi-bedarf-shared/src/commercial/pricing.ts";
 import { formatCommercialItemBezeichnung } from "@lebenswurzel/solawi-bedarf-shared/src/commercial/itemDisplay.ts";
+import { Content } from "pdfmake/interfaces";
+import {
+  commercialDocumentTitle,
+  formatCommercialDocumentUnit,
+  rightAlignedCell,
+} from "./pdfHelpers.ts";
 
 const formatReceiver = (profile: CommercialProfile): string => {
   return `${profile.companyName}\n${profile.street}\n${profile.postalcode} ${profile.city}`;
@@ -42,35 +48,60 @@ export function createCommercialDeliveryNotePdf(
   footerText?: string,
 ) {
   const prettyDate = format(new Date(delivery.deliveryDate), "dd.MM.yyyy");
-  const rows = delivery.items.map((item) => {
-    const description = item.description || "";
+  const rows = delivery.items.map((item, index) => {
     return [
-      `${item.quantity} ${getLangUnit(item.unit)}`,
+      String(index + 1),
       formatCommercialItemBezeichnung(item, productsById, {
         includeBioSuffix: true,
+        bioSuffix: ", bio",
       }),
-      description,
+      formatCommercialDocumentUnit(item.unit),
+      rightAlignedCell(
+        getSaleQuantityInBigUnits(item).toLocaleString("de-DE"),
+      ),
+      item.description?.trim() || "",
     ];
   });
 
+  const additionalContent: Content[] = [];
+  if (delivery.description?.trim()) {
+    additionalContent.push({
+      text: delivery.description.trim(),
+      margin: [0, 16, 0, 0],
+    });
+  }
+
   const pdfSpec: PdfSpec = {
     receiver: formatReceiver(customerProfile),
-    description: `Lieferschein für ${prettyDate}${
-      delivery.description ? `\n\n${delivery.description}` : ""
-    }`,
+    description: commercialDocumentTitle("Lieferschein"),
     fontSize: 11,
     footerFontSize: 8,
     headerTextLeft: headerText,
+    headerTextRight: {
+      text: [
+        { text: "Lieferdatum: ", bold: true },
+        prettyDate,
+      ],
+      alignment: "right",
+      margin: [0, 12, 0, 0],
+    },
     footerTextLeft: footerText || "",
     footerTextRight: `Lieferschein ${prettyDate}`,
     tables: [
       {
-        name: "Lieferung",
-        headers: ["Menge", "Bezeichnung", "Bemerkung"],
-        widths: ["20%", "45%", "35%"],
+        name: "Positionen",
+        headers: [
+          "Pos.",
+          "Bezeichnung",
+          "Einheit",
+          rightAlignedCell("Menge", { bold: true }),
+          "Bemerkung",
+        ],
+        widths: ["8%", "36%", "12%", "12%", "32%"],
         rows,
       },
     ],
+    additionalContent,
   };
 
   const pdf = createDefaultPdf(pdfSpec, organizationInfo);
