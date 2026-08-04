@@ -12,7 +12,8 @@
     "rootDir": "./src"
   },
   "ts-node": {
-    "transpileOnly": true
+    "transpileOnly": true,
+    "esm": true
   },
   "include": ["src/**/*.ts"],
   "exclude": ["**/*.test.ts"]

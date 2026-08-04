@@ -15,6 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from "typeorm";
+import type { Relation } from "typeorm";
 import { Product } from "./Product.js";
 import { Order } from "./Order.js";
 import { BaseEntity } from "./BaseEntity.js";
@@ -40,5 +41,5 @@ export class OrderItem extends BaseEntity {
   orderId: number;
 
   @ManyToOne(() => Order, (order) => order.orderItems, { nullable: false })
-  order: Order;
+  order: Relation<Order>;
 }

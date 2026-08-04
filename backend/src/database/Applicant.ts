@@ -21,6 +21,7 @@ import {
   OneToOne,
   JoinColumn,
 } from "typeorm";
+import type { Relation } from "typeorm";
 import { BaseEntity } from "./BaseEntity.js";
 import { User } from "./User.js";
 import { UserAddress } from "./UserAddress.js";
@@ -48,7 +49,7 @@ export class Applicant extends BaseEntity {
 
   @OneToOne(() => User, (user) => user.applicant, { nullable: true })
   @JoinColumn()
-  user: User;
+  user: Relation<User>;
 
   @Column({ nullable: false })
   addressId: number;

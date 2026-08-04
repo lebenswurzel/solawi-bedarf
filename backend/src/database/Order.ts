@@ -23,6 +23,7 @@ import {
   OneToOne,
   JoinColumn,
 } from "typeorm";
+import type { Relation } from "typeorm";
 import { User } from "./User.js";
 import { Depot } from "./Depot.js";
 import { OrderItem } from "./OrderItem.js";
@@ -70,7 +71,7 @@ export class Order extends BaseEntity {
   userId: number;
 
   @ManyToOne(() => User, (user) => user.orders, { nullable: false })
-  user: User;
+  user: Relation<User>;
 
   @Column({ nullable: true })
   depotId: number;

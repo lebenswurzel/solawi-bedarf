@@ -5,12 +5,12 @@
   "main": "index.ts",
   "type": "module",
   "scripts": {
-    "start": "ts-node src/index.ts",
+    "start": "node --loader ts-node/esm src/index.ts",
     "format": "prettier .  --write",
     "format-check": "prettier .  --check --write",
     "tsc": "tsc",
-    "typeorm": "typeorm-ts-node-commonjs",
-    "create-migrations": "typeorm-ts-node-commonjs migration:generate -d src/database/database.ts",
+    "typeorm": "typeorm-ts-node-esm",
+    "create-migrations": "typeorm-ts-node-esm migration:generate -d src/database/database.ts",
     "test": "vitest",
     "test-cov": "vitest --coverage.enabled true"
   },
