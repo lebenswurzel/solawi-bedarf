@@ -18,8 +18,8 @@ import { expect, test } from "vitest";
 import {
   NewProduct,
   OptionalId,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types";
-import { genProduct } from "@lebenswurzel/solawi-bedarf-shared/testSetup";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
+import { genProduct } from "@lebenswurzel/solawi-bedarf-shared/testSetup.js";
 import { createTestProductCategory } from "../../../test/testHelpers";
 import {
   createBasicTestCtx,

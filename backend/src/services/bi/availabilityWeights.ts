@@ -14,28 +14,28 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { ShipmentType } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import { ShipmentType } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
 import {
   AvailabilityWeights,
   DeliveredByProductIdDepotId,
   ProductId,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
 import Koa from "koa";
 import Router from "koa-router";
 import { LessThan, MoreThan } from "typeorm";
-import { Order } from "../../database/Order";
-import { ProductCategory } from "../../database/ProductCategory";
-import { Shipment } from "../../database/Shipment";
-import { AppDataSource } from "../../database/database";
+import { Order } from "../../database/Order.js";
+import { ProductCategory } from "../../database/ProductCategory.js";
+import { Shipment } from "../../database/Shipment.js";
+import { AppDataSource } from "../../database/database.js";
 import {
   getBooleanQueryParameter,
   getConfigIdFromQuery,
   getDateQueryParameter,
-} from "../../util/requestUtil";
-import { getAdjustedForecastShipments } from "../../util/shipmentUtil";
-import { getUserFromContext } from "../getUserFromContext";
-import { determineTargetDate, getCurrentValidOrders } from "./bi";
-import { Depot } from "../../database/Depot";
+} from "../../util/requestUtil.js";
+import { getAdjustedForecastShipments } from "../../util/shipmentUtil.js";
+import { getUserFromContext } from "../getUserFromContext.js";
+import { determineTargetDate, getCurrentValidOrders } from "./bi.js";
+import { Depot } from "../../database/Depot.js";
 
 interface ItemType {
   delivered: number;

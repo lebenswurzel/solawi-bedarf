@@ -17,15 +17,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <script setup lang="ts">
 import { ref, watch } from "vue";
 import ProductCategoryDialog from "../components/ProductCategoryDialog.vue";
-import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.js";
 import { onMounted } from "vue";
 import { useProductStore } from "../store/productStore.ts";
-import { NewProductCategory } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
+import { NewProductCategory } from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
 import { useBIStore } from "../store/biStore";
 import { useConfigStore } from "../store/configStore.ts";
 import { storeToRefs } from "pinia";
 import ProductCategoryConfig from "../components/products/ProductCategoryConfig.vue";
-import { ProductCategoryType } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
+import { ProductCategoryType } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
 import DateOnlyPicker from "../components/DateOnlyPicker.vue";
 const t = language.pages.product;
 

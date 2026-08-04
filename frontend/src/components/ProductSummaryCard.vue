@@ -16,15 +16,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
 import { computed } from "@vue/reactivity";
-import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
-import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.js";
+import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
 import {
   NewProduct,
   Product,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
-import { adjustMsrp } from "@lebenswurzel/solawi-bedarf-shared/src/msrp";
-import { getLangUnit } from "@lebenswurzel/solawi-bedarf-shared/src/util/unitHelper";
-import { appConfig } from "@lebenswurzel/solawi-bedarf-shared/src/config";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
+import { adjustMsrp } from "@lebenswurzel/solawi-bedarf-shared/src/msrp.js";
+import { getLangUnit } from "@lebenswurzel/solawi-bedarf-shared/src/util/unitHelper.js";
+import { appConfig } from "@lebenswurzel/solawi-bedarf-shared/src/config.js";
 
 const props = defineProps<{
   product: NewProduct | Product;

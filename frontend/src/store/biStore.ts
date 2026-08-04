@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { defineStore, storeToRefs } from "pinia";
 import { computed, ref, watchEffect } from "vue";
 import { useConfigStore } from "./configStore.ts";
-import { useOrderStore } from "./orderStore";
+import { useOrderStore } from "./orderStore.js";
 import {
   AvailabilityWeights,
   CapacityByDepotId,
@@ -28,19 +28,19 @@ import {
   ProductId,
   ProductsById,
   SoldByProductId,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
 import { getAvailabilityWeights, getBI } from "../requests/bi.ts";
 import { useUserStore } from "./userStore.ts";
 import {
   calculateEffectiveMsrpChain,
   calculateOrderValidMonths,
   getMsrp,
-} from "@lebenswurzel/solawi-bedarf-shared/src/msrp.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/msrp.js";
 import {
   isIncreaseOnly,
   isRequisitionActive,
-} from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition.ts";
-import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition.js";
+import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
 import { isDebugEnabled } from "../lib/debug.ts";
 import { useUiFeedback } from "./uiFeedbackStore.ts";
 

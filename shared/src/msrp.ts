@@ -14,8 +14,8 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { appConfig } from "./config";
-import { ProductCategoryType, Unit, UserCategory } from "./enum";
+import { appConfig } from "./config.js";
+import { ProductCategoryType, Unit, UserCategory } from "./enum.js";
 import {
   Msrp,
   OrderId,
@@ -25,12 +25,12 @@ import {
   ProductsById,
   SavedOrder,
   ValidRange,
-} from "./types";
+} from "./types.js";
 import {
   countCalendarMonths,
   getSameOrNextThursday,
   getSameOrPreviousThursday,
-} from "./util/dateHelper";
+} from "./util/dateHelper.js";
 
 const getYearlyBaseMsrp = (orderItem: OrderItem, product: Product) => {
   if (product) {

@@ -14,9 +14,9 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
-import { config } from "../../config";
-import { authenticateUser } from "./auth";
+import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
+import { config } from "../../config.js";
+import { authenticateUser } from "./auth.js";
 let ldapEnabled = false;
 
 if (config.ldap.enabled) {

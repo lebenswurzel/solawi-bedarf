@@ -25,7 +25,7 @@ import {
   TestUserData,
 } from "../../../testSetup";
 import { updateUser } from "./updateUser";
-import { UpdateUserRequest } from "@lebenswurzel/solawi-bedarf-shared/src/types";
+import { UpdateUserRequest } from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
 import { AppDataSource } from "../../database/database";
 import { getRequisitionConfigId } from "../../../test/testHelpers";
 import { Order } from "../../database/Order";

@@ -20,13 +20,13 @@ import {
   NewProductCategory,
   OptionalId,
   ProductCategory,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
-import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.js";
 import { useUiFeedback } from "../store/uiFeedbackStore.ts";
 import { ref, watch } from "vue";
 import { useConfigStore } from "../store/configStore.ts";
 import { useProductStore } from "../store/productStore.ts";
-import { ProductCategoryType } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
+import { ProductCategoryType } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
 const t = language.pages.product.dialog;
 
 const uiFeedback = useUiFeedback();

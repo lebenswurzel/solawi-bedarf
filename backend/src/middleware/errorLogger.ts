@@ -15,8 +15,8 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import Koa from "koa";
-import { AppDataSource } from "../database/database";
-import { ErrorLog } from "../database/ErrorLog";
+import { AppDataSource } from "../database/database.js";
+import { ErrorLog } from "../database/ErrorLog.js";
 
 // Errors that we don't want to log
 const IGNORED_ERROR_NAMES = [

@@ -15,20 +15,20 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import auth, { BasicAuthResult } from "basic-auth";
-import { comparePassword, createJwt, hashPassword } from "../../security";
-import { config } from "../../config";
-import { http as httpCodes } from "../../consts/http";
+import { comparePassword, createJwt, hashPassword } from "../../security.js";
+import { config } from "../../config.js";
+import { http as httpCodes } from "../../consts/http.js";
 import Koa from "koa";
 import Router from "koa-router";
-import { Token } from "../../database/Token";
-import { AppDataSource } from "../../database/database";
-import { User } from "../../database/User";
+import { Token } from "../../database/Token.js";
+import { AppDataSource } from "../../database/database.js";
+import { User } from "../../database/User.js";
 import { randomUUID } from "node:crypto";
-import { getUserFromContext } from "../getUserFromContext";
-import { invalidateTokenForUser } from "../../token";
+import { getUserFromContext } from "../getUserFromContext.js";
+import { invalidateTokenForUser } from "../../token.js";
 import http from "http";
-import { verifyLDAP } from "../ldap/ldap";
-import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import { verifyLDAP } from "../ldap/ldap.js";
+import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
 import { fromZonedTime, toZonedTime } from "date-fns-tz";
 
 export const login = async (

@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { User } from "./User";
-import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { addHours } from "date-fns";
 import { comparePassword } from "../security";

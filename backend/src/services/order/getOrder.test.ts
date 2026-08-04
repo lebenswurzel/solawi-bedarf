@@ -18,8 +18,8 @@ import { expect, test } from "vitest";
 import {
   OrderPaymentType,
   UserCategory,
-} from "@lebenswurzel/solawi-bedarf-shared/src/enum";
-import { ConfirmedOrder } from "@lebenswurzel/solawi-bedarf-shared/src/types";
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
+import { ConfirmedOrder } from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
 import {
   TestUserData,
   createBasicTestCtx,

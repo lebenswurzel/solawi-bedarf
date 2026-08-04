@@ -23,7 +23,7 @@ import {
   Unit,
   UserCategory,
   UserRole,
-} from "./enum";
+} from "./enum.js";
 
 export type DateString = string;
 export type UserId = number;

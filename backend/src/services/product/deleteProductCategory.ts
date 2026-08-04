@@ -14,18 +14,18 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { AppDataSource } from "../../database/database";
-import { ProductCategory } from "../../database/ProductCategory";
-import { getUserFromContext } from "../getUserFromContext";
+import { AppDataSource } from "../../database/database.js";
+import { ProductCategory } from "../../database/ProductCategory.js";
+import { getUserFromContext } from "../getUserFromContext.js";
 import Koa from "koa";
 import Router from "koa-router";
-import { http } from "../../consts/http";
-import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
-import { Id } from "@lebenswurzel/solawi-bedarf-shared/src/types";
-import { Product } from "../../database/Product";
-import { Order } from "../../database/Order";
-import { OrderItem } from "../../database/OrderItem";
-import { ShipmentItem } from "../../database/ShipmentItem";
+import { http } from "../../consts/http.js";
+import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
+import { Id } from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
+import { Product } from "../../database/Product.js";
+import { Order } from "../../database/Order.js";
+import { OrderItem } from "../../database/OrderItem.js";
+import { ShipmentItem } from "../../database/ShipmentItem.js";
 
 export const deleteProductCategory = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,

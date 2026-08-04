@@ -16,18 +16,18 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import Koa from "koa";
 import Router from "koa-router";
-import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
-import { UpdateUserRequest } from "@lebenswurzel/solawi-bedarf-shared/src/types";
-import { http } from "../../consts/http";
-import { User } from "../../database/User";
-import { AppDataSource } from "../../database/database";
-import { getUserFromContext } from "../getUserFromContext";
-import { RequisitionConfig } from "../../database/RequisitionConfig";
-import { updateOrderValidFrom } from "./saveUser";
+import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
+import { UpdateUserRequest } from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
+import { http } from "../../consts/http.js";
+import { User } from "../../database/User.js";
+import { AppDataSource } from "../../database/database.js";
+import { getUserFromContext } from "../getUserFromContext.js";
+import { RequisitionConfig } from "../../database/RequisitionConfig.js";
+import { updateOrderValidFrom } from "./saveUser.js";
 import {
   createAdditionalOrder,
   deleteUnconfirmedOrders,
-} from "../order/modifyOrder";
+} from "../order/modifyOrder.js";
 
 export const updateUser = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,

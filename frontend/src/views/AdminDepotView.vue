@@ -16,14 +16,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
 import { onMounted, provide, ref } from "vue";
-import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.js";
 import { getDepots, updateDepot } from "../requests/depot";
 import DepotDialog from "../components/DepotDialog.vue";
 import {
   NewDepot,
   Depot,
   UpdateDepot,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
 import BusyIndicator from "../components/BusyIndicator.vue";
 import { useUiFeedback } from "../store/uiFeedbackStore.ts";
 const t = language.pages.depots;

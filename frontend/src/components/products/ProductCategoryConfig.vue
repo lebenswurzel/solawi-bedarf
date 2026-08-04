@@ -19,16 +19,16 @@ import { ref } from "vue";
 import {
   ProductCategory,
   ProductCategoryWithProducts,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
-import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
-import { interpolate } from "@lebenswurzel/solawi-bedarf-shared/src/lang/template.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.js";
+import { interpolate } from "@lebenswurzel/solawi-bedarf-shared/src/lang/template.js";
 import ProductCategoryDialog from "../ProductCategoryDialog.vue";
 import ProductsTable from "./ProductsTable.vue";
 import { deleteProductCategory } from "../../requests/productCategory";
 import { useUiFeedback } from "../../store/uiFeedbackStore";
 import { useConfigStore } from "../../store/configStore";
 import { useProductStore } from "../../store/productStore";
-import { ProductCategoryType } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
+import { ProductCategoryType } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
 const t = language.pages.product;
 
 const props = defineProps<{

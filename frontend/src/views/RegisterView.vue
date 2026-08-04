@@ -30,7 +30,7 @@ import {
   streetRules,
   cityRules,
 } from "../lib/validation";
-import { Address } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
+import { Address } from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
 import { useTextContentStore } from "../store/textContentStore.js";
 import { storeToRefs } from "pinia";
 import InfoCard from "../components/status/InfoCard.vue";

@@ -15,9 +15,9 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { describe, it, expect } from "vitest";
-import { validatePayment } from "../ibanHelper";
-import { OrderPayment } from "../../types";
-import { OrderPaymentType } from "../../enum";
+import { validatePayment } from "../ibanHelper.js";
+import { OrderPayment } from "../../types.js";
+import { OrderPaymentType } from "../../enum.js";
 
 describe("validatePayment", () => {
   const validGermanIBAN = "DE89370400440532013000";

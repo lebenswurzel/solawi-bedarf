@@ -15,10 +15,11 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from "typeorm";
-import { BaseEntity } from "./BaseEntity";
-import { Shipment } from "./Shipment";
-import { Depot } from "./Depot";
-import { Unit } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import type { Relation } from "typeorm";
+import { BaseEntity } from "./BaseEntity.js";
+import { Shipment } from "./Shipment.js";
+import { Depot } from "./Depot.js";
+import { Unit } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
 
 @Entity()
 export class AdditionalShipmentItem extends BaseEntity {
@@ -31,7 +32,7 @@ export class AdditionalShipmentItem extends BaseEntity {
   @ManyToOne(() => Shipment, (shipment) => shipment.shipmentItems, {
     nullable: false,
   })
-  shipment: Shipment;
+  shipment: Relation<Shipment>;
 
   @Column({ nullable: false })
   depotId: number;

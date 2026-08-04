@@ -24,7 +24,7 @@ import { useConfigStore } from "../store/configStore.ts";
 import { useProductStore } from "../store/productStore.ts";
 import { useStatisticsStore } from "../store/statisticsStore.ts";
 import { useUserStore } from "../store/userStore.ts";
-import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.js";
 import OrderStatistics from "../components/statistics/OrderStatistics.vue";
 import ApplicantMap from "../components/applicant/ApplicantMap.vue";
 

@@ -16,14 +16,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import Koa from "koa";
 import Router from "koa-router";
-import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
-import { Id } from "@lebenswurzel/solawi-bedarf-shared/src/types";
-import { http } from "../../consts/http";
-import { AppDataSource } from "../../database/database";
-import { OrderItem } from "../../database/OrderItem";
-import { Product } from "../../database/Product";
-import { ShipmentItem } from "../../database/ShipmentItem";
-import { getUserFromContext } from "../getUserFromContext";
+import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
+import { Id } from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
+import { http } from "../../consts/http.js";
+import { AppDataSource } from "../../database/database.js";
+import { OrderItem } from "../../database/OrderItem.js";
+import { Product } from "../../database/Product.js";
+import { ShipmentItem } from "../../database/ShipmentItem.js";
+import { getUserFromContext } from "../getUserFromContext.js";
 
 export const deleteProduct = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,

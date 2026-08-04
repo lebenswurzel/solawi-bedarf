@@ -14,21 +14,21 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { AppDataSource } from "../database/database";
-import { User } from "../database/User";
-import { config } from "../config";
-import { hashPassword } from "../security";
-import { TextContent } from "../database/TextContent";
+import { AppDataSource } from "../database/database.js";
+import { User } from "../database/User.js";
+import { config } from "../config.js";
+import { hashPassword } from "../security.js";
+import { TextContent } from "../database/TextContent.js";
 import {
   RequisitionConfig,
   RequisitionConfigName,
-} from "../database/RequisitionConfig";
+} from "../database/RequisitionConfig.js";
 import {
   UserRole,
   TextContentCategory,
   TextContentTyp,
   isMultiContentCategory,
-} from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
 import {
   basicOrganizationInfo,
   emailTextsKeys,
@@ -37,9 +37,9 @@ import {
   pageElementKeys,
   pdfTextsDefaults,
   pdfTextsKeys,
-} from "@lebenswurzel/solawi-bedarf-shared/src/config";
-import { getOrganizationInfoValueByKey } from "@lebenswurzel/solawi-bedarf-shared/src/text/textContent";
-import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang";
+} from "@lebenswurzel/solawi-bedarf-shared/src/config.js";
+import { getOrganizationInfoValueByKey } from "@lebenswurzel/solawi-bedarf-shared/src/text/textContent.js";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.js";
 
 export const initDb = async () => {
   const userCount = await AppDataSource.getRepository(User).count();

@@ -16,13 +16,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import Koa from "koa";
 import Router from "koa-router";
-import { getRequestUserId } from "../getUserFromContext";
-import { AppDataSource } from "../../database/database";
-import { Shipment } from "../../database/Shipment";
-import { Order } from "../../database/Order";
+import { getRequestUserId } from "../getUserFromContext.js";
+import { AppDataSource } from "../../database/database.js";
+import { Shipment } from "../../database/Shipment.js";
+import { Order } from "../../database/Order.js";
 import { In } from "typeorm";
-import { getConfigIdFromQuery } from "../../util/requestUtil";
-import { ShipmentType } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import { getConfigIdFromQuery } from "../../util/requestUtil.js";
+import { ShipmentType } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
 
 export const getUserShipments = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,

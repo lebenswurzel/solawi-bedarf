@@ -22,16 +22,16 @@ import {
   generateDepotData,
   generateOverviewCsv,
   generateUserData,
-} from "@lebenswurzel/solawi-bedarf-shared/src/pdf/overviewPdfs.ts";
-import { sanitizeFileName } from "@lebenswurzel/solawi-bedarf-shared/src/util/fileHelper.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/pdf/overviewPdfs.js";
+import { sanitizeFileName } from "@lebenswurzel/solawi-bedarf-shared/src/util/fileHelper.js";
 import { useConfigStore } from "../store/configStore.ts";
 import { useUiFeedback } from "../store/uiFeedbackStore.ts";
-import { Zip } from "@lebenswurzel/solawi-bedarf-shared/src/pdf/zip.ts";
-import { createDefaultPdf } from "@lebenswurzel/solawi-bedarf-shared/src/pdf/pdf.ts";
+import { Zip } from "@lebenswurzel/solawi-bedarf-shared/src/pdf/zip.js";
+import { createDefaultPdf } from "@lebenswurzel/solawi-bedarf-shared/src/pdf/pdf.js";
 import { useTextContentStore } from "../store/textContentStore.ts";
 import { storeToRefs } from "pinia";
-import { formatDateForFilename } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper.ts";
-import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
+import { formatDateForFilename } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper.js";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.js";
 import DateOnlyPicker from "../components/DateOnlyPicker.vue";
 
 const loading = ref({

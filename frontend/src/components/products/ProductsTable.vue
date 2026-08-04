@@ -20,9 +20,9 @@ import {
   NewProduct,
   Product,
   ProductCategoryWithProducts,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
-import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
-import { interpolate } from "@lebenswurzel/solawi-bedarf-shared/src/lang/template.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.js";
+import { interpolate } from "@lebenswurzel/solawi-bedarf-shared/src/lang/template.js";
 import ProductDialog from "../ProductDialog.vue";
 import { useConfigStore } from "../../store/configStore";
 import { useProductStore } from "../../store/productStore";
@@ -33,9 +33,9 @@ import { useUiFeedback } from "../../store/uiFeedbackStore";
 import {
   convertToBigUnit,
   getLangUnit,
-} from "@lebenswurzel/solawi-bedarf-shared/src/util/unitHelper.ts";
-import { sanitizeFileName } from "@lebenswurzel/solawi-bedarf-shared/src/util/fileHelper.ts";
-import { objectToCsv } from "@lebenswurzel/solawi-bedarf-shared/src/pdf/overviewPdfs.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/util/unitHelper.js";
+import { sanitizeFileName } from "@lebenswurzel/solawi-bedarf-shared/src/util/fileHelper.js";
+import { objectToCsv } from "@lebenswurzel/solawi-bedarf-shared/src/pdf/overviewPdfs.js";
 const t = language.pages.product.dialog;
 
 type ProductTableRow = Product & { sold: number };

@@ -15,13 +15,14 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { Column, Entity, ManyToOne, PrimaryColumn } from "typeorm";
-import { generateRandomString } from "../security";
+import type { Relation } from "typeorm";
+import { generateRandomString } from "../security.js";
 import { addHours } from "date-fns";
-import { User } from "./User";
+import { User } from "./User.js";
 
 @Entity()
 export class PasswordReset {
-  constructor(user: User) {
+  constructor(user: Relation<User>) {
     this.user = user;
     this.token = generateRandomString(128);
     this.expireAt = addHours(new Date(), 24);
@@ -33,7 +34,7 @@ export class PasswordReset {
     onUpdate: "RESTRICT",
     orphanedRowAction: "delete",
   })
-  readonly user: User;
+  readonly user: Relation<User>;
 
   @PrimaryColumn({ type: "varchar", length: 128, collation: "C" })
   readonly token: string | null;

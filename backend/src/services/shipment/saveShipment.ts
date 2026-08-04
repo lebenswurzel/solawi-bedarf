@@ -16,22 +16,22 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import Koa from "koa";
 import Router from "koa-router";
-import { getUserFromContext } from "../getUserFromContext";
-import { http } from "../../consts/http";
-import { AppDataSource } from "../../database/database";
-import { Shipment } from "../../database/Shipment";
-import { ShipmentItem } from "../../database/ShipmentItem";
-import { AdditionalShipmentItem } from "../../database/AdditionalShipmentItem";
+import { getUserFromContext } from "../getUserFromContext.js";
+import { http } from "../../consts/http.js";
+import { AppDataSource } from "../../database/database.js";
+import { Shipment } from "../../database/Shipment.js";
+import { ShipmentItem } from "../../database/ShipmentItem.js";
+import { AdditionalShipmentItem } from "../../database/AdditionalShipmentItem.js";
 import {
   ShipmentType,
   UserRole,
-} from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
 import {
   Id,
   ShipmentItem as ShipmentItemType,
   AdditionalShipmentItem as AdditionalShipmentItemType,
   ShipmentRequest,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
 
 export const saveShipment = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,

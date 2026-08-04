@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { expect, test } from "vitest";
-import { generateRandomString } from "./security";
+import { generateRandomString } from "./security.js";
 
 test("random string has expected length", () => {
   expect(generateRandomString(23)).toHaveLength(23);

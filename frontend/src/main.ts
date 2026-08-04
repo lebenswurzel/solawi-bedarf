@@ -20,15 +20,15 @@ import { createPinia } from "pinia";
 // Vuetify base styles must load before any import that pulls in component CSS
 // (e.g. App.vue), or cascade layer order can invert and core.reset beats components.
 import "vuetify/styles";
-import "@mdi/font/css/materialdesignicons.css";
-import "./styles/animation.css";
-import "./styles/global.css";
+import "@mdi/font/css/materialdesignicons.css" with { type: "css" };
+import "./styles/animation.css" with { type: "css" };
+import "./styles/global.css" with { type: "css" };
 import App from "./App.vue";
 import { createVuetify } from "vuetify";
 import { md3 } from "vuetify/blueprints";
-import { router } from "./routes";
+import { router } from "./routes.js";
 import { LMap, LTileLayer, LMarker, LPopup } from "@vue-leaflet/vue-leaflet";
-import "leaflet/dist/leaflet.css";
+import "leaflet/dist/leaflet.css" with { type: "css" };
 
 const vuetify = createVuetify({
   blueprint: md3,

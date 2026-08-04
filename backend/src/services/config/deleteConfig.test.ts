@@ -35,7 +35,7 @@ import { createConfig } from "./createConfig";
 import {
   CreateConfigRequest,
   NewConfig,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
 
 test("prevent unauthorized access", async () => {
   const ctx = createBasicTestCtx();

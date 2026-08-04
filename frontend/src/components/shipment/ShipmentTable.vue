@@ -15,12 +15,12 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.js";
 import {
   Id,
   ShipmentWithRevisionMessages,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
-import { prettyDate } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
+import { prettyDate } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper.js";
 import { format, getISOWeek } from "date-fns";
 import { storeToRefs } from "pinia";
 import { onMounted, ref, watch } from "vue";
@@ -31,7 +31,7 @@ import { useProductStore } from "../../store/productStore.ts";
 import BusyIndicator from "../BusyIndicator.vue";
 import ShipmentDialog from "../ShipmentDialog.vue";
 import SeasonText from "../styled/SeasonText.vue";
-import { ShipmentType } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
+import { ShipmentType } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
 
 const props = defineProps<{
   shipmentType: ShipmentType;

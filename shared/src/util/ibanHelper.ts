@@ -14,8 +14,8 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { OrderPayment } from "../types";
-import { OrderPaymentType } from "../enum";
+import { OrderPayment } from "../types.js";
+import { OrderPaymentType } from "../enum.js";
 
 import { validateIBAN, ValidationErrorsIBAN } from "ibantools";
 

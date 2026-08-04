@@ -16,8 +16,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
 import { computed, ref, watchEffect } from "vue";
-import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
-import { interpolate } from "@lebenswurzel/solawi-bedarf-shared/src/lang/template.ts";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.js";
+import { interpolate } from "@lebenswurzel/solawi-bedarf-shared/src/lang/template.js";
 import { useConfigStore } from "../store/configStore.ts";
 import { saveOrder } from "../requests/shop.ts";
 import { useOrderStore } from "../store/orderStore.ts";
@@ -31,24 +31,24 @@ import {
   needsCategoryReason,
   needsOfferReason,
   minOffer,
-} from "@lebenswurzel/solawi-bedarf-shared/src/validation/reason.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/validation/reason.js";
 import SeasonText from "./styled/SeasonText.vue";
 import { useUiFeedback } from "../store/uiFeedbackStore.ts";
 import {
   UserCategory,
   UserRole,
-} from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
 import {
   OrderPayment,
   UserWithOrders,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
 import { useTextContentStore } from "../store/textContentStore.ts";
 import MsrpDisplay from "./shop/MsrpDisplay.vue";
 import { useUserStore } from "../store/userStore.ts";
 import ContributionSelect from "./shop/ContributionSelect.vue";
 import OrderPaymentComponent from "./shop/OrderPayment.vue";
 import DebugOnly from "./debug/DebugOnly.vue";
-import { isValidBiddingOrder } from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition.ts";
+import { isValidBiddingOrder } from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition.js";
 
 const props = defineProps<{ open: boolean; requestUser: UserWithOrders }>();
 const emit = defineEmits(["close"]);

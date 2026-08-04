@@ -15,8 +15,8 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { expect, test } from "vitest";
-import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
-import { calculateNewOrderValidFromDate } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper";
+import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
+import { calculateNewOrderValidFromDate } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper.js";
 import {
   TestAdminAndUserData,
   TestUserData,

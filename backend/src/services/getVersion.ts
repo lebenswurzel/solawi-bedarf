@@ -16,12 +16,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import Koa from "koa";
 import Router from "koa-router";
-import { buildInfo } from "@lebenswurzel/solawi-bedarf-shared/src/buildInfo";
-import { VersionInfo } from "@lebenswurzel/solawi-bedarf-shared/src/types";
-import { AppDataSource } from "../database/database";
-import { TextContent } from "../database/TextContent";
-import { TextContentCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
-import { config } from "../config";
+import { buildInfo } from "@lebenswurzel/solawi-bedarf-shared/src/buildInfo.js";
+import { VersionInfo } from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
+import { AppDataSource } from "../database/database.js";
+import { TextContent } from "../database/TextContent.js";
+import { TextContentCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
+import { config } from "../config.js";
 
 export const getVersion = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,

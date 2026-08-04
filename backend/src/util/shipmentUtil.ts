@@ -14,8 +14,8 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { Shipment } from "../database/Shipment";
-import { ShipmentItem } from "../database/ShipmentItem";
+import { Shipment } from "../database/Shipment.js";
+import { ShipmentItem } from "../database/ShipmentItem.js";
 
 interface ShipmentItemWithValidity extends ShipmentItem {
   validFrom: Date;

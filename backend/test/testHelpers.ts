@@ -18,8 +18,8 @@ import {
   ProductCategoryType,
   Unit,
   UserRole,
-} from "@lebenswurzel/solawi-bedarf-shared/src/enum";
-import { Address } from "@lebenswurzel/solawi-bedarf-shared/src/types";
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
+import { Address } from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
 import { Applicant } from "../src/database/Applicant";
 import { Depot } from "../src/database/Depot";
 import { Order } from "../src/database/Order";

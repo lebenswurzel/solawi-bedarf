@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import {
   ApplicantWithOrders,
   UserId,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
 import { computed, ref } from "vue";
 
 const model = defineModel<UserId[]>({ required: true });

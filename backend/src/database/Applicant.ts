@@ -21,10 +21,11 @@ import {
   OneToOne,
   JoinColumn,
 } from "typeorm";
-import { BaseEntity } from "./BaseEntity";
-import { User } from "./User";
-import { UserAddress } from "./UserAddress";
-import { EncryptTransformer } from "./EncryptTransformer";
+import type { Relation } from "typeorm";
+import { BaseEntity } from "./BaseEntity.js";
+import { User } from "./User.js";
+import { UserAddress } from "./UserAddress.js";
+import { EncryptTransformer } from "./EncryptTransformer.js";
 
 @Entity()
 export class Applicant extends BaseEntity {
@@ -48,7 +49,7 @@ export class Applicant extends BaseEntity {
 
   @OneToOne(() => User, (user) => user.applicant, { nullable: true })
   @JoinColumn()
-  user: User;
+  user: Relation<User>;
 
   @Column({ nullable: false })
   addressId: number;

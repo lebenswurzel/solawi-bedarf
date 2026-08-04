@@ -16,30 +16,30 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import Koa from "koa";
 import Router from "koa-router";
-import { Unit } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import { Unit } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
 import {
   BIData,
   CapacityByDepotId,
   ProductsById,
   RequiredByProductIdDepotId,
   SoldByProductId,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types";
-import { Depot } from "../../database/Depot";
-import { Order } from "../../database/Order";
-import { ProductCategory } from "../../database/ProductCategory";
-import { AppDataSource } from "../../database/database";
-import { getUserFromContext } from "../getUserFromContext";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
+import { Depot } from "../../database/Depot.js";
+import { Order } from "../../database/Order.js";
+import { ProductCategory } from "../../database/ProductCategory.js";
+import { AppDataSource } from "../../database/database.js";
+import { getUserFromContext } from "../getUserFromContext.js";
 import {
   getBooleanQueryParameter,
   getConfigIdFromQuery,
   getDateQueryParameter,
   getNumericQueryParameter,
-} from "../../util/requestUtil";
-import { RequisitionConfig } from "../../database/RequisitionConfig";
+} from "../../util/requestUtil.js";
+import { RequisitionConfig } from "../../database/RequisitionConfig.js";
 import {
   getSameOrNextThursday,
   getSameOrPreviousThursday,
-} from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper";
+} from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper.js";
 
 const isOrderValidOnDate = (order: Order, targetDate: Date): boolean => {
   return order.validFrom <= targetDate && order.validTo > targetDate;

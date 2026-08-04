@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { BuildInfo } from "./types";
+import { BuildInfo } from "./types.js";
 
 /**
  * NOTE: This dummy file will be overwritten with the actual git information when running

@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 // encrypt.transformer.ts
 import { ValueTransformer } from "typeorm";
 import * as crypto from "crypto";
-import { config } from "../config";
+import { config } from "../config.js";
 
 const algorithm = "aes-256-cbc";
 const key = crypto

@@ -17,10 +17,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from "vue";
 import { useConfigStore } from "../store/configStore";
-import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.js";
 import { dateToString, stringToDate } from "../lib/convert";
 import { createConfig } from "../requests/config";
-import { NewConfig } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
+import { NewConfig } from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
 import { addDays, addMonths, addYears } from "date-fns";
 import { useUiFeedback } from "../store/uiFeedbackStore";
 

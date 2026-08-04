@@ -25,8 +25,8 @@ import { User } from "../../database/User";
 import {
   Address,
   OrganizationInfo,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types";
-import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
+import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
 import { Applicant } from "../../database/Applicant";
 import { UserAddress } from "../../database/UserAddress";
 import { comparePassword, hashPassword } from "../../security";

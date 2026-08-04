@@ -16,12 +16,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
 import { computed } from "vue";
-import { ProductCategoryType } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
-import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
+import { ProductCategoryType } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.js";
 import type {
   ProductsById,
   SoldByProductId,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
 import { useBIStore } from "../../store/biStore";
 import { useProductStore } from "../../store/productStore.ts";
 import { useStatisticsStore } from "../../store/statisticsStore.ts";

@@ -14,16 +14,16 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { UserRole } from "../enum";
+import { UserRole } from "../enum.js";
 import {
   Depot,
   ExistingConfig,
   OrderItem,
   ProductsById,
   SoldByProductId,
-} from "../types";
-import { getLangUnit } from "../util/unitHelper";
-import { isIncreaseOnly } from "./requisition";
+} from "../types.js";
+import { getLangUnit } from "../util/unitHelper.js";
+import { isIncreaseOnly } from "./requisition.js";
 
 export const getRemainingDepotCapacity = (
   depot: Depot,

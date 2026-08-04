@@ -23,22 +23,22 @@ import {
 import {
   OrderPaymentType,
   UserCategory,
-} from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
-import { appConfig } from "@lebenswurzel/solawi-bedarf-shared/src/config.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
+import { appConfig } from "@lebenswurzel/solawi-bedarf-shared/src/config.js";
 import {
   OrderItem,
   OrderPayment,
   SavedOrder,
   SavedOrderWithPredecessor,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
-import { isDateInRange } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
+import { isDateInRange } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper.js";
 import {
   determineModificationOrderId,
   determineSuccessorOrder,
-} from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition.ts";
-import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/validation/requisition.js";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.js";
 import { useUserStore } from "./userStore.ts";
-import { isDebugEnabled } from "../lib/debug";
+import { isDebugEnabled } from "../lib/debug.js";
 import { useUiFeedback } from "./uiFeedbackStore.ts";
 
 export const getDefaultPaymentInfo = (): OrderPayment => {

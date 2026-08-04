@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { pdfTextsDefaults } from "../config";
+import { pdfTextsDefaults } from "../config.js";
 import {
   OrganizationInfo,
   OrganizationInfoFlat,
@@ -22,7 +22,7 @@ import {
   PdfTexts,
   PdfTextsKeys,
   SimpleTextContent,
-} from "../types";
+} from "../types.js";
 
 export const makeOrganizationInfo = (
   textContents: SimpleTextContent[]

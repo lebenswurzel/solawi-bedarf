@@ -23,13 +23,14 @@ import {
   OneToOne,
   JoinColumn,
 } from "typeorm";
-import { User } from "./User";
-import { Depot } from "./Depot";
-import { OrderItem } from "./OrderItem";
-import { BaseEntity } from "./BaseEntity";
-import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
-import { RequisitionConfig } from "./RequisitionConfig";
-import { PaymentInfo } from "./PaymentInfo";
+import type { Relation } from "typeorm";
+import { User } from "./User.js";
+import { Depot } from "./Depot.js";
+import { OrderItem } from "./OrderItem.js";
+import { BaseEntity } from "./BaseEntity.js";
+import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
+import { RequisitionConfig } from "./RequisitionConfig.js";
+import { PaymentInfo } from "./PaymentInfo.js";
 
 @Entity()
 export class Order extends BaseEntity {
@@ -70,7 +71,7 @@ export class Order extends BaseEntity {
   userId: number;
 
   @ManyToOne(() => User, (user) => user.orders, { nullable: false })
-  user: User;
+  user: Relation<User>;
 
   @Column({ nullable: true })
   depotId: number;

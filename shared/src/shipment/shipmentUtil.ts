@@ -21,8 +21,8 @@ import {
   EditShipmentItem,
   AdditionalShipmentItem,
   EditAdditionalShipmentItem,
-} from "../types";
-import { isDateEqual } from "../util/dateHelper";
+} from "../types.js";
+import { isDateEqual } from "../util/dateHelper.js";
 
 /**
  * Efficiently compares two shipment items for equality

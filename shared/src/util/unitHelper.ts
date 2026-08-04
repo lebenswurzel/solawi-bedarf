@@ -14,8 +14,8 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { Unit } from "../enum";
-import { language } from "../lang/lang";
+import { Unit } from "../enum.js";
+import { language } from "../lang/lang.js";
 
 export const getLangUnit = (unit?: Unit, useBigUnit?: boolean) => {
   switch (unit) {

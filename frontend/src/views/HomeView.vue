@@ -23,9 +23,9 @@ import { useBIStore } from "../store/biStore";
 import { useConfigStore } from "../store/configStore.ts";
 import { useUserStore } from "../store/userStore.ts";
 import SeasonText from "../components/styled/SeasonText.vue";
-import { getSeasonPhase } from "@lebenswurzel/solawi-bedarf-shared/src/util/configHelper.ts";
+import { getSeasonPhase } from "@lebenswurzel/solawi-bedarf-shared/src/util/configHelper.js";
 import SeasonStatusElement from "../components/season/SeasonStatusElement.vue";
-import { SeasonPhase } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
+import { SeasonPhase } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
 import { useTextContentStore } from "../store/textContentStore.ts";
 
 const configStore = useConfigStore();

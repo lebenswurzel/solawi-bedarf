@@ -15,8 +15,8 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
-import { interpolate } from "@lebenswurzel/solawi-bedarf-shared/src/lang/template.ts";
+import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.js";
+import { interpolate } from "@lebenswurzel/solawi-bedarf-shared/src/lang/template.js";
 import { computed, ref, watch, watchEffect } from "vue";
 import { useUserStore } from "../store/userStore.ts";
 import { getUserShipments } from "../requests/shipment.ts";
@@ -25,17 +25,17 @@ import { useOrderStore } from "../store/orderStore.ts";
 import {
   Id,
   ShipmentFullInformation,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
 import { storeToRefs } from "pinia";
 import {
   SeasonPhase,
   Unit,
-} from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
 import { useBIStore } from "../store/biStore.ts";
 import { valueToDelivered } from "../lib/convert.ts";
 import { useConfigStore } from "../store/configStore.ts";
 import SeasonText from "./styled/SeasonText.vue";
-import { getLangUnit } from "@lebenswurzel/solawi-bedarf-shared/src/util/unitHelper.ts";
+import { getLangUnit } from "@lebenswurzel/solawi-bedarf-shared/src/util/unitHelper.js";
 import { de } from "date-fns/locale";
 import { useTextContentStore } from "../store/textContentStore.ts";
 

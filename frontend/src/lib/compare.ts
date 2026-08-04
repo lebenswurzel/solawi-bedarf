@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import {
   Applicant,
   User,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
 
 export const applicantCreatedAtDown = (a: Applicant, b: Applicant) => {
   if (a.createdAt && b.createdAt) {

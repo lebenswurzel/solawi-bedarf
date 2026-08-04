@@ -19,12 +19,12 @@ import { describe, expect, test } from "vitest";
 import {
   generateDepotData,
   generateUserData,
-} from "@lebenswurzel/solawi-bedarf-shared/src/pdf/overviewPdfs";
+} from "@lebenswurzel/solawi-bedarf-shared/src/pdf/overviewPdfs.js";
 import {
   OrderOverviewItem,
   Product,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types";
-import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
+import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
 import {
   CUCUMBER,
   genProduct,
@@ -33,7 +33,7 @@ import {
   MILK_PRODUCTS,
   TOMATO,
   VEGETABLES,
-} from "@lebenswurzel/solawi-bedarf-shared/testSetup";
+} from "@lebenswurzel/solawi-bedarf-shared/testSetup.js";
 
 function genOrder(
   overwrite: Partial<OrderOverviewItem> = {},

@@ -15,8 +15,8 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from "typeorm";
-import { BaseEntity } from "./BaseEntity";
-import { ProductCategory } from "./ProductCategory";
+import { BaseEntity } from "./BaseEntity.js";
+import { ProductCategory } from "./ProductCategory.js";
 
 export const RequisitionConfigName = "Saison 24/25";
 

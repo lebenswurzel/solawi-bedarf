@@ -14,18 +14,18 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { AppDataSource } from "../../database/database";
-import { getUserFromContext } from "../getUserFromContext";
+import { AppDataSource } from "../../database/database.js";
+import { getUserFromContext } from "../getUserFromContext.js";
 import Koa from "koa";
 import Router from "koa-router";
-import { http } from "../../consts/http";
-import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
-import { RequisitionConfig } from "../../database/RequisitionConfig";
+import { http } from "../../consts/http.js";
+import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
+import { RequisitionConfig } from "../../database/RequisitionConfig.js";
 import {
   CreateConfigRequest,
   NewConfig,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types";
-import { copyProductCategories } from "../../util/productUtil";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
+import { copyProductCategories } from "../../util/productUtil.js";
 
 export const createConfig = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,

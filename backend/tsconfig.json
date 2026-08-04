@@ -1,9 +1,8 @@
 {
   "compilerOptions": {
     "target": "es2021",
-    "module": "node16",
+    "module": "node20",
     "strict": true,
-    "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "experimentalDecorators": true,
@@ -13,7 +12,8 @@
     "rootDir": "./src"
   },
   "ts-node": {
-    "transpileOnly": true
+    "transpileOnly": true,
+    "esm": true
   },
   "include": ["src/**/*.ts"],
   "exclude": ["**/*.test.ts"]

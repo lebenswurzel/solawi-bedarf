@@ -14,17 +14,17 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { AppDataSource } from "../../database/database";
-import { hashPassword } from "../../security";
-import { http } from "../../consts/http";
+import { AppDataSource } from "../../database/database.js";
+import { hashPassword } from "../../security.js";
+import { http } from "../../consts/http.js";
 import Koa from "koa";
 import Router from "koa-router";
-import { Applicant } from "../../database/Applicant";
-import { UserAddress } from "../../database/UserAddress";
-import { sendEmail } from "../email/email";
-import { config } from "../../config";
-import { getOrganizationInfo } from "../text/getOrganizationInfo";
-import { Address } from "@lebenswurzel/solawi-bedarf-shared/src/types";
+import { Applicant } from "../../database/Applicant.js";
+import { UserAddress } from "../../database/UserAddress.js";
+import { sendEmail } from "../email/email.js";
+import { config } from "../../config.js";
+import { getOrganizationInfo } from "../text/getOrganizationInfo.js";
+import { Address } from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
 
 export const saveApplicant = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,

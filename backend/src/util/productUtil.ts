@@ -17,10 +17,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import {
   NewProductCategory,
   OptionalId,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types";
-import { AppDataSource } from "../database/database";
-import { Product } from "../database/Product";
-import { ProductCategory } from "../database/ProductCategory";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
+import { AppDataSource } from "../database/database.js";
+import { Product } from "../database/Product.js";
+import { ProductCategory } from "../database/ProductCategory.js";
 
 export const copyProductCategories = async (
   fromConfigId: number,

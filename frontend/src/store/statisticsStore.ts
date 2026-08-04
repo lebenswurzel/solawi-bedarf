@@ -22,7 +22,7 @@ import {
   calculateEffectiveOrderValidMonths,
   calculateOrderValidMonths,
   getMsrp,
-} from "@lebenswurzel/solawi-bedarf-shared/src/msrp.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/msrp.js";
 import type {
   AvailabilityWeights,
   DateString,
@@ -31,7 +31,7 @@ import type {
   ProductId,
   SavedOrder,
   UserId,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
 import { getAllOrders } from "../requests/shop.ts";
 import { useBIStore } from "./biStore.ts";
 import { useConfigStore } from "./configStore.ts";

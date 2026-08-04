@@ -15,9 +15,9 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { LessThan } from "typeorm";
-import { Token } from "./database/Token";
-import { AppDataSource } from "./database/database";
-import { config } from "./config";
+import { Token } from "./database/Token.js";
+import { AppDataSource } from "./database/database.js";
+import { config } from "./config.js";
 
 export const invalidateTokenForUser = async (userId: number) => {
   await AppDataSource.createQueryBuilder()

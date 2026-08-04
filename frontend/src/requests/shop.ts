@@ -17,13 +17,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import {
   ConfirmedOrder,
   SavedOrder,
-} from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
+} from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
 import { getUrl, verifyResponse } from "./requests.ts";
 
-const getOrderOptions = (
-  noOrderItems?: boolean,
-  noPaymentInfo?: boolean,
-) =>
+const getOrderOptions = (noOrderItems?: boolean, noPaymentInfo?: boolean) =>
   [
     noOrderItems ? "no-order-items" : "",
     noPaymentInfo ? "no-payment-info" : "",
@@ -88,9 +85,7 @@ export const getAllOrders = async (
     options,
   });
 
-  const response = await fetch(
-    getUrl(`/shop/orders?${params.toString()}`),
-  );
+  const response = await fetch(getUrl(`/shop/orders?${params.toString()}`));
 
   await verifyResponse(response);
 

@@ -14,8 +14,8 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import { appConfig } from "../config";
-import { UserCategory } from "../enum";
+import { appConfig } from "../config.js";
+import { UserCategory } from "../enum.js";
 
 export const needsCategoryReason = (category: UserCategory) => {
   return appConfig.needsCategoryReason.includes(category);

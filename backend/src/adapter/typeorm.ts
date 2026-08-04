@@ -16,17 +16,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { DataSource, Repository } from "typeorm";
-import { UserRepo } from "../services/user/repo";
-import { User } from "../database/User";
-import { TextContentRepo } from "../services/text/repo";
-import { OrganizationInfo } from "@lebenswurzel/solawi-bedarf-shared/src/types";
-import { TextContent } from "../database/TextContent";
-import { TextContentCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
-import { makeOrganizationInfo } from "@lebenswurzel/solawi-bedarf-shared/src/text/textContent";
-import { PasswordReset } from "../database/PasswordReset";
-import { FindOptionsRelations } from "typeorm/find-options/FindOptionsRelations";
-import { Token } from "../database/Token";
-import { AppDataSource } from "../database/database";
+import { UserRepo } from "../services/user/repo.js";
+import { User } from "../database/User.js";
+import { TextContentRepo } from "../services/text/repo.js";
+import { OrganizationInfo } from "@lebenswurzel/solawi-bedarf-shared/src/types.js";
+import { TextContent } from "../database/TextContent.js";
+import { TextContentCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
+import { makeOrganizationInfo } from "@lebenswurzel/solawi-bedarf-shared/src/text/textContent.js";
+import { PasswordReset } from "../database/PasswordReset.js";
+import { FindOptionsRelations } from "typeorm/find-options/FindOptionsRelations.js";
+import { Token } from "../database/Token.js";
+import { AppDataSource } from "../database/database.js";
 
 export class TypeormUserRepo implements UserRepo {
   private repo: Repository<User>;

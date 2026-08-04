@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import Papa from "papaparse";
-import { pick } from "@lebenswurzel/solawi-bedarf-shared/src/util/utils.ts";
+import { pick } from "@lebenswurzel/solawi-bedarf-shared/src/util/utils.js";
 
 type CsvRow<T extends string> = {
   [K in T]: string; // Identifier key with string value

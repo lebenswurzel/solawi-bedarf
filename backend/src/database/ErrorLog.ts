@@ -15,8 +15,8 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from "typeorm";
-import { BaseEntity } from "./BaseEntity";
-import { User } from "./User";
+import { BaseEntity } from "./BaseEntity.js";
+import { User } from "./User.js";
 
 @Entity()
 export class ErrorLog extends BaseEntity {

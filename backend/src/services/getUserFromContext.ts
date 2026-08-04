@@ -17,12 +17,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import Koa from "koa";
 import Router from "koa-router";
 import jwt, { JwtPayload } from "jsonwebtoken";
-import { config } from "../config";
-import { AppDataSource } from "../database/database";
-import { Token } from "../database/Token";
-import { http } from "../consts/http";
-import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
-import { getNumericQueryParameter } from "../util/requestUtil";
+import { config } from "../config.js";
+import { AppDataSource } from "../database/database.js";
+import { Token } from "../database/Token.js";
+import { http } from "../consts/http.js";
+import { UserRole } from "@lebenswurzel/solawi-bedarf-shared/src/enum.js";
+import { getNumericQueryParameter } from "../util/requestUtil.js";
 
 export const getUserFromContext = async (
   ctx: Koa.ParameterizedContext<any, Router.IRouterParamContext<any, {}>, any>,
