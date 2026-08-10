@@ -11,6 +11,12 @@ services:
       - ./database/pgdata:/var/lib/postgresql/data/pgdata
       - ./database/backups:/backups
       - ./dev/backup:/backup_scripts
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d solawi"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
   be:
     build:
       context: ./
@@ -19,20 +25,46 @@ services:
     env_file:
       - ./env-be-prod.env
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     ports:
       - "${BACKEND_EXTERNAL_PORT:-3100}:3000"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/version').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
   php:
     build: ./migration/.
     restart: always
     ports:
       - "${PHP_EXTERNAL_PORT:-8180}:80"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://127.0.0.1:80/ > /dev/null || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
   fe:
     build:
       context: ./
       dockerfile: ./frontend/Dockerfile
     restart: always
     depends_on:
-      - be
+      be:
+        condition: service_healthy
     ports:
       - "${FRONTEND_EXTERNAL_PORT:-8184}:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/ > /dev/null || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s

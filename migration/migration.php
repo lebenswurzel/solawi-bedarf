@@ -1,3 +1,4 @@
+<?php
 /*
 This file is part of the SoLawi Bedarf app
 
@@ -14,8 +15,6 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-
-<?php
 set_error_handler(/**
  * @throws Exception
  */ function() {

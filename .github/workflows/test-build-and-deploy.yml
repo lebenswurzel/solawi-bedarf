@@ -11,21 +11,27 @@ jobs:
       - name: Run Build and deploy script
         run: ./dev/build/build-and-deploy.bash init
 
-      - name: Prepare smoke test environemnt
+      - name: Prepare smoke test environment
         run: ./dev/ci/prepare-smoke-test.bash
 
       - name: docker compose up
         run: docker compose up -d
 
-      - uses: GuillaumeFalourd/wait-sleep-action@v1
-        with:
-          time: "20"
+      - name: Wait for stack readiness
+        run: ./dev/ci/wait-for-stack.bash
 
-      - name: Smoke test backend connection
-        run: ./dev/ci/backend-smoke-test.bash
+      - name: Smoke tests
+        run: ./dev/ci/smoke-test.bash
 
       - name: Database backup
         run: ./dev/backup/database-backup.bash
 
       - name: Check if a backup was created
         run: '[ -n "$(ls ./database/backups/*.sql.gz)" ]'
+
+      - name: Backup restore smoke test
+        run: ./dev/ci/backup-restore-smoke-test.bash
+
+      - name: Dump compose logs on failure
+        if: failure()
+        run: docker compose logs --no-color
