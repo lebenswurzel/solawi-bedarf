@@ -14,7 +14,7 @@
   "dependencies": {
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
-    "ibantools": "^4.5.1",
+    "ibantools": "^4.5.4",
     "jszip": "^3.10.1",
     "marked": "^17.0.0",
     "pdf-lib": "^1.17.1",

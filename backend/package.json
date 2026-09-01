@@ -30,7 +30,7 @@
     "neverthrow": "^8.2.0",
     "nodemailer": "^7.0.12",
     "pg": "^8.20.0",
-    "qs": "^6.15.0",
+    "qs": "^6.15.3",
     "reflect-metadata": "^0.2.1",
     "ts-node": "^10.9.1",
     "typeorm": "^0.3.27"
@@ -50,7 +50,7 @@
     "@types/nodemailer": "^7.0.4",
     "@vitest/coverage-v8": "^4.1.9",
     "prettier": "^3.9.4",
-    "unplugin-swc": "^1.5.8",
+    "unplugin-swc": "^1.5.11",
     "vitest": "^4.1.9"
   }
 }
