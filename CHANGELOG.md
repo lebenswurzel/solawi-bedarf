@@ -367,4 +367,4 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 
 # NEW
 
-#424 Textinhalte werden beim Login aktualisiert
+#424 Textinhalte und Saison werden beim Login aktualisiert
