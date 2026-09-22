@@ -25,6 +25,7 @@ import {
   OrganizationInfoKeys,
   PdfTextsKeys,
   TextContent,
+  isIdType,
 } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import {
   TextContentCategory,
@@ -131,8 +132,19 @@ const onCreateFAQ = () => {
   dialogTextContent.value = { ...defaultTextContent };
   open.value = true;
 };
-const onEditTextContent = (textContent: NewTextContent | TextContent) => {
-  dialogTextContent.value = textContent;
+const onEditTextContent = async (
+  textContent: NewTextContent | TextContent,
+) => {
+  if (
+    isIdType(textContent) &&
+    textContent.typ === TextContentTyp.BASE64_IMAGE
+  ) {
+    dialogTextContent.value = await textContentStore.loadFullTextContent(
+      textContent.id,
+    );
+  } else {
+    dialogTextContent.value = textContent;
+  }
   open.value = true;
 };
 const onClose = async () => {
@@ -206,7 +218,12 @@ const onClose = async () => {
             >
               {{ langPdfTexts[text.title as PdfTextsKeys] ?? text.title }}
               <code class="opacity-50">{pdf.{{ text.title }}}</code>
-              <v-list-item-subtitle>{{ text.content }}</v-list-item-subtitle>
+              <v-list-item-subtitle>
+                <template v-if="text.typ === TextContentTyp.BASE64_IMAGE">
+                  {{ text.hasContent ? "Bild gesetzt" : "Kein Bild" }}
+                </template>
+                <template v-else>{{ text.content }}</template>
+              </v-list-item-subtitle>
             </v-list-item>
           </v-list>
         </v-card-text>

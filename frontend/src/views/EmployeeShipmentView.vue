@@ -20,6 +20,7 @@ import { ref } from "vue";
 import ShipmentTable from "../components/shipment/ShipmentTable.vue";
 import { ShipmentType } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import DeliveryOverview from "../components/shipment/DeliveryOverview.vue";
+import CommercialDeliveryTable from "../components/commercial/CommercialDeliveryTable.vue";
 
 const t = language.pages.shipment;
 
@@ -31,12 +32,16 @@ const currentTab = ref("shipments");
     <v-card-title> {{ t.title }} </v-card-title>
     <v-tabs v-model="currentTab">
       <v-tab value="shipments">Verteilungen</v-tab>
+      <v-tab value="commercial">Vertrieb</v-tab>
       <v-tab value="overview"> Übersicht </v-tab>
       <v-tab value="forecast">Prognose</v-tab>
     </v-tabs>
     <v-tabs-window v-model="currentTab">
       <v-tabs-window-item value="shipments">
         <ShipmentTable :shipment-type="ShipmentType.NORMAL" />
+      </v-tabs-window-item>
+      <v-tabs-window-item value="commercial">
+        <CommercialDeliveryTable />
       </v-tabs-window-item>
       <v-tabs-window-item value="overview">
         <v-card-text>

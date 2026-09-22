@@ -74,6 +74,9 @@ export class Product extends BaseEntity {
   })
   unit: Unit;
 
+  @Column({ nullable: false, default: 7 })
+  vatRate: number;
+
   @Column()
   productCategoryId: number;
 

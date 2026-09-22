@@ -52,6 +52,7 @@ describe("calculateEffectiveMsrpChain", () => {
       quantity: 100,
       productCategoryId: id,
       productCategoryType: categoryType,
+      vatRate: 7,
     };
   };
 

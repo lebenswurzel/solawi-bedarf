@@ -15,10 +15,11 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { saveUser } from "../requests/user.ts";
-import { inject, Ref, ref, watchEffect } from "vue";
+import { saveUser, getCommercialProfile } from "../requests/user.ts";
+import { inject, Ref, ref, watch, watchEffect, computed } from "vue";
 import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
 import {
+  CommercialProfile,
   isIdType,
   NewUser,
   User,
@@ -41,6 +42,12 @@ const loading = ref(false);
 const error = ref<string>();
 const password = ref<string>();
 const enableValidFrom = ref(false);
+const commercialProfile = ref<CommercialProfile>({
+  companyName: "",
+  street: "",
+  postalcode: "",
+  city: "",
+});
 
 const dialogUser = inject<Ref<{ user: NewUser | User }>>("dialogUser") as Ref<{
   user: NewUser | User;
@@ -58,7 +65,15 @@ const roleOptions = [
     title: language.app.options.userRoles[UserRole.ADMIN],
     value: UserRole.ADMIN,
   },
+  {
+    title: language.app.options.userRoles[UserRole.COMMERCIAL],
+    value: UserRole.COMMERCIAL,
+  },
 ];
+
+const isCommercial = computed(
+  () => dialogUser.value.user.role === UserRole.COMMERCIAL,
+);
 
 const onClose = () => {
   password.value = undefined;
@@ -76,6 +91,7 @@ const onSave = () => {
     password: password.value || undefined,
     orderValidFrom: includeValidFrom ? orderValidFrom.value : null,
     requisitionConfigId: activeConfigId.value,
+    commercialProfile: isCommercial.value ? commercialProfile.value : null,
   })
     .then(() => {
       loading.value = false;
@@ -90,16 +106,46 @@ const onSave = () => {
 
 watchEffect(async () => {
   if (isIdType(dialogUser.value.user)) {
-    const order = await getOrder(
-      dialogUser.value.user.id,
-      activeConfigId.value,
-    );
-    orderValidFrom.value = order?.validFrom || null;
+    if (dialogUser.value.user.role === UserRole.COMMERCIAL) {
+      const profile = await getCommercialProfile(dialogUser.value.user.id);
+      commercialProfile.value = profile.commercialProfile || {
+        companyName: "",
+        street: "",
+        postalcode: "",
+        city: "",
+      };
+      orderValidFrom.value = null;
+      enableValidFrom.value = false;
+    } else {
+      const order = await getOrder(
+        dialogUser.value.user.id,
+        activeConfigId.value,
+      );
+      orderValidFrom.value = order?.validFrom || null;
+      enableValidFrom.value = !!orderValidFrom.value;
+    }
   } else {
     orderValidFrom.value = null;
+    enableValidFrom.value = false;
+    commercialProfile.value = {
+      companyName: "",
+      street: "",
+      postalcode: "",
+      city: "",
+    };
   }
-  enableValidFrom.value = !!orderValidFrom.value;
 });
+
+watch(
+  () => dialogUser.value.user.role,
+  (role) => {
+    if (role !== UserRole.COMMERCIAL) {
+      enableValidFrom.value = !!orderValidFrom.value;
+    } else {
+      enableValidFrom.value = false;
+    }
+  },
+);
 </script>
 
 <template>
@@ -135,8 +181,26 @@ watchEffect(async () => {
           }`"
           color="primary"
         ></v-switch>
+        <template v-if="isCommercial">
+          <v-text-field
+            v-model="commercialProfile.companyName"
+            :label="t.companyName"
+          ></v-text-field>
+          <v-text-field
+            v-model="commercialProfile.street"
+            :label="t.street"
+          ></v-text-field>
+          <v-text-field
+            v-model="commercialProfile.postalcode"
+            :label="t.postalcode"
+          ></v-text-field>
+          <v-text-field
+            v-model="commercialProfile.city"
+            :label="t.city"
+          ></v-text-field>
+        </template>
         <v-text-field
-          v-if="enableValidFrom"
+          v-if="enableValidFrom && !isCommercial"
           :label="t.orderValidFrom"
           type="datetime-local"
           :model-value="

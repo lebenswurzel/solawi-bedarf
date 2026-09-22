@@ -23,9 +23,15 @@ import {
   PdfTexts,
   TextContent,
 } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
-import { getTextContent } from "../requests/textcontent.ts";
+import {
+  getTextContent,
+  getTextContentById,
+} from "../requests/textcontent.ts";
 import { marked } from "marked";
-import { TextContentCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
+import {
+  TextContentCategory,
+  TextContentTyp,
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum.ts";
 import { faqAlphabeticalDown } from "../lib/compare.ts";
 import {
   makeFlatOrganizationInfo,
@@ -36,8 +42,11 @@ import { pageElementDefaults } from "@lebenswurzel/solawi-bedarf-shared/src/conf
 
 export const useTextContentStore = defineStore("textContent", () => {
   const textContent = ref<TextContent[]>([]);
+  /** Cached full pdfLogo data URL; null means not loaded yet. */
+  const pdfLogoCache = ref<string | null>(null);
 
   const update = async () => {
+    pdfLogoCache.value = null;
     textContent.value = (await getTextContent()).textContent.sort(
       faqAlphabeticalDown,
     );
@@ -114,6 +123,44 @@ export const useTextContentStore = defineStore("textContent", () => {
     return marked.parse(pageElementDefaults[title]);
   };
 
+  const loadFullTextContent = async (id: number): Promise<TextContent> => {
+    const full = await getTextContentById(id);
+    const idx = textContent.value.findIndex((entry) => entry.id === id);
+    if (idx >= 0) {
+      textContent.value[idx] = {
+        ...full,
+        hasContent:
+          full.typ === TextContentTyp.BASE64_IMAGE
+            ? full.content.length > 0
+            : full.hasContent,
+        // Keep list payload light: strip image bytes from the shared list again.
+        content:
+          full.typ === TextContentTyp.BASE64_IMAGE ? "" : full.content,
+      };
+    }
+    if (full.title === "pdfLogo" && full.typ === TextContentTyp.BASE64_IMAGE) {
+      pdfLogoCache.value = full.content;
+    }
+    return full;
+  };
+
+  const getPdfLogo = async (): Promise<string> => {
+    if (pdfLogoCache.value !== null) {
+      return pdfLogoCache.value;
+    }
+    const entry = textContent.value.find(
+      (content) =>
+        content.category === TextContentCategory.PDF &&
+        content.title === "pdfLogo",
+    );
+    if (!entry?.hasContent) {
+      pdfLogoCache.value = "";
+      return "";
+    }
+    const full = await loadFullTextContent(entry.id);
+    return full.content;
+  };
+
   return {
     textContent,
     faqs,
@@ -123,6 +170,8 @@ export const useTextContentStore = defineStore("textContent", () => {
     organizationInfoFlat,
     pdfTexts,
     getPageElement,
+    getPdfLogo,
+    loadFullTextContent,
     update,
   };
 });

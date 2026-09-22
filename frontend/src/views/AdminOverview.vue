@@ -126,9 +126,10 @@ const onDepotPdfClick = async () => {
       dateOfInterest.value,
     );
     const zip = new Zip();
+    const pdfLogo = await textContentStore.getPdfLogo();
     for (const pdfSpec of dataByDepotAndProductCategory) {
       await zip.addPdf(
-        createDefaultPdf(pdfSpec, organizationInfo.value),
+        createDefaultPdf(pdfSpec, organizationInfo.value, pdfLogo),
         `${sanitizeFileName(pdfSpec.receiver)}.pdf`,
       );
     }
@@ -161,9 +162,10 @@ const onUserPdfClick = async () => {
       configStore.config?.name ?? "SAISON?",
     );
     const zip = new Zip();
+    const pdfLogo = await textContentStore.getPdfLogo();
     for (const pdf of dataByUserAndProductCategory) {
       await zip.addPdf(
-        createDefaultPdf(pdf, organizationInfo.value),
+        createDefaultPdf(pdf, organizationInfo.value, pdfLogo),
         `${sanitizeFileName(pdf.receiver)}.pdf`,
       );
     }

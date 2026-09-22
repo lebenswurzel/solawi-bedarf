@@ -72,6 +72,18 @@ gh extension install https://github.com/nektos/gh-act
 gt act
 ```
 
+### Backend smoke tests (Docker stack)
+
+After the app is running via `docker compose up` (with prod env files from
+`./dev/ci/prepare-smoke-test.bash` if needed):
+
+```
+cd backend
+npm run smoke-test
+```
+
+Optional: `SMOKE_BASE_URL=http://0.0.0.0:8184/api` (default).
+
 ### Backend tests
 
 For local testing a Postgres container must be started (default port 5533):

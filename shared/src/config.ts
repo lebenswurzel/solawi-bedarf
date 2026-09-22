@@ -36,6 +36,7 @@ export const organizationInfoKeys: OrganizationInfoKeys[] = [
   "address.email",
   "address.forumContact",
   "bankAccount",
+  "bioControlNumber",
 ];
 
 export const basicOrganizationInfo: OrganizationInfo = {
@@ -50,6 +51,7 @@ export const basicOrganizationInfo: OrganizationInfo = {
     forumContact: "@rike",
   },
   bankAccount: "Kontoinhaber: ...\nIBAN: ...\nKreditinstitut: ...",
+  bioControlNumber: "",
 };
 
 export const appConfig = {
@@ -102,6 +104,10 @@ export const pdfTextsKeys: PdfTextsKeys[] = [
   "packagingListFooter",
   "packagingListHeader",
   "packagingListDetailText",
+  "deliveryNoteHeader",
+  "deliveryNoteFooter",
+  "invoiceFooter",
+  "pdfLogo",
 ];
 
 export const pdfTextsDefaults: PdfTexts = {
@@ -109,7 +115,17 @@ export const pdfTextsDefaults: PdfTexts = {
   packagingListHeader: "",
   packagingListDetailText:
     "Die hier angegebenen Mengen werden auf alle Ernteteiler des Depots aufgeteilt. Bitte nimm nur die Mengen mit, die mit deiner Bedarfsanmeldung übereinstimmen. Deine genauen Mitnahmemengen kannst du auch der Bedarfsanmeldungs-App entnehmen. Dort sind die Mengen bereits korrekt berechnet.",
+  deliveryNoteHeader: "",
+  deliveryNoteFooter: "",
+  invoiceFooter: "",
+  pdfLogo: "",
 };
+
+/** Max raw image file size for BASE64_IMAGE text content uploads (bytes). */
+export const PDF_LOGO_MAX_BYTES = 500 * 1024;
+
+export const BASE64_IMAGE_DATA_URL_PATTERN =
+  /^data:image\/(png|jpeg|jpg|svg\+xml);base64,[A-Za-z0-9+/=\s]+$/;
 
 export const emailTextsKeys: EmailTextsKeys[] = [
   "orderConfirmationFullSeason",

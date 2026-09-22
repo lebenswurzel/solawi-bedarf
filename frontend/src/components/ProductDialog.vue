@@ -153,6 +153,16 @@ const onSave = () => {
             ></v-text-field>
           </v-col>
           <v-col cols="12" sm="4">
+            <v-select
+              v-model="dialogProduct.vatRate"
+              :items="[
+                { title: '7 %', value: 7 },
+                { title: '19 %', value: 19 },
+              ]"
+              :label="t.vatRate"
+            ></v-select>
+          </v-col>
+          <v-col cols="12" sm="4">
             <v-text-field
               type="number"
               v-model="dialogProduct.quantity"
