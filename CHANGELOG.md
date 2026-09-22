@@ -365,6 +365,8 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #402 Fix: Depot-Überbuchung bei Bedarfsänderungen während der Saison behoben
 #404 Verteilungsübersicht-PDF: Zeilenhöhen auf allen Seiten gleich hoch
 
-# NEW
+# v0.15.14 - 2026-09-22 - Data update on login
 
 #424 Textinhalte und Saison werden beim Login aktualisiert
+
+# NEW
