@@ -87,6 +87,7 @@ type NavEntry = {
   title: string;
   icon: string;
   to: string;
+  requiresLogin?: boolean;
 };
 
 const mainNavEntries: NavEntry[] = [
@@ -99,6 +100,7 @@ const mainNavEntries: NavEntry[] = [
     title: language.pages.shop.navigation.title,
     icon: "mdi-storefront",
     to: "/shop",
+    requiresLogin: true,
   },
   {
     title: language.pages.faq.navigation.title,
@@ -106,6 +108,10 @@ const mainNavEntries: NavEntry[] = [
     to: "/faq",
   },
 ];
+
+const visibleMainNavEntries = computed(() =>
+  mainNavEntries.filter((entry) => !entry.requiresLogin || isLoggedIn.value),
+);
 
 const adminNavEntries: NavEntry[] = [
   {
@@ -210,7 +216,7 @@ const adminNavEntries: NavEntry[] = [
       </v-list-item>
       <v-divider></v-divider>
       <v-list-item
-        v-for="entry in mainNavEntries"
+        v-for="entry in visibleMainNavEntries"
         :to="entry.to"
         :prepend-icon="entry.icon"
       >
