@@ -366,3 +366,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #404 Verteilungsübersicht-PDF: Zeilenhöhen auf allen Seiten gleich hoch
 
 # NEW
+
+#424 Textinhalte werden beim Login aktualisiert

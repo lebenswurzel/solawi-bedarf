@@ -20,6 +20,7 @@ import { useRoute, useRouter } from "vue-router";
 import { login } from "../requests/login.ts";
 import { useUserStore } from "../store/userStore.ts";
 import { useVersionInfoStore } from "../store/versionInfoStore.ts";
+import { useTextContentStore } from "../store/textContentStore.ts";
 import { useUiFeedback } from "../store/uiFeedbackStore.ts";
 
 const props = defineProps<{
@@ -37,6 +38,7 @@ const valid = ref<boolean>(false);
 const router = useRouter();
 const route = useRoute();
 const userStore = useUserStore();
+const textContentStore = useTextContentStore();
 const { setError, setSuccess } = useUiFeedback();
 const versionInfoStore = useVersionInfoStore();
 
@@ -45,6 +47,7 @@ const onLogin = async () => {
   login(username.value!, password.value!, untilMidnight.value!)
     .then(async () => {
       await userStore.update();
+      await textContentStore.update();
       if (props.useRedirect) {
         let redirect = (route.query.redirect as string) || "/";
         if (redirect == "/login") {
