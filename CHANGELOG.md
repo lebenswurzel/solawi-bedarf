@@ -369,6 +369,8 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 
 #424 Textinhalte und Saison werden beim Login aktualisiert
 
-# NEW
+# v0.15.15 - 2026-09-29 - Shipment-CSV
 
 #425 Admin: CSV-Export der verteilten Produkte
+
+# NEW
