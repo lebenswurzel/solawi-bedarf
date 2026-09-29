@@ -394,6 +394,16 @@ export interface ShipmentFullInformation extends Shipment {
   revisionMessages: RevisionMessageJson[];
 }
 
+export interface ShipmentItemExportRow {
+  depotName: string;
+  productName: string;
+  totalShipedQuantity: number;
+  unit: Unit;
+  multiplicator: number;
+  validFrom: string;
+  season: string;
+}
+
 export interface EditShipment extends Omit<
   Shipment,
   "id" | "shipmentItems" | "additionalShipmentItems"
