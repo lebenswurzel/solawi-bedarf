@@ -17,6 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import {
   OptionalId,
   ShipmentFullInformation,
+  ShipmentItemExportRow,
   ShipmentRequest,
 } from "@lebenswurzel/solawi-bedarf-shared/src/types.ts";
 import { getUrl, verifyResponse } from "./requests";
@@ -66,6 +67,19 @@ export const getUserShipments = async (
   await verifyResponse(response);
 
   return response.json();
+};
+
+export const getShipmentItemsExport = async (
+  configId: number,
+): Promise<ShipmentItemExportRow[]> => {
+  const response = await fetch(
+    getUrl(`/shipments/export?configId=${configId}`),
+  );
+
+  await verifyResponse(response);
+
+  const body: { items: ShipmentItemExportRow[] } = await response.json();
+  return body.items;
 };
 
 export const deleteShipment = async (shipmentId: number) => {

@@ -50,6 +50,7 @@ import { getTextContent } from "./services/text/getTextContent";
 import { saveTextContent } from "./services/text/saveTextContent";
 import { deleteTextContent } from "./services/text/deleteTextContent";
 import { getShipments } from "./services/shipment/getShipments";
+import { getShipmentItemsExport } from "./services/shipment/getShipmentItemsExport";
 import { saveShipment } from "./services/shipment/saveShipment";
 import { biHandler } from "./services/bi/bi";
 import { deleteConfig } from "./services/config/deleteConfig";
@@ -172,6 +173,7 @@ export async function startServer(): Promise<Server> {
 
   router.get("/shipment", getUserShipments);
   router.get("/shipments", getShipments);
+  router.get("/shipments/export", getShipmentItemsExport);
   router.post("/shipment", saveShipment);
   router.delete("/shipment", deleteShipment);
 

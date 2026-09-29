@@ -22,6 +22,7 @@ import {
   generateDepotData,
   generateOverviewCsv,
   generateUserData,
+  objectToCsv,
 } from "@lebenswurzel/solawi-bedarf-shared/src/pdf/overviewPdfs.ts";
 import { sanitizeFileName } from "@lebenswurzel/solawi-bedarf-shared/src/util/fileHelper.ts";
 import { useConfigStore } from "../store/configStore.ts";
@@ -30,14 +31,20 @@ import { Zip } from "@lebenswurzel/solawi-bedarf-shared/src/pdf/zip.ts";
 import { createDefaultPdf } from "@lebenswurzel/solawi-bedarf-shared/src/pdf/pdf.ts";
 import { useTextContentStore } from "../store/textContentStore.ts";
 import { storeToRefs } from "pinia";
-import { formatDateForFilename } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper.ts";
+import {
+  formatDateForFilename,
+  prettyDateNoTime,
+} from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper.ts";
+import { getLangUnit } from "@lebenswurzel/solawi-bedarf-shared/src/util/unitHelper.ts";
 import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang.ts";
 import DateOnlyPicker from "../components/DateOnlyPicker.vue";
+import { getShipmentItemsExport } from "../requests/shipment";
 
 const loading = ref({
   csv: false,
   depot: false,
   orders: false,
+  shipments: false,
 });
 
 const configStore = useConfigStore();
@@ -57,10 +64,17 @@ const orderOverviewSeasons = computed(() =>
 const orderOverviewSelectedSeasons = ref<number[]>([
   configStore.activeConfigId,
 ]);
+const shipmentExportSelectedSeasons = ref<number[]>([
+  configStore.activeConfigId,
+]);
 const dateOfInterest = ref<Date>(new Date());
 
 watchEffect(() => {
   orderOverviewSelectedSeasons.value = [configStore.activeConfigId];
+});
+
+watchEffect(() => {
+  shipmentExportSelectedSeasons.value = [configStore.activeConfigId];
 });
 
 const onUserCsvClick = async () => {
@@ -104,6 +118,45 @@ const onUserCsvClick = async () => {
     throw e;
   } finally {
     loading.value.csv = false;
+  }
+};
+
+const onShipmentCsvClick = async () => {
+  loading.value.shipments = true;
+  try {
+    const items = (
+      await Promise.all(
+        shipmentExportSelectedSeasons.value.map((configId) =>
+          getShipmentItemsExport(configId),
+        ),
+      )
+    ).flat();
+    const csv = objectToCsv(
+      items.map((item) => ({
+        depot_name: item.depotName,
+        product_name: item.productName,
+        totalShipedQuantity: item.totalShipedQuantity,
+        unit: getLangUnit(item.unit),
+        multiplicator: item.multiplicator,
+        validFrom: prettyDateNoTime(item.validFrom),
+        season: item.season,
+      })),
+    );
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const filename = `verteilungen ${formatDateForFilename(new Date())}.csv`;
+    a.href = url;
+    a.download = sanitizeFileName(filename);
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  } catch (e) {
+    uiFeedbackStore.setError("" + e);
+    throw e;
+  } finally {
+    loading.value.shipments = false;
   }
 };
 
@@ -268,6 +321,35 @@ const onUserPdfClick = async () => {
         :loading="loading.csv"
         :disabled="orderOverviewSelectedSeasons.length === 0"
         >Bedarfsanmeldungs-CSV herunterladen</v-btn
+      >
+    </v-card-actions>
+  </v-card>
+  <v-card class="ma-2">
+    <v-card-title>Verteilte Produkte als CSV</v-card-title>
+    <v-card-text class="pb-0">
+      Bei Klick auf "Verteilungs-CSV herunterladen" werden die Verteilpositionen
+      der gewählten Saison(s) als CSV heruntergeladen. Enthalten sind Depot,
+      Produkt, gelieferte Menge, Einheit, Multiplikator und das Datum der
+      Verteilung.
+      <v-row>
+        <v-col cols="12" md="4">
+          <v-select
+            :items="orderOverviewSeasons"
+            v-model="shipmentExportSelectedSeasons"
+            label="Saison(s)"
+            chips
+            multiple
+            persistent-hint
+          ></v-select>
+        </v-col>
+      </v-row>
+    </v-card-text>
+    <v-card-actions>
+      <v-btn
+        @click="onShipmentCsvClick"
+        :loading="loading.shipments"
+        :disabled="shipmentExportSelectedSeasons.length === 0"
+        >Verteilungs-CSV herunterladen</v-btn
       >
     </v-card-actions>
   </v-card>
