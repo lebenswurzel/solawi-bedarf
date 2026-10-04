@@ -1,2 +1,4 @@
 ---
 traefik_path: "/home/{{ ansible_user }}/traefik"
+# Proxy addresses allowed to set X-Forwarded-For. Empty keeps the compose default (127.0.0.1/32).
+traefik_trusted_ips: ""

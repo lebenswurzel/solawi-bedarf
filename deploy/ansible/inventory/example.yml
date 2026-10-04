@@ -14,6 +14,7 @@ all:
       # traefik_path: /home/user/traefik
       # traefik_network: traefik
       # traefik_entrypoint: web
+      # traefik_trusted_ips: 192.0.2.1
       # Offsite backup. Omit all three required keys to leave it unconfigured.
       # backup_age_recipient is the public line from `age-keygen -y identity.txt`.
       # Keep the private identity in KeePass, off the server.
