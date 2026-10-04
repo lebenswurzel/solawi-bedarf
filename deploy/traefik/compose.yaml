@@ -2,9 +2,11 @@
 # compose.traefik.yaml joins. HAProxy terminates TLS and forwards HTTP here.
 # The deploy-traefik playbook copies this file to /home/<user>/traefik on the server.
 # Optional settings live in that directory's .env
-# (TRAEFIK_NETWORK, TRAEFIK_WEB_PORT, TRAEFIK_DEBUG).
+# (TRAEFIK_NETWORK, TRAEFIK_WEB_PORT, TRAEFIK_DEBUG, TRAEFIK_TRUSTED_IPS).
 # TRAEFIK_DEBUG=true writes one access-log line per request to stdout
 # (docker compose logs -f).
+# TRAEFIK_TRUSTED_IPS is the proxy allowed to set X-Forwarded-For.
+# Unset, Traefik trusts only 127.0.0.1/32.
 services:
   traefik:
     image: traefik:v3.7.13
@@ -14,6 +16,7 @@ services:
       - --providers.docker.exposedbydefault=false
       - --providers.docker.network=${TRAEFIK_NETWORK:-traefik}
       - --entrypoints.web.address=:80
+      - --entrypoints.web.forwardedHeaders.trustedIPs=${TRAEFIK_TRUSTED_IPS:-127.0.0.1/32}
       - --accesslog=${TRAEFIK_DEBUG:-false}
 
     ports:

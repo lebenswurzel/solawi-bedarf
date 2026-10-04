@@ -67,3 +67,5 @@ ansible-playbook -i inventory/local.yml deploy-traefik.yml
 ```
 
 That creates the Docker network `compose.traefik.yaml` joins and publishes the HTTP entrypoint `web`. Optional `TRAEFIK_NETWORK`, `TRAEFIK_WEB_PORT`, and `TRAEFIK_DEBUG` go in `/home/<user>/traefik/.env` on the server. Set `TRAEFIK_WEB_PORT` when port 80 is already in use. Set `TRAEFIK_DEBUG=true` to log each request to `docker compose logs -f`. When the network name is not `traefik`, set the same value as `traefik_network` on the app host. The playbook writes it to the app `.env`. Omit `traefik_network` and `traefik_entrypoint` to keep the Compose defaults (`traefik` and `web`).
+
+`deploy-traefik.yml` writes one key in that `.env` from the host var `traefik_trusted_ips`: `TRAEFIK_TRUSTED_IPS`. Set it to the HAProxy address, for example `192.0.2.1`, or a comma-separated list of IPs or CIDRs. Omit it and Traefik trusts only `127.0.0.1/32`, so access logs keep showing the proxy. HAProxy must send the client address (`option forwardfor`) or the logged IP does not change. The playbook leaves `TRAEFIK_WEB_PORT` and `TRAEFIK_DEBUG` as they are.

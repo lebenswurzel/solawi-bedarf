@@ -17,10 +17,34 @@
     dest: "{{ traefik_path }}/compose.yaml"
     mode: "0644"
 
+- name: Require traefik_trusted_ips to be empty or a comma-separated IP list
+  ansible.builtin.assert:
+    that:
+      - traefik_trusted_ips is match('^$|^[0-9A-Fa-f.:]+(/[0-9]{1,3})?(,[0-9A-Fa-f.:]+(/[0-9]{1,3})?)*$')
+    fail_msg: "traefik_trusted_ips must be empty or a comma-separated list of IPs or CIDRs."
+
+- name: Set TRAEFIK_TRUSTED_IPS in the Traefik env file
+  ansible.builtin.lineinfile:
+    path: "{{ traefik_path }}/.env"
+    regexp: '^TRAEFIK_TRUSTED_IPS='
+    line: "TRAEFIK_TRUSTED_IPS={{ traefik_trusted_ips }}"
+    create: true
+    mode: "0644"
+  when: traefik_trusted_ips | length > 0
+
 - name: Check the Traefik env file
   ansible.builtin.stat:
     path: "{{ traefik_path }}/.env"
   register: traefik_env
+
+- name: Remove TRAEFIK_TRUSTED_IPS when unset
+  ansible.builtin.lineinfile:
+    path: "{{ traefik_path }}/.env"
+    regexp: '^TRAEFIK_TRUSTED_IPS='
+    state: absent
+  when:
+    - traefik_trusted_ips | length == 0
+    - traefik_env.stat.exists
 
 - name: Check that docker compose is available
   ansible.builtin.command:
