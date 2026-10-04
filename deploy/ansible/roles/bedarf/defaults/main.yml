@@ -1,0 +1,13 @@
+---
+git_repo: https://github.com/lebenswurzel/solawi-bedarf.git
+# git_ref is the release tag. Pass it on every run: -e git_ref=v1.2.3
+deploy_path: "/home/{{ ansible_user }}/solawi-bedarf"
+# init on the first deploy. update on later deploys (backs up the database first).
+deploy_action: update
+required_env_files:
+  - env-be-prod.env
+  - env-db-prod.env
+backup_cron_minute: "0"
+backup_cron_hour: "3"
+cleanup_cron_minute: "10"
+cleanup_cron_hour: "3"

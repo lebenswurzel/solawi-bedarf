@@ -1,0 +1,6 @@
+# Optional. Use together with compose.traefik.yaml when Traefik itself obtains certificates.
+# Also set TRAEFIK_ENTRYPOINT=websecure. This server's HAProxy setup does not use this file.
+services:
+  fe:
+    labels:
+      - traefik.http.routers.solawi-bedarf.tls.certresolver=${TRAEFIK_CERTRESOLVER:?Set TRAEFIK_CERTRESOLVER in .env}

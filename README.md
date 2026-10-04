@@ -57,6 +57,8 @@ It is advised to schedule regular database backups, e.g., using cron:
 This will create backups in the folder `./database/backups` which is mounted into the database container.
 
 Also make sure to have backups of your custom .env files, especially the SECRETs.
+Store `env-be-prod.env`, `env-db-prod.env`, `.env`, and the Ansible inventory as KeePass attachments.
+Keep working copies only on the server and on the machine you deploy from.
 
 For managing backup retention, a helper script can be found in `./dev/backup/cleanup_backups_script.sh`.
 
@@ -77,6 +79,17 @@ On the production server:
 2. Run `./dev/build/build-and-deploy.bash update` from the project root to build up-to-date containers locally
    - This will also trigger a database backup to the /backups folder in the container.
 3. Run `docker compose up -d` to start
+   - On a host where Traefik routes this stack, run `docker compose -f compose.yaml -f compose.traefik.yaml up -d` instead. Set `APP_DOMAIN` in `.env`.
+
+### Traefik
+
+`compose.traefik.yaml` attaches the frontend to an external Traefik network and sets the router host from `APP_DOMAIN` in `.env`. Traefik forwards that host to container port 8080. The frontend proxies `/api` to the backend, so the other services are not published to Traefik. A minimal Traefik instance that creates that network is in [deploy/traefik/compose.yaml](deploy/traefik/compose.yaml). The optional playbook installs that file on the server at `/home/<user>/traefik`, separate from this app's checkout.
+
+This file expects TLS to be terminated in front of Traefik, for example by HAProxy. To let Traefik obtain certificates itself, also pass `-f compose.traefik.tls.yaml`, set `TRAEFIK_ENTRYPOINT=websecure`, and set `TRAEFIK_CERTRESOLVER`. See `.env-sample`.
+
+### Automated deployment
+
+Ansible playbooks in [deploy/ansible](./deploy/ansible/) check out the release tag you pass, run the build script, start Compose with `compose.traefik.yaml`, and install the backup cron jobs. They stop if `env-be-prod.env` or `env-db-prod.env` is missing. Restore those files, `.env` (including `APP_DOMAIN`), and the real inventory from KeePass as gitignored working copies. See [deploy/ansible/README.md](./deploy/ansible/README.md).
 
 ## Development
 

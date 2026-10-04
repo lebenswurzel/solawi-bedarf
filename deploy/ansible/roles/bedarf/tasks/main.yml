@@ -1,0 +1,130 @@
+---
+- name: Require a release tag
+  ansible.builtin.assert:
+    that:
+      - git_ref | default('') | length > 0
+    fail_msg: "Pass the release tag to deploy, for example -e git_ref=v1.2.3."
+
+- name: Require init or update
+  ansible.builtin.assert:
+    that:
+      - deploy_action in ['init', 'update']
+      - deploy_path is match('^/')
+    fail_msg: "deploy_action must be 'init' or 'update', and deploy_path must be absolute."
+
+- name: Check the deploy parent directory
+  ansible.builtin.stat:
+    path: "{{ deploy_path | dirname }}"
+  register: deploy_parent
+
+- name: Create the deploy parent directory
+  ansible.builtin.file:
+    path: "{{ deploy_path | dirname }}"
+    state: directory
+    mode: "0755"
+  when: not deploy_parent.stat.exists
+
+- name: Update application checkout
+  ansible.builtin.git:
+    repo: "{{ git_repo }}"
+    dest: "{{ deploy_path }}"
+    version: "{{ git_ref }}"
+    update: true
+
+- name: Check that prod env files exist
+  ansible.builtin.stat:
+    path: "{{ deploy_path }}/{{ item }}"
+  loop: "{{ required_env_files }}"
+  register: prod_env_files
+
+- name: Stop when a prod env file is missing
+  ansible.builtin.assert:
+    that:
+      - item.stat.exists
+    fail_msg: >-
+      {{ deploy_path }}/{{ item.item }} is missing.
+      Restore the prod env files from KeePass into the checkout.
+      This playbook does not create, template, or copy them.
+  loop: "{{ prod_env_files.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+
+- name: Check that docker compose is available
+  ansible.builtin.command:
+    argv:
+      - docker
+      - compose
+      - version
+  changed_when: false
+
+- name: Check whether the database container exists
+  ansible.builtin.command:
+    argv:
+      - docker
+      - compose
+      - ps
+      - -a
+      - -q
+      - db
+    chdir: "{{ deploy_path }}"
+  register: db_container_id
+  changed_when: false
+  failed_when: false
+
+- name: Use init when update has no database to back up
+  ansible.builtin.set_fact:
+    deploy_action_effective: "{{ 'init' if (deploy_action == 'update' and not (db_container_id.stdout | trim)) else deploy_action }}"
+
+- name: Note the first-deploy fallback
+  ansible.builtin.debug:
+    msg: >-
+      No database container in {{ deploy_path }}; using deploy_action=init
+      instead of update (nothing to back up yet).
+  when: deploy_action_effective != deploy_action
+
+- name: Build application images
+  ansible.builtin.command:
+    argv:
+      - ./dev/build/build-and-deploy.bash
+      - "{{ deploy_action_effective }}"
+    chdir: "{{ deploy_path }}"
+
+- name: Require the Traefik Compose override
+  ansible.builtin.stat:
+    path: "{{ deploy_path }}/compose.traefik.yaml"
+  register: traefik_compose_file
+
+- name: Stop when compose.traefik.yaml is missing
+  ansible.builtin.assert:
+    that:
+      - traefik_compose_file.stat.exists
+    fail_msg: >-
+      {{ deploy_path }}/compose.traefik.yaml is missing.
+      Deploy a git_ref that includes that file.
+
+- name: Start the Compose stack
+  ansible.builtin.command:
+    argv:
+      - docker
+      - compose
+      - -f
+      - compose.yaml
+      - -f
+      - compose.traefik.yaml
+      - up
+      - -d
+    chdir: "{{ deploy_path }}"
+
+- name: Schedule the database backup
+  ansible.builtin.cron:
+    name: solawi-bedarf database backup
+    minute: "{{ backup_cron_minute }}"
+    hour: "{{ backup_cron_hour }}"
+    job: "{{ deploy_path }}/dev/backup/database-backup.bash"
+
+- name: Schedule database backup cleanup
+  ansible.builtin.cron:
+    name: solawi-bedarf database backup cleanup
+    minute: "{{ cleanup_cron_minute }}"
+    hour: "{{ cleanup_cron_hour }}"
+    job: "{{ deploy_path }}/dev/backup/database-clean-backups.bash"

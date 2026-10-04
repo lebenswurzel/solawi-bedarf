@@ -1,0 +1,6 @@
+---
+- name: Deploy SoLawi Bedarf
+  hosts: all
+  gather_facts: false
+  roles:
+    - role: bedarf

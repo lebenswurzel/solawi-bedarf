@@ -1,0 +1,28 @@
+# Minimal Traefik for the Docker provider. It creates the network that
+# compose.traefik.yaml joins. HAProxy terminates TLS and forwards HTTP here.
+# The deploy-traefik playbook copies this file to /home/<user>/traefik on the server.
+# Optional settings live in that directory's .env
+# (TRAEFIK_NETWORK, TRAEFIK_WEB_PORT, TRAEFIK_DEBUG).
+# TRAEFIK_DEBUG=true writes one access-log line per request to stdout
+# (docker compose logs -f).
+services:
+  traefik:
+    image: traefik:v3.7.13
+    restart: always
+    command:
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.network=${TRAEFIK_NETWORK:-traefik}
+      - --entrypoints.web.address=:80
+      - --accesslog=${TRAEFIK_DEBUG:-false}
+
+    ports:
+      - "${TRAEFIK_WEB_PORT:-80}:80"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - traefik
+
+networks:
+  traefik:
+    name: ${TRAEFIK_NETWORK:-traefik}
