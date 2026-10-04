@@ -12,7 +12,7 @@ coverage/
 solawi-bedarf.iml
 /buildInfo.ts
 database/backups/*.sql*
-database/offsite/
+/offsite/
 .env
 env-backup.env
 env-*-prod.env

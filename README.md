@@ -72,9 +72,9 @@ To send the newest dump together with `env-be-prod.env`, `env-db-prod.env`, and 
 
 With Ansible, set `backup_age_recipient`, `backup_nextcloud_webdav_url`, and `backup_nextcloud_share_token` on the host in the inventory. The playbook writes gitignored `env-backup.env` in the checkout (mode `0600`) and installs the 03:20 cron job. See [`env-backup.env.sample`](env-backup.env.sample) for the file it produces. Omit those three host vars and the playbook removes that cron job. Install `age` and `curl` on the server. Store the age private identity in KeePass and keep it off the server.
 
-The script packs those files into `database/offsite/`, encrypts the tar with `age`, deletes the plaintext tar, and uploads `https://cloud.example/public.php/webdav/<filename>` with the share token as the WebDAV username. It refuses a dump older than six hours (`MAX_DUMP_AGE_SECONDS`). Optional `OFFSITE_EXTRA_FILES` adds further paths under `extra/` in the archive, for example `/home/<user>/traefik/.env`.
+The script packs those files into `offsite/` in the checkout, encrypts the tar with `age`, deletes the plaintext tar, and uploads `https://cloud.example/public.php/webdav/<filename>` with the share token as the WebDAV username. It refuses a dump older than six hours (`MAX_DUMP_AGE_SECONDS`). Optional `OFFSITE_EXTRA_FILES` adds further paths under `extra/` in the archive, for example `/home/<user>/traefik/.env`.
 
-A file-drop share cannot delete old uploads. Remove expired archives in the Nextcloud UI with an account that can see the folder. After a failed upload the encrypted file stays in `database/offsite/` and the next run retries it. That directory keeps at most seven unsent archives (`OFFSITE_RETRY_KEEP`). It is not mounted into the database container.
+A file-drop share cannot delete old uploads. Remove expired archives in the Nextcloud UI with an account that can see the folder. After a failed upload the encrypted file stays in `offsite/` and the next run retries it. That directory keeps at most seven unsent archives (`OFFSITE_RETRY_KEEP`). It is not mounted into the database container. `database/` itself is owned by root, because Docker creates it, so the offsite archive does not go there.
 
 Restore on a machine that has the private identity:
 
