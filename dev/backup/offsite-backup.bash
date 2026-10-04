@@ -220,7 +220,7 @@ fi
 
 copy_private "$newest" "$stage/$(basename "$newest")"
 
-for required in env-be-prod.env env-db-prod.env .env; do
+for required in env-be-prod.env env-db-prod.env; do
   if [ ! -f "$REPO_ROOT/$required" ]; then
     echo "Error: missing $REPO_ROOT/$required"
     prune_retry_buffer
@@ -228,6 +228,10 @@ for required in env-be-prod.env env-db-prod.env .env; do
   fi
   copy_private "$REPO_ROOT/$required" "$stage/$required"
 done
+
+if [ -f "$REPO_ROOT/.env" ]; then
+  copy_private "$REPO_ROOT/.env" "$stage/.env"
+fi
 
 if [ -n "${OFFSITE_EXTRA_FILES:-}" ]; then
   read -r -a extra_files <<< "$OFFSITE_EXTRA_FILES"

@@ -13,6 +13,9 @@ cleanup_cron_minute: "10"
 cleanup_cron_hour: "3"
 offsite_cron_minute: "20"
 offsite_cron_hour: "3"
+# Optional Compose settings written to .env. Empty keeps the compose.traefik.yaml defaults.
+traefik_network: ""
+traefik_entrypoint: ""
 # Offsite backup stays unconfigured until the host inventory sets
 # backup_age_recipient, backup_nextcloud_webdav_url, and backup_nextcloud_share_token.
 backup_nextcloud_share_password: ""
