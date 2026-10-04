@@ -15,7 +15,8 @@ SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 REPO_ROOT=$(cd "$SCRIPT_DIR/../.." && pwd)
 CONFIG="$REPO_ROOT/env-backup.env"
 BACKUP_DIR="$REPO_ROOT/database/backups"
-OFFSITE_DIR="$REPO_ROOT/database/offsite"
+# database/ is created by Docker as root, so the deploy user cannot write there.
+OFFSITE_DIR="$REPO_ROOT/offsite"
 
 if [ ! -f "$CONFIG" ]; then
   echo "Offsite backup is not configured ($CONFIG missing). Skipping."
