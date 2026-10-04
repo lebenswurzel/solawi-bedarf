@@ -66,6 +66,25 @@ You may set up a crontab rule to daily execute this script in the database conta
 
 `10 3 * * * /path/to/repo/dev/backup/database-clean-backups.bash`
 
+To send the newest dump together with `env-be-prod.env`, `env-db-prod.env`, and `.env` to a Nextcloud file-drop share:
+
+`20 3 * * * /path/to/repo/dev/backup/offsite-backup.bash`
+
+With Ansible, set `backup_age_recipient`, `backup_nextcloud_webdav_url`, and `backup_nextcloud_share_token` on the host in the inventory. The playbook writes gitignored `env-backup.env` in the checkout (mode `0600`) and installs the 03:20 cron job. See [`env-backup.env.sample`](env-backup.env.sample) for the file it produces. Omit those three host vars and the playbook removes that cron job. Install `age` and `curl` on the server. Store the age private identity in KeePass and keep it off the server.
+
+The script packs those files into `database/offsite/`, encrypts the tar with `age`, deletes the plaintext tar, and uploads `https://cloud.example/public.php/webdav/<filename>` with the share token as the WebDAV username. It refuses a dump older than six hours (`MAX_DUMP_AGE_SECONDS`). Optional `OFFSITE_EXTRA_FILES` adds further paths under `extra/` in the archive, for example `/home/<user>/traefik/.env`.
+
+A file-drop share cannot delete old uploads. Remove expired archives in the Nextcloud UI with an account that can see the folder. After a failed upload the encrypted file stays in `database/offsite/` and the next run retries it. That directory keeps at most seven unsent archives (`OFFSITE_RETRY_KEEP`). It is not mounted into the database container.
+
+Restore on a machine that has the private identity:
+
+```bash
+age -d -i identity.txt -o backup.tar backup.tar.age
+tar -xf backup.tar
+```
+
+Copy the env files back into the checkout, copy the `.sql.gz` into `database/backups`, and run `./dev/backup/database-restore.bash <backup_filename>`.
+
 ### Updating
 
 This should be done during a time with low expected user activity. You may consider notifying the user about

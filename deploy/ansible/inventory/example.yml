@@ -11,3 +11,13 @@ all:
       # Defaults if omitted:
       # deploy_path: /home/user/solawi-bedarf
       # traefik_path: /home/user/traefik
+      # Offsite backup. Omit all three required keys to leave it unconfigured.
+      # backup_age_recipient is the public line from `age-keygen -y identity.txt`.
+      # Keep the private identity in KeePass, off the server.
+      backup_age_recipient: age1example
+      backup_nextcloud_webdav_url: https://cloud.example/public.php/webdav
+      backup_nextcloud_share_token: example-share-token
+      # backup_nextcloud_share_password: ""
+      # backup_offsite_extra_files: "/home/user/traefik/.env"
+      # backup_max_dump_age_seconds: 21600
+      # backup_offsite_retry_keep: 7
