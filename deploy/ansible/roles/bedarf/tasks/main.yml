@@ -49,6 +49,26 @@
   loop_control:
     label: "{{ item.item }}"
 
+- name: Require app_domain
+  ansible.builtin.assert:
+    that:
+      - app_domain | default('') | length > 0
+      - app_domain is match('^[A-Za-z0-9]([A-Za-z0-9.-]*[A-Za-z0-9])?$')
+      - "'.' in app_domain"
+      - traefik_network is match('^[A-Za-z0-9_.-]*$')
+      - traefik_entrypoint is match('^[A-Za-z0-9_.-]*$')
+    fail_msg: >-
+      Set app_domain on the host to the public hostname Traefik routes,
+      for example bedarf.example.org. The playbook writes that value to .env
+      as APP_DOMAIN. traefik_network and traefik_entrypoint are optional and
+      must be single tokens when set.
+
+- name: Install .env from inventory host vars
+  ansible.builtin.template:
+    src: dotenv.j2
+    dest: "{{ deploy_path }}/.env"
+    mode: "0644"
+
 - name: Record whether offsite backup is configured
   ansible.builtin.set_fact:
     offsite_backup_configured: "{{ ((backup_age_recipient | default('') | length > 0) and (backup_nextcloud_webdav_url | default('') | length > 0) and (backup_nextcloud_share_token | default('') | length > 0)) | bool }}"
