@@ -11,3 +11,11 @@ backup_cron_minute: "0"
 backup_cron_hour: "3"
 cleanup_cron_minute: "10"
 cleanup_cron_hour: "3"
+offsite_cron_minute: "20"
+offsite_cron_hour: "3"
+# Offsite backup stays unconfigured until the host inventory sets
+# backup_age_recipient, backup_nextcloud_webdav_url, and backup_nextcloud_share_token.
+backup_nextcloud_share_password: ""
+backup_offsite_extra_files: ""
+backup_max_dump_age_seconds: ""
+backup_offsite_retry_keep: ""

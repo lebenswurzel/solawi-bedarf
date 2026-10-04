@@ -12,7 +12,9 @@ coverage/
 solawi-bedarf.iml
 /buildInfo.ts
 database/backups/*.sql*
+database/offsite/
 .env
+env-backup.env
 env-*-prod.env
 # Real Ansible inventory. example.yml is the only committed inventory.
 deploy/ansible/inventory/*

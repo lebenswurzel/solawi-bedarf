@@ -49,6 +49,39 @@
   loop_control:
     label: "{{ item.item }}"
 
+- name: Record whether offsite backup is configured
+  ansible.builtin.set_fact:
+    offsite_backup_configured: "{{ ((backup_age_recipient | default('') | length > 0) and (backup_nextcloud_webdav_url | default('') | length > 0) and (backup_nextcloud_share_token | default('') | length > 0)) | bool }}"
+
+- name: Require complete offsite backup settings
+  ansible.builtin.assert:
+    that:
+      - backup_age_recipient | default('') | length > 0
+      - backup_nextcloud_webdav_url | default('') | length > 0
+      - backup_nextcloud_share_token | default('') | length > 0
+      - backup_age_recipient is match('^age1[0-9a-z]+$')
+      - backup_nextcloud_webdav_url is match('^https://')
+      - backup_nextcloud_webdav_url == (backup_nextcloud_webdav_url | regex_replace('\s', ''))
+      - backup_nextcloud_share_token == (backup_nextcloud_share_token | regex_replace('\n', ''))
+      - backup_nextcloud_share_password == (backup_nextcloud_share_password | regex_replace('\n', ''))
+      - backup_offsite_extra_files == (backup_offsite_extra_files | regex_replace('\n', ''))
+    fail_msg: >-
+      Set backup_age_recipient, backup_nextcloud_webdav_url, and
+      backup_nextcloud_share_token on the host. The recipient is the age public
+      key (age1...), and the WebDAV URL must start with https://.
+      Omit all three to leave offsite backup unconfigured.
+  when: >-
+    (backup_age_recipient | default('') | length > 0)
+    or (backup_nextcloud_webdav_url | default('') | length > 0)
+    or (backup_nextcloud_share_token | default('') | length > 0)
+
+- name: Install env-backup.env from inventory host vars
+  ansible.builtin.template:
+    src: env-backup.env.j2
+    dest: "{{ deploy_path }}/env-backup.env"
+    mode: "0600"
+  when: offsite_backup_configured | bool
+
 - name: Check that docker compose is available
   ansible.builtin.command:
     argv:
@@ -128,3 +161,17 @@
     minute: "{{ cleanup_cron_minute }}"
     hour: "{{ cleanup_cron_hour }}"
     job: "{{ deploy_path }}/dev/backup/database-clean-backups.bash"
+
+- name: Schedule the offsite backup
+  ansible.builtin.cron:
+    name: solawi-bedarf offsite backup
+    minute: "{{ offsite_cron_minute }}"
+    hour: "{{ offsite_cron_hour }}"
+    job: "{{ deploy_path }}/dev/backup/offsite-backup.bash"
+  when: offsite_backup_configured | bool
+
+- name: Remove the offsite backup cron job
+  ansible.builtin.cron:
+    name: solawi-bedarf offsite backup
+    state: absent
+  when: not (offsite_backup_configured | bool)
