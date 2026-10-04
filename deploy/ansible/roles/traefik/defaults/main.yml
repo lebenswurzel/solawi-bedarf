@@ -1,0 +1,2 @@
+---
+traefik_path: "/home/{{ ansible_user }}/traefik"

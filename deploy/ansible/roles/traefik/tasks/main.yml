@@ -1,0 +1,47 @@
+---
+- name: Require an absolute Traefik path
+  ansible.builtin.assert:
+    that:
+      - traefik_path is match('^/')
+    fail_msg: "traefik_path must be absolute."
+
+- name: Ensure the Traefik directory exists
+  ansible.builtin.file:
+    path: "{{ traefik_path }}"
+    state: directory
+    mode: "0755"
+
+- name: Install the Traefik compose file
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../traefik/compose.yaml"
+    dest: "{{ traefik_path }}/compose.yaml"
+    mode: "0644"
+
+- name: Check the Traefik env file
+  ansible.builtin.stat:
+    path: "{{ traefik_path }}/.env"
+  register: traefik_env
+
+- name: Check that docker compose is available
+  ansible.builtin.command:
+    argv:
+      - docker
+      - compose
+      - version
+  changed_when: false
+
+- name: Start Traefik
+  ansible.builtin.command:
+    argv: "{{ traefik_compose_argv }}"
+    chdir: "{{ traefik_path }}"
+  vars:
+    traefik_compose_argv_base:
+      - docker
+      - compose
+    traefik_compose_argv_env:
+      - --env-file
+      - "{{ traefik_path }}/.env"
+    traefik_compose_argv_up:
+      - up
+      - -d
+    traefik_compose_argv: "{{ traefik_compose_argv_base + (traefik_compose_argv_env if traefik_env.stat.exists else []) + traefik_compose_argv_up }}"

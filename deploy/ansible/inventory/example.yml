@@ -1,0 +1,13 @@
+---
+# Documentation host only. 192.0.2.10 is TEST-NET-1 and is not a real server.
+# Restore the real inventory from KeePass to inventory/local.yml (gitignored)
+# and pass that file with -i. Do not commit it.
+all:
+  hosts:
+    bedarf.example.com:
+      ansible_host: 192.0.2.10
+      ansible_user: user
+      ansible_port: 22
+      # Defaults if omitted:
+      # deploy_path: /home/user/solawi-bedarf
+      # traefik_path: /home/user/traefik

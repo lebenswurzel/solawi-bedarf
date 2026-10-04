@@ -1,0 +1,6 @@
+---
+- name: Run Traefik
+  hosts: all
+  gather_facts: false
+  roles:
+    - role: traefik

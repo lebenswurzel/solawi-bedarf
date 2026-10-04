@@ -1,0 +1,19 @@
+# Attach the frontend to an existing Traefik network.
+# HAProxy terminates TLS and forwards HTTP to Traefik, so this file has no TLS labels.
+# Local and CI deploys use compose.yaml only.
+services:
+  fe:
+    networks:
+      - default
+      - traefik
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=${TRAEFIK_NETWORK:-traefik}
+      - traefik.http.routers.solawi-bedarf.rule=Host(`${APP_DOMAIN:?Set APP_DOMAIN in .env}`)
+      - traefik.http.routers.solawi-bedarf.entrypoints=${TRAEFIK_ENTRYPOINT:-web}
+      - traefik.http.services.solawi-bedarf.loadbalancer.server.port=8080
+
+networks:
+  traefik:
+    name: ${TRAEFIK_NETWORK:-traefik}
+    external: true
