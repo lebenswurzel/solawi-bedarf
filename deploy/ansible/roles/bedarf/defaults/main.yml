@@ -8,7 +8,8 @@ required_env_files:
   - env-be-prod.env
   - env-db-prod.env
 backup_cron_minute: "0"
-backup_cron_hour: "3"
+# backups every two hours between 8 am and 10 pm
+backup_cron_hour: "8-22/2"
 cleanup_cron_minute: "10"
 cleanup_cron_hour: "3"
 offsite_cron_minute: "20"
