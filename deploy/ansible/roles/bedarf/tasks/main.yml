@@ -76,50 +76,6 @@
     path: "{{ deploy_path }}/database/pgdata"
   register: pgdata_dir
 
-- name: Check that docker compose is available
-  ansible.builtin.command:
-    argv:
-      - docker
-      - compose
-      - version
-  changed_when: false
-  when:
-    - not deploy_instance_marker.stat.exists
-    - not pgdata_dir.stat.exists
-
-- name: Check whether the database container exists
-  ansible.builtin.command:
-    argv:
-      - docker
-      - compose
-      - ps
-      - -a
-      - -q
-      - db
-    chdir: "{{ deploy_path }}"
-  register: db_container_early
-  changed_when: false
-  failed_when: false
-  when:
-    - not deploy_instance_marker.stat.exists
-    - not pgdata_dir.stat.exists
-
-- name: Stop when the database container cannot be checked
-  ansible.builtin.assert:
-    that:
-      - db_container_early.rc == 0
-    fail_msg: >-
-      Could not check for a database container in {{ deploy_path }}.
-      {{ db_container_early.stderr | default('') }}
-  when:
-    - not deploy_instance_marker.stat.exists
-    - not pgdata_dir.stat.exists
-
-- name: Record whether this checkout already has a stack
-  ansible.builtin.set_fact:
-    checkout_has_stack: "{{ (pgdata_dir.stat.exists | bool) or ((db_container_early.stdout | default('') | trim | length) > 0) }}"
-  when: not deploy_instance_marker.stat.exists
-
 - name: Reject a different instance name for this checkout
   ansible.builtin.assert:
     that:
@@ -133,7 +89,7 @@
 - name: Reject attaching a name to an existing unnamed checkout
   ansible.builtin.assert:
     that:
-      - not (checkout_has_stack | bool)
+      - not (pgdata_dir.stat.exists | bool)
     fail_msg: >-
       {{ deploy_path }} already has a database and no .deploy-instance file.
       That checkout is unnamed. This inventory sets instance_name={{ instance_name }}.
@@ -228,13 +184,12 @@
       - version
   changed_when: false
 
-- name: Check whether the database container exists
+- name: Check whether the database container is running
   ansible.builtin.command:
     argv:
       - docker
       - compose
       - ps
-      - -a
       - -q
       - db
     chdir: "{{ deploy_path }}"
@@ -242,14 +197,14 @@
   changed_when: false
   failed_when: false
 
-- name: Use init when update has no database to back up
+- name: Use init when update has no running database to back up
   ansible.builtin.set_fact:
     deploy_action_effective: "{{ 'init' if (deploy_action == 'update' and not (db_container_id.stdout | trim)) else deploy_action }}"
 
 - name: Note the first-deploy fallback
   ansible.builtin.debug:
     msg: >-
-      No database container in {{ deploy_path }}; using deploy_action=init
+      No running database container in {{ deploy_path }}; using deploy_action=init
       instead of update (nothing to back up yet).
   when: deploy_action_effective != deploy_action
 
