@@ -9,9 +9,9 @@ services:
     labels:
       - traefik.enable=true
       - traefik.docker.network=${TRAEFIK_NETWORK:-traefik}
-      - traefik.http.routers.solawi-bedarf.rule=Host(`${APP_DOMAIN:?Set APP_DOMAIN in .env}`)
-      - traefik.http.routers.solawi-bedarf.entrypoints=${TRAEFIK_ENTRYPOINT:-web}
-      - traefik.http.services.solawi-bedarf.loadbalancer.server.port=8080
+      - traefik.http.routers.${TRAEFIK_ROUTER:-solawi-bedarf}.rule=Host(`${APP_DOMAIN:?Set APP_DOMAIN in .env}`)
+      - traefik.http.routers.${TRAEFIK_ROUTER:-solawi-bedarf}.entrypoints=${TRAEFIK_ENTRYPOINT:-web}
+      - traefik.http.services.${TRAEFIK_ROUTER:-solawi-bedarf}.loadbalancer.server.port=8080
 
 networks:
   traefik:

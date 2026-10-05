@@ -2,5 +2,25 @@
 - name: Deploy SoLawi Bedarf
   hosts: all
   gather_facts: false
+  pre_tasks:
+    - name: Record this host's deploy identity
+      ansible.builtin.set_fact:
+        deploy_machine: "{{ ansible_host | default(inventory_hostname) }}"
+        deploy_path_resolved: "{{ deploy_path | default('/home/' + ansible_user + '/' + (((instance_name | default('', true) | string | length) > 0) | ternary(instance_name, 'solawi-bedarf')), true) }}"
+        deploy_identity: "{{ instance_name if ((instance_name | default('', true) | string | length) > 0) else 'unnamed' }}"
+
+    - name: Require a unique checkout and instance on each machine
+      ansible.builtin.assert:
+        that:
+          - path_pairs | unique | length == path_pairs | length
+          - identity_pairs | unique | length == identity_pairs | length
+        fail_msg: >-
+          Two hosts in this play share a machine and the same deploy_path,
+          or share a machine and the same instance identity (unnamed or the same
+          instance_name). Use a different deploy_path and instance_name.
+      vars:
+        path_pairs: "{{ ansible_play_hosts | map('extract', hostvars) | map(attribute='deploy_machine') | zip(ansible_play_hosts | map('extract', hostvars) | map(attribute='deploy_path_resolved')) | map('join', '|') | list }}"
+        identity_pairs: "{{ ansible_play_hosts | map('extract', hostvars) | map(attribute='deploy_machine') | zip(ansible_play_hosts | map('extract', hostvars) | map(attribute='deploy_identity')) | map('join', '|') | list }}"
+      run_once: true
   roles:
     - role: bedarf

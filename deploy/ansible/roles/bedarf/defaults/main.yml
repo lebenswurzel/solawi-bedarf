@@ -1,7 +1,7 @@
 ---
 git_repo: https://github.com/lebenswurzel/solawi-bedarf.git
 # git_ref is the release tag. Set it on the host in the inventory: git_ref: v1.2.3
-deploy_path: "/home/{{ ansible_user }}/solawi-bedarf"
+deploy_path: "/home/{{ ansible_user }}/{{ (instance_name | string | length > 0) | ternary(instance_name, 'solawi-bedarf') }}"
 # init on the first deploy. update on later deploys (backs up the database first).
 deploy_action: update
 required_env_files:
@@ -17,6 +17,16 @@ offsite_cron_hour: "3"
 # Optional Compose settings written to .env. Empty keeps the compose.traefik.yaml defaults.
 traefik_network: ""
 traefik_entrypoint: ""
+# Empty keeps the original cron comments and the Traefik router name solawi-bedarf.
+# A second checkout on the same machine sets a token such as bedarftest.
+instance_name: ""
+# Named instances do not publish host ports. Set true or false to override.
+publish_host_ports: "{{ (instance_name | string | length) == 0 }}"
+# Written to .env only when set. Empty keeps the Compose defaults 5532, 3100, 8180, and 8184.
+database_external_port: ""
+backend_external_port: ""
+php_external_port: ""
+frontend_external_port: ""
 # Offsite backup stays unconfigured until the host inventory sets
 # backup_age_recipient, backup_nextcloud_webdav_url, and backup_nextcloud_share_token.
 backup_nextcloud_share_password: ""

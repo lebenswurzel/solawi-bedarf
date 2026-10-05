@@ -7,6 +7,13 @@ repos:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-yaml
+        # !reset is a Compose merge tag. Safe loading rejects unknown tags.
+        exclude: (^|/)compose\.no-host-ports\.yaml$
+      - id: check-yaml
+        alias: check-yaml-compose-tags
+        name: Check YAML (Compose tags)
+        args: [--unsafe]
+        files: (^|/)compose\.no-host-ports\.yaml$
       - id: check-added-large-files
 
   - repo: local

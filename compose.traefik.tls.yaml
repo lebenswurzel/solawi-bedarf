@@ -3,4 +3,4 @@
 services:
   fe:
     labels:
-      - traefik.http.routers.solawi-bedarf.tls.certresolver=${TRAEFIK_CERTRESOLVER:?Set TRAEFIK_CERTRESOLVER in .env}
+      - traefik.http.routers.${TRAEFIK_ROUTER:-solawi-bedarf}.tls.certresolver=${TRAEFIK_CERTRESOLVER:?Set TRAEFIK_CERTRESOLVER in .env}

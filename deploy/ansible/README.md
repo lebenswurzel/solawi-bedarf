@@ -8,7 +8,7 @@ Keep these as KeePass attachments, one entry per file:
 
 - `env-be-prod.env`
 - `env-db-prod.env`
-- the inventory (host, SSH user, port, `app_domain`, `git_ref`, deploy path, and the offsite backup host vars when you use that job)
+- the inventory (host, SSH user, port, `app_domain`, `git_ref`, deploy path, `instance_name` when this is a second checkout, and the offsite backup host vars when you use that job)
 - the age private identity, when using offsite backup. The server receives only the public recipient, via `backup_age_recipient` in the inventory.
 
 Restore them when a machine is new or a secret changes. Ansible does not read KeePass.
@@ -26,7 +26,7 @@ On the server, for the SSH user in the inventory:
 
 - `git`
 - Docker with the `docker compose` plugin, and permission to run them
-- a home directory for the SSH user (defaults use `/home/<user>/solawi-bedarf` and `/home/<user>/traefik`)
+- a home directory for the SSH user (the app defaults to `/home/<user>/solawi-bedarf`, or `/home/<user>/<instance_name>` when `instance_name` is set; Traefik defaults to `/home/<user>/traefik`)
 - `age` and `curl` on the default `PATH`, once the offsite host vars are set. Without those vars the playbook removes the offsite cron job.
 
 ## Run
@@ -46,16 +46,19 @@ ansible-playbook -i inventory/local.yml site.yml
 
 Later deploys use `update`, the default. That runs `dev/backup/database-backup.bash` before building. If the database container is not there yet, the playbook falls back to `init` so the first deploy does not fail on a missing backup. You can still force that with `-e deploy_action=init`.
 
-The playbook starts the stack with `compose.yaml` and `compose.traefik.yaml` from the checked-out `git_ref`. That ref must include `compose.traefik.yaml`. After the checkout it writes `.env` with `APP_DOMAIN` set from the `app_domain` host var, replacing any `.env` already in the checkout. Traefik routes that host to the frontend on the Docker network. TLS stays on HAProxy, so `compose.traefik.tls.yaml` is not included.
+The playbook starts the stack with `compose.yaml` and `compose.traefik.yaml` from the checked-out `git_ref`. That ref must include `compose.traefik.yaml`. After the checkout it writes `.env` with `APP_DOMAIN` set from the `app_domain` host var, replacing any `.env` already in the checkout. When `instance_name` is set it also writes `TRAEFIK_ROUTER=solawi-bedarf-<instance_name>`. Optional `database_external_port`, `backend_external_port`, `php_external_port`, and `frontend_external_port` are written as `DATABASE_EXTERNAL_PORT`, `BACKEND_EXTERNAL_PORT`, `PHP_EXTERNAL_PORT`, and `FRONTEND_EXTERNAL_PORT` when set. Traefik routes that host to the frontend on the Docker network. TLS stays on HAProxy, so `compose.traefik.tls.yaml` is not included.
+
+Leave `instance_name` empty for the only stack on a machine. Cron comments stay `solawi-bedarf database backup`, `solawi-bedarf database backup cleanup`, and `solawi-bedarf offsite backup`. The Traefik router stays `solawi-bedarf`. Host ports stay published (`5532`, `3100`, `8180`, and `8184` unless you set the port vars).
+
+Set `instance_name` to a token such as `bedarftest` for a second checkout. The checkout is then `/home/<user>/bedarftest` unless that host sets `deploy_path`. Cron comments become `solawi-bedarf bedarftest database backup` and the same prefix for cleanup and offsite. The router name becomes `solawi-bedarf-bedarftest` once `git_ref` contains the `TRAEFIK_ROUTER` labels in `compose.traefik.yaml`. `publish_host_ports` defaults to false, so the playbook copies [compose.no-host-ports.yaml](../../compose.no-host-ports.yaml) into the checkout and passes it to Compose. That file needs Docker Compose 2.24 or newer. Set `publish_host_ports: true` to publish host ports anyway, and set the four port vars so they do not reuse the other stack's ports.
+
+The playbook writes `.deploy-instance` in the checkout. The file contains `unnamed` or the `instance_name`, and it is gitignored. A later run that uses a different name for that directory fails before it writes `.env`, builds, or changes cron. A checkout that already has `database/pgdata` or a `db` container and no marker is treated as `unnamed`. Point a named instance at a different `deploy_path`. When one play contains several hosts, it also fails if two hosts share a machine and the same `deploy_path`, or share a machine and the same identity.
 
 If the checkout does not exist yet, the playbook clones `git_repo` at that tag and then stops when the prod env files are missing. Restore those files from KeePass into the checkout and run the playbook again.
 
-After a successful `site.yml` run, the SSH user's crontab contains:
+After a successful `site.yml` run, the SSH user's crontab contains the database backup and cleanup jobs. With the default schedule that is minute 0 of hours `8-22/2` for the backup and `10 3` for cleanup. Ansible identifies them by the comments `solawi-bedarf database backup` and `solawi-bedarf database backup cleanup`. With `instance_name` set, those comments are `solawi-bedarf <instance_name> database backup` and `solawi-bedarf <instance_name> database backup cleanup`.
 
-- `0 3 * * *` `dev/backup/database-backup.bash`
-- `10 3 * * *` `dev/backup/database-clean-backups.bash`
-
-When the offsite host vars are set, the crontab also contains `20 3 * * *` `dev/backup/offsite-backup.bash`. When those vars are omitted, the playbook removes that cron job.
+When the offsite host vars are set, the crontab also contains the offsite job at `20 3`, identified by `solawi-bedarf offsite backup` or `solawi-bedarf <instance_name> offsite backup`. When those vars are omitted, the playbook removes that cron job for this instance only.
 
 The offsite job packs the newest dump with the prod env files, encrypts the archive, and uploads it. Details and restore steps are in the main README. Set these host vars to have the playbook template `env-backup.env` after the checkout:
 

@@ -12,6 +12,19 @@ all:
       git_ref: v1.2.3
       # Defaults if omitted:
       # deploy_path: /home/user/solawi-bedarf
+      # Omit deploy_path to use /home/<user>/solawi-bedarf, or
+      # /home/<user>/<instance_name> when instance_name is set.
+      # instance_name: ""
+      # Omit instance_name for the only stack on a machine. Cron comments and the
+      # Traefik router stay solawi-bedarf, and host ports stay published.
+      # A second checkout sets a token such as bedarftest. That records
+      # .deploy-instance in the checkout and does not publish host ports.
+      # instance_name: bedarftest
+      # publish_host_ports: true
+      # database_external_port: 5533
+      # backend_external_port: 3101
+      # php_external_port: 8181
+      # frontend_external_port: 8185
       # traefik_path: /home/user/traefik
       # traefik_network: traefik
       # traefik_entrypoint: web

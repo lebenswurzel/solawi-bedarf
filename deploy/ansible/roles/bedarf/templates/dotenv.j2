@@ -6,3 +6,18 @@ TRAEFIK_NETWORK={{ traefik_network }}
 {% if traefik_entrypoint | length > 0 %}
 TRAEFIK_ENTRYPOINT={{ traefik_entrypoint }}
 {% endif %}
+{% if instance_name | string | length > 0 %}
+TRAEFIK_ROUTER=solawi-bedarf-{{ instance_name }}
+{% endif %}
+{% if database_external_port | string | length > 0 %}
+DATABASE_EXTERNAL_PORT={{ database_external_port }}
+{% endif %}
+{% if backend_external_port | string | length > 0 %}
+BACKEND_EXTERNAL_PORT={{ backend_external_port }}
+{% endif %}
+{% if php_external_port | string | length > 0 %}
+PHP_EXTERNAL_PORT={{ php_external_port }}
+{% endif %}
+{% if frontend_external_port | string | length > 0 %}
+FRONTEND_EXTERNAL_PORT={{ frontend_external_port }}
+{% endif %}

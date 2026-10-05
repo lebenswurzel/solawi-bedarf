@@ -14,6 +14,7 @@ solawi-bedarf.iml
 database/backups/*.sql*
 /offsite/
 .env
+.deploy-instance
 env-backup.env
 env-*-prod.env
 # Real Ansible inventory. example.yml is the only committed inventory.

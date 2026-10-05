@@ -31,6 +31,124 @@
     version: "{{ git_ref }}"
     update: true
 
+- name: Require instance_name and host port settings
+  ansible.builtin.assert:
+    that:
+      - instance_name | string is match('^$|^[a-z0-9]([a-z0-9-]*[a-z0-9])?$')
+      - publish_host_ports | string | lower in ['true', 'false', 'yes', 'no']
+    fail_msg: >-
+      instance_name must be empty or a token of lowercase letters, digits, and
+      hyphens. publish_host_ports must be true or false.
+
+- name: Require external port values
+  ansible.builtin.assert:
+    that:
+      - item | string is match('^$|^([1-9][0-9]{0,3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$')
+    fail_msg: >-
+      database_external_port, backend_external_port, php_external_port, and
+      frontend_external_port must be empty or a port from 1 to 65535.
+  loop:
+    - "{{ database_external_port }}"
+    - "{{ backend_external_port }}"
+    - "{{ php_external_port }}"
+    - "{{ frontend_external_port }}"
+  loop_control:
+    label: "{{ item }}"
+
+- name: Record instance names used for cron and the checkout marker
+  ansible.builtin.set_fact:
+    deploy_instance_token: "{{ instance_name if (instance_name | string | length > 0) else 'unnamed' }}"
+    cron_job_prefix: "{{ ('solawi-bedarf ' + instance_name) if (instance_name | string | length > 0) else 'solawi-bedarf' }}"
+
+- name: Check for a recorded deploy instance
+  ansible.builtin.stat:
+    path: "{{ deploy_path }}/.deploy-instance"
+  register: deploy_instance_marker
+
+- name: Read the recorded deploy instance
+  ansible.builtin.slurp:
+    src: "{{ deploy_path }}/.deploy-instance"
+  register: deploy_instance_file
+  when: deploy_instance_marker.stat.exists
+
+- name: Check for an existing database directory
+  ansible.builtin.stat:
+    path: "{{ deploy_path }}/database/pgdata"
+  register: pgdata_dir
+
+- name: Check that docker compose is available
+  ansible.builtin.command:
+    argv:
+      - docker
+      - compose
+      - version
+  changed_when: false
+  when:
+    - not deploy_instance_marker.stat.exists
+    - not pgdata_dir.stat.exists
+
+- name: Check whether the database container exists
+  ansible.builtin.command:
+    argv:
+      - docker
+      - compose
+      - ps
+      - -a
+      - -q
+      - db
+    chdir: "{{ deploy_path }}"
+  register: db_container_early
+  changed_when: false
+  failed_when: false
+  when:
+    - not deploy_instance_marker.stat.exists
+    - not pgdata_dir.stat.exists
+
+- name: Stop when the database container cannot be checked
+  ansible.builtin.assert:
+    that:
+      - db_container_early.rc == 0
+    fail_msg: >-
+      Could not check for a database container in {{ deploy_path }}.
+      {{ db_container_early.stderr | default('') }}
+  when:
+    - not deploy_instance_marker.stat.exists
+    - not pgdata_dir.stat.exists
+
+- name: Record whether this checkout already has a stack
+  ansible.builtin.set_fact:
+    checkout_has_stack: "{{ (pgdata_dir.stat.exists | bool) or ((db_container_early.stdout | default('') | trim | length) > 0) }}"
+  when: not deploy_instance_marker.stat.exists
+
+- name: Reject a different instance name for this checkout
+  ansible.builtin.assert:
+    that:
+      - (deploy_instance_file.content | b64decode | trim) == deploy_instance_token
+    fail_msg: >-
+      {{ deploy_path }} is recorded as {{ deploy_instance_file.content | b64decode | trim }}.
+      This inventory uses {{ deploy_instance_token }}.
+      Use a different deploy_path.
+  when: deploy_instance_marker.stat.exists
+
+- name: Reject attaching a name to an existing unnamed checkout
+  ansible.builtin.assert:
+    that:
+      - not (checkout_has_stack | bool)
+    fail_msg: >-
+      {{ deploy_path }} already has a database and no .deploy-instance file.
+      That checkout is unnamed. This inventory sets instance_name={{ instance_name }}.
+      Use a different deploy_path.
+  when:
+    - not deploy_instance_marker.stat.exists
+    - deploy_instance_token != 'unnamed'
+
+- name: Record the deploy instance
+  ansible.builtin.copy:
+    dest: "{{ deploy_path }}/.deploy-instance"
+    content: "{{ deploy_instance_token }}\n"
+    mode: "0644"
+  when: not deploy_instance_marker.stat.exists
+
 - name: Check that prod env files exist
   ansible.builtin.stat:
     path: "{{ deploy_path }}/{{ item }}"
@@ -155,6 +273,13 @@
       {{ deploy_path }}/compose.traefik.yaml is missing.
       Deploy a git_ref that includes that file.
 
+- name: Install the Compose file that clears host ports
+  ansible.builtin.copy:
+    src: compose.no-host-ports.yaml
+    dest: "{{ deploy_path }}/compose.no-host-ports.yaml"
+    mode: "0644"
+  when: not (publish_host_ports | bool)
+
 - name: Start the Compose stack
   ansible.builtin.command:
     argv:
@@ -167,24 +292,41 @@
       - up
       - -d
     chdir: "{{ deploy_path }}"
+  when: publish_host_ports | bool
+
+- name: Start the Compose stack without host ports
+  ansible.builtin.command:
+    argv:
+      - docker
+      - compose
+      - -f
+      - compose.yaml
+      - -f
+      - compose.traefik.yaml
+      - -f
+      - compose.no-host-ports.yaml
+      - up
+      - -d
+    chdir: "{{ deploy_path }}"
+  when: not (publish_host_ports | bool)
 
 - name: Schedule the database backup
   ansible.builtin.cron:
-    name: solawi-bedarf database backup
+    name: "{{ cron_job_prefix }} database backup"
     minute: "{{ backup_cron_minute }}"
     hour: "{{ backup_cron_hour }}"
     job: "{{ deploy_path }}/dev/backup/database-backup.bash"
 
 - name: Schedule database backup cleanup
   ansible.builtin.cron:
-    name: solawi-bedarf database backup cleanup
+    name: "{{ cron_job_prefix }} database backup cleanup"
     minute: "{{ cleanup_cron_minute }}"
     hour: "{{ cleanup_cron_hour }}"
     job: "{{ deploy_path }}/dev/backup/database-clean-backups.bash"
 
 - name: Schedule the offsite backup
   ansible.builtin.cron:
-    name: solawi-bedarf offsite backup
+    name: "{{ cron_job_prefix }} offsite backup"
     minute: "{{ offsite_cron_minute }}"
     hour: "{{ offsite_cron_hour }}"
     job: "{{ deploy_path }}/dev/backup/offsite-backup.bash"
@@ -192,6 +334,6 @@
 
 - name: Remove the offsite backup cron job
   ansible.builtin.cron:
-    name: solawi-bedarf offsite backup
+    name: "{{ cron_job_prefix }} offsite backup"
     state: absent
   when: not (offsite_backup_configured | bool)

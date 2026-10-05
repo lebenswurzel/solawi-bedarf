@@ -1,0 +1,12 @@
+# Drop host port bindings from compose.yaml.
+# The Ansible playbook adds this file when publish_host_ports is false.
+# Traefik still reaches the frontend on the Docker network.
+services:
+  db:
+    ports: !reset []
+  be:
+    ports: !reset []
+  php:
+    ports: !reset []
+  fe:
+    ports: !reset []
