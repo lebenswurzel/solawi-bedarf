@@ -3,7 +3,7 @@
   ansible.builtin.assert:
     that:
       - git_ref | default('') | length > 0
-    fail_msg: "Pass the release tag to deploy, for example -e git_ref=v1.2.3."
+    fail_msg: "Set git_ref to the release tag on the host in the inventory, for example git_ref: v1.2.3."
 
 - name: Require init or update
   ansible.builtin.assert:

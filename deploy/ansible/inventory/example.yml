@@ -9,6 +9,7 @@ all:
       ansible_user: user
       ansible_port: 22
       app_domain: bedarf.example.com
+      git_ref: v1.2.3
       # Defaults if omitted:
       # deploy_path: /home/user/solawi-bedarf
       # traefik_path: /home/user/traefik
