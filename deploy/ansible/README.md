@@ -8,7 +8,7 @@ Keep these as KeePass attachments, one entry per file:
 
 - `env-be-prod.env`
 - `env-db-prod.env`
-- the inventory (host, SSH user, port, `app_domain`, deploy path, and the offsite backup host vars when you use that job)
+- the inventory (host, SSH user, port, `app_domain`, `git_ref`, deploy path, and the offsite backup host vars when you use that job)
 - the age private identity, when using offsite backup. The server receives only the public recipient, via `backup_age_recipient` in the inventory.
 
 Restore them when a machine is new or a secret changes. Ansible does not read KeePass.
@@ -31,12 +31,17 @@ On the server, for the SSH user in the inventory:
 
 ## Run
 
-Pass the release tag on every run. There is no default branch.
+Set `git_ref` on the host in the inventory to the release tag to deploy. There is no default branch.
+
+```yaml
+bedarf.example.com:
+  git_ref: v1.2.3
+```
 
 From this directory:
 
 ```bash
-ansible-playbook -i inventory/local.yml site.yml -e git_ref=v1.2.3
+ansible-playbook -i inventory/local.yml site.yml
 ```
 
 Later deploys use `update`, the default. That runs `dev/backup/database-backup.bash` before building. If the database container is not there yet, the playbook falls back to `init` so the first deploy does not fail on a missing backup. You can still force that with `-e deploy_action=init`.
