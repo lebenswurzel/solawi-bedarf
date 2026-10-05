@@ -373,4 +373,8 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 
 #425 Admin: CSV-Export der verteilten Produkte
 
+# v0.15.16 - 2026-10-05 - Ansible
+
+#428 Deployment via Ansible
+
 # NEW
