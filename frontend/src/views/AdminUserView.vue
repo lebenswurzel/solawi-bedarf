@@ -370,7 +370,9 @@ const tableItems = computed(() => {
       (a, b) =>
         new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
     );
-    const currentOrdersWithItems = currentOrders.filter((o) => o.hasItems);
+    const currentOrdersWithItems = currentOrders.some((o) => o.hasItems)
+      ? currentOrders
+      : [];
 
     return {
       ...user,
