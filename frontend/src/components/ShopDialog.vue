@@ -155,9 +155,15 @@ const offerReasonHint = computed(
     ),
 );
 
-const needsHigherOffer = computed(
-  () => !isOfferValid(modelInt.value, effectiveMsrp.value.monthly.total),
-);
+const needsHigherOffer = computed(() => {
+  if (modelInt.value < 0) {
+    return true;
+  }
+  if (userStore.isAdmin) {
+    return false;
+  }
+  return !isOfferValid(modelInt.value, effectiveMsrp.value.monthly.total);
+});
 
 const enableCategoryReason = computed(() =>
   needsCategoryReason(category.value),

@@ -27,7 +27,12 @@ import {
 import { updateUser } from "./updateUser";
 import { UpdateUserRequest } from "@lebenswurzel/solawi-bedarf-shared/src/types";
 import { AppDataSource } from "../../database/database";
-import { getRequisitionConfigId } from "../../../test/testHelpers";
+import {
+  dateDeltaDays,
+  findOrdersByUser,
+  getRequisitionConfigId,
+  updateRequisition,
+} from "../../../test/testHelpers";
 import { Order } from "../../database/Order";
 
 setupDatabaseCleanup();
@@ -149,5 +154,43 @@ testAsAdminAndUser(
     );
     // validate that updatedAt has not changed
     expect(order2.updatedAt).toEqual(order.updatedAt);
+  },
+);
+
+testAsAdminAndUser(
+  "create a confirmed zero order from a calendar month",
+  async ({ userData }: TestAdminAndUserData) => {
+    const configId = await updateRequisition(false);
+    const ctx = createBasicTestCtx(
+      {
+        id: userData.userId,
+        orderValidFrom: dateDeltaDays(-40),
+        configId,
+      } as UpdateUserRequest,
+      userData.adminToken,
+    );
+    await updateUser(ctx);
+
+    const zeroCtx = createBasicTestCtx(
+      {
+        id: userData.userId,
+        zeroOrderFromMonth: dateDeltaDays(70),
+        configId,
+      } as UpdateUserRequest,
+      userData.adminToken,
+    );
+    await updateUser(zeroCtx);
+    expect(zeroCtx.status).toBe(204);
+
+    const orders = await findOrdersByUser(userData.userId);
+    expect(orders).toHaveLength(2);
+    const zeroOrder = orders.find(
+      (order) => order.offer === 0 && order.confirmGTC,
+    );
+    const previous = orders.find((order) => order.id !== zeroOrder?.id);
+    expect(zeroOrder?.confirmGTC).toBe(true);
+    expect(zeroOrder?.offer).toBe(0);
+    expect(zeroOrder?.orderItems ?? []).toHaveLength(0);
+    expect(previous?.validTo).toEqual(zeroOrder?.validFrom);
   },
 );

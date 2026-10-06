@@ -91,6 +91,8 @@ export type UpdateUserRequest = Id & {
   orderValidFrom?: Date;
   addNewOrder?: boolean;
   deleteUnconfirmedOrders?: boolean;
+  /** Any instant in the calendar month from which demand and contribution become 0. */
+  zeroOrderFromMonth?: Date;
   configId: number;
 };
 
