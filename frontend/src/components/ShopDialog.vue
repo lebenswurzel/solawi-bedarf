@@ -223,6 +223,14 @@ const requireConfirmContribution = computed(() => {
   return category.value != UserCategory.CAT130;
 });
 
+const showAdminOnBehalfHint = computed(() => {
+  return (
+    userStore.isAdmin &&
+    props.requestUser.id !== userStore.currentUser?.id &&
+    !modificationOrder.value?.confirmGTC
+  );
+});
+
 watchEffect(() => {
   sendConfirmationEmail.value = props.requestUser.emailEnabled || false;
 });
@@ -404,11 +412,9 @@ const onSave = () => {
           color="warning"
           variant="outlined"
           density="compact"
-          v-if="!modificationOrder?.confirmGTC && userStore.isAdmin"
+          v-if="showAdminOnBehalfHint"
         >
-          Hinweis an den Admin: Diese Bedarfsanmeldung ist noch nicht durch den
-          Ernteteiler bestätigt. Sie kann erst aktiv werden, wenn sie mindestens
-          einmalig durch das Mitglied bestätigt und gespeichert wurde.
+          {{ t.confirm.adminOnBehalf }}
         </v-alert>
         <div class="mt-3" v-if="requireConfirmContribution">
           {{

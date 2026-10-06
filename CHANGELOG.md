@@ -378,3 +378,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #428 Deployment via Ansible
 
 # NEW
+
+#430 Admin: Bedarfsanmeldungen der Nutzer können jetzt auch vom Admin verbindlich bestätigt werden

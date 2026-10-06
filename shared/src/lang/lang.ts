@@ -270,6 +270,8 @@ export const language = {
           title: "Deine Zustimmung zu den Bedingungen:",
           label:
             "Ich haben die »Informationen und Grundlagen« unseres „{solawiName}“ gelesen. Mir ist bewusst, dass meine Bedarfsanmeldung im gesamten Zeitraum vor Ablauf der Anmeldefrist unverbindlich bleibt und jederzeit änderbar ist. Erst mit Ablauf der Anmeldefrist werden meine zuletzt ausgewählten Nahrungsmittel und -mengen, sowie mein Solawi-Beitrag verbindlich. Ich verpflichte mich, mit meinem verbindlichen Solawi-Beitrag für die gesamte {season} (12 Monate) das Solawi-Projekt mitzufinanzieren.",
+          adminOnBehalf:
+            "Mit dem Speichern wird diese Bedarfsänderung verbindlich für das Mitglied gespeichert. Das ist der Ausnahmefall — normalerweise bestätigt das Mitglied die Änderung selbst.",
         },
         confirmContribution: {
           title: "Bestätigung deines Mitgliedschaftsmodells als {model}:",
