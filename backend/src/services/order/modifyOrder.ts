@@ -26,7 +26,11 @@ import {
   getConfigIdFromQuery,
   getNumericQueryParameter,
 } from "../../util/requestUtil";
-import { calculateNewOrderValidFromDate } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper";
+import {
+  calculateNewOrderValidFromDate,
+  calculateValidFromForCalendarMonth,
+} from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper";
+import { toZonedTime } from "date-fns-tz";
 import {
   isRequisitionActive,
   isIncreaseOnly,
@@ -174,6 +178,110 @@ export const createAdditionalOrder = async (
 
       await manager.save(OrderItem, newOrderItems);
     }
+
+    return {
+      newOrderId: savedNewOrder.id,
+      validFrom: newOrderValidFrom,
+      previousOrderValidTo: newOrderValidFrom,
+    };
+  });
+  return result;
+};
+
+export const ZERO_ORDER_OFFER_REASON = "Austritt während der Saison";
+
+/**
+ * Ends a member's season from a calendar month: truncates the order that is
+ * valid at that month and appends a confirmed order with no items and offer 0.
+ */
+export const createZeroOrderFromMonth = async (
+  requestUserId: number,
+  requisitionConfig: RequisitionConfig,
+  month: Date,
+) => {
+  const zonedMonth = toZonedTime(month, config.timezone);
+  const newOrderValidFrom = calculateValidFromForCalendarMonth(
+    new Date(zonedMonth.getFullYear(), zonedMonth.getMonth(), 1),
+    config.timezone,
+  );
+
+  if (
+    newOrderValidFrom.getTime() < requisitionConfig.validFrom.getTime() ||
+    newOrderValidFrom.getTime() >= requisitionConfig.validTo.getTime()
+  ) {
+    throw new Error("Der gewählte Monat liegt außerhalb der Saison.");
+  }
+
+  const allOrders = await AppDataSource.getRepository(Order).find({
+    where: {
+      userId: requestUserId,
+      requisitionConfigId: requisitionConfig.id,
+    },
+    relations: { orderItems: true },
+    order: { validFrom: "ASC" },
+  });
+
+  const now = new Date();
+  const futureOrder = allOrders.find((o) => o.validFrom > now);
+  if (futureOrder) {
+    throw new Error("an order with a validFrom in the future exists");
+  }
+
+  const coveringOrder = allOrders.find(
+    (o) => o.validFrom <= newOrderValidFrom && o.validTo > newOrderValidFrom,
+  );
+  const predecessorEndingAtOrBeforeStart = [...allOrders]
+    .reverse()
+    .find((o) => o.validTo.getTime() <= newOrderValidFrom.getTime());
+  const currentOrder = coveringOrder ?? predecessorEndingAtOrBeforeStart;
+  if (!currentOrder) {
+    throw new Error("no current order found to modify");
+  }
+
+  if (
+    coveringOrder &&
+    newOrderValidFrom.getTime() <= coveringOrder.validFrom.getTime()
+  ) {
+    throw new Error(
+      "Der Beginn der Nullsetzung muss nach dem Beginn der bestehenden Bedarfsanmeldung liegen.",
+    );
+  }
+
+  const laterOrder = allOrders.find(
+    (o) =>
+      o.id !== currentOrder.id &&
+      o.validFrom.getTime() >= newOrderValidFrom.getTime(),
+  );
+  if (laterOrder) {
+    throw new Error("an order with a validFrom in the future exists");
+  }
+
+  const result = await AppDataSource.transaction(async (manager) => {
+    if (coveringOrder) {
+      await manager.update(
+        Order,
+        { id: coveringOrder.id },
+        {
+          validTo: newOrderValidFrom,
+          updatedAt: coveringOrder.updatedAt,
+        },
+      );
+    }
+
+    const newOrder = new Order();
+    newOrder.userId = requestUserId;
+    newOrder.requisitionConfigId = requisitionConfig.id;
+    newOrder.validFrom = newOrderValidFrom;
+    newOrder.validTo = requisitionConfig.validTo;
+    newOrder.offer = 0;
+    newOrder.depotId = currentOrder.depotId;
+    newOrder.alternateDepotId = currentOrder.alternateDepotId;
+    newOrder.offerReason = ZERO_ORDER_OFFER_REASON;
+    newOrder.category = currentOrder.category;
+    newOrder.categoryReason = currentOrder.categoryReason;
+    newOrder.confirmGTC = true;
+
+    const savedNewOrder = await manager.save(Order, newOrder);
 
     return {
       newOrderId: savedNewOrder.id,

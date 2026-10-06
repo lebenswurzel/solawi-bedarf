@@ -26,6 +26,7 @@ import { RequisitionConfig } from "../../database/RequisitionConfig";
 import { updateOrderValidFrom } from "./saveUser";
 import {
   createAdditionalOrder,
+  createZeroOrderFromMonth,
   deleteUnconfirmedOrders,
 } from "../order/modifyOrder";
 
@@ -80,6 +81,15 @@ export const updateUser = async (
 
     if (requestUser.deleteUnconfirmedOrders) {
       await deleteUnconfirmedOrders(user.id, requisitionConfig);
+      ctx.status = http.no_content;
+    }
+
+    if (requestUser.zeroOrderFromMonth !== undefined) {
+      const month = new Date(requestUser.zeroOrderFromMonth);
+      if (Number.isNaN(month.getTime())) {
+        throw new Error("Ungültiges Datum.");
+      }
+      await createZeroOrderFromMonth(user.id, requisitionConfig, month);
       ctx.status = http.no_content;
     }
   } catch (error: any) {

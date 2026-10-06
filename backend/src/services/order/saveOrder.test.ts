@@ -550,6 +550,88 @@ testAsAdminAndUser(
 );
 
 testAsAdminAndUser(
+  "admin can save a contribution below the offer floor",
+  async ({ userData }: TestAdminAndUserData) => {
+    const configId = await updateRequisition(true);
+    await updateOrderValidFrom(
+      userData.userId,
+      addMonths(new Date(), 1),
+      configId,
+    );
+
+    const depot = await getDepotByName("d1");
+    depot.capacity = 12;
+    await AppDataSource.getRepository(Depot).save(depot);
+
+    const orders = await findOrdersByUser(userData.userId);
+    const order = orders[0];
+    order.confirmGTC = false;
+    await AppDataSource.getRepository(Order).save(order);
+
+    for (const offer of [0, 1]) {
+      const ctx = createBasicTestCtx(
+        await _adminOrderRequest(configId, depot.id, order.id, {
+          confirmGTC: true,
+          offer,
+          offerReason: "Austritt während der Saison",
+          paymentInfo: {
+            paymentType: OrderPaymentType.SEPA,
+            paymentRequired: false,
+            amount: offer,
+            bankDetails: {
+              accountHolder: "Gerda Gemüse",
+              iban: "DE73916490657576621284",
+              bankName: "Solawi Bank",
+            },
+          },
+        }),
+        userData.adminToken,
+        undefined,
+        { id: userData.userId, configId },
+      );
+      await saveOrder(ctx);
+      expect(ctx.status).toBe(204);
+
+      const saved = (await findOrdersByUser(userData.userId))[0];
+      expect(saved.offer).toBe(offer);
+      expect(saved.confirmGTC).toBe(true);
+      expect(saved.userId).toBe(userData.userId);
+    }
+  },
+);
+
+testAsAdminAndUser(
+  "admin cannot save a negative contribution",
+  async ({ userData }: TestAdminAndUserData) => {
+    const configId = await updateRequisition(true);
+    await updateOrderValidFrom(
+      userData.userId,
+      addMonths(new Date(), 1),
+      configId,
+    );
+
+    const depot = await getDepotByName("d1");
+    depot.capacity = 12;
+    await AppDataSource.getRepository(Depot).save(depot);
+
+    const orders = await findOrdersByUser(userData.userId);
+    const ctx = createBasicTestCtx(
+      await _adminOrderRequest(configId, depot.id, orders[0].id, {
+        confirmGTC: true,
+        offer: -1,
+        offerReason: "Austritt während der Saison",
+      }),
+      userData.adminToken,
+      undefined,
+      { id: userData.userId, configId },
+    );
+    await expect(() => saveOrder(ctx)).rejects.toThrow(
+      "Error 400: bid too low",
+    );
+  },
+);
+
+testAsAdminAndUser(
   "reject admin save of another user's order without confirmation",
   async ({ userData }: TestAdminAndUserData) => {
     const configId = await updateRequisition(true);

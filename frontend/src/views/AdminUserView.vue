@@ -42,7 +42,9 @@ const t = language.pages.user;
 
 const { setError, setSuccess } = useUiFeedback();
 const configStore = useConfigStore();
-const { externalAuthProvider, activeConfigId } = storeToRefs(configStore);
+const { externalAuthProvider, activeConfigId, config } = storeToRefs(
+  configStore,
+);
 const route = useRoute();
 
 const defaultUser: { user: NewUser } = {
@@ -64,6 +66,7 @@ const ACTION_DEACTIVATE = "Deaktivieren";
 const ACTION_SET_ORDER_VALID_FROM = "Setze 'Bedarf gültig ab'";
 const ACTION_ADD_NEW_ORDER = "Bedarfsänderung hinzufügen";
 const ACTION_DELETE_UNCONFIRMED_ORDERS = "Unbestätigte Bedarfsänderung löschen";
+const ACTION_ZERO_ORDER = "Bedarf und Beitrag auf Null";
 
 const userStore = useUserStore();
 const { users } = storeToRefs(userStore);
@@ -81,11 +84,14 @@ const selectedUserActions = [
   ACTION_SET_ORDER_VALID_FROM,
   ACTION_ADD_NEW_ORDER,
   ACTION_DELETE_UNCONFIRMED_ORDERS,
+  ACTION_ZERO_ORDER,
 ];
 const selectedAction = ref(selectedUserActions[0]);
 const processedUsers = ref<number>(0);
 const isProcessing = ref(false);
 const openDatePicker = ref(false);
+const datePickerMode = ref<"day" | "month">("day");
+const monthPickerView = ref<"months" | "year">("months");
 const selectedDate = ref(new Date());
 
 const confirmGTCItems = ["bestätigt", "nicht bestätigt", "beliebig"];
@@ -184,6 +190,15 @@ const applySelectedAction = async () => {
     configId: activeConfigId.value,
   };
   if (selectedAction.value == ACTION_SET_ORDER_VALID_FROM) {
+    datePickerMode.value = "day";
+    openDatePicker.value = true;
+  } else if (selectedAction.value == ACTION_ZERO_ORDER) {
+    datePickerMode.value = "month";
+    monthPickerView.value = "months";
+    selectedDate.value = clampToSeasonMonth(
+      selectedDate.value.getFullYear(),
+      selectedDate.value.getMonth(),
+    );
     openDatePicker.value = true;
   } else {
     if (
@@ -210,11 +225,49 @@ const applySelectedAction = async () => {
   }
 };
 
+const firstOfMonth = (date: Date) =>
+  new Date(date.getFullYear(), date.getMonth(), 1);
+
+const clampToSeasonMonth = (year: number, month: number) => {
+  const candidate = new Date(year, month, 1);
+  const from = config.value?.validFrom;
+  const to = config.value?.validTo;
+  if (from && candidate < firstOfMonth(from)) {
+    return firstOfMonth(from);
+  }
+  if (to && candidate > firstOfMonth(to)) {
+    return firstOfMonth(to);
+  }
+  return candidate;
+};
+
+const onMonthPickerView = (mode: "month" | "months" | "year") => {
+  // "month" is the day grid. Year selection is needed to reach the next calendar year of the season.
+  monthPickerView.value = mode === "year" ? "year" : "months";
+};
+
+const onZeroOrderMonth = (month: number) => {
+  selectedDate.value = clampToSeasonMonth(
+    selectedDate.value.getFullYear(),
+    month,
+  );
+};
+
+const onZeroOrderYear = (year: number) => {
+  selectedDate.value = clampToSeasonMonth(year, selectedDate.value.getMonth());
+};
+
 const onUpdateValidFromDates = async () => {
-  const option = {
-    configId: activeConfigId.value,
-    orderValidFrom: selectedDate.value,
-  };
+  const option =
+    datePickerMode.value === "month"
+      ? {
+          configId: activeConfigId.value,
+          zeroOrderFromMonth: selectedDate.value,
+        }
+      : {
+          configId: activeConfigId.value,
+          orderValidFrom: selectedDate.value,
+        };
   openDatePicker.value = false;
   await updateSelectedUsers(option);
 };
@@ -717,21 +770,52 @@ const filterDeleted = (tableItem: { deleted?: boolean }): boolean => {
   <UserDialog :open="open" @close="onClose" />
   <v-dialog :model-value="openDatePicker">
     <v-card class="mx-auto">
-      <v-card-title>Bedarf gültig ab</v-card-title>
-      <v-card-text style="max-width: 600px"
-        ><p class="mb-2">
-          Setze für die gewählten Nutzer das Datum, ab welchem der Bedarf in den
-          Verteilungen berücksichtig werden soll. Es sollte sich um den Freitag
-          vor der ersten Lieferung handeln, damit der Bedarf dieses Nutzers in
-          der Planung der Verteilung berücksichtigt werden kann.
-        </p>
-        <p>
-          Das Datum wird nur gesetzt, falls der Nutzer bereits einen Bedarf
-          angemeldet hat.
-        </p></v-card-text
-      >
+      <v-card-title>
+        {{
+          datePickerMode === "month"
+            ? "Bedarf und Beitrag auf Null"
+            : "Bedarf gültig ab"
+        }}
+      </v-card-title>
+      <v-card-text style="max-width: 600px">
+        <template v-if="datePickerMode === 'month'">
+          <p class="mb-2">
+            Lege für die gewählten Nutzer eine bestätigte Bedarfsänderung an,
+            bei der Mengen und Solawi-Beitrag ab dem gewählten Kalendermonat auf
+            Null stehen. Das Mitglied muss die Änderung nicht selbst speichern.
+          </p>
+          <p>
+            Als Beginn gilt der Freitag vor dem ersten Donnerstag dieses Monats,
+            also vor der ersten Lieferung. Wählbar sind die Monate zwischen
+            Beginn und Ende der aktuellen Saison. Das Jahr lässt sich über die
+            Jahreszahl umschalten.
+          </p>
+        </template>
+        <template v-else>
+          <p class="mb-2">
+            Setze für die gewählten Nutzer das Datum, ab welchem der Bedarf in
+            den Verteilungen berücksichtig werden soll. Es sollte sich um den
+            Freitag vor der ersten Lieferung handeln, damit der Bedarf dieses
+            Nutzers in der Planung der Verteilung berücksichtigt werden kann.
+          </p>
+          <p>
+            Das Datum wird nur gesetzt, falls der Nutzer bereits einen Bedarf
+            angemeldet hat.
+          </p>
+        </template>
+      </v-card-text>
       <v-card-text class="mx-auto">
-        <v-date-picker v-model="selectedDate"> </v-date-picker>
+        <v-date-picker
+          v-if="datePickerMode === 'month'"
+          v-model="selectedDate"
+          :view-mode="monthPickerView"
+          :min="config?.validFrom"
+          :max="config?.validTo"
+          @update:view-mode="onMonthPickerView"
+          @update:month="onZeroOrderMonth"
+          @update:year="onZeroOrderYear"
+        />
+        <v-date-picker v-else v-model="selectedDate" />
       </v-card-text>
       <v-card-actions>
         <v-btn @click="() => (openDatePicker = false)">

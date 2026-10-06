@@ -62,7 +62,10 @@ import { RequisitionConfig } from "../../database/RequisitionConfig";
 import { bi } from "../bi/bi";
 import { getRequestUserId, getUserFromContext } from "../getUserFromContext";
 import { getSameOrNextThursday } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper";
-import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
+import {
+  UserCategory,
+  UserRole,
+} from "@lebenswurzel/solawi-bedarf-shared/src/enum";
 import { sendOrderConfirmationMail } from "../email/orderConfirmationMail";
 import { language } from "@lebenswurzel/solawi-bedarf-shared/src/lang/lang";
 import { availabilityWeights } from "../bi/availabilityWeights";
@@ -214,7 +217,11 @@ export const saveOrder = async (
     requisitionConfig,
     relevantOrders.map(unpackOrderPayment),
   );
-  if (!isOfferValid(body.offer, effectiveMsrp.monthly.total)) {
+  if (
+    body.offer < 0 ||
+    (role !== UserRole.ADMIN &&
+      !isOfferValid(body.offer, effectiveMsrp.monthly.total))
+  ) {
     ctx.throw(http.bad_request, "bid too low");
   }
   if (
@@ -261,7 +268,9 @@ export const saveOrder = async (
   selectedOrder.offerReason = body.offerReason || "";
   selectedOrder.category = body.category;
   selectedOrder.categoryReason = body.categoryReason || "";
-  selectedOrder.confirmGTC = body.confirmGTC || false;
+  if (body.confirmGTC) {
+    selectedOrder.confirmGTC = true;
+  }
 
   if (body.paymentInfo) {
     updatePaymentInfo(selectedOrder, body.paymentInfo);

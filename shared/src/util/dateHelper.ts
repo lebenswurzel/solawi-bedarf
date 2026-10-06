@@ -338,25 +338,16 @@ export const countCalendarMonths = (
 };
 
 /**
- * Calculates the validFrom date for a new order modification.
- * Returns the Friday before the first Thursday in the month that follows
- * the month of the endBiddingRound date.
+ * Returns the Friday before the first Thursday of the calendar month that
+ * contains `month`. Orders use that Friday as validFrom so the first
+ * delivery Thursday of the month is included.
  */
-export const calculateNewOrderValidFromDate = (
-  endBiddingRound: Date,
+export const calculateValidFromForCalendarMonth = (
+  month: Date,
   timezone?: string
 ): Date => {
-  // Get the month that follows the endBiddingRound month
-  const nextMonth = new Date(
-    endBiddingRound.getFullYear(),
-    endBiddingRound.getMonth() + 1,
-    1
-  );
-
-  // Find the first Thursday in that month
-  const firstThursday = getSameOrNextThursday(nextMonth, timezone);
-
-  // Get the Friday before that Thursday (subtract 6 days to go back to Friday)
+  const monthStart = new Date(month.getFullYear(), month.getMonth(), 1);
+  const firstThursday = getSameOrNextThursday(monthStart, timezone);
   const fridayBefore = addDays(firstThursday, -6);
 
   if (timezone) {
@@ -378,6 +369,23 @@ export const calculateNewOrderValidFromDate = (
   }
 
   return fridayBefore;
+};
+
+/**
+ * Calculates the validFrom date for a new order modification.
+ * Returns the Friday before the first Thursday in the month that follows
+ * the month of the endBiddingRound date.
+ */
+export const calculateNewOrderValidFromDate = (
+  endBiddingRound: Date,
+  timezone?: string
+): Date => {
+  const nextMonth = new Date(
+    endBiddingRound.getFullYear(),
+    endBiddingRound.getMonth() + 1,
+    1
+  );
+  return calculateValidFromForCalendarMonth(nextMonth, timezone);
 };
 
 export const isDateInRange = (

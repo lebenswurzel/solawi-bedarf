@@ -16,7 +16,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import { expect, test } from "vitest";
 import { UserCategory } from "@lebenswurzel/solawi-bedarf-shared/src/enum";
-import { calculateNewOrderValidFromDate } from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper";
+import {
+  calculateNewOrderValidFromDate,
+  calculateValidFromForCalendarMonth,
+} from "@lebenswurzel/solawi-bedarf-shared/src/util/dateHelper";
+import { toZonedTime } from "date-fns-tz";
 import {
   TestAdminAndUserData,
   TestUserData,
@@ -39,9 +43,11 @@ import { RequisitionConfig } from "../../database/RequisitionConfig";
 import { config } from "../../config";
 import {
   createAdditionalOrder,
+  createZeroOrderFromMonth,
   deleteUnconfirmedOrder,
   deleteUnconfirmedOrders,
   modifyOrder,
+  ZERO_ORDER_OFFER_REASON,
 } from "./modifyOrder";
 
 setupDatabaseCleanup();
@@ -455,5 +461,157 @@ testAsAdminAndUser(
     expect(orders).toHaveLength(1);
     expect(orders[0].validTo).toEqual(validFrom);
     expect(orders.find((o) => o.id === newOrderId)).toBeUndefined();
+  },
+);
+
+const expectedZeroOrderStart = (month: Date): Date => {
+  const zonedMonth = toZonedTime(month, config.timezone);
+  return calculateValidFromForCalendarMonth(
+    new Date(zonedMonth.getFullYear(), zonedMonth.getMonth(), 1),
+    config.timezone,
+  );
+};
+
+testAsUser1(
+  "createZeroOrderFromMonth splits the current order into a confirmed zero order",
+  async ({ userData }: TestUserData) => {
+    const configId = await updateRequisition(false);
+    const requisitionConfig = await AppDataSource.getRepository(
+      RequisitionConfig,
+    ).findOneByOrFail({ id: configId });
+    const currentOrder = await createCurrentOrder(
+      userData.userId,
+      requisitionConfig,
+      {
+        validFrom: dateDeltaDays(-40),
+        offer: 80,
+        withOrderItem: true,
+      },
+    );
+    const month = dateDeltaDays(70);
+
+    const result = await createZeroOrderFromMonth(
+      userData.userId,
+      requisitionConfig,
+      month,
+    );
+
+    const expectedValidFrom = expectedZeroOrderStart(month);
+    expect(result.validFrom).toEqual(expectedValidFrom);
+    expect(expectedValidFrom.getTime()).toBeGreaterThan(
+      currentOrder.validFrom.getTime(),
+    );
+    expect(expectedValidFrom.getTime()).toBeLessThan(
+      requisitionConfig.validTo.getTime(),
+    );
+
+    const orders = await findOrdersByUser(userData.userId);
+    expect(orders).toHaveLength(2);
+    const previous = orders.find((o) => o.id === currentOrder.id);
+    const zeroOrder = orders.find((o) => o.id === result.newOrderId);
+    expect(previous?.validTo).toEqual(expectedValidFrom);
+    expect(previous?.updatedAt).toEqual(currentOrder.updatedAt);
+    expect(previous?.orderItems).toHaveLength(1);
+    expect(zeroOrder?.validFrom).toEqual(expectedValidFrom);
+    expect(zeroOrder?.validTo).toEqual(requisitionConfig.validTo);
+    expect(zeroOrder?.offer).toBe(0);
+    expect(zeroOrder?.confirmGTC).toBe(true);
+    expect(zeroOrder?.offerReason).toBe(ZERO_ORDER_OFFER_REASON);
+    expect(zeroOrder?.depotId).toBe(currentOrder.depotId);
+    expect(zeroOrder?.category).toBe(currentOrder.category);
+    expect(zeroOrder?.orderItems ?? []).toHaveLength(0);
+  },
+);
+
+testAsUser1(
+  "createZeroOrderFromMonth appends when the previous order already ends at that month",
+  async ({ userData }: TestUserData) => {
+    const configId = await updateRequisition(false);
+    const requisitionConfig = await AppDataSource.getRepository(
+      RequisitionConfig,
+    ).findOneByOrFail({ id: configId });
+    const month = dateDeltaDays(70);
+    const expectedValidFrom = expectedZeroOrderStart(month);
+    const currentOrder = await createCurrentOrder(
+      userData.userId,
+      requisitionConfig,
+      {
+        validFrom: dateDeltaDays(-40),
+        validTo: expectedValidFrom,
+        offer: 80,
+        withOrderItem: true,
+      },
+    );
+
+    const result = await createZeroOrderFromMonth(
+      userData.userId,
+      requisitionConfig,
+      month,
+    );
+
+    const orders = await findOrdersByUser(userData.userId);
+    expect(orders).toHaveLength(2);
+    const previous = orders.find((o) => o.id === currentOrder.id);
+    const zeroOrder = orders.find((o) => o.id === result.newOrderId);
+    expect(previous?.validTo).toEqual(expectedValidFrom);
+    expect(previous?.updatedAt).toEqual(currentOrder.updatedAt);
+    expect(previous?.orderItems).toHaveLength(1);
+    expect(zeroOrder?.validFrom).toEqual(expectedValidFrom);
+    expect(zeroOrder?.offer).toBe(0);
+    expect(zeroOrder?.confirmGTC).toBe(true);
+    expect(zeroOrder?.orderItems ?? []).toHaveLength(0);
+  },
+);
+
+testAsUser1(
+  "createZeroOrderFromMonth throws when no current order exists",
+  async ({ userData }: TestUserData) => {
+    const configId = await updateRequisition(false);
+    const requisitionConfig = await AppDataSource.getRepository(
+      RequisitionConfig,
+    ).findOneByOrFail({ id: configId });
+
+    await expect(() =>
+      createZeroOrderFromMonth(
+        userData.userId,
+        requisitionConfig,
+        dateDeltaDays(70),
+      ),
+    ).rejects.toThrowError("no current order found to modify");
+  },
+);
+
+testAsUser1(
+  "createZeroOrderFromMonth throws when a future order already exists",
+  async ({ userData }: TestUserData) => {
+    const requisitionConfig = await setupBiddingRoundConfig();
+    await createModificationChain(userData.userId, requisitionConfig);
+
+    await expect(() =>
+      createZeroOrderFromMonth(
+        userData.userId,
+        requisitionConfig,
+        dateDeltaDays(120),
+      ),
+    ).rejects.toThrowError("an order with a validFrom in the future exists");
+  },
+);
+
+testAsUser1(
+  "createZeroOrderFromMonth throws when the month is outside the season",
+  async ({ userData }: TestUserData) => {
+    const configId = await updateRequisition(false);
+    const requisitionConfig = await AppDataSource.getRepository(
+      RequisitionConfig,
+    ).findOneByOrFail({ id: configId });
+    await createCurrentOrder(userData.userId, requisitionConfig);
+
+    await expect(() =>
+      createZeroOrderFromMonth(
+        userData.userId,
+        requisitionConfig,
+        dateDeltaDays(800),
+      ),
+    ).rejects.toThrowError("Der gewählte Monat liegt außerhalb der Saison.");
   },
 );
