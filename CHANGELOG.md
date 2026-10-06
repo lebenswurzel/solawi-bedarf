@@ -377,7 +377,9 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 
 #428 Deployment via Ansible
 
-# NEW
+# v0.15.17 - 2026-10-06 - Bedarf auf 0 setzen
 
 #430 Admin: Bedarfsanmeldungen der Nutzer können jetzt auch vom Admin verbindlich bestätigt werden
 #432 Admin: Es kann mit einem Klick eine leere Bedarfsanmeldung bei Ausscheiden eines Mitglieds erstellt werden
+
+# NEW
