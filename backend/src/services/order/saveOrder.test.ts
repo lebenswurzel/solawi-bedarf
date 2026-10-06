@@ -509,6 +509,122 @@ testAsUser1(
   },
 );
 
+testAsAdminAndUser(
+  "admin can confirm another user's unconfirmed order",
+  async ({ userData }: TestAdminAndUserData) => {
+    const configId = await updateRequisition(true);
+    await updateOrderValidFrom(
+      userData.userId,
+      addMonths(new Date(), 1),
+      configId,
+    );
+
+    const depot = await getDepotByName("d1");
+    depot.capacity = 12;
+    await AppDataSource.getRepository(Depot).save(depot);
+
+    const orders = await findOrdersByUser(userData.userId);
+    const order = orders[0];
+    order.confirmGTC = false;
+    order.categoryReason = "still unconfirmed";
+    await AppDataSource.getRepository(Order).save(order);
+
+    const ctx = createBasicTestCtx(
+      await _adminOrderRequest(configId, depot.id, order.id, {
+        confirmGTC: true,
+        categoryReason: "confirmed by admin",
+      }),
+      userData.adminToken,
+      undefined,
+      { id: userData.userId, configId },
+    );
+    await saveOrder(ctx);
+    expect(ctx.status).toBe(204);
+
+    const saved = (await findOrdersByUser(userData.userId))[0];
+    expect(saved.confirmGTC).toBe(true);
+    expect(saved.categoryReason).toBe("confirmed by admin");
+    expect(saved.offer).toBe(21);
+    expect(saved.userId).toBe(userData.userId);
+  },
+);
+
+testAsAdminAndUser(
+  "reject admin save of another user's order without confirmation",
+  async ({ userData }: TestAdminAndUserData) => {
+    const configId = await updateRequisition(true);
+    await updateOrderValidFrom(
+      userData.userId,
+      addMonths(new Date(), 1),
+      configId,
+    );
+
+    const depot = await getDepotByName("d1");
+    depot.capacity = 12;
+    await AppDataSource.getRepository(Depot).save(depot);
+
+    const orders = await findOrdersByUser(userData.userId);
+    const order = orders[0];
+    order.confirmGTC = false;
+    order.categoryReason = "still unconfirmed";
+    await AppDataSource.getRepository(Order).save(order);
+
+    const ctx = createBasicTestCtx(
+      await _adminOrderRequest(configId, depot.id, order.id, {
+        confirmGTC: false,
+        categoryReason: "should not be saved",
+      }),
+      userData.adminToken,
+      undefined,
+      { id: userData.userId, configId },
+    );
+    await expect(() => saveOrder(ctx)).rejects.toThrow(
+      "Error 400: commitment not confirmed",
+    );
+
+    const saved = (await findOrdersByUser(userData.userId))[0];
+    expect(saved.confirmGTC).toBe(false);
+    expect(saved.categoryReason).toBe("still unconfirmed");
+  },
+);
+
+const _adminOrderRequest = async (
+  configId: number,
+  depotId: number,
+  orderId: number,
+  updatedFields: Partial<ConfirmedOrder>,
+): Promise<ConfirmedOrder> => {
+  const product1 = await getProductByName("p1");
+  const product2 = await getProductByName("p2");
+  const paymentInfo: OrderPayment = {
+    paymentType: OrderPaymentType.SEPA,
+    paymentRequired: true,
+    amount: 21,
+    bankDetails: {
+      accountHolder: "Gerda Gemüse",
+      iban: "DE73916490657576621284",
+      bankName: "Solawi Bank",
+    },
+  };
+  return {
+    confirmGTC: true,
+    category: UserCategory.CAT100,
+    categoryReason: "nothing special",
+    depotId,
+    orderItems: [
+      { productId: product1.id, value: 3 },
+      { productId: product2.id, value: 2 },
+    ],
+    offer: 21,
+    alternateDepotId: null,
+    offerReason: null,
+    requisitionConfigId: configId,
+    paymentInfo,
+    id: orderId,
+    ...updatedFields,
+  };
+};
+
 /** Helper function to create specific saveOrder context */
 const _createCtx = async (
   updatedFields: Partial<ConfirmedOrder>,

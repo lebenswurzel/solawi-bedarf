@@ -78,8 +78,6 @@ export const saveOrder = async (
   const body = ctx.request.body as ConfirmedOrder;
   const sendConfirmationEmailToUser = body.sendConfirmationEmail || false;
 
-  const isEditedByOtherUser = requestUserId !== id;
-
   const configId = body.requisitionConfigId;
   if (configId < 1) {
     ctx.throw(http.bad_request, `missing or bad config id (${configId})`);
@@ -93,7 +91,7 @@ export const saveOrder = async (
   if (!requisitionConfig) {
     ctx.throw(http.bad_request, `no valid config (id=${configId})`);
   }
-  if (!body.confirmGTC && !isEditedByOtherUser) {
+  if (!body.confirmGTC) {
     ctx.throw(http.bad_request, "commitment not confirmed");
   }
   if (!appConfig.availableCategories.includes(body.category)) {
@@ -263,10 +261,7 @@ export const saveOrder = async (
   selectedOrder.offerReason = body.offerReason || "";
   selectedOrder.category = body.category;
   selectedOrder.categoryReason = body.categoryReason || "";
-  if (!isEditedByOtherUser) {
-    // only the user who has created the order can confirm it
-    selectedOrder.confirmGTC = body.confirmGTC || false;
-  }
+  selectedOrder.confirmGTC = body.confirmGTC || false;
 
   if (body.paymentInfo) {
     updatePaymentInfo(selectedOrder, body.paymentInfo);
