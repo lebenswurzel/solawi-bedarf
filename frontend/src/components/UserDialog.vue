@@ -37,10 +37,18 @@ defineProps(["open"]);
 const emit = defineEmits(["close"]);
 
 const orderValidFrom = ref<Date | null>(null);
+const loadedOrderValidFrom = ref<Date | null>(null);
 const loading = ref(false);
 const error = ref<string>();
 const password = ref<string>();
 const enableValidFrom = ref(false);
+
+const sameValidFromMinute = (left: Date | null, right: Date | null) => {
+  if (!left || !right) {
+    return !left && !right;
+  }
+  return dateToString(left) === dateToString(right);
+};
 
 const dialogUser = inject<Ref<{ user: NewUser | User }>>("dialogUser") as Ref<{
   user: NewUser | User;
@@ -67,14 +75,18 @@ const onClose = () => {
 
 const onSave = () => {
   loading.value = true;
-  const includeValidFrom = enableValidFrom.value;
+  const validFromChanged = !sameValidFromMinute(
+    orderValidFrom.value,
+    loadedOrderValidFrom.value,
+  );
   saveUser({
     id: isIdType(dialogUser.value.user) ? dialogUser.value.user.id : undefined,
     name: dialogUser.value.user.name!,
     role: dialogUser.value.user.role,
     active: dialogUser.value.user.active,
     password: password.value || undefined,
-    orderValidFrom: includeValidFrom ? orderValidFrom.value : null,
+    orderValidFrom:
+      validFromChanged && orderValidFrom.value ? orderValidFrom.value : null,
     requisitionConfigId: activeConfigId.value,
   })
     .then(() => {
@@ -98,6 +110,9 @@ watchEffect(async () => {
   } else {
     orderValidFrom.value = null;
   }
+  loadedOrderValidFrom.value = orderValidFrom.value
+    ? new Date(orderValidFrom.value.getTime())
+    : null;
   enableValidFrom.value = !!orderValidFrom.value;
 });
 </script>

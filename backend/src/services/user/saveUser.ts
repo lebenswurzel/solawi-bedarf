@@ -103,11 +103,22 @@ export const updateOrderValidFrom = async (
   orderValidFrom: Date,
   configId: number,
 ) => {
+  const requestedValidFrom = new Date(orderValidFrom);
+  if (Number.isNaN(requestedValidFrom.getTime())) {
+    throw new Error("Ungültiges Datum.");
+  }
   let orders = await AppDataSource.getRepository(Order).find({
     where: { userId, requisitionConfigId: configId },
     order: { validFrom: "ASC" },
     relations: { orderItems: true },
   });
+  if (
+    orders.some(
+      (order) => order.validFrom.getTime() === requestedValidFrom.getTime(),
+    )
+  ) {
+    return;
+  }
   if (orders.length > 1) {
     throw new Error("Multiple orders found, cannot update validFrom date!");
   }
@@ -119,7 +130,7 @@ export const updateOrderValidFrom = async (
     await AppDataSource.getRepository(Order).update(
       { id: order.id },
       {
-        validFrom: orderValidFrom,
+        validFrom: requestedValidFrom,
         updatedAt: order.updatedAt, // prevent modification of updatedAt as we use it to indicate whether a user changed his order
       },
     );
@@ -136,7 +147,7 @@ export const updateOrderValidFrom = async (
     order.userId = userId;
     order.offer = 0;
     order.category = appConfig.defaultCategory;
-    order.validFrom = orderValidFrom;
+    order.validFrom = requestedValidFrom;
     order.validTo = config.validTo;
     order.requisitionConfigId = configId;
     await AppDataSource.getRepository(Order).save(order);

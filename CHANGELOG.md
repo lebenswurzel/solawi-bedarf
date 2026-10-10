@@ -383,3 +383,5 @@ Bonus: Buttons im Verteilungs-Dialog immer sichtbar
 #432 Admin: Es kann mit einem Klick eine leere Bedarfsanmeldung bei Ausscheiden eines Mitglieds erstellt werden
 
 # NEW
+
+#434 Admin: Passwort eines Mitglieds lässt sich speichern, auch wenn es mehrere Bedarfsanmeldungen in der Saison gibt. Das Gültig-ab-Datum wird nur geändert, wenn es im Dialog angepasst wurde.
